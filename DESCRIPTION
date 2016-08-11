@@ -13,8 +13,7 @@ Description: Provides tools for the maximum likelihood fit of GEV functions
     value analysis.
 URL: https://github.com/philmu/climex
 Depends:
-    R(>= 3.0.1)
-Imports:
+    R(>= 3.0.1),
     xtable,
     lubridate,
     pracma,

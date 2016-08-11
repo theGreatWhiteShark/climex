@@ -12,7 +12,7 @@ vignette: >
 ## Data import and cleaning
 In this basic tutorial I assume the usage of the data downloaded in the first tutorial called *Downloading and formatting of the weather data of the DWD*. Here we will use the daily maximal temperature data.
 ```{r}
-source.data() # interactive data loading
+source.data()
 data.list <- stations.temp.max
 ```
 
@@ -23,7 +23,8 @@ As a second step we will calculate the anomalies of the data and discard all tim
 ## Removal of the incomplete years
 ## To boost the performance of the code I will work with the parallel version of the lapply function
 ## but it will still takes some time
-data.complete <- mclapply( data.list, remove.incomplete.years, mc.cores = detectCores() )
+data.complete <- mclapply( data.list, remove.incomplete.years,
+                                    mc.cores = detectCores() )
 
 ## Remove all series containing less than 30 years
 data.cleaned <- data.complete[ Reduce( c, mclapply( data.complete, function( x )
