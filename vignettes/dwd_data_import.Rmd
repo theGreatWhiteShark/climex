@@ -1,0 +1,45 @@
+---
+title: "Downloading and formatting of the weather data of the DWD"
+author: "Philipp Müller"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Downloading and formatting of the weather data of the DWD}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Description of the data
+The source of the data is the German weather service (DWD). On its FTP server there are a huge number of different formats of the data. Here I choose daily weather data of observation stations within Germany.
+
+Before using the data please read the [terms of use](ftp://ftp-cdc.dwd.de/pub/CDC/Terms_of_use.pdf) of the DWD carefully.
+## Data acquisition
+First of all the global variable **CLIMEX.PATH** has to be set. Just add the following lines to ~/.Rprofile
+```{r}
+CLIMEX.PATH <<- "~/R/climex/"
+```
+
+In the second step open a new R shell, load the climex package and run the command for the data acquisition *download.data.dwd*.
+```{r}
+require( climex )
+download.data.dwd() # this will take a while
+```
+
+This will create a folder in **CLIMEX.PATH** called download_dwd containing the mirrored content of the FTP server of the DWD. Those .zip files will be extracted, parsed and converted to the xts format one after another. The parsing takes some time and can last for several minutes depending on your machines specifications. To avoid saving the data the option *save.downloads* can be set to FALSE.
+
+Per default three kinds of data will be extracted: the daily maximal and minimal temperature and the daily precipitation. Using the *data.type* option one can obtain a variety of additional information from the DWD data base. But since the data of all stations regardless of the abundance of their data is imported there can be stations containing no data at all. Keep this in mind when processing the obtained data.
+
+After parsing the data it will be saved as lists of objects of the class **xts** and written to the CLIMEX.PATH/dwd_downloads folder in R's binary format .RData.
+
+In addition there exists the *csv.export* option exporting the lists of xts data to .csv files which can be imported into any other application. For each chosen data source in the data.type character vector a new folder will be created containing the data of each single station in a different file. 
+
+On top of all this the function is able to update an existing data base and just downloads the most recent .zip folders from the DWD data base omitting all existing files.
+
+## Data usage
+After importing the data it can be loaded via
+
+```{r}
+source.data( pick.default = TRUE )
+```
+If the option *pick.default* is set like in the example above it will just look for the default station data. If the option is set to FALSE an interactive choice we be prompted instead.
+This will print all existing .RData files in the CLIMEX.PATH/dwd_downloads folder and let the user choose which one to import using an interactive prompt. As an alternative one of course can just use the *load()* function.

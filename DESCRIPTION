@@ -1,0 +1,44 @@
+Package: climex
+Type: Package
+Title: Climate Change and Extreme Events
+Version: 0.8.0
+Date: 2016-12-08
+LazyData: true
+Authors@R: person("Philipp","Developer", role = c("aut","cre"),
+    email = "thetruephil@googlemail.com")
+Author: Philipp Mueller
+Maintainer: Philipp Mueller <thetruephil@googlemail.com>
+Description: Provides tools for the maximum likelihood fit of GEV functions
+    of time series. It also contains a shiny app easing the use of extreme
+    value analysis.
+Depends:
+    R(>= 3.0.1),
+    xtable,
+    lubridate,
+    pracma,
+    ggplot2,
+    pander,
+    stringr,
+    grid,
+    ismev,
+    extRemes,
+    inline,
+    markdown,
+    zoo,
+    xts,
+    dygraphs,
+    parallel,
+    shiny,
+    animation,
+    latex2exp,
+    shinydashboard,
+    RCurl,
+    RColorBrewer,
+    deseasonalize,
+    moments,
+License: GPL-3
+Packaged: 2015-04-23 12:21:47 UTC; phmu
+VignetteBuilder: knitr
+RoxygenNote: 5.0.1
+Suggests: knitr,
+    rmarkdown
