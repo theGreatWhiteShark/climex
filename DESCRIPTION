@@ -11,8 +11,10 @@ Maintainer: Philipp Mueller <thetruephil@googlemail.com>
 Description: Provides tools for the maximum likelihood fit of GEV functions
     of time series. It also contains a shiny app easing the use of extreme
     value analysis.
+URL: https://github.com/philmu/climex
 Depends:
-    R(>= 3.0.1),
+    R(>= 3.0.1)
+Imports:
     xtable,
     lubridate,
     pracma,
@@ -36,9 +38,9 @@ Depends:
     RColorBrewer,
     deseasonalize,
     moments,
-License: GPL-3
-Packaged: 2015-04-23 12:21:47 UTC; phmu
+License: GPL (>= 3)
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1
-Suggests: knitr,
+Suggests:
+    knitr,
     rmarkdown
