@@ -17,6 +17,8 @@ Before using the data please read the [terms of use](ftp://ftp-cdc.dwd.de/pub/CD
 First of all the global variable **CLIMEX.PATH** has to be set. Just add the following lines to ~/.Rprofile
 ```{r}
 CLIMEX.PATH <<- "~/R/climex/"
+if ( !dir.exists( CLIMEX.PATH ) )
+    dir.create( CLIMEX.PATH, recursive = TRUE )
 ```
 
 In the second step open a new R shell, load the climex package and run the command for the data acquisition *download.data.dwd*.
