@@ -89,7 +89,7 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
                 ## remove it and download the more recent one
                 file.remove( grep( strsplit( ff, "_" )[[ 1 ]][ 3 ], list.files(), value = TRUE ) )
             }
-            ## download.file( url = paste0( url.base, ff ), destfile = ff, method = "wget" )
+            download.file( url = paste0( url.base, ff ), destfile = ff, method = "wget" )
         }
     }
     setwd( "./recent" )
