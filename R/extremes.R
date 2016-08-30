@@ -8,7 +8,7 @@
 ##' @param block.length Length of the blocks. For the sake of simplicity the last block is not forced to match the length of the other plots.
 ##' @param block.mode This parameter determines if the maximum "max" or the minimum "min" of a block shall be returned. Default: "max".
 ##' @param separation.mode "years" is used to split the data according to its date values instead.
-##' @return Same format as iuput.
+##' @return Of class 'xts' if a 'xts' object was provided or of class 'numeric' else.
 ##' @family extremes
 ##' @author Philipp Mueller
 ##' @examples
@@ -66,10 +66,7 @@ block.xts <- function( input.bulk, block.number = round( length( input.bulk )/ 5
 block.default <- function( input.bulk, block.number = round( length( input.bulk )/ 50 ),
                           block.length = NULL, block.mode = c( "max", "min" ),
                           separation.mode = c( "weeks", "months", "years", "quarterly" ) ){
-    ## For the default method the input.bulk is considered to be a vector of data
-    ## Initializing. The 'block.length' is the most important parameter
-    if ( separation.mode == "years" )
-        stop( "The splitting of data in individual years by block is only supported for data of class xts or of the former climex classes" )
+    ## In this method for numerical data the time based separation.modes are not allowed anymore.
     if ( !missing( block.length ) || !missing( block.number ) ){
         if ( !is.null( block.length ) ){
             block.number <- floor( length( input.bulk )/ block.length ) + 1
@@ -94,11 +91,11 @@ block.default <- function( input.bulk, block.number = round( length( input.bulk 
     input.blocked <- split( input.index,input.index$index )
     ## Extract the maxima or minima from the blocked data
     if ( block.mode == "max" ){
-        input.extremes <- Reduce( rbind, lapply( input.blocked, function( x ){
-            data.frame( value = x[ which.max( x[[ 1 ]] ), 1 ] ) } ) )
-    } else q
-        input.extremes <- Reduce( rbind, lapply( input.blocked, function( x ){
-            data.frame( value = x[ which.min( x[[ 1 ]] ), 1 ] ) } ) )
+        input.extremes <- Reduce( c, lapply( input.blocked, function( x ){
+             x[ which.max( x[[ 1 ]] ), 1 ] } ) )
+    } else 
+        input.extremes <- Reduce( c, lapply( input.blocked, function( x ){
+            x[ which.min( x[[ 1 ]] ), 1 ] } ) )
     return( input.extremes )
 }
 
