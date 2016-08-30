@@ -43,14 +43,21 @@ gev.fit <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
     if ( is.null( error.estimation ) )
         error.estimation <- "MLE"
     error.estimation <- match.arg( error.estimation )
-
     ## Optimization
     if ( error.estimation != "none" ){
-        res.optim <- stats::optim( initial, optim.function, gr = gradient.function, x = x,
-                                  hessian = TRUE, ... )
-        if ( rerun )
-            res.optim <- stats::optim( res.optim$par, optim.function, gr = gradient.function,
-                                      x = x, hessian = TRUE, ... )
+        suppressWarnings(
+            res.optim <- stats::optim( initial, optim.function, gr = gradient.function, x = x,
+                                      hessian = TRUE, ... ) )
+        if ( rerun ){
+            suppressWarnings(
+                res.optim.rerun <- try( stats::optim( par = res.optim$par, fn = optim.function,
+                                                     gr = gradient.function, x = x, hessian = TRUE,
+                                                     ... ), silent = TRUE ) )
+            if ( class( res.optim.rerun ) == "try-error" ){
+                warning( "Rerun failed. Be sure to use the Nelder-Mead method of optimization." )
+            } else
+                res.optim <- res.optim.rerun
+        }
         error.covariance <- try( solve( res.optim$hessian ) )
         if ( class( error.covariance ) == "try-error" || error.estimation == "MC" ||
             any( is.nan( res.optim$hessian ) ) ){
@@ -60,15 +67,21 @@ gev.fit <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
             samples.list <- lapply( 1 : number.of.samples, function( y )
                 extRemes::revd( length( x ), parameter.estimate[ 1 ], parameter.estimate[ 2 ],
                                parameter.estimate[ 3 ], type = "GEV" ) )
-            samples.fit <- lapply( samples.list, function( y )
-                stats::optim( likelihood.initials( y ), optim.function, x = y,
-                             method = "Nelder-Mead" )$par )
-            errors <- data.frame( sqrt( stats::var( Reduce( rbind, samples.fit )[ , 1 ] ) ),
-                                 sqrt( stats::var( Reduce( rbind, samples.fit )[ , 2 ] ) ),
-                                 sqrt( stats::var( Reduce( rbind, samples.fit )[ , 2 ] ) ) )
-            for ( rr in 1 : length( return.period ) )
-                errors <- cbind( errors, sqrt( stats::var( Reduce( c, lapply( samples.fit, function( z )
-                    rlevd( z, return.period = return.period[ rr ] ) ) ) ) ) )     
+            ## If e.g. via the BFGS method way to big shape parameter are estimated the guessing of the initial parameters for the optimization won't work anymore since the sampled values are way to big (e.g. 1E144)
+            suppressWarnings( 
+                samples.fit <- try( lapply( samples.list, function( y )
+                    stats::optim( likelihood.initials( y ), optim.function, x = y,
+                                 method = "Nelder-Mead" )$par ) ) )
+            if ( class( samples.fit ) == "try-error" ){
+                errors <- c( NaN, NaN, NaN, NaN )
+            } else {
+                errors <- data.frame( sqrt( stats::var( Reduce( rbind, samples.fit )[ , 1 ] ) ),
+                                     sqrt( stats::var( Reduce( rbind, samples.fit )[ , 2 ] ) ),
+                                     sqrt( stats::var( Reduce( rbind, samples.fit )[ , 2 ] ) ) )
+                for ( rr in 1 : length( return.period ) )
+                    errors <- cbind( errors, sqrt( stats::var( Reduce( c, lapply( samples.fit, function( z )
+                        rlevd( z, return.period = return.period[ rr ] ) ) ) ) ) )
+            }
             names( errors ) <- c( "location", "scale", "shape", paste0( return.period, ".rlevel" ) )
         } else {
             ## Calculating the errors using the MLE
@@ -90,11 +103,19 @@ gev.fit <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
         }
         res.optim$se <- errors
     } else {
-        res.optim <- stats::optim( initial, optim.function, gr = gradient.function, x = x,
-                                  hessian = TRUE, ... )
-        if ( rerun )
-            res.optim <- stats::optim( res.optim$par, optim.function, gr = gradient.function,
-                                      x = x, hessian = TRUE, ... )
+        suppressWarnings(
+            res.optim <- stats::optim( initial, optim.function, gr = gradient.function, x = x,
+                                      hessian = TRUE, ... ) )
+        if ( rerun ){
+            suppressWarnings( 
+                res.optim.rerun <- try( stats::optim( par = res.optim$par, fn = optim.function,
+                                                     gr = gradient.function, x = x, hessian = TRUE,
+                                                     ... ), silent = TRUE ) )
+            if ( class( res.optim.rerun ) == "try-error" ){
+                warning( "Rerun failed. Be sure to use the Nelder-Mead method of optimization." )
+            } else
+                res.optim <- res.optim.rerun
+        }
         res.optim$se <- NULL
     }
     ## Naming of the resulting fit parameter (necessary for a correct conversion with as.fevd)
