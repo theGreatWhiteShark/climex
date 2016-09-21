@@ -280,7 +280,7 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
                                               value = data.temp[[ ll ]], row.names = NULL ),
                                   file = paste0( "csv_dwd/", dd, "/",
                                                 strRep( names( data.temp )[ ll ], "/", "-" ), ".csv" ),
-                                  row.names = FALSE)
+                                  sep = " ", row.names = FALSE)
         }
     }   
     ## delete all folders
