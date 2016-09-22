@@ -1,17 +1,17 @@
 ##' @title download.data.dwd
 ##' @description Downloads daily weather data from observation stations in Germany and extracts minimum and maximum temperature as well as precipitation data
 ##'
-##' @details The download will be done using 'wget'. Per default the CLIMEX.PATH variable will be used to set the download path. Since this function will check the files already present it's strongly recommended to use the save.downloads options. Whenever this function is invoked again only updated files will be downloaded which saves a lot of traffic and time. The csv.export option can be used to export the time series into a csv type file making it available outside of R too. 
+##' @details The download will be done using 'wget'. Per default the CLIMEX.PATH variable will be used to set the download path. Since this function will check the files already present it's strongly recommended to use the save.downloads options. Whenever this function is invoked again only updated files will be downloaded which saves a lot of traffic and time. The data.export option can be used to export the time series into a data type file making it available outside of R too. 
 ##'
 ##' @param save.downloads If TRUE the downloaded .zip files are stored in download.path/downloads_dwd. Else they will be deleted after the extracting. Default = TRUE.
 ##' @param download.path Specifies the data will be stored and downloaded too. It is advised to store it using the global variable CLIMEX.PATH which is also used for importing the saved data.
-##' @param csv.export If TRUE creates an additional folder containing csv files with the individual station data. Using this the data can be used outside of R too. Default = FALSE.
+##' @param data.export If TRUE creates an additional folder containing .dat files with the individual station data. Using this the data can be used outside of R too. Default = FALSE.
 ##' @param data.type Specifies which kind of information from the downloaded files should be extracted. This input can be a character vector  The options are: temp.max, temp.min, prec, default (for both the daily maximum and minimum temperature and the precipitation), temp.mean, vapor.pressure, cloud.amount, air.pressure, relative.humidity, wind.speed, temp.min.at.ground, wind.speed.peak, prec.type (0 = no precipitation, 1 = only rain (before 1979), 2 = unknown, 4 = only rain (after 1979), 7 = only snow, 8 = snow or rain), sunshine.duration, snow.height. Default = default.
 ##'
 ##' @return invisible setwd()
 ##' @author Philipp Mueller 
 download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PATH,
-                              csv.export = FALSE,
+                              data.export = FALSE,
                               data.type = c( "default", "temp.max", "temp.min", "prec", "temp.mean",
                                             "vapor.pressure", "cloud.amount", "air.pressure",
                                             "relative.humidity", "wind.speed", "temp.min.at.ground",
@@ -74,8 +74,8 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
         dir.create( "./recent" )
     if ( !dir.exists( "./historical" ) )
         dir.create( "./historical" )
-    if ( csv.export && !dir.exists( "./csv_dwd" ) )
-        dir.create( "./csv_dwd" )
+    if ( data.export && !dir.exists( "./data_dwd" ) )
+        dir.create( "./data_dwd" )
 
     download.content <- function( url.base, url.files ){
         for ( ff in url.files[[ 1 ]] ){
@@ -268,18 +268,18 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
         names( tmp ) <- station.names
         assign( ss, tmp )
     }
-    ## writing the data to csv files
-    if ( csv.export ){
+    ## writing the data to dat files
+    if ( data.export ){
         ## creating a distinct folder for all the different data types
         for ( dd in data.type ){
-            if ( !dir.exists( paste0( "csv_dwd/", dd ) ) )
-                dir.create( paste0( "csv_dwd/", dd ) )
+            if ( !dir.exists( paste0( "data_dwd/", dd ) ) )
+                dir.create( paste0( "data_dwd/", dd ) )
             data.temp <- get( paste0( "stations.", dd ) )
             for ( ll in 1 : length( data.temp ) )
-                utils::write.csv2( data.frame( date = index( data.temp[[ ll ]] ),
+                utils::write.table( data.frame( date = index( data.temp[[ ll ]] ),
                                               value = data.temp[[ ll ]], row.names = NULL ),
-                                  file = paste0( "csv_dwd/", dd, "/",
-                                                strRep( names( data.temp )[ ll ], "/", "-" ), ".csv" ),
+                                  file = paste0( "data_dwd/", dd, "/",
+                                                strRep( names( data.temp )[ ll ], "/", "-" ), ".dat" ),
                                   sep = " ", row.names = FALSE)
         }
     }   
