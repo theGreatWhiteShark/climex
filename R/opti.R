@@ -60,7 +60,7 @@ gev.fit <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
         }
         error.covariance <- try( solve( res.optim$hessian ) )
         if ( class( error.covariance ) == "try-error" || error.estimation == "MC" ||
-            any( is.nan( res.optim$hessian ) ) ){
+             any( is.nan( res.optim$hessian ) ) ){
             parameter.estimate <- res.optim$par
             number.of.samples <- 1000
             ## Draw a number of samples and fit the GEV parameters for all of them
@@ -77,7 +77,7 @@ gev.fit <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
             } else {
                 errors <- data.frame( sqrt( stats::var( Reduce( rbind, samples.fit )[ , 1 ] ) ),
                                      sqrt( stats::var( Reduce( rbind, samples.fit )[ , 2 ] ) ),
-                                     sqrt( stats::var( Reduce( rbind, samples.fit )[ , 2 ] ) ) )
+                                     sqrt( stats::var( Reduce( rbind, samples.fit )[ , 3 ] ) ) )
                 for ( rr in 1 : length( return.period ) )
                     errors <- cbind( errors, sqrt( stats::var( Reduce( c, lapply( samples.fit, function( z )
                         rlevd( z, return.period = return.period[ rr ] ) ) ) ) ) )
