@@ -344,7 +344,7 @@ climex <- function( x.input = NULL ){
     source.data( pick.default = TRUE )
     if ( !is.null( x.input ) ){
         if ( any( class( x.input ) == c( "xts") ) ) {
-            x.block <<- x.input
+            x.block <<- block( x.input )
             x.input <<- x.input
             type.input <<- "single"
         } else if ( class( x.input ) == "list" &&
