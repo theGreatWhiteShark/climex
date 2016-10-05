@@ -2,17 +2,17 @@ Package: climex
 Type: Package
 Title: Climate Change and Extreme Events
 Version: 0.8.0
-Date: 2016-12-08
+Date: 2016-10-05
 LazyData: true
 Authors@R: person("Philipp","Developer", role = c("aut","cre"),
     email = "thetruephil@googlemail.com")
 Author: Philipp Mueller
 Maintainer: Philipp Mueller <thetruephil@googlemail.com>
-Description: Provides tools for the maximum likelihood fit of GEV functions
+Description: Provides tools for maximum likelihood fittin of GEV functions
     of time series. It also contains a shiny app easing the use of extreme
     value analysis.
 URL: https://github.com/philmu/climex
-Depends:
+Imports:
     R(>= 3.0.1),
     xtable,
     lubridate,
