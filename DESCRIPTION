@@ -12,8 +12,9 @@ Description: Provides tools for maximum likelihood fittin of GEV functions
     of time series. It also contains a shiny app easing the use of extreme
     value analysis.
 URL: https://github.com/philmu/climex
+Depends:
+    R(>= 3.0.1)
 Imports:
-    R(>= 3.0.1),
     xtable,
     lubridate,
     pracma,
