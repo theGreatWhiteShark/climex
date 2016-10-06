@@ -1,5 +1,4 @@
-##' @title aic
-##' @description Calculates the Akaike information criterion of a gev.fit or climex.gev.fit object.
+##' @title  Calculates the Akaike information criterion of a gev.fit or climex.gev.fit object.
 ##' @details The climex.gev.fit object is of identical structure as the output of the optim() function.
 ##' 
 ##' @param x Optim()like fit of a time series.
@@ -19,8 +18,7 @@ aic <- function( x ){
         2* x$nllh + 2* length( x$mle )
 }
 
-##' @title bic
-##' @description Calculates the Bayesian information criterion of a gev.fit or climex.gev.fit object.
+##' @title Calculates the Bayesian information criterion of a gev.fit or climex.gev.fit object.
 ##' @details The climex.gev.fit object is of identical structure as the output of the optim() function. In contrast to the aic the time series itself has to provided too.
 ##'
 ##' @param x Optim()like fit of a time series.
@@ -40,14 +38,16 @@ bic <- function( x, time.series = NULL ){
         2* x$nllh + length( x$mle )* log( length( x$data ) )
 }
 
-##' @title remove.incomplete.years
-##' @description Removes all years which contain either a NA or -999 or are incomplete. This procedure is done before extracting the seasonal component of the data.
+##' @title Removes all years which contain either a NA or -999 or are incomplete.
 ##'
 ##' @param x Time series. Currently only works with the class xts since reference date in other objects is rather hard to get.
 ##'
 ##' @seealso \code{\link{remove.seasonality}}
 ##'
 ##' @family ts
+##' @export
+##' @import xts
+##' @import lubridate
 ##' 
 ##' @return Time series of class xts
 ##' @author Philipp Mueller
@@ -79,15 +79,16 @@ remove.incomplete.years <- function( x ){
     return( x )
 }
 
-##' @title remove.seasonality
-##' @description Calculates the seasonal component of a time series and subtracts it from the original 
+##' @title Calculates the seasonal component of a time series and subtracts it from the original.
 ##'
 ##' @details Only time series of class "xts" are accepted (on purpose because I want to get rid of handling both objects of class "ts" and "xts"). For now stats::stl with s.window = 12 and a conversion of the input into a ts object of daily data is used to calculate the seasonal component. This should be replaced by a more sophisticated solution as soon I digged deeper into the field of deseasonalization. \code{\link{remove.incomplete.years}} is used to remove incomplete years from the data set. This ensures a better calculation of the seasonal component but also requires to forecast it to the length of the original data set and align it at the right place for subtraction.
 ##'
 ##' @param x Time series of class "xts"
 ##'
 ##' @family ts
-##' 
+##'
+##' @import xts
+##' @import lubridate
 ##' @return Deseasonalized time series of class "xts".
 ##' @author Philipp Mueller
 remove.seasonality <- function( x ){
@@ -172,6 +173,10 @@ remove.seasonality <- function( x ){
     return( list( x = x, modified = MODIFIED ) )
 }
 
+##' @title Calculates the mode of a PDF
+##'
+##' @return Numerical
+##' @author Philipp Mueller 
 mode <- function( x ){
     ## Approximation of the mode (most probable/frequent element) of a time series
     ## Working with unique() does not yield good results for a sample of a continuous distribution
@@ -181,14 +186,16 @@ mode <- function( x ){
     return( x.pdf$x[ which.max( x.pdf$y ) ] )
 }
 
-##' @title anomalies
-##' @description Is generating the anomalies of a time series 
+##' @title Calculates the anomalies of a time series.
 ##'
 ##' @details Construction via the subtraction of the mean (temperature) value of the specific date. I don't really like this one. Maybe try to add a weighting function with sharp bandwidth instead. Uses the lubridate::yday()
 ##'
 ##' @param x Time series of the class 'xts'.
 ##'
 ##' @family ts
+##' @export
+##' @import xts
+##' @importFrom lubridate yday
 ##' 
 ##' @return Time series of the class 'xts' of the same length as x containing the anomalies of the series.
 ##' @author Philipp Mueller

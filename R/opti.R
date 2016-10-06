@@ -1,5 +1,4 @@
-##' @title gev.fit
-##' @description Optimization of a given data set.
+##' @title Performing a fit to the GEV function.
 ##'
 ##' @details Custom fitting of the GEV function including the estimation of the initial conditions. Per default the optimization is run twice to prevent getting trapped in local minima of the negative log-likelihood function. The output is of optim style. But the errors of the fitting are also provided as well as the estimates and the errors of some specified return levels.
 ##'
@@ -28,6 +27,8 @@
 ##'  \item{ x = Original time series }
 ##' }
 ##' @author Philipp Mueller
+##' @export
+##' @import xts
 ##' @examples
 ##' potsdam.anomalies <- anomalies( temp.potsdam )
 ##' potsdam.blocked <- block( potsdam.anomalies )
@@ -79,7 +80,8 @@ gev.fit <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
                                      sqrt( stats::var( Reduce( rbind, samples.fit )[ , 2 ] ) ),
                                      sqrt( stats::var( Reduce( rbind, samples.fit )[ , 3 ] ) ) )
                 for ( rr in 1 : length( return.period ) )
-                    errors <- cbind( errors, sqrt( stats::var( Reduce( c, lapply( samples.fit, function( z )
+                    errors <- cbind( errors, sqrt( stats::var(
+                                                 Reduce( c, lapply( samples.fit, function( z )
                         rlevd( z, return.period = return.period[ rr ] ) ) ) ) ) )
             }
             names( errors ) <- c( "location", "scale", "shape", paste0( return.period, ".rlevel" ) )
@@ -131,8 +133,7 @@ gev.fit <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
     return( res.optim )
 }
 
-##' @title likelihood
-##' @description Calculated the negative log likelihood of the GEV function for Weibull and Frechet typed functions and for Gumbel types functions.
+##' @title Calculated the negative log likelihood of the GEV function.
 ##'
 ##' @details This function is only meant to work with constant parameters and no covariats. x.in is not called "x" anymore since the call grad( func = likelihood, x = parameters, ... ) wouldn't be possible.
 ##'
@@ -142,6 +143,7 @@ gev.fit <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
 ##' 
 ##' @family optimization
 ##'
+##' @export
 ##' @return Numerical value of the negative log likelihood
 ##' @author Philipp Mueller
 likelihood <- function( parameters = NULL, x.in, verbose = FALSE ){
@@ -174,8 +176,7 @@ likelihood <- function( parameters = NULL, x.in, verbose = FALSE ){
     return( negloglikelihood )
 }
 
-##' @title likelihood.gradient
-##' @description Calculates the gradient of the negative log likelihood.
+##' @title Calculates the gradient of the negative log likelihood of the GEV function.
 ##'
 ##' @details Like \code{\{link{likelihood}} the quantity min.shape switches between the evaluation according to a Gumbel or a Frechet or Weibull like function. In the case of the Gumbel like type the gradient of the shape parameter is set to zero.  
 ##'
@@ -214,8 +215,7 @@ likelihood.gradient <- function( parameters, x.in ){
     return( gradient )
 }
 
-##' @title likelihood.initials
-##' @description Estimates the initial GEV parameters of a time series
+##' @title Estimates the initial GEV parameters of a time series.
 ##'
 ##' @details Two main methods are used for the estimation: the L-moments method of Hosking & Wallis implemented in the extRemes::initializer.lmoments() function and an estimation using the first two moments of the Gumbel distribution. For the later one a modification was added: By looking at skewness of the distribution and with respect to some heuristic thresholds a shape parameter between -.4 and .2 is assigned. Warning: both methods do not work for samples with diverging (or pretty big) mean or variance. For this reason the restrict argument is included. If the estimates are bigger than the corresponding restrict.thresholds, they will be replaced by this specific value.
 ##'
@@ -226,7 +226,8 @@ likelihood.gradient <- function( parameters, x.in ){
 ##' @param restrict.thresholds Maximal value for each of the estimates. Default = c( 50, 50, 5 )
 ##'
 ##' @family optimization
-##' 
+##'
+##' @export
 ##' @return Numerical vector containing the c( location, scale, shape ) estimate.
 ##' @author Philipp Mueller
 likelihood.initials <- function( x, type = c( "best", "mom", "lmom" ), modified = TRUE, restrict = FALSE, restrict.thresholds = c( 1000, 500, 3 ) ){

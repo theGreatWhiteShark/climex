@@ -1,8 +1,8 @@
 Package: climex
 Type: Package
 Title: Climate Change and Extreme Events
-Version: 0.8.0
-Date: 2016-10-05
+Version: 0.8.1
+Date: 2016-10-06
 LazyData: true
 Authors@R: person("Philipp","Developer", role = c("aut","cre"),
     email = "thetruephil@googlemail.com")
@@ -13,7 +13,8 @@ Description: Provides tools for maximum likelihood fittin of GEV functions
     value analysis.
 URL: https://github.com/philmu/climex
 Depends:
-    R(>= 3.0.1)
+    R(>= 3.0.1),
+    xts
 Imports:
     xtable,
     lubridate,
@@ -26,8 +27,6 @@ Imports:
     extRemes,
     inline,
     markdown,
-    zoo,
-    xts,
     dygraphs,
     parallel,
     shiny,

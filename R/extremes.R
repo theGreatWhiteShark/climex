@@ -1,24 +1,21 @@
-##' @title block
-##' @description Separates the input into blocks of equal size and returns the maximum or minimum of the block as result.
+##' @title Separates the input into blocks of equal size and returns the maximum or minimum of the block as result.
 ##'
-##' @details If 'separation.mode' is set to "years" the data is separated according to its time stamps. If not the size of a block is determined by the 'block.length' parameter or calculated via the 'block.number' parameter. This is done for data of class 'xts'. For calculating the mean of the blocks have a look at the \code{\link{stats::ave}} function.
+##' @details If 'separation.mode' is set to "years" the data is separated according to it's time stamps. If not the size of a block is determined by the 'block.length' parameter or calculated via the 'block.number' parameter. For calculating the mean of the blocks have a look at the \code{\link{stats::ave}} function.
 ##' 
-##' @param input.bulk Provided data. Preferably of class 'xts' but also backward compatible.
+##' @param input.bulk Provided data of class 'xts'.
 ##' @param block.number Specifies the number of blocks the input data is going to be separated in.
 ##' @param block.length Length of the blocks. For the sake of simplicity the last block is not forced to match the length of the other plots.
 ##' @param block.mode This parameter determines if the maximum "max" or the minimum "min" of a block shall be returned. Default: "max".
-##' @param separation.mode "years" is used to split the data according to its date values instead.
-##' @return Of class 'xts' if a 'xts' object was provided or of class 'numeric' else.
+##' @param separation.mode "years" is used to split the data according to its date values instead. If 'block.length' or 'block.number' is specified this argument will not be considered and set to "none". Default = "years".
+##' @return Of class 'xts'.
 ##' @family extremes
 ##' @author Philipp Mueller
+##' @export
+##' @import xts
+##' 
 ##' @examples
 ##' block( temp.potsdam )
-block <- function( input.bulk, block.number = round( nrow( input.bulk )/ 50 ), block.length = NULL,
-                  block.mode = c( "max", "min" ),
-                  separation.mode = c( "weeks", "months", "years", "quarterly"  ) ){
-    UseMethod( "block" )
-}
-block.xts <- function( input.bulk, block.number = round( length( input.bulk )/ 50 ),
+block <- function( input.bulk, block.number = round( length( input.bulk )/ 50 ),
                       block.length = NULL, block.mode = c( "max", "min" ),
                       separation.mode = c( "years", "none" ) ){
     ## Initializing. The 'block.length' is the most important parameter
@@ -63,44 +60,8 @@ block.xts <- function( input.bulk, block.number = round( length( input.bulk )/ 5
     extremes.xts <- xts( input.extremes[[ 2 ]] , order.by = as.Date( input.extremes[[ 1 ]] ) )
     return( extremes.xts )
 }
-block.default <- function( input.bulk, block.number = round( length( input.bulk )/ 50 ),
-                          block.length = NULL, block.mode = c( "max", "min" ),
-                          separation.mode = c( "weeks", "months", "years", "quarterly" ) ){
-    ## In this method for numerical data the time based separation.modes are not allowed anymore.
-    if ( !missing( block.length ) || !missing( block.number ) ){
-        if ( !is.null( block.length ) ){
-            block.number <- floor( length( input.bulk )/ block.length ) + 1
-        } else {
-            ## separation according to the number of blocks is used
-            if ( block.number <= 1 )
-                stop( "Provide a block number greater than 1!" )
-            if ( block.number* 5 > length( input.bulk ) )
-                warning( "There are less than five times data points than actual blocks. This are many of blocks." )
-            block.length <- length( input.bulk )/ ( block.number ) + 1/ ( block.number ) }        
-    } else
-        stop( "No block length or number of blocks provided to block" )
-    if ( missing( block.mode ) )
-        block.mode <- "max"
-    block.mode <- match.arg( block.mode )
-    ## according to the desired block.length the data is now separated into snippets and those
-    ## are saved inside a list
-    ## All data belonging to the same block share the same index value
-    input.index <- data.frame( value = input.bulk,
-                              index =  floor( ( seq( 1 : length( input.bulk ) ) - 1 )/
-                                              block.length ) + 1 )
-    input.blocked <- split( input.index,input.index$index )
-    ## Extract the maxima or minima from the blocked data
-    if ( block.mode == "max" ){
-        input.extremes <- Reduce( c, lapply( input.blocked, function( x ){
-             x[ which.max( x[[ 1 ]] ), 1 ] } ) )
-    } else 
-        input.extremes <- Reduce( c, lapply( input.blocked, function( x ){
-            x[ which.min( x[[ 1 ]] ), 1 ] } ) )
-    return( input.extremes )
-}
 
-##' @title find.block.length
-##' @description Finding the appropriate block length before applying GEV fitting. 
+##' @title Finding the appropriate block length before applying GEV fitting. 
 ##'
 ##' @details Function fits GEV using gev.fit() after applying various block lengths and returns summary statistics. After a sufficient high block length the parameters of the distribution should converge. Function is implemented for inputs of the classes "xts" and "ts".
 ##' 
@@ -124,7 +85,9 @@ block.default <- function( input.bulk, block.number = round( length( input.bulk 
 ##'  \item{ nllh = Negative log-likelihood of the applied fit. }
 ##'  \item{ AIC = Akaike information criterion of the applied fit. }
 ##'  \item{ BIC = Bayesian information criterion of the applied fit. }
-##' }   
+##' }
+##' @import xts
+##' @import ggplot2
 ##' @author Philipp Mueller
 find.block.length <- function( x, size.low = 20, size.high = 400, return.period = 100,
                               plot = TRUE, main = NULL ){
@@ -203,8 +166,8 @@ find.block.length <- function( x, size.low = 20, size.high = 400, return.period 
     }
     return( gev.sum )
 }
-##' @title decluster
-##' @description Decluster point over threshold data used for GP fitting.
+
+##' @title Decluster point over threshold data used for GP fitting.
 ##'
 ##' @details Inspired by the decluster algorithm used in the extRemes package
 ##'
@@ -212,6 +175,8 @@ find.block.length <- function( x, size.low = 20, size.high = 400, return.period 
 ##' @param threshold Has to be set sufficient high to fulfill the asymptotic condition for the GP distribution.
 ##'
 ##' @return Declustered values above the provided threshold (xts).
+##' @export
+##' @import xts
 ##' @author Philipp Mueller 
 decluster <- function( x, threshold ){
     ## Caution: x is the full time series and not the blocked one!
@@ -238,10 +203,9 @@ decluster <- function( x, threshold ){
     x.result[ which.x.over.threshold ] <- x.over.threshold
 }
 
-##' @title rlevd
-##' @description Calculation of the return levels.
+##' @title Calculation of the return levels.
 ##'
-##' @details Uses the extRemes::rlevd function at its core but also can handle multiple versions of the parameter input (as numeric, or direct outputs of various fitting procedures), is capable of calculating numerous return levels at once and also calculates the errors of the return levels. For the errors the ML fit is using the option hessian=TRUE (if not done already) or uses a Monte Carlo based approach. If no fitting object is provided, no errors will be calculated. The calculation of the error only works for objects fitted by gev.fit and not for ones fitted by foreign packages.
+##' @details Uses the extRemes::rlevd function at its core but also can handle multiple versions of the parameter input (as numeric, or direct outputs of various fitting procedures), is capable of calculating numerous return levels at once and also calculates the errors of the return levels. For the errors the ML fit is using the option hessian=TRUE (if not done already) or uses a Monte Carlo based approach. If no fitting object is provided, no errors will be calculated. The calculation of the error only works for objects fitted by gev.fit and not for ones fitted by foreign packages. Since it is also able of calculating the return levels for the output of the *extRemes::fevd()* function I decided to mask the original function from this package.
 ##'
 ##' @param x Parameter input. Class numeric, climex.gev.fit, gev.fit (ismev) or fevd (extRemes)
 ##' @param return.period Numeric vector of the return periods the return levels should be calculated at. Default = 100.
@@ -309,7 +273,7 @@ rlevd <- function( x, return.period = 100, error.estimation = c( "none", "MC", "
             errors <- cbind( errors, sqrt( stats::var( Reduce( c, lapply( samples.fit, function( z )
                 rlevd( z, return.period = return.period[ rr ] ) ) ) ) ) )
         errors <- errors[ , -1 ]
-        names( errors ) <-paste0( return.period, ".rlevel" )
+        names( errors ) <- paste0( return.period, ".rlevel" )
     }
     return( list( return.levels = return.levels, errors = errors ) )
 }

@@ -1,5 +1,4 @@
-##' @title nmk.modified
-##' @description dfoptim::nmk which outputs the parameter vector of every optimization step
+##' @title dfoptim::nmk which outputs the parameter vector of every optimization step
 ##'
 ##' @details See \code{\link{dfoptim::nmk}}. This version incorporates a modified step for avoiding the forbidden region. Its activated by setting MODIFIED to TRUE. Since its always about the likelihood function its x argument also will be provided explicitly (much nicer for debugging; modified regions indicated by MOD)
 ##'
@@ -328,8 +327,7 @@ nmk.modified <- function ( par = likelihood.initials( x ), fn = likelihood, x, M
     return( res )        
 }
 
-##' @title rcgmin
-##' @description R version of conjugated gradient algorithm
+##' @title R version of conjugated gradient algorithm
 ##'
 ##' @details Modified for my own needs (e.g. x as an input)
 ##'

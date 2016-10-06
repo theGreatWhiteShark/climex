@@ -2,7 +2,7 @@
 % Please edit documentation in R/ts.R
 \name{bic}
 \alias{bic}
-\title{bic}
+\title{Calculates the Bayesian information criterion of a gev.fit or climex.gev.fit object.}
 \usage{
 bic(x, time.series = NULL)
 }
@@ -13,9 +13,6 @@ bic(x, time.series = NULL)
 }
 \value{
 Numeric value
-}
-\description{
-Calculates the Bayesian information criterion of a gev.fit or climex.gev.fit object.
 }
 \details{
 The climex.gev.fit object is of identical structure as the output of the optim() function. In contrast to the aic the time series itself has to provided too.
@@ -28,6 +25,6 @@ Philipp Mueller
 
 Other ts: \code{\link{aic}}, \code{\link{anomalies}},
   \code{\link{remove.incomplete.years}},
-  \code{\link{remove.seasonality}}, \code{\link{ts.swap}}
+  \code{\link{remove.seasonality}}
 }
 

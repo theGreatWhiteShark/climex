@@ -7,6 +7,7 @@
 ##' @family conversion utils
 ##'
 ##' @return Returns input in same format with second column of class date
+##' @import lubridate
 ##' @author Philipp Mueller
 convert.date <- function( input.data, origin = "1970-01-01" ){
     UseMethod( "convert.date" )
@@ -33,8 +34,7 @@ convert.date.Date <- function( input.data, origin = "1970-01-01"  ){
     return( output.data )
 }
 
-##' @title as.fevd
-##' @description Converts fit done by \code{\link{optim}} into an object which can be used by the functions of the package extRemes
+##' @title Converts fits done by \code{\link{optim}} into an object which can be used by the functions of the extRemes package
 ##'
 ##' @details Caution: the fit performed by the fevd function also calculates the hessian matrix. The element 'initial.results' contains the initial values of the GEV parameters calculated via the heuristic formula of the moments and the lmoments method. But I don't see a point right now to implement this too. In addition 'call' is not a real call.
 ##'

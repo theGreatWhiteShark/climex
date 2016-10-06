@@ -2,7 +2,7 @@
 % Please edit documentation in R/opti.R
 \name{likelihood.initials}
 \alias{likelihood.initials}
-\title{likelihood.initials}
+\title{Estimates the initial GEV parameters of a time series.}
 \usage{
 likelihood.initials(x, type = c("best", "mom", "lmom"), modified = TRUE,
   restrict = FALSE, restrict.thresholds = c(1000, 500, 3))
@@ -20,9 +20,6 @@ likelihood.initials(x, type = c("best", "mom", "lmom"), modified = TRUE,
 }
 \value{
 Numerical vector containing the c( location, scale, shape ) estimate.
-}
-\description{
-Estimates the initial GEV parameters of a time series
 }
 \details{
 Two main methods are used for the estimation: the L-moments method of Hosking & Wallis implemented in the extRemes::initializer.lmoments() function and an estimation using the first two moments of the Gumbel distribution. For the later one a modification was added: By looking at skewness of the distribution and with respect to some heuristic thresholds a shape parameter between -.4 and .2 is assigned. Warning: both methods do not work for samples with diverging (or pretty big) mean or variance. For this reason the restrict argument is included. If the estimates are bigger than the corresponding restrict.thresholds, they will be replaced by this specific value.

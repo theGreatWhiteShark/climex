@@ -2,10 +2,10 @@
 % Please edit documentation in R/utils.R
 \name{as.fevd}
 \alias{as.fevd}
-\title{as.fevd}
+\title{Converts fits done by \code{\link{optim}} into an object which can be used by the functions of the extRemes package}
 \usage{
-as.fevd(x, fit = optim(x), call = "fevd(x = x)", data.name = c("x", ""),
-  weights = 1, in.data = FALSE, method = "MLE", type = "GEV",
+as.fevd(x, fit = stats::optim(x), call = "fevd(x = x)", data.name = c("x",
+  ""), weights = 1, in.data = FALSE, method = "MLE", type = "GEV",
   period.basis = "year", par.models = list(threshold = ~1, location = ~1,
   scale = ~1, log.scale = FALSE, shape = ~1, term.names = list(threshold =
   character(0), location = character(0), scale = character(0), shape =
@@ -21,9 +21,6 @@ as.fevd(x, fit = optim(x), call = "fevd(x = x)", data.name = c("x", ""),
 }
 \value{
 Of class "fevd"
-}
-\description{
-Converts fit done by \code{\link{optim}} into an object which can be used by the functions of the package extRemes
 }
 \details{
 Caution: the fit performed by the fevd function also calculates the hessian matrix. The element 'initial.results' contains the initial values of the GEV parameters calculated via the heuristic formula of the moments and the lmoments method. But I don't see a point right now to implement this too. In addition 'call' is not a real call.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/hacks.R
 \name{rcgmin}
 \alias{rcgmin}
-\title{rcgmin}
+\title{R version of conjugated gradient algorithm}
 \usage{
 rcgmin(par = likelihood.initials(x), fn = likelihood,
   gr = likelihood.gradient, x, control = list(), ...)
@@ -20,9 +20,6 @@ rcgmin(par = likelihood.initials(x), fn = likelihood,
 }
 \value{
 List. Containing e.g. the fitted parameters in the element 'par'.
-}
-\description{
-R version of conjugated gradient algorithm
 }
 \details{
 Modified for my own needs (e.g. x as an input)

@@ -2,10 +2,10 @@
 % Please edit documentation in R/plot.R
 \name{multiplot}
 \alias{multiplot}
-\title{multiplot}
+\title{This function takes several plot of the ggplot2 and arranges them on one page.}
 \usage{
-multiplot(tt.title = main, main = NULL, ..., plotlist = NULL, file,
-  cols = 1, layout = NULL)
+multiplot(tt.title = main, main = NULL, ..., plotlist = NULL, cols = 1,
+  layout = NULL)
 }
 \arguments{
 \item{tt.title}{Same as 'main'.}
@@ -16,8 +16,6 @@ multiplot(tt.title = main, main = NULL, ..., plotlist = NULL, file,
 
 \item{plotlist}{alternative way to pass ggplot objects.}
 
-\item{file}{No idea.}
-
 \item{cols}{Number of columns in layout. Default = 1.}
 
 \item{layout}{A matrix specifying the layout. If present, 'cols' is ignored.}
@@ -25,11 +23,8 @@ multiplot(tt.title = main, main = NULL, ..., plotlist = NULL, file,
 \value{
 print object.
 }
-\description{
-This function takes several plot of the ggplot2 and arranges them on one page. Usage e.g. multiplot( p1, p2, p3, p4, col = 2)
-}
 \details{
-If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE), then plot 1 will go in the upper left, 2 will go in the upper right, and 3 will go all the way across the bottom. ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects). Imports the grid library.
+Well, it is not really related to extreme value fitting and I am aware of the fact that its quite bad style to export auxiliary functions. But this one is just so handy. If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE), then plot 1 will go in the upper left, 2 will go in the upper right, and 3 will go all the way across the bottom. ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects). Imports the grid library.
 }
 \examples{
 anomalies.potsdam <- anomalies( temp.potsdam )

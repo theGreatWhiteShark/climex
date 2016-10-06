@@ -12,6 +12,7 @@ vignette: >
 ## Data import and cleaning
 In this basic tutorial I assume the usage of the data downloaded in the first tutorial called *Downloading and formatting of the weather data of the DWD*. Here we will use the daily maximal temperature data.
 ```{r}
+require( climex )
 source.data()
 data.list <- stations.temp.max
 ```

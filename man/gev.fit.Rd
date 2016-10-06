@@ -2,7 +2,7 @@
 % Please edit documentation in R/opti.R
 \name{gev.fit}
 \alias{gev.fit}
-\title{gev.fit}
+\title{Performing a fit to the GEV function.}
 \usage{
 gev.fit(x, initial = NULL, rerun = TRUE, optim.function = likelihood,
   gradient.function = likelihood.gradient, error.estimation = c("MLE", "MC",
@@ -40,9 +40,6 @@ Output of the optim function with class == c( "list", "climex.gev.fit" )
  \item{ se = Standard error of the GEV parameters and the return levels }
  \item{ x = Original time series }
 }
-}
-\description{
-Optimization of a given data set.
 }
 \details{
 Custom fitting of the GEV function including the estimation of the initial conditions. Per default the optimization is run twice to prevent getting trapped in local minima of the negative log-likelihood function. The output is of optim style. But the errors of the fitting are also provided as well as the estimates and the errors of some specified return levels.

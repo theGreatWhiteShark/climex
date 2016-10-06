@@ -2,7 +2,7 @@
 % Please edit documentation in R/opti.R
 \name{likelihood}
 \alias{likelihood}
-\title{likelihood}
+\title{Calculated the negative log likelihood of the GEV function.}
 \usage{
 likelihood(parameters = NULL, x.in, verbose = FALSE)
 }
@@ -15,9 +15,6 @@ likelihood(parameters = NULL, x.in, verbose = FALSE)
 }
 \value{
 Numerical value of the negative log likelihood
-}
-\description{
-Calculated the negative log likelihood of the GEV function for Weibull and Frechet typed functions and for Gumbel types functions.
 }
 \details{
 This function is only meant to work with constant parameters and no covariats. x.in is not called "x" anymore since the call grad( func = likelihood, x = parameters, ... ) wouldn't be possible.

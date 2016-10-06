@@ -2,7 +2,7 @@
 % Please edit documentation in R/extremes.R
 \name{decluster}
 \alias{decluster}
-\title{decluster}
+\title{Decluster point over threshold data used for GP fitting.}
 \usage{
 decluster(x, threshold)
 }
@@ -13,9 +13,6 @@ decluster(x, threshold)
 }
 \value{
 Declustered values above the provided threshold (xts).
-}
-\description{
-Decluster point over threshold data used for GP fitting.
 }
 \details{
 Inspired by the decluster algorithm used in the extRemes package

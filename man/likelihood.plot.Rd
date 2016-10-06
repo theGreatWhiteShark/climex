@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{likelihood.plot}
 \alias{likelihood.plot}
-\title{likelihood.plot}
+\title{Generates three 2D slices of the likelihood of a provided time series.}
 \usage{
 likelihood.plot(time.series, location.lim = NULL, scale.lim = NULL,
   shape.lim = NULL, center = NULL, initial = NULL, main = NULL,
@@ -25,8 +25,8 @@ likelihood.plot(time.series, location.lim = NULL, scale.lim = NULL,
 
 \item{true.minima}{Provide the true minima of the neg log-likelihood function if gev.fit does not provide it in the first run. Default = NULL.}
 }
-\description{
-Generates three 2D slices of the likelihood of a provided time series.
+\value{
+returns a multiplot of planes through the negative log-likelihood of the GEV function calculated using the input time series.
 }
 \details{
 The likelihood will be plotted around its optimal value. To determine it the time series will be fitted via \code{\link{gev.fit}}. Its also possible to provide another point the likelihood will be centered around using 'center'.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/ts.R
 \name{remove.incomplete.years}
 \alias{remove.incomplete.years}
-\title{remove.incomplete.years}
+\title{Removes all years which contain either a NA or -999 or are incomplete.}
 \usage{
 remove.incomplete.years(x)
 }
@@ -12,9 +12,6 @@ remove.incomplete.years(x)
 \value{
 Time series of class xts
 }
-\description{
-Removes all years which contain either a NA or -999 or are incomplete. This procedure is done before extracting the seasonal component of the data.
-}
 \author{
 Philipp Mueller
 }
@@ -22,7 +19,6 @@ Philipp Mueller
 \code{\link{remove.seasonality}}
 
 Other ts: \code{\link{aic}}, \code{\link{anomalies}},
-  \code{\link{bic}}, \code{\link{remove.seasonality}},
-  \code{\link{ts.swap}}
+  \code{\link{bic}}, \code{\link{remove.seasonality}}
 }
 

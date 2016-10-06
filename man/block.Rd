@@ -2,14 +2,14 @@
 % Please edit documentation in R/extremes.R
 \name{block}
 \alias{block}
-\title{block}
+\title{Separates the input into blocks of equal size and returns the maximum or minimum of the block as result.}
 \usage{
-block(input.bulk, block.number = round(nrow(input.bulk)/50),
+block(input.bulk, block.number = round(length(input.bulk)/50),
   block.length = NULL, block.mode = c("max", "min"),
-  separation.mode = c("weeks", "months", "years", "quarterly"))
+  separation.mode = c("years", "none"))
 }
 \arguments{
-\item{input.bulk}{Provided data. Preferably of class 'xts' but also backward compatible.}
+\item{input.bulk}{Provided data of class 'xts'.}
 
 \item{block.number}{Specifies the number of blocks the input data is going to be separated in.}
 
@@ -17,16 +17,13 @@ block(input.bulk, block.number = round(nrow(input.bulk)/50),
 
 \item{block.mode}{This parameter determines if the maximum "max" or the minimum "min" of a block shall be returned. Default: "max".}
 
-\item{separation.mode}{"years" is used to split the data according to its date values instead.}
+\item{separation.mode}{"years" is used to split the data according to its date values instead. If 'block.length' or 'block.number' is specified this argument will not be considered and set to "none". Default = "years".}
 }
 \value{
-Same format as iuput.
-}
-\description{
-Separates the input into blocks of equal size and returns the maximum or minimum of the block as result.
+Of class 'xts'.
 }
 \details{
-If 'separation.mode' is set to "years" the data is separated according to its time stamps. If not the size of a block is determined by the 'block.length' parameter or calculated via the 'block.number' parameter. This is done for data of class 'xts'. For calculating the mean of the blocks have a look at the \code{\link{stats::ave}} function.
+If 'separation.mode' is set to "years" the data is separated according to it's time stamps. If not the size of a block is determined by the 'block.length' parameter or calculated via the 'block.number' parameter. For calculating the mean of the blocks have a look at the \code{\link{stats::ave}} function.
 }
 \examples{
 block( temp.potsdam )

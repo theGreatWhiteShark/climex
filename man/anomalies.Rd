@@ -2,7 +2,7 @@
 % Please edit documentation in R/ts.R
 \name{anomalies}
 \alias{anomalies}
-\title{anomalies}
+\title{Calculates the anomalies of a time series.}
 \usage{
 anomalies(x)
 }
@@ -11,9 +11,6 @@ anomalies(x)
 }
 \value{
 Time series of the class 'xts' of the same length as x containing the anomalies of the series.
-}
-\description{
-Is generating the anomalies of a time series
 }
 \details{
 Construction via the subtraction of the mean (temperature) value of the specific date. I don't really like this one. Maybe try to add a weighting function with sharp bandwidth instead. Uses the lubridate::yday()
@@ -24,6 +21,6 @@ Philipp Mueller
 \seealso{
 Other ts: \code{\link{aic}}, \code{\link{bic}},
   \code{\link{remove.incomplete.years}},
-  \code{\link{remove.seasonality}}, \code{\link{ts.swap}}
+  \code{\link{remove.seasonality}}
 }
 

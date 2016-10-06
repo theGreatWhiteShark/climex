@@ -19,11 +19,11 @@ First of all the global variable **CLIMEX.PATH** has to be set. Just add the fol
 CLIMEX.PATH <<- "~/R/climex/"
 if ( !dir.exists( CLIMEX.PATH ) )
     dir.create( CLIMEX.PATH, recursive = TRUE )
+require( climex )
 ```
 
 In the second step open a new R shell, load the climex package and run the command for the data acquisition *download.data.dwd*.
-```{r}
-require( climex )
+```{r, eval = FALSE}
 download.data.dwd() # this will take a while
 ```
 
@@ -40,7 +40,7 @@ On top of all this the function is able to update an existing data base and just
 ## Data usage
 After importing the data it can be loaded via
 
-```{r}
+```{r, eval = FALSE}
 source.data( pick.default = TRUE )
 ```
 If the option *pick.default* is set like in the example above it will just look for the default station data. If the option is set to FALSE an interactive choice we be prompted instead.

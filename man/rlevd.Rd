@@ -2,7 +2,7 @@
 % Please edit documentation in R/extremes.R
 \name{rlevd}
 \alias{rlevd}
-\title{rlevd}
+\title{Calculation of the return levels.}
 \usage{
 rlevd(x, return.period = 100, error.estimation = c("none", "MC", "MLE"),
   monte.carlo.sample.size = 1000)
@@ -19,11 +19,8 @@ rlevd(x, return.period = 100, error.estimation = c("none", "MC", "MLE"),
 \value{
 If error.estimation == "none" a numerical vector containing the estimates of the return levels will be returned. Else a list containing the estimates and their standard errors will be returned.
 }
-\description{
-Calculation of the return levels.
-}
 \details{
-Uses the extRemes::rlevd function at its core but also can handle multiple versions of the parameter input (as numeric, or direct outputs of various fitting procedures), is capable of calculating numerous return levels at once and also calculates the errors of the return levels. For the errors the ML fit is using the option hessian=TRUE (if not done already) or uses a Monte Carlo based approach. If no fitting object is provided, no errors will be calculated. The calculation of the error only works for objects fitted by gev.fit and not for ones fitted by foreign packages.
+Uses the extRemes::rlevd function at its core but also can handle multiple versions of the parameter input (as numeric, or direct outputs of various fitting procedures), is capable of calculating numerous return levels at once and also calculates the errors of the return levels. For the errors the ML fit is using the option hessian=TRUE (if not done already) or uses a Monte Carlo based approach. If no fitting object is provided, no errors will be calculated. The calculation of the error only works for objects fitted by gev.fit and not for ones fitted by foreign packages. Since it is also able of calculating the return levels for the output of the *extRemes::fevd()* function I decided to mask the original function from this package.
 }
 \examples{
 fit.results <- gev.fit( block( anomalies( temp.potsdam ) ) )

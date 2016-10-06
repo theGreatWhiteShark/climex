@@ -2,7 +2,7 @@
 % Please edit documentation in R/hacks.R
 \name{nmk.modified}
 \alias{nmk.modified}
-\title{nmk.modified}
+\title{dfoptim::nmk which outputs the parameter vector of every optimization step}
 \usage{
 nmk.modified(par = likelihood.initials(x), fn = likelihood, x,
   MODIFIED = TRUE, control = list(), ...)
@@ -22,9 +22,6 @@ nmk.modified(par = likelihood.initials(x), fn = likelihood, x,
 }
 \value{
 List of elements see original function. In addition a new element called x.updates is provided containing the parameters at each optimization step. Of class c( "list", "climex.gev.fit" )
-}
-\description{
-dfoptim::nmk which outputs the parameter vector of every optimization step
 }
 \details{
 See \code{\link{dfoptim::nmk}}. This version incorporates a modified step for avoiding the forbidden region. Its activated by setting MODIFIED to TRUE. Since its always about the likelihood function its x argument also will be provided explicitly (much nicer for debugging; modified regions indicated by MOD)

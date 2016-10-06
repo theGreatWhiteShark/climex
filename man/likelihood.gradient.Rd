@@ -2,7 +2,7 @@
 % Please edit documentation in R/opti.R
 \name{likelihood.gradient}
 \alias{likelihood.gradient}
-\title{likelihood.gradient}
+\title{Calculates the gradient of the negative log likelihood of the GEV function.}
 \usage{
 likelihood.gradient(parameters, x.in)
 }
@@ -13,9 +13,6 @@ likelihood.gradient(parameters, x.in)
 }
 \value{
 Numerical vector containing the derivative of the negative log likelihood in (location, scale, shape) direction.
-}
-\description{
-Calculates the gradient of the negative log likelihood.
 }
 \details{
 Like \code{\{link{likelihood}} the quantity min.shape switches between the evaluation according to a Gumbel or a Frechet or Weibull like function. In the case of the Gumbel like type the gradient of the shape parameter is set to zero.

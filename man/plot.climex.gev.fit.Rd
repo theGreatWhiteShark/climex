@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{plot.climex.gev.fit}
 \alias{plot.climex.gev.fit}
-\title{plot.climex.gev.fit}
+\title{Plots the GEV function fitted using \code{\link{gev.fit}}}
 \usage{
 \method{plot}{climex.gev.fit}(x)
 }
@@ -11,9 +11,6 @@
 }
 \value{
 ggplot2 object.
-}
-\description{
-Plots the GEV function fitted using \code{\link{gev.fit}}
 }
 \details{
 Uses ggplot2

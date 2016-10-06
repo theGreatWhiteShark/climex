@@ -2,7 +2,7 @@
 % Please edit documentation in R/extremes.R
 \name{find.block.length}
 \alias{find.block.length}
-\title{find.block.length}
+\title{Finding the appropriate block length before applying GEV fitting.}
 \usage{
 find.block.length(x, size.low = 20, size.high = 400, return.period = 100,
   plot = TRUE, main = NULL)
@@ -36,9 +36,6 @@ Data.frame containing the summary statistic of the analysis:
  \item{ AIC = Akaike information criterion of the applied fit. }
  \item{ BIC = Bayesian information criterion of the applied fit. }
 }
-}
-\description{
-Finding the appropriate block length before applying GEV fitting.
 }
 \details{
 Function fits GEV using gev.fit() after applying various block lengths and returns summary statistics. After a sufficient high block length the parameters of the distribution should converge. Function is implemented for inputs of the classes "xts" and "ts".

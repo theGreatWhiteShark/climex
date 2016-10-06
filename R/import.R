@@ -1,13 +1,14 @@
-##' @title download.data.dwd
-##' @description Downloads daily weather data from observation stations in Germany and extracts minimum and maximum temperature as well as precipitation data
+##' @title Downloads daily weather data from observation stations in Germany and extracts minimum and maximum temperature as well as precipitation data.
 ##'
-##' @details The download will be done using 'wget'. Per default the CLIMEX.PATH variable will be used to set the download path. Since this function will check the files already present it's strongly recommended to use the save.downloads options. Whenever this function is invoked again only updated files will be downloaded which saves a lot of traffic and time. The data.export option can be used to export the time series into a data type file making it available outside of R too. 
+##' @details The download will be done using 'wget'. Per default the CLIMEX.PATH variable will be used to set the download path. Since this function will check the files already present it's strongly recommended to use the save.downloads options. Whenever this function is invoked again only updated files will be downloaded which saves a lot of traffic and time. The data.export option can be used to export the time series into a data type file making it available outside of R too. CAUTION: since this procedure takes a while its run in parallel on all cores of your machine!
 ##'
 ##' @param save.downloads If TRUE the downloaded .zip files are stored in download.path/downloads_dwd. Else they will be deleted after the extracting. Default = TRUE.
 ##' @param download.path Specifies the data will be stored and downloaded too. It is advised to store it using the global variable CLIMEX.PATH which is also used for importing the saved data.
 ##' @param data.export If TRUE creates an additional folder containing .dat files with the individual station data. Using this the data can be used outside of R too. Default = FALSE.
 ##' @param data.type Specifies which kind of information from the downloaded files should be extracted. This input can be a character vector  The options are: temp.max, temp.min, prec, default (for both the daily maximum and minimum temperature and the precipitation), temp.mean, vapor.pressure, cloud.amount, air.pressure, relative.humidity, wind.speed, temp.min.at.ground, wind.speed.peak, prec.type (0 = no precipitation, 1 = only rain (before 1979), 2 = unknown, 4 = only rain (after 1979), 7 = only snow, 8 = snow or rain), sunshine.duration, snow.height. Default = default.
 ##'
+##' @export
+##' @import xts
 ##' @return invisible setwd()
 ##' @author Philipp Mueller 
 download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PATH,
@@ -26,8 +27,10 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
     url.recent <- "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/"
     url.historical <- "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/historical/"
     ## individual files to be downloaded
-    files.recent <- strsplit( getURL( url.recent, followlocation = TRUE, dirlistonly = TRUE ), "\n" )
-    files.historical <- strsplit( getURL( url.historical, followlocation = TRUE, dirlistonly = TRUE ),
+    files.recent <- strsplit( RCurl::getURL( url.recent, followlocation = TRUE,
+                                            dirlistonly = TRUE ), "\n" )
+    files.historical <- strsplit( RCurl::getURL( url.historical, followlocation = TRUE,
+                                                dirlistonly = TRUE ),
                                  "\n" )
     ## setting the column numbers for extraction based on the data.type input
     if ( missing( data.type ) )
@@ -89,7 +92,7 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
                 ## remove it and download the more recent one
                 file.remove( grep( strsplit( ff, "_" )[[ 1 ]][ 3 ], list.files(), value = TRUE ) )
             }
-            download.file( url = paste0( url.base, ff ), destfile = ff, method = "wget" )
+            utils::download.file( url = paste0( url.base, ff ), destfile = ff, method = "wget" )
         }
     }
     setwd( "./recent" )
@@ -137,7 +140,7 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
                                            exdir = "./TMPrecent" ), silent = TRUE )
             ## if something goes wrong here just return a placeholder of the same format
             if ( class( try.unzip ) == "try-error" && !flag.historical )                
-                return( xts( NA, order.by = today() ) )
+                return( xts( NA, order.by = lubridate::today() ) )
             if ( class( try.unzip ) == "try-error" )
                 flag.recent <- FALSE
         }
@@ -147,7 +150,7 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
                                                         value = TRUE ) ),
                                            exdir = "./TMPhistorical/" ), silent = TRUE )
             if ( class( try.unzip ) == "try-error" )
-                return( xts( NA, order.by = today() ) )
+                return( xts( NA, order.by = lubridate::today() ) )
         }
         ## but we don't want potential warning in other packages break our code
         options( warn = 0 )
@@ -156,7 +159,7 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
             recent.file <- paste0( "./TMPrecent/",
                                   grep( "produkt", list.files("TMPrecent/" ), value = TRUE ) )
             if ( length( grep( "produkt", list.files("TMPrecent/" ), value = TRUE ) ) == 0 )
-                return( xts( NA, order.by = today() ) )
+                return( xts( NA, order.by = lubridate::today() ) )
             ## sometimes an older version is present due to an error occurring beforehand
             ## those have to be removed (at least from the recent.file variable)
             if ( length( recent.file ) > 1 )
@@ -167,7 +170,7 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
                                       grep( "produkt", list.files("TMPhistorical/" ),
                                            value = TRUE ) )
             if ( length( grep( "produkt", list.files("TMPhistorical/" ) ) ) == 0 )
-                return( xts( NA, order.by = today() ) )
+                return( xts( NA, order.by = lubridate::today() ) )
             ## sometimes an older version is present due to an error occurring beforehand
             ## those have to be removed (at least from the historical.file variable)
             if ( length( historical.file ) > 1 )
@@ -259,8 +262,8 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
         ## in the 10th entry the stations name is residing
         return( as.character( line.list[ 10 ] ) )
     } 
-    station.names <- Reduce( c, mclapply( list.station.ids, function( x )
-        extract.station.names( x, file.description ), mc.cores = detectCores() ) )
+    station.names <- Reduce( c, parallel::mclapply( list.station.ids, function( x )
+        extract.station.names( x, file.description ), mc.cores = parallel::detectCores() ) )
     ## assigning the names of the stations.
     ## this new assignment take in the order of 25ms in total
     for ( ss in paste0( "stations.", data.type ) ){
@@ -279,7 +282,8 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
                 utils::write.table( data.frame( date = index( data.temp[[ ll ]] ),
                                               value = data.temp[[ ll ]], row.names = NULL ),
                                   file = paste0( "data_dwd/", dd, "/",
-                                                strRep( names( data.temp )[ ll ], "/", "-" ), ".dat" ),
+                                                pracma::strRep( names( data.temp )[ ll ],
+                                                               "/", "-" ), ".dat" ),
                                   sep = " ", row.names = FALSE)
         }
     }   
@@ -294,14 +298,14 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
         data.name <- "default"
     ## save the extracted data
     save(  list = paste0( "stations.", data.type ),
-         file = paste0( "./dwd_", strRep( strcat( data.name, collapse = "_" ), ".", "-" ), ".RData" ) )
+         file = paste0( "./dwd_", pracma::strRep( strcat( data.name, collapse = "_" ),
+                                                 ".", "-" ), ".RData" ) )
     setwd( old.dir )
     invisible()
 }
 
 
-##' @title source.data
-##' @description Access to the manually imported weather data.
+##' @title Access to the manually imported weather data.
 ##' @details Load .RData file generated by \code{\link{download.data.dwd}}. This will be done interactively. First all .RData files present in the download folder will be printed. Than the user has to choose one of them by selecting its position in the presented character vector via a numeric value (e.g. 1 ). One can use the pick.default option to avoid the manual selecting.
 ##'
 ##' @param download.path Specifies the data is stored.
@@ -309,6 +313,7 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
 ##'
 ##' @family import
 ##'  
+##' @export
 ##' @return Has no specific output but attaches .RData file to search path.
 ##' @author Philipp Mueller
 source.data <- function( pick.default = TRUE, download.path = CLIMEX.PATH ){

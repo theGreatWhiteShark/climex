@@ -1,7 +1,5 @@
-##' @title multiplot
-##'
-##' @description This function takes several plot of the ggplot2 and arranges them on one page. Usage e.g. multiplot( p1, p2, p3, p4, col = 2)
-##' @details If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE), then plot 1 will go in the upper left, 2 will go in the upper right, and 3 will go all the way across the bottom. ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects). Imports the grid library.
+##' @title This function takes several plot of the ggplot2 and arranges them on one page.
+##' @details Well, it is not really related to extreme value fitting and I am aware of the fact that its quite bad style to export auxiliary functions. But this one is just so handy. If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE), then plot 1 will go in the upper left, 2 will go in the upper right, and 3 will go all the way across the bottom. ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects). Imports the grid library.
 ##'
 ##' @param main Title of the overall plot.
 ##' @param tt.title Same as 'main'.
@@ -12,10 +10,13 @@
 ##'
 ##' @family plot
 ##' @author Paul Teetor
-##' @return print object.
 ##' @examples
 ##' anomalies.potsdam <- anomalies( temp.potsdam )
 ##' multiplot( anomalies.potsdam, temp.potsdam, cols = 2, main = "Difference between the pure data of the daily maximum temperatures of the Potsdam station and their anomalies" )
+##' @return print object.
+##' @export
+##' @import ggplot2
+##' @import grid
 multiplot <- function( tt.title = main, main = NULL, ..., plotlist = NULL, cols = 1,
                       layout = NULL ) {
     sink( "/dev/null" )
@@ -70,8 +71,7 @@ multiplot <- function( tt.title = main, main = NULL, ..., plotlist = NULL, cols 
     invisible( last_plot() )
 }
 
-##' @title ttplot
-##' @description Plotting a time series with ggplot2.
+##' @title Plotting a xts time series with ggplot2 in a convenient format.
 ##'
 ##' @details Plots all objects of class xts and ts in the same format but is also capable of handling lists of those objects and returning their plots using the \code{\link{multiplot}} function. With the main argument a title can be provided.
 ##'
@@ -79,29 +79,24 @@ multiplot <- function( tt.title = main, main = NULL, ..., plotlist = NULL, cols 
 ##' @param ... Additional parameters for the multiplot function.
 ##'
 ##' @family plot
+##' @export
+##' @import xts
+##' @import ggplot2
 ##' @return Nothing. The multiplot function is run in the last step.
 ##' @author Philipp Mueller
-ttplot <- function( data.input, ... )
-    UseMethod( "ttplot" )
-ttplot.list <- function( data.input, ... ){
-    ## Function performing a plot of a list of time series (class ts or xts or even numeric)
-    ## using the multiplot function.
-
-    ## Converts the list of time series in a list of plots. A specific plot function is
-    ## performed according to the class of the individual component.
-    x.plots <- list()
-    for ( ll in 1 : length( data.input ) )
-        x.plots[[ ll ]] <- ttplot( data.input[[ ll ]], main = names( data.input )[[ ll ]] )
-    multiplot( plotlist = x.plots, ... )
-}
-ttplot.ts <- function( data.input, main = "Time series", ylab = NULL, x.df = NULL, ... ){
+ttplot <- function( data.input, main = "Time series", ylab = NULL, x.df = NULL ){
     if ( is.null( ylab ) )
         ylab <- names( data.input )
     if ( is.null( ylab ) )
         ylab <- ""
-    ## since this function is also used within ttplot.xts there is the possibility to
-    ## provided the data frame which should be plotted
-    if ( is.null( x.df ) )
+    ## Checks if the time series has daily values or if it is blocked. In the latter case the
+    ## create values can not be provided as the input of the x axis because ggplot2 does
+    ## not know how to scale them.
+    x.time.unit <- index( data.input )[[ 2 ]] - index( data.input )[[ 1 ]]
+    if ( class( x.time.unit ) != "difftime" || attributes( x.time.unit )$units != "days" ) {
+        x.df <- data.frame( date = as.numeric( index( data.input ) ),
+                           value = as.numeric( data.input ) ) }
+    else
         x.df <- data.frame( date = index( data.input ), value = as.numeric( data.input ) )
     ggplot( data = x.df, aes( x = date, y = value ) ) +
         geom_point( colour = "darkorange" ) + geom_line( colour = "navy" ) +
@@ -109,20 +104,9 @@ ttplot.ts <- function( data.input, main = "Time series", ylab = NULL, x.df = NUL
         theme_bw() + theme( panel.grid.major = element_line( colour = "grey75" ),
                            panel.grid.minor = element_line( colour = "grey80" ) )
     return( last_plot() )
-}       
-ttplot.xts <- function( data.input, ... ){
-    ## Checks if the time series has daily values or if it is blocked. In the latter case the
-    ## create values can not be provided as the input of the x axis because ggplot2 does
-    ## not know how to scale them.
-    x.time.unit <- index( data.input )[[ 2 ]] - index( data.input )[[ 1 ]]
-    if ( class( x.time.unit ) != "difftime" || attributes( x.time.unit )$units != "days" ) {
-        ttplot.ts( data.input, x.df = data.frame( date = as.numeric( index( data.input ) ),
-                                                 value = as.numeric( data.input ) ), ... )
-    } else
-        ttplot.ts( data.input, ... )
 }
-##' @title likelihood.plot
-##' @description Generates three 2D slices of the likelihood of a provided time series.
+
+##' @title Generates three 2D slices of the likelihood of a provided time series.
 ##'
 ##' @details The likelihood will be plotted around its optimal value. To determine it the time series will be fitted via \code{\link{gev.fit}}. Its also possible to provide another point the likelihood will be centered around using 'center'.
 ##'
@@ -135,6 +119,7 @@ ttplot.xts <- function( data.input, ... ){
 ##' @param main Title for the multiplot. Default = NULL.
 ##' @param true.minima Provide the true minima of the neg log-likelihood function if gev.fit does not provide it in the first run. Default = NULL.
 ##'
+##' @import ggplot2
 ##' @return returns a multiplot of planes through the negative log-likelihood of the GEV function calculated using the input time series.
 ##' @author Philipp Mueller 
 likelihood.plot <- function( time.series, location.lim = NULL, scale.lim = NULL, shape.lim = NULL,
@@ -160,7 +145,7 @@ likelihood.plot <- function( time.series, location.lim = NULL, scale.lim = NULL,
     ## Calculation of the likelihood surface/space
     ## Inspired by the likelihood.plot function but redone
     ## C++ function calculating the likelihood for every parameter combination
-    calcNllh <- inline::cxxfunction( signature( parameters = "numeric", xin = "numeric" ),
+    calcNllh <- inline::cxxfunction( methods::signature( parameters = "numeric", xin = "numeric" ),
                                     plugin = "RcppArmadillo", body = '
 Rcpp::DataFrame parametersDataframe( parameters );
 Rcpp::NumericVector xVector( xin );
@@ -211,7 +196,7 @@ return Rcpp::wrap( L );')
             ggplot() + geom_raster( data = par.plane, aes( x = x, y = y, fill = likelihood ),
                                    na.rm = TRUE ) +
             geom_contour( data = par.plane,
-                         aes( x = x, y = y, z = likelihood.low ), colour = rgb( 1, .55, 0 ),
+                         aes( x = x, y = y, z = likelihood.low ), colour = grDevices::rgb( 1, .55, 0 ),
                          na.rm = TRUE ) +
             scale_fill_gradientn( colours = rev( RColorBrewer::brewer.pal( 7, "Blues" ) ),
                                  na.value = "white", trans = "log" ) +
@@ -238,15 +223,15 @@ return Rcpp::wrap( L );')
               main = main )
 }
 
-##' @title plot.climex.gev.fit
-##' @description Plots the GEV function fitted using \code{\link{gev.fit}}
+##' @title Plots the GEV function fitted using \code{\link{gev.fit}}
 ##'
 ##' @details Uses ggplot2
 ##'
 ##' @param x Fitted GEV object.
 ##'
+##' @import ggplot2
 ##' @return ggplot2 object.
-plot.climex.gev.fit <- function( x, ... ){
+plot.climex.gev.fit <- function( x ){
     x.data <- x$x
     x.lim <- c( max( x.data, na.rm = TRUE ), min( x.data, na.rm = TRUE ) )
     threshold.pdf.plot <- 5E-4
@@ -266,11 +251,11 @@ plot.climex.gev.fit <- function( x, ... ){
         plot.gev.lim[ 2 ] <- x.lim[ 2 ] + abs( x.lim[ 2 ] )* 0.05
     
     ggplot() + geom_histogram( data = data.frame( x = x.data ),
-                              colour = rgb( .098, .098, .44 ), alpha = 1,
+                              colour = grDevices::rgb( .098, .098, .44 ), alpha = 1,
                               aes( x = x, y = ..density.., fill = "#7171EC" ) ) +
-        geom_polygon( data = plot.gev.data, alpha = 0.7, colour = rgb( .098, .098, .44 ),
-                     aes( x = x.plot, y = y.plot, fill = rgb( 1, .55, 0 ) ) ) +            
-        scale_fill_manual( values = c( "#7171EC", rgb( 1, .55, 0 ) ),
+        geom_polygon( data = plot.gev.data, alpha = 0.7, colour = grDevices::rgb( .098, .098, .44 ),
+                     aes( x = x.plot, y = y.plot, fill = grDevices::rgb( 1, .55, 0 ) ) ) +            
+        scale_fill_manual( values = c( "#7171EC", grDevices::rgb( 1, .55, 0 ) ),
                           labels = c( "Histogram", "Fitted GEV"  ) ) +
         theme_bw() + xlim( plot.gev.lim ) + ylab( "Density" ) +
         theme( legend.title = element_blank() )

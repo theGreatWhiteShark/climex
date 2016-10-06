@@ -2,10 +2,10 @@
 % Please edit documentation in R/import.R
 \name{download.data.dwd}
 \alias{download.data.dwd}
-\title{download.data.dwd}
+\title{Downloads daily weather data from observation stations in Germany and extracts minimum and maximum temperature as well as precipitation data.}
 \usage{
 download.data.dwd(save.downloads = TRUE, download.path = CLIMEX.PATH,
-  csv.export = FALSE, data.type = c("default", "temp.max", "temp.min",
+  data.export = FALSE, data.type = c("default", "temp.max", "temp.min",
   "prec", "temp.mean", "vapor.pressure", "cloud.amount", "air.pressure",
   "relative.humidity", "wind.speed", "temp.min.at.ground", "wind.speed.peak",
   "prec.type", "sunshine.duration", "snow.height"))
@@ -15,18 +15,15 @@ download.data.dwd(save.downloads = TRUE, download.path = CLIMEX.PATH,
 
 \item{download.path}{Specifies the data will be stored and downloaded too. It is advised to store it using the global variable CLIMEX.PATH which is also used for importing the saved data.}
 
-\item{csv.export}{If TRUE creates an additional folder containing csv files with the individual station data. Using this the data can be used outside of R too. Default = FALSE.}
+\item{data.export}{If TRUE creates an additional folder containing .dat files with the individual station data. Using this the data can be used outside of R too. Default = FALSE.}
 
 \item{data.type}{Specifies which kind of information from the downloaded files should be extracted. This input can be a character vector  The options are: temp.max, temp.min, prec, default (for both the daily maximum and minimum temperature and the precipitation), temp.mean, vapor.pressure, cloud.amount, air.pressure, relative.humidity, wind.speed, temp.min.at.ground, wind.speed.peak, prec.type (0 = no precipitation, 1 = only rain (before 1979), 2 = unknown, 4 = only rain (after 1979), 7 = only snow, 8 = snow or rain), sunshine.duration, snow.height. Default = default.}
 }
 \value{
 invisible setwd()
 }
-\description{
-Downloads daily weather data from observation stations in Germany and extracts minimum and maximum temperature as well as precipitation data
-}
 \details{
-The download will be done using 'wget'. Per default the CLIMEX.PATH variable will be used to set the download path. Since this function will check the files already present it's strongly recommended to use the save.downloads options. Whenever this function is invoked again only updated files will be downloaded which saves a lot of traffic and time. The csv.export option can be used to export the time series into a csv type file making it available outside of R too.
+The download will be done using 'wget'. Per default the CLIMEX.PATH variable will be used to set the download path. Since this function will check the files already present it's strongly recommended to use the save.downloads options. Whenever this function is invoked again only updated files will be downloaded which saves a lot of traffic and time. The data.export option can be used to export the time series into a data type file making it available outside of R too. CAUTION: since this procedure takes a while its run in parallel on all cores of your machine!
 }
 \author{
 Philipp Mueller

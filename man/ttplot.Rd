@@ -2,9 +2,9 @@
 % Please edit documentation in R/plot.R
 \name{ttplot}
 \alias{ttplot}
-\title{ttplot}
+\title{Plotting a xts time series with ggplot2 in a convenient format.}
 \usage{
-ttplot(data.input, ...)
+ttplot(data.input, main = "Time series", ylab = NULL, x.df = NULL)
 }
 \arguments{
 \item{data.input}{Time series which should be visualized.}
@@ -13,9 +13,6 @@ ttplot(data.input, ...)
 }
 \value{
 Nothing. The multiplot function is run in the last step.
-}
-\description{
-Plotting a time series with ggplot2.
 }
 \details{
 Plots all objects of class xts and ts in the same format but is also capable of handling lists of those objects and returning their plots using the \code{\link{multiplot}} function. With the main argument a title can be provided.
