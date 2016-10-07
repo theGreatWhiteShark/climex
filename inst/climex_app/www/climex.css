@@ -63,23 +63,23 @@ h3 small {
 .nav-tabs-custom {
     box-shadow: 0 1px 1px #191970 !important;
 }
-.box-body .irs-line {
+.irs-line {
     border: 1px solid #AAAAAA !important;
     border-top: 1px solid #AAAAAA !important;
 }
-.box.body .irs.bar {
+.irs.bar {
     border-top: 1px solid #191970 !important;
     border-bottom: 1px solid #191970 !important;
     background: #191970 !important;
 }
-.box-body .irs-min, .box-body .irs-max, .box-body .irs-grid-text {
+.irs-min, .irs-max, .irs-grid-text {
     color: #191970 !important;
-    background: #FF8C00 !important;
+    background: transparent !important;
 }
-.box-body .irs-from, .box-body .irs-to, .box-body .irs-single, .box-body .irs-grid-pol, .box-body .irs-grid-pol.small {
+.irs-from, .irs-to, .irs-single, .irs-grid-pol, .irs-grid-pol.small {
     background: #191970 !important;
 }
-.box-body .irs.slider {
+.irs.slider {
     border: 1px solid #AAAAAA !important;
     background: #FFFFFF !important;
 }

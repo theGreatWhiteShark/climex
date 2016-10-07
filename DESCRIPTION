@@ -1,7 +1,7 @@
 Package: climex
 Type: Package
 Title: Climate Change and Extreme Events
-Version: 0.8.1
+Version: 0.8.2
 Date: 2016-10-06
 LazyData: true
 Authors@R: person("Philipp","Developer", role = c("aut","cre"),
@@ -37,6 +37,7 @@ Imports:
     RColorBrewer,
     deseasonalize,
     moments,
+    leaflet
 License: GPL (>= 3)
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1

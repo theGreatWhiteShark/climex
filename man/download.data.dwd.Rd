@@ -23,7 +23,7 @@ download.data.dwd(save.downloads = TRUE, download.path = CLIMEX.PATH,
 invisible setwd()
 }
 \details{
-The download will be done using 'wget'. Per default the CLIMEX.PATH variable will be used to set the download path. Since this function will check the files already present it's strongly recommended to use the save.downloads options. Whenever this function is invoked again only updated files will be downloaded which saves a lot of traffic and time. The data.export option can be used to export the time series into a data type file making it available outside of R too. CAUTION: since this procedure takes a while its run in parallel on all cores of your machine!
+The download will be done using 'wget'. Per default the CLIMEX.PATH variable will be used to set the download path. Since this function will check the files already present it's strongly recommended to use the save.downloads options. Whenever this function is invoked again only updated files will be downloaded which saves a lot of traffic and time. The data.export option can be used to export the time series into a data type file making it available outside of R too. In addition the geographic positions of the individual stations will be extracted and saved as well. They are needed for the leaflet module of the climex shiny app. CAUTION: since this procedure takes a while its run in parallel on all cores of your machine!
 }
 \author{
 Philipp Mueller

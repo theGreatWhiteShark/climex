@@ -329,11 +329,3 @@ return Rcpp::wrap( L );')
     shinyApp( ui, server )
 }
 
-
-####################################################################################
-######################### Leaflet module for interactive maps #####################
-####################################################################################
-## This module provides an interactive map to display the locations of the individual
-## stations. The user can choose individual stations by clicking at them. In addition
-## a dialog will pop up telling the stations name, the length of the time series and
-## the 20, 50 and 100 year return level calculated with the setting in the

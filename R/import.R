@@ -1,6 +1,6 @@
 ##' @title Downloads daily weather data from observation stations in Germany and extracts minimum and maximum temperature as well as precipitation data.
 ##'
-##' @details The download will be done using 'wget'. Per default the CLIMEX.PATH variable will be used to set the download path. Since this function will check the files already present it's strongly recommended to use the save.downloads options. Whenever this function is invoked again only updated files will be downloaded which saves a lot of traffic and time. The data.export option can be used to export the time series into a data type file making it available outside of R too. CAUTION: since this procedure takes a while its run in parallel on all cores of your machine!
+##' @details The download will be done using 'wget'. Per default the CLIMEX.PATH variable will be used to set the download path. Since this function will check the files already present it's strongly recommended to use the save.downloads options. Whenever this function is invoked again only updated files will be downloaded which saves a lot of traffic and time. The data.export option can be used to export the time series into a data type file making it available outside of R too. In addition the geographic positions of the individual stations will be extracted and saved as well. They are needed for the leaflet module of the climex shiny app. CAUTION: since this procedure takes a while its run in parallel on all cores of your machine!
 ##'
 ##' @param save.downloads If TRUE the downloaded .zip files are stored in download.path/downloads_dwd. Else they will be deleted after the extracting. Default = TRUE.
 ##' @param download.path Specifies the data will be stored and downloaded too. It is advised to store it using the global variable CLIMEX.PATH which is also used for importing the saved data.
@@ -231,7 +231,8 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
         unlink( "./TMPrecent/", recursive = TRUE )
         unlink( "./TMPhistorical/", recursive = TRUE )
         ## writing the data into the lists using the xts class
-        results.tmp <- xts( data.ii[ , data.column ], order.by = convert.date( data.ii[ , 2 ] ) )
+        results.tmp <- xts( data.ii[ , data.column ], order.by =
+                                                          climex:::convert.date( data.ii[ , 2 ] ) )
         ## artifacts in the DWD data base are stored as -999
         ## these are converted to NA
         results.tmp[ results.tmp == -999 ] <- NA
@@ -260,10 +261,18 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
                                 seq( length( strsplit( line.raw, " " )[[ 1 ]] ) ) )
         line.list <- line.list.full[ line.list.full != "" ]
         ## in the 10th entry the stations name is residing
-        return( as.character( line.list[ 10 ] ) )
+        return( list( as.character( line.list[ 10 ] ),
+                     c( as.numeric( line.list[ 9 ] ), as.numeric( line.list[ 8 ] ),
+                       as.numeric( line.list[ 7 ] ) ) ) )
     } 
-    station.names <- Reduce( c, parallel::mclapply( list.station.ids, function( x )
-        extract.station.names( x, file.description ), mc.cores = parallel::detectCores() ) )
+    station.extracts <- parallel::mclapply( list.station.ids, function( x )
+        extract.station.names( x, file.description ), mc.cores = parallel::detectCores() )
+    station.names <- Reduce( c, lapply( station.extracts, function( x ) x[[ 1 ]] ) )
+    station.positions.aux <- Reduce( rbind, lapply( station.extracts, function( x ) x[[ 2 ]] ) )
+    station.positions <- data.frame( longitude = station.positions.aux[ , 1 ],
+                                    latitude = station.positions.aux[ , 2 ],
+                                    altitude = station.positions.aux[ , 3 ],
+                                    name = station.names )
     ## assigning the names of the stations.
     ## this new assignment take in the order of 25ms in total
     for ( ss in paste0( "stations.", data.type ) ){
@@ -297,8 +306,8 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
     if ( all( data.name == c( "temp.max", "temp.min", "prec" ) ) )
         data.name <- "default"
     ## save the extracted data
-    save(  list = paste0( "stations.", data.type ),
-         file = paste0( "./dwd_", pracma::strRep( strcat( data.name, collapse = "_" ),
+    save(  list = c( paste0( "stations.", data.type ), "station.positions" ),
+         file = paste0( "./dwd_", pracma::strRep( pracma::strcat( data.name, collapse = "_" ),
                                                  ".", "-" ), ".RData" ) )
     setwd( old.dir )
     invisible()
