@@ -1,7 +1,7 @@
 ##' @title Separates the input into blocks of equal size and returns the maximum or minimum of the block as result.
 ##'
 ##' @details If 'separation.mode' is set to "years" the data is separated according to it's time stamps. If not the size of a block is determined by the 'block.length' parameter or calculated via the 'block.number' parameter. For calculating the mean of the blocks have a look at the \code{\link{stats::ave}} function.
-##' 
+##'
 ##' @param input.bulk Provided data of class 'xts'.
 ##' @param block.number Specifies the number of blocks the input data is going to be separated in.
 ##' @param block.length Length of the blocks. For the sake of simplicity the last block is not forced to match the length of the other plots.
@@ -12,7 +12,7 @@
 ##' @author Philipp Mueller
 ##' @export
 ##' @import xts
-##' 
+##'
 ##' @examples
 ##' block( temp.potsdam )
 block <- function( input.bulk, block.number = round( length( input.bulk )/ 50 ),
@@ -45,7 +45,7 @@ block <- function( input.bulk, block.number = round( length( input.bulk )/ 50 ),
         input.index <- data.frame( value = input.bulk,
                                   index =  floor( ( seq( 1 : length( input.bulk ) ) - 1 )/
                                                   block.length ) + 1,
-                                  row.names = index( input.bulk ) )        
+                                  row.names = index( input.bulk ) )
     }
     input.blocked <- split( input.index,input.index$index )
     ## Extract the maxima or minima from the blocked data
@@ -53,7 +53,7 @@ block <- function( input.bulk, block.number = round( length( input.bulk )/ 50 ),
         input.extremes <- Reduce( rbind, lapply( input.blocked, function( x ){
             data.frame( date = row.names( x )[ which.max( x[[ 1 ]] ) ],
                        value = x[ which.max( x[[ 1 ]] ), 1 ] ) } ) )
-    } else 
+    } else
         input.extremes <- Reduce( rbind, lapply( input.blocked, function( x ){
             data.frame( date = row.names( x )[ which.min( x[[ 1 ]] ) ],
                        value = x[ which.min( x[[ 1 ]] ), 1 ] ) } ) )
@@ -61,17 +61,17 @@ block <- function( input.bulk, block.number = round( length( input.bulk )/ 50 ),
     return( extremes.xts )
 }
 
-##' @title Finding the appropriate block length before applying GEV fitting. 
+##' @title Finding the appropriate block length before applying GEV fitting.
 ##'
 ##' @details Function fits GEV using gev.fit() after applying various block lengths and returns summary statistics. After a sufficient high block length the parameters of the distribution should converge. Function is implemented for inputs of the classes "xts" and "ts".
-##' 
+##'
 ##' @param x Time series of class "xts" or "ts"
 ##' @param size.low Smallest block length applied to the data. Default = 10.
 ##' @param size.high Blggest block length applied to the data. Default = 400.
 ##' @param return.period Argument of the extRemes::return.level() function specifying the return period of the event the return level shall be calculated for. Default = 100.
 ##' @param plot Plots the results. Default = TRUE
 ##' @param main Title of the plot.
-##' @param ... Additional arguments applied for extRemes::fevd() 
+##' @param ... Additional arguments applied for extRemes::fevd()
 ##'
 ##' @return Data.frame containing the summary statistic of the analysis:
 ##' \itemize{
@@ -92,31 +92,31 @@ block <- function( input.bulk, block.number = round( length( input.bulk )/ 50 ),
 find.block.length <- function( x, size.low = 20, size.high = 400, return.period = 100,
                               plot = TRUE, main = NULL ){
     ## Computes statistics for different block length and returns a table and a plot displaying
-    ## the results. This functions is made to help deciding for an appropriate block length. 
+    ## the results. This functions is made to help deciding for an appropriate block length.
     ## Possible values of the return level
-    
-    ## Indicating whether the evaluation of the confidence intervals of the return levels already has failed.  
+
+    ## Indicating whether the evaluation of the confidence intervals of the return levels already has failed.
     err.ret <- FALSE
     if ( any( class( x ) == "bulk" ) ) {
         x.data <- x[[ 2 ]]
-    } else 
+    } else
         x.data <- as.numeric( x )
-        
+
     x.gev.fit <- gev.fit( x.data, show = FALSE )
     ## Initiation of the matrix containing all the information
-    gev.sum <- data.frame( block = 1, loc = x.gev.fit$mle[ 1 ], 
-                          se.loc = x.gev.fit$se[ 1 ], scale = x.gev.fit$mle[ 2 ], 
+    gev.sum <- data.frame( block = 1, loc = x.gev.fit$mle[ 1 ],
+                          se.loc = x.gev.fit$se[ 1 ], scale = x.gev.fit$mle[ 2 ],
                           se.sca = x.gev.fit$se[ 2 ], shape = x.gev.fit$mle[ 3 ],
                           se.sha = x.gev.fit$se[ 3 ], nllh = x.gev.fit$nllh,
                           AIC = aic( x.gev.fit ), BIC = bic( x.gev.fit ),
                           stringsAsFactors = FALSE )
-    
+
     bb.count <- 1
     for ( bb in seq( size.low, size.high, , 20 ) ){
         ## sometimes it just does not work
         bb.gev.fit <- gev.fit( block( x, block.length = bb ), show = FALSE )
-        gev.sum[ bb.count, ] <- c( bb,  bb.gev.fit$mle[ 1 ], bb.gev.fit$se[ 1 ], 
-                                  bb.gev.fit$mle[ 2 ], bb.gev.fit$se[ 2 ], 
+        gev.sum[ bb.count, ] <- c( bb,  bb.gev.fit$mle[ 1 ], bb.gev.fit$se[ 1 ],
+                                  bb.gev.fit$mle[ 2 ], bb.gev.fit$se[ 2 ],
                                   bb.gev.fit$mle[ 3 ], bb.gev.fit$se[ 3 ],
                                   bb.gev.fit$nllh, aic( bb.gev.fit ),
                                   bic( bb.gev.fit ) )
@@ -131,7 +131,7 @@ find.block.length <- function( x, size.low = 20, size.high = 400, return.period 
             geom_point( aes( y = AIC, colour = "darkorange2" ) ) +
             geom_line( aes( y = BIC ), colour = "navy" ) +
             geom_point( aes( y = BIC, colour = "navy" ) ) +
-            scale_colour_manual( values = c( "darkorange2", "navy" ), 
+            scale_colour_manual( values = c( "darkorange2", "navy" ),
                                 labels = c( "AIC", "BIC" ) ) +
             theme_bw() + theme( panel.grid.major = element_line(  colour = "grey75" ),
                                panel.grid.minor = element_line( colour = "grey80" ),
@@ -177,7 +177,7 @@ find.block.length <- function( x, size.low = 20, size.high = 400, return.period 
 ##' @return Declustered values above the provided threshold (xts).
 ##' @export
 ##' @import xts
-##' @author Philipp Mueller 
+##' @author Philipp Mueller
 decluster <- function( x, threshold ){
     ## Caution: x is the full time series and not the blocked one!
     x.extremal.index <- extRemes::extremalindex( x, threshold, na.action = stats::na.omit )
@@ -193,9 +193,9 @@ decluster <- function( x, threshold ){
     which.cluster <- rep( 1, n.over.threshold )
     x.result <- x
     ## number of indices the threshold exceedences are apart from each other
-    x.distances <- diff( index.x.over.threshold ) 
+    x.distances <- diff( index.x.over.threshold )
     ## which point belongs to which cluster
-    which.cluster[ 2 : n.over.threshold ] <- 1 + cumsum( x.distances > cluster.size ) 
+    which.cluster[ 2 : n.over.threshold ] <- 1 + cumsum( x.distances > cluster.size )
     x.cluster <- split( x.over.threshold, which.cluster )
     x.cluster.max <- as.numeric( lapply( x.cluster, max ) )
     ## Only the maxima of the clusters survive
@@ -213,6 +213,7 @@ decluster <- function( x, threshold ){
 ##' @param monte.carlo.sample.size Number of samples used to obtain the Monte Carlo estimate of the standard error of the fitting. Default = 1000
 ##'
 ##' @return If error.estimation == "none" a numerical vector containing the estimates of the return levels will be returned. Else a list containing the estimates and their standard errors will be returned.
+##' @export
 ##' @examples
 ##' fit.results <- gev.fit( block( anomalies( temp.potsdam ) ) )
 ##' rlevd( fit.results, return.period = c( 10, 50, 100 ), error.estimation = "MLE" )
@@ -243,7 +244,7 @@ rlevd <- function( x, return.period = 100, error.estimation = c( "none", "MC", "
             x <- x.aux
         }
         ## Calculating the errors using the MLE
-        error.covariance <- solve( x$hessian ) 
+        error.covariance <- solve( x$hessian )
         ## Delta method for the return level
         parameter.estimate <- x$par
         ## Formula according to Stuart Coles p. 56
@@ -277,4 +278,3 @@ rlevd <- function( x, return.period = 100, error.estimation = c( "none", "MC", "
     }
     return( list( return.levels = return.levels, errors = errors ) )
 }
-        
