@@ -58,8 +58,13 @@ gev.fit <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
                                           hessian = TRUE, ... ) )
         } else {
             ## Since this implementation didn't yielded nice results I switch to another package
-            aux <- GenSA::GenSA( initial, optim.function, lower = c( -Inf, 0, -Inf ),
+            aux <- GenSA::GenSA( as.numeric( initial ), optim.function, lower = c( -Inf, 0, -Inf ),
                                 upper = c( Inf, Inf, Inf ), x = x, ... )
+            ## return a NaN when not optimizing instead of the initial parameters
+            if ( sum( aux$par %in% initial ) > 1 ){
+                ## more than one parameter value remained unchanged
+                aux$value <- NaN
+            }
             res.optim <- list( par = aux$par, value = aux$value, counts = aux$counts,
                               hessian = numDeriv::hessian( optim.function, x = aux$par, x.in = x ),
                               convergence = 0, message = NULL )
@@ -122,19 +127,34 @@ gev.fit <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
         }
         res.optim$se <- errors
     } else {
-        suppressWarnings(
-            res.optim <- stats::optim( initial, optim.function, gr = gradient.function, x = x,
-                                      hessian = TRUE, ... ) )
-        if ( rerun ){
-            suppressWarnings( 
-                res.optim.rerun <- try( stats::optim( par = res.optim$par, fn = optim.function,
-                                                     gr = gradient.function, x = x, hessian = TRUE,
-                                                     ... ), silent = TRUE ) )
-            if ( class( res.optim.rerun ) == "try-error" ){
-                warning( "Rerun failed. Be sure to use the Nelder-Mead method of optimization." )
-            } else
-                res.optim <- res.optim.rerun
+         if ( method != "SANN" ){
+            suppressWarnings(
+                res.optim <- stats::optim( initial, optim.function, gr = gradient.function, x = x,
+                                          hessian = TRUE, ... ) )
+            if ( rerun ){
+                suppressWarnings( 
+                    res.optim.rerun <- try( stats::optim( par = res.optim$par, fn = optim.function,
+                                                         gr = gradient.function, x = x, hessian = TRUE,
+                                                         ... ), silent = TRUE ) )
+                if ( class( res.optim.rerun ) == "try-error" ){
+                    warning( "Rerun failed. Be sure to use the Nelder-Mead method of optimization." )
+                } else
+                    res.optim <- res.optim.rerun
+            }
+         } else {
+            ## Since this implementation didn't yielded nice results I switch to another package
+            aux <- GenSA::GenSA( as.numeric( initial ), optim.function, lower = c( -Inf, 0, -Inf ),
+                                upper = c( Inf, Inf, Inf ), x.in = x, ... )
+            ## return a NaN when not optimizing instead of the initial parameters
+            if ( sum( aux$par %in% initial ) > 1 ){
+                ## more than one parameter value remained unchanged
+                aux$value <- NaN
+            }
+            res.optim <- list( par = aux$par, value = aux$value, counts = aux$counts,
+                              hessian = numDeriv::hessian( optim.function, x = aux$par, x.in = x ),
+                              convergence = 0, message = NULL )
         }
+        
         res.optim$se <- NULL
     }
     ## Naming of the resulting fit parameter (necessary for a correct conversion with as.fevd)
