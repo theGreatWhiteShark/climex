@@ -37,7 +37,8 @@ Imports:
     RColorBrewer,
     deseasonalize,
     moments,
-    leaflet
+    leaflet,
+    GenSA
 License: GPL (>= 3)
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1

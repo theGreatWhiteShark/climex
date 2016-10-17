@@ -1,16 +1,17 @@
 ##' @title Performing a fit to the GEV function.
 ##'
-##' @details Custom fitting of the GEV function including the estimation of the initial conditions. Per default the optimization is run twice to prevent getting trapped in local minima of the negative log-likelihood function. The output is of optim style. But the errors of the fitting are also provided as well as the estimates and the errors of some specified return levels.
+##' @details Custom fitting of the GEV function including the estimation of the initial conditions. Per default the optimization is run twice to prevent getting trapped in local minima of the negative log-likelihood function. The output is of optim style. But the errors of the fitting are also provided as well as the estimates and the errors of some specified return levels. I had some problems with the optim implementation of the simulated annealing implementation. The optimization just kept its value and nothing happened. That's why I switched to the \code{\link{GenSA}} package.
 ##'
 ##' @param x Blocked time series to which the GEV distribution should be fitted.
 ##' @param initial Initial values for the GEV parameters. Has to be provided as 3x1 vector. If NULL the parameters are estimated with the function \code{\link{likelihood.initials}}. Default = NULL
-##' @param rerun The optimization will be started again using the results of the first optimization run. If the "Nelder-Mead" algorithm is used for optimization (as it is here) this can be useful to escape local minima. Default = TRUE
+##' @param rerun The optimization will be started again using the results of the first optimization run. If the "Nelder-Mead" algorithm is used for optimization (as it is here) this can be useful to escape local minima. When choosing simulated annealing as method the rerun will be skipped. Provide a different number of runs directly to the GenSA function via ... instead. Default = TRUE
 ##' @param optim.function Function which is going to be optimized. Default: \code{\link{likelihood}}
 ##' @param gradient.function If NULL a finite difference method is invoked. Default: \code{\link{likelihood.gradient}}
 ##' @param error.estimation Method for calculating the standard errors of the fitted results. Using the option "MLE" the errors of the GEV parameters will be calculated as the square roots of the diagonal elements of the inverse of the hessian matrix calculated with the MLE of the GEV parameters. The standard error of the return level is calculated using the Delta method and the MLE of the GEV parameters. Alternative one can use Monte Carlo simulations with "MC" for which 1000 samples of the same size as x will be drawn from a GEV distribution constituted by the obtained MLE of the GEV parameters of x. The standard error is then calculated via the square of the variance of all fitted GEV parameters and calculated return levels. Sometimes the inversion of the hessian fails (since the are some NaN in the hessian) (which is also the reason why the ismev package occasionally does not work). In such cases the Monte Carlo method is used. Option "none" just skips the calculation of the error. Default = "MLE".
+##' @param method Through the argument 'method' (which is passed to the optim function) the optimization algorithm is chosen. The default one is the "Nelder-Mead".
 ##' @param monte.carlo.sample.size Number of samples used to obtain the Monte Carlo estimate of the standard error of the fitting. Default = 1000
 ##' @param return.period Quantiles at which the return level is going to be evaluated. Class "numeric". Default = 100.
-##' @param ... Additional arguments for the optim() function.
+##' @param ... Additional arguments for the optim() or GenSA::GenSA() function. Depending on the chosen method.
 ##' 
 ##' @family optimization
 ##' 
@@ -36,8 +37,13 @@
 gev.fit <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihood,
                     gradient.function = likelihood.gradient,
                     error.estimation = c( "MLE", "MC", "none" ),
+                    method = c( "Nelder-Mead", "BFGS", "CG", "SANN" ),
                     monte.carlo.sample.size = 1000, return.period = 100, ... ){
-
+    ## Since there are some problems with the simulated annealing algorithm I intersect the
+    ## method argument and switch to another package if necessary
+    if ( missing( method ) )
+        method <- "Nelder-Mead"
+    method <- match.arg( method )    
     ## Default values if no initial parameters are supplied
     if ( is.null( initial ) )
         initial <- likelihood.initials( x )
@@ -46,18 +52,28 @@ gev.fit <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
     error.estimation <- match.arg( error.estimation )
     ## Optimization
     if ( error.estimation != "none" ){
-        suppressWarnings(
-            res.optim <- stats::optim( initial, optim.function, gr = gradient.function, x = x,
-                                      hessian = TRUE, ... ) )
-        if ( rerun ){
+        if ( method != "SANN" ){
             suppressWarnings(
-                res.optim.rerun <- try( stats::optim( par = res.optim$par, fn = optim.function,
-                                                     gr = gradient.function, x = x, hessian = TRUE,
-                                                     ... ), silent = TRUE ) )
-            if ( class( res.optim.rerun ) == "try-error" ){
-                warning( "Rerun failed. Be sure to use the Nelder-Mead method of optimization." )
-            } else
-                res.optim <- res.optim.rerun
+                res.optim <- stats::optim( initial, optim.function, gr = gradient.function, x = x,
+                                          hessian = TRUE, ... ) )
+        } else {
+            ## Since this implementation didn't yielded nice results I switch to another package
+            aux <- GenSA::GenSA( initial, optim.function, lower = c( -Inf, 0, -Inf ),
+                                upper = c( Inf, Inf, Inf ), ... )
+            res.optim <- data.frame( par = aux$par, value = aux$value, counts = aux$counts,
+                                    convergence = 0, message = NULL )
+        }
+        if ( rerun ){
+            if ( method != "SANN" ){
+                suppressWarnings(
+                    res.optim.rerun <- try( stats::optim( par = res.optim$par, fn = optim.function,
+                                                         gr = gradient.function, x = x, hessian = TRUE,
+                                                         ... ), silent = TRUE ) )
+                if ( class( res.optim.rerun ) == "try-error" ){
+                    warning( "Rerun failed. Be sure to use the Nelder-Mead method of optimization." )
+                } else
+                    res.optim <- res.optim.rerun
+            }
         }
         error.covariance <- try( solve( res.optim$hessian ) )
         if ( class( error.covariance ) == "try-error" || error.estimation == "MC" ||
