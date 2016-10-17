@@ -38,7 +38,8 @@ Imports:
     deseasonalize,
     moments,
     leaflet,
-    GenSA
+    GenSA,
+    numDeriv
 License: GPL (>= 3)
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1

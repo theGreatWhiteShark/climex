@@ -59,9 +59,10 @@ gev.fit <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
         } else {
             ## Since this implementation didn't yielded nice results I switch to another package
             aux <- GenSA::GenSA( initial, optim.function, lower = c( -Inf, 0, -Inf ),
-                                upper = c( Inf, Inf, Inf ), ... )
-            res.optim <- data.frame( par = aux$par, value = aux$value, counts = aux$counts,
-                                    convergence = 0, message = NULL )
+                                upper = c( Inf, Inf, Inf ), x = x, ... )
+            res.optim <- list( par = aux$par, value = aux$value, counts = aux$counts,
+                              hessian = numDeriv::hessian( optim.function, x = aux$par, x.in = x ),
+                              convergence = 0, message = NULL )
         }
         if ( rerun ){
             if ( method != "SANN" ){
