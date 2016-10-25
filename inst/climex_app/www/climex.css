@@ -135,6 +135,10 @@ tfoot {
 .bg-orange .table > tbody > tr > th {
     border-top: 1px solid #FFFFFF !important;
 }
-.bg-oragne .table > tbody > tr > ts {
+.bg-orange .table > tbody > tr > ts {
     border-bottom: 1px solid #FFFFFF !important;
+}
+#tableMap {
+    background-color: #FF8C00 !important;
+    opacity: 0.8;
 }

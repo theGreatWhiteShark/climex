@@ -83,14 +83,20 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
     download.content <- function( url.base, url.files ){
         for ( ff in url.files[[ 1 ]] ){
             ## Checks if stationsnumber in ff is already present in one name of the downloaded files
-            if ( length( grep( strsplit( ff, "_" )[[ 1 ]][ 3 ], list.files() ) ) != 0 ){
-                if ( length( grep( ff, list.files() ) ) != 0 ){
-                    ## The zip file was already downloaded beforehand so proceed with the next files
-                    next
-                }
-                ## if this is not the case than probably an outdated version is present
-                ## remove it and download the more recent one
-                file.remove( grep( strsplit( ff, "_" )[[ 1 ]][ 3 ], list.files(), value = TRUE ) )
+            split.string <- unlist( strsplit( ff, "_" ) )
+            ## Depending on the recent or historical data the id of the station is
+            ## the third or second entry. Therefore the first numerical entry will be used
+            split.id.character <- paste0( "_",
+                                         split.string[ grep( "[[:digit:]]", split.string )[ 1 ] ], "_" )
+            
+            if ( length( grep( ff, list.files() ) ) != 0 ){
+                ## file is already present
+                next
+            }
+            if ( length( grep( split.id.character, list.files() ) ) != 0 ){
+                ## the file is not present yet but on for the same id. So this must be an
+                ## outdated version. Delete it.
+                file.remove( grep( split.id.character, list.files(), value = TRUE ) )
             }
             utils::download.file( url = paste0( url.base, ff ), destfile = ff, method = "wget" )
         }
@@ -102,13 +108,31 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
     download.content( url.historical, files.historical )
     setwd( "../" )
     ## file containing the discription of the station data
-    file.description.raw <- utils::read.table( paste0( "./recent/",
-                                                      list.files( "./recent/")[
-                                                          grep( "Beschreibung",
-                                                               list.files( "./recent/" ) ) ] ),
-                                              header = TRUE, sep = "\t", stringsAsFactors = FALSE )
+    file.description.recent.raw <- utils::read.table(
+        paste0( "./recent/", list.files( "./recent/")[ grep( "Beschreibung",
+                                                            list.files( "./recent/" ) ) ] ),
+        header = FALSE, sep = "\t", stringsAsFactors = FALSE, encoding = "UTF-8", skip = 2 )
     ## split it into a list to make efficient use of the grep command
-    file.description <- split( file.description.raw, seq( nrow( file.description.raw ) ) )
+    file.description.recent <- split( file.description.recent.raw,
+                                     seq( nrow( file.description.recent.raw ) ) )
+    file.description.historical.raw <- utils::read.table(
+        paste0( "./historical/", list.files( "./historical/")[ grep( "Beschreibung",
+                                                                    list.files( "./historical/" ) ) ] ),
+        header = FALSE, sep = "\t", stringsAsFactors = FALSE, encoding = "UTF-8", skip = 2 )
+    ## split it into a list to make efficient use of the grep command
+    file.description.historical <- split( file.description.historical.raw,
+                                         seq( nrow( file.description.historical.raw ) ) )
+    file.description.aux <- c( file.description.recent,
+                          file.description.historical[ !( file.description.historical %in%
+                                                          file.description.recent ) ] )
+    ## since its not possible to have ensure the correct encoding while importing the
+    ## the artifacts have to be replaced by hand
+    file.d.1 <- lapply( file.description.aux, function( x ) gsub( "\xfc", "ü", x ) )
+    file.d.2 <- lapply( file.d.1, function( x ) gsub( "\xf6", "ö", x ) ) 
+    file.d.3 <- lapply( file.d.2, function( x ) gsub( "\xe4", "ä", x ) )  
+    file.d.4 <- lapply( file.d.3, function( x ) gsub( "\xdf", "ß", x ) )  
+    file.d.5 <- lapply( file.d.4, function( x ) gsub( "\U3e63643c", "Ü", x ) )  
+    file.description <- lapply( file.d.5, function( x ) gsub( "\U3e36643c", "Ö", x ) )      
 
     ## extract a vector of all unique station IDs seen in the .zip files
     list.station.ids <- as.list( unique( c(
@@ -231,8 +255,8 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
         unlink( "./TMPrecent/", recursive = TRUE )
         unlink( "./TMPhistorical/", recursive = TRUE )
         ## writing the data into the lists using the xts class
-        results.tmp <- xts( data.ii[ , data.column ], order.by =
-                                                          climex:::convert.date( data.ii[ , 2 ] ) )
+        results.tmp <- xts( data.ii[ , data.column ],
+                           order.by = climex:::convert.date.integer( data.ii[ , 2 ] ) )
         ## artifacts in the DWD data base are stored as -999
         ## these are converted to NA
         results.tmp[ results.tmp == -999 ] <- NA
@@ -257,14 +281,24 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
         ## The conversion to numeric and back is necessary to delete zeros
         line.raw <- grep( paste0( " ", as.numeric( station.id ), " [1,2]" ),
                          file.description, value = TRUE )
-        line.list.full <- split( strsplit( line.raw, " " )[[ 1 ]],
-                                seq( length( strsplit( line.raw, " " )[[ 1 ]] ) ) )
-        line.list <- line.list.full[ line.list.full != "" ]
-        ## in the 10th entry the stations name is residing
-        return( list( as.character( line.list[ 10 ] ),
-                     c( as.numeric( line.list[ 9 ] ), as.numeric( line.list[ 8 ] ),
-                       as.numeric( line.list[ 7 ] ) ) ) )
-    } 
+        ## The name can consist of multiple words. In the previous column there is a digit
+        ## and in the next the county consisting of one word (including a minus)
+        line.full <- unlist( strsplit( line.raw, " " ) )
+        line <- line.full[ line.full != "" ]
+        line.last.digit <- tail( grep( "[[:digit:]]", line ), 1 )
+        line.last.word <- tail( grep( "[[:alpha:]]", line ), 1 )
+        station.name <- line[ line.last.digit + 1 ]
+        if ( line.last.word - 1 > line.last.digit + 1 ){
+            ## the stations name consists of more than one word
+            for ( ww in ( line.last.digit + 2 ) : ( line.last.word - 1 ) )
+                station.name <- paste( station.name, line[ ww ] )
+        }                             
+        ## in the 9th, 8th, 7th entries the stations coordinates are residing
+        return( list( station.name,
+                     c( as.numeric( line[ line.last.digit ] ),
+                       as.numeric( line[ line.last.digit - 1 ] ),
+                       as.numeric( line[ line.last.digit - 2 ] ) ) ) )
+    }
     station.extracts <- parallel::mclapply( list.station.ids, function( x )
         extract.station.names( x, file.description ), mc.cores = parallel::detectCores() )
     station.names <- Reduce( c, lapply( station.extracts, function( x ) x[[ 1 ]] ) )
@@ -319,14 +353,19 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
 ##'
 ##' @param download.path Specifies the data is stored.
 ##' @param pick.default If TRUE it just search for the .RData file with "default" in it's name and skips the interactive picking
+##' @param import Specifies if the data should be attached to the environment the function is called from or to the global one. The latter is necessary for deploying the app in the shiny server. Default = "local".
 ##'
 ##' @family import
 ##'  
 ##' @export
 ##' @return Has no specific output but attaches .RData file to search path.
 ##' @author Philipp Mueller
-source.data <- function( pick.default = TRUE, download.path = CLIMEX.PATH ){
+source.data <- function( pick.default = TRUE, download.path = CLIMEX.PATH,
+                        import = c( "local", "global" ) ){
     ## save the current path
+    if ( missing( import ) )
+        import <- "local"
+    import <- match.arg( import )
     old.dir <- getwd()
     setwd( paste0( download.path, "downloads_dwd" ) )
     available.files <- grep( ".RData", list.files(), value = TRUE )
@@ -338,7 +377,10 @@ source.data <- function( pick.default = TRUE, download.path = CLIMEX.PATH ){
         if ( length( default.file ) == 0 ){
             ## there is no default line. So back to the interactive picking
         } else {
-            load( file = default.file[ 1 ], envir = parent.frame() )
+            if ( import == "global" ){
+                load( file = default.file[ 1 ], envir = .GlobalEnv )
+            } else 
+                load( file = default.file[ 1 ], envir = parent.frame() )
             setwd( old.dir )
             return( invisible() )
         }
@@ -346,7 +388,10 @@ source.data <- function( pick.default = TRUE, download.path = CLIMEX.PATH ){
     print( available.files )
     chosen.file <- as.numeric( readline( prompt = "Choose file: " ) )
     print( paste( "loading", available.files[ chosen.file ] ) )
-    load( file = available.files[ chosen.file ], envir = parent.frame() )
+    if ( import == "global" ){
+        load( file = available.files[ chosen.file ], envir = .GlobalEnv )
+    } else 
+        load( file = available.files[ chosen.file ], envir = parent.frame() )
     setwd( old.dir )
     invisible( )
 }

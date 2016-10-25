@@ -13,7 +13,7 @@
 ##' @import xts
 ##' @author Philipp Mueller 
 climex <- function( x.input = NULL ){
-    source.data( pick.default = TRUE )
+    source.data( pick.default = TRUE, import = "global" )
     if ( !is.null( x.input ) ){
         if ( any( class( x.input ) == c( "xts") ) ) {
             x.block <<- block( x.input )
@@ -79,7 +79,7 @@ climex.server <- function( input, output ){
                 sliderInput( "slider.artificial.data.location", "location", -30, 30, 1, round = 15 )
             } else if ( input$select.data.base == "input" ){
                 if ( type.input == "single" ){
-                    selectInput( "select.list.aux", "", "" )
+                    NULL
                 } else if ( type.input == "list" ){
                     if ( !is.null( names( x.input ) ) ){
                         ## it's a named list
@@ -102,14 +102,14 @@ climex.server <- function( input, output ){
             } else if ( input$select.data.base == "artificial data" ){
                 sliderInput( "slider.artificial.data.scale", "scale", 0, 4, 0.8, round = -2 )
             } else if ( input$select.data.base == "input" ){
-                selectInput( "select.list.aux", "", "" )
+                NULL
             }
         } else
             NULL } )
     output$menu.select.data.source.3 <- renderMenu( {
         if ( !is.null( input$select.data.base ) ){
             if ( input$select.data.base == "DWD" ){
-                selectInput( "select.list.aux", "", "" )
+                NULL
             } else if ( input$select.data.base == "artificial data" ){
                 sliderInput( "slider.artificial.data.shape", "shape", -1.5, 1.5, -0.25, round = -2 )
             } else if ( input$select.data.base == "input" ){
@@ -181,21 +181,33 @@ climex.server <- function( input, output ){
         if ( input$select.data.base == "DWD" ){
             if ( is.null( input$select.data.source ) ){
                 map.click <- input$leaflet.map_marker_click
-                data.selected <- data.chosen()
-                station.name <- as.character(
-                    data.selected[[ 2 ]]$name[ which( data.selected[[ 2 ]]$latitude %in%
-                                                      map.click$lat &
-                                                      data.selected[[ 2 ]]$longitude %in%
-                                                      map.click$lng ) ] )
-                if ( input$select.data.type == "Daily max. temp." ){
+                ## no station choosen yet. Using Potsdam as default
+                if ( !is.null( map.click ) ){
+                    data.selected <- data.chosen()
+                    station.name <- as.character(
+                        data.selected[[ 2 ]]$name[ which( data.selected[[ 2 ]]$latitude %in%
+                                                          map.click$lat &
+                                                          data.selected[[ 2 ]]$longitude %in%
+                                                          map.click$lng ) ] )
+                    if ( input$select.data.type == "Daily max. temp." ){
                     x.xts <- stations.temp.max[[ which( names( stations.temp.max ) %in%
                                                         station.name ) ]]
-                } else if ( input$select.data.type == "Daily min. temp." ){
-                    x.xts <- stations.temp.min[[ which( names( stations.temp.min ) %in%
-                                                        station.name ) ]]
-                } else if ( input$select.data.type == "Daily precipitation" ){
-                    x.xts <- stations.prec[[ which( names( stations.prec ) %in%
+                    } else if ( input$select.data.type == "Daily min. temp." ){
+                        x.xts <- stations.temp.min[[ which( names( stations.temp.min ) %in%
+                                                            station.name ) ]]
+                    } else if ( input$select.data.type == "Daily precipitation" ){
+                        x.xts <- stations.prec[[ which( names( stations.prec ) %in%
                                                     station.name ) ]]
+                    }
+                } else {
+                    if ( input$select.data.type == "Daily max. temp." ){
+                        x.xts <- stations.temp.max[[ which( names( stations.temp.max ) == "Potsdam" ) ]]
+                    } else if ( input$select.data.type == "Daily min. temp." ){
+                        x.xts <- stations.temp.min[[ which( names( stations.temp.min ) == "Potsdam" ) ]]
+                    } else if ( input$select.data.type == "Daily precipitation" ){
+                        x.xts <- stations.prec[[ which( names( stations.prec ) == "Potsdam" ) ]]
+                    } else
+                        x.xts <- stations.temp.max[[ which( names( stations.temp.max ) == "Potsdam" ) ]]
                 }
             } else {
                 if ( input$select.data.type == "Daily max. temp." ){
@@ -227,7 +239,7 @@ climex.server <- function( input, output ){
                 } else
                     x.xts <- x.input[[ as.numeric( input$select.list.entry.numerical ) ]]
             }
-        } else
+        } else if ( is.null( input$select.data.base ) )
             x.xts <- x.input
         ## getting rid of artifacts
         x.xts[ which( x.xts == -999 ) ] <- NA
@@ -443,7 +455,7 @@ climex.server <- function( input, output ){
         suppressWarnings(
             ggplot() + geom_histogram( data = x.kept, colour = colour.ts, alpha = 1,
                                       aes( x = as.numeric( x.kept ), y = ..density..,
-                                          fill = colour.ts.light ), binwidth = 10 ) +
+                                          fill = colour.ts.light ) ) +
             geom_polygon( data = plot.data, alpha = 0.7, colour = colour.ts,
                          aes( x = x, y = y, fill = colour.extremes ) ) +            
             scale_fill_manual( values = c( colour.ts.light, colour.extremes ),
@@ -600,7 +612,7 @@ climex.server <- function( input, output ){
                 x.gev.fit <- suppressWarnings( gev.fit( x.kept, method = "CG" ) )
             } else if ( input$select.optimization == "BFGS" ) {
                 x.gev.fit <- suppressWarnings( gev.fit( x.kept, method = "BFGS" ) )
-            } else if ( input$select.optimization == "SANN" ) {
+            } else if ( input$select.optimization == "GenSA::GenSA" ) {
                 x.gev.fit <- suppressWarnings( gev.fit( x.kept, method = "SANN" ) )
             } else if ( input$select.optimization == "ismev::gev.fit" ) {
                 x.gev.fit <- suppressWarnings( ismev::gev.fit( x.kept  ) )
@@ -654,23 +666,28 @@ climex.server <- function( input, output ){
     output$table.statistics <- renderUI( {
         ## define the colour for increasing or decreasing values
         css.colours <- c( "#C53100", "#0D8F20" ) # >0, <0, normal
-            x.block <- generate.data( )[[ 1 ]]
-            x.gev.fit <- fit.gev( )
-            if ( input$radio.gev.statistics == "blocks" ){
-                current <- c( x.gev.fit$par[ 1 ], x.gev.fit$par[ 2 ], x.gev.fit$par[ 3 ],
-                             x.gev.fit$value, aic( x.gev.fit ),
-                             bic( x.gev.fit, x.block ), rlevd( x.gev.fit$par ) )
-            } else 
-                current <- c( 0, x.gev.fit$par[ 1 ], x.gev.fit$par[ 2 ],
-                             x.gev.fit$value, aic( x.gev.fit ),
-                             bic( x.gev.fit, x.block ), rlevd( x.gev.fit$par ) )
-            ## history of the statistics
-            last.3 <<- last.2
-            last.2 <<- last.1
-            last.1.aux <- current - last.values
-            ## For the fitted parameters any deviation of more than 5 percent is marked red
-            for ( ll in 1 : length( x.gev.fit$par ) ){
-                if( abs( last.1.aux[ ll ] ) > 0.05* current[ ll ] ){
+        x.block <- generate.data( )[[ 1 ]]
+        x.gev.fit <- fit.gev( )
+        if ( input$radio.gev.statistics == "blocks" ){
+            current <- c( x.gev.fit$par[ 1 ], x.gev.fit$par[ 2 ], x.gev.fit$par[ 3 ],
+                         x.gev.fit$value, aic( x.gev.fit ),
+                         bic( x.gev.fit, x.block ), rlevd( x.gev.fit$par ) )
+        } else 
+            current <- c( 0, x.gev.fit$par[ 1 ], x.gev.fit$par[ 2 ],
+                         x.gev.fit$value, aic( x.gev.fit ),
+                         bic( x.gev.fit, x.block ), rlevd( x.gev.fit$par ) )
+        ## history of the statistics
+        last.3 <<- last.2
+        last.2 <<- last.1
+        last.1.aux <- current - last.values
+        ## For the fitted parameters any deviation of more than 1 percent is marked red
+        for ( ll in 1 : length( x.gev.fit$par ) ){
+            if ( all ( last.1.aux == 0 ) ){
+                ## This happens right in the beginning on initialization
+                ## The following prevents the output of coloured zeros
+                last.1.int <- last.1.aux
+                break
+            } else if( abs( last.1.aux[ ll ] - current[ ll ] ) < 0.01* current[ ll ] ){
                     if ( last.1.aux[ ll ] > 0 ){
                         last.1.int[ ll ] <- paste0( 
                             "+", as.character( format(  last.1.aux[ ll ], digits = 4 ) ),
@@ -679,38 +696,38 @@ climex.server <- function( input, output ){
                         last.1.int[ ll ] <- paste( 
                         as.character( format(  last.1.aux[ ll ], digits = 4 ) ),
                         css.colours[ 1 ] )
-                } else {
+            } else {
                     last.1.int[ ll ] <- paste( as.character( format(  last.1.aux[ ll ],
                                                                     digits = 4 ) ),
                                               " ", css.colours[ 2 ] ) } }
-            ## For the test statistic all changes to lower values are marked green
-            for ( ll in ( length( x.gev.fit$par ) + 1 ) : length( last.1.aux ) ){
-                if( last.1.aux[ ll ] > 0 ){
-                    last.1.int[ ll ] <- paste0(
-                        "+", as.character( format(  last.1.aux[ ll ], digits = 4 ) ),
-                        " ", css.colours[ 1 ] )
-                } else if ( last.1.aux[ ll ] < 0 ){
-                    last.1.int[ ll ] <- paste( as.character( format(  last.1.aux[ ll ],
-                                                                    digits = 4 ) ),
-                                              " ", css.colours[ 2 ] )
+        ## For the test statistic all changes to lower values are marked green
+        for ( ll in ( length( x.gev.fit$par ) + 1 ) : length( last.1.aux ) ){
+            if( last.1.aux[ ll ] > 0 ){
+                last.1.int[ ll ] <- paste0(
+                    "+", as.character( format(  last.1.aux[ ll ], digits = 4 ) ),
+                    " ", css.colours[ 1 ] )
+            } else if ( last.1.aux[ ll ] < 0 ){
+                last.1.int[ ll ] <- paste( as.character( format(  last.1.aux[ ll ],
+                                                                digits = 4 ) ),
+                                          " ", css.colours[ 2 ] )
                 } else {
                     last.1.int[ ll ] <- as.character( format(  last.1.aux[ ll ], digits = 4 ) )
                 } }
-            last.1 <<- last.1.int
-            if ( all( last.values == 0 ) ){
-                ## I don't want to see the statistics during the initialization
-                last.1 <<- rep( 0, length( last.1 ) ) }
-            last.values <<- current
-            x.table <- data.frame( current = current, h_1 = last.1,
+        last.1 <<- last.1.int
+        if ( all( last.values == 0 ) ){
+            ## I don't want to see the statistics during the initialization
+            last.1 <<- rep( 0, length( last.1 ) ) }
+        last.values <<- current
+        x.table <- data.frame( current = current, h_1 = last.1,
                                   h_2 = last.2, h_3 = last.3,
-                                  row.names = c( "location", "scale",
-                                                "shape", "nllh", "AIC", "BIC", "rlevel" ) )
-            ## generate a html table with the 'pander' and the 'markdown' package
-            x.html.table <- markdown::markdownToHTML(
-                text = pander::pandoc.table.return( x.table, style = "rmarkdown",
-                                           split.tables = Inf ),
-                fragment.only = TRUE )
-            x.color.table <- color.table( x.html.table, css.colours ) })
+                              row.names = c( "location", "scale",
+                                            "shape", "nllh", "AIC", "BIC", "rlevel" ) )
+        ## generate a html table with the 'pander' and the 'markdown' package
+        x.html.table <- markdown::markdownToHTML(
+            text = pander::pandoc.table.return( x.table, style = "rmarkdown",
+                                               split.tables = Inf ),
+            fragment.only = TRUE )
+        x.color.table <- color.table( x.html.table, css.colours ) })
 ####################################################################################
     
 ####################################################################################
@@ -847,10 +864,6 @@ climex.server <- function( input, output ){
     ## basic map without station positions        
     ## select only those stations in Germany with a certain minimum number of years
     data.chosen <- reactive( {
-        ## check if the data of the DWD is available
-        if ( !( "stations.temp.max" %in% ls() ) ){
-            source.data()
-        }
         if ( !is.null( input$select.data.base ) && input$select.data.base == "DWD" ){
             if ( is.null( input$select.data.type ) ){
                 selection <- Reduce( c, lapply( stations.temp.max, function( x )
@@ -863,11 +876,11 @@ climex.server <- function( input, output ){
             } else if ( input$select.data.type == "Daily min. temp." ){
                 selection <- Reduce( c, lapply( stations.temp.min, function( x )
                     length( unique( lubridate::year( x ) ) ) ) ) >= input$slider.map
-                stations.temp.min[ selection ]
+                stations.selected <- stations.temp.min[ selection ]
             } else if  ( input$select.data.type == "Daily precipitation" ){
                 selection <- Reduce( c, lapply( stations.prec, function( x )
                     length( unique( lubridate::year( x ) ) ) ) ) >= input$slider.map
-                stations.prec[ selection ]
+                stations.selected <- stations.prec[ selection ]
             } 
             position.selected <- station.positions[ selection,  ]
             list( stations.selected, position.selected )
@@ -904,35 +917,49 @@ climex.server <- function( input, output ){
                            options = popupOptions( closeButton = FALSE ) )
         } } )
     output$menu.select.data.source.1 <- renderMenu( {        
-        map.click <- input$leaflet.map_marker_click
-        if ( is.null( map.click ) )
-            return()
-        data.selected <- data.chosen()
-        if ( is.null( data.selected ) )
-            return()
-        station.name <- as.character(
-            data.selected[[ 2 ]]$name[ which( data.selected[[ 2 ]]$latitude %in% map.click$lat &
-                                              data.selected[[ 2 ]]$longitude %in% map.click$lng ) ] )
         if ( !is.null( input$select.data.base ) ){
             if ( input$select.data.base == "DWD" ){
-                if ( input$select.data.type == "Daily max. temp." ){
-                    selectInput( "select.data.source", "Station",
-                                choices = names( stations.temp.max ),
-                                selected = station.name )
-                } else if ( input$select.data.type == "Daily min. temp." ){
-                    selectInput( "select.data.source", "Station",
-                                choices = names( stations.temp.min ),
-                                selected = station.name )
-                } else if ( input$select.data.type == "Daily precipitation" ){
-                    selectInput( "select.data.source", "Station",
-                                choices = names( stations.prec ),
-                                selected = station.name )
+                map.click <- input$leaflet.map_marker_click
+                data.selected <- data.chosen()
+                if ( is.null( data.selected ) || is.null( map.click ) ){
+                    ## no data was chosen yet. Setting the Potsdam station as default
+                    if ( is.null( input$select.data.type ) ){
+                        selectInput( "select.data.source", "Station",
+                                    choices = names( stations.temp.max ), selected = "Potsdam" )
+                    } else if ( input$select.data.type == "Daily max. temp." ){
+                        selectInput( "select.data.source", "Station",
+                                    choices = names( stations.temp.max ), selected = "Potsdam" )
+                    } else if ( input$select.data.type == "Daily min. temp." ){
+                        selectInput( "select.data.source", "Station",
+                                    choices = names( stations.temp.min ), selected = "Potsdam" )
+                    } else if ( input$select.data.type == "Daily precipitation" ){
+                        selectInput( "select.data.source", "Station",
+                                    choices = names( stations.prec ), selected = "Potsdam" )
+                    }
+                } else {
+                    station.name <- as.character(
+                        data.selected[[ 2 ]]$name[ which(
+                                                data.selected[[ 2 ]]$latitude %in% map.click$lat &
+                                                data.selected[[ 2 ]]$longitude %in% map.click$lng ) ] )
+                    if ( input$select.data.type == "Daily max. temp." ){
+                        selectInput( "select.data.source", "Station",
+                                    choices = names( stations.temp.max ),
+                                    selected = station.name )
+                    } else if ( input$select.data.type == "Daily min. temp." ){
+                        selectInput( "select.data.source", "Station",
+                                    choices = names( stations.temp.min ),
+                                    selected = station.name )
+                    } else if ( input$select.data.type == "Daily precipitation" ){
+                        selectInput( "select.data.source", "Station",
+                                    choices = names( stations.prec ),
+                                    selected = station.name )
+                    }
                 }
             } else if ( input$select.data.base == "artificial data" ){
                 sliderInput( "slider.artificial.data.location", "location", -30, 30, 1, round = 15 )
             } else if ( input$select.data.base == "input" ){
                 if ( type.input == "single" ){
-                    selectInput( "select.list.aux", "", "" )
+                    NULL
                 } else if ( type.input == "list" ){
                     if ( !is.null( names( x.input ) ) ){
                         ## it's a named list
@@ -968,7 +995,7 @@ climex.server <- function( input, output ){
     ##         addMarkers( data = map.click, group = "selected", icon = red.icon, popup = x.popup,
     ##                    lng = ~lng, lat = ~lat, options = popupOptions( closeButton = FALSE ) ) } )
 
-     output$table.map <- renderTable( {
+    output$tableMap <- renderTable( {
         map.click <- input$leaflet.map_marker_click
         if ( is.null( map.click ) )
             return( NULL )
@@ -988,11 +1015,12 @@ climex.server <- function( input, output ){
         x.rlevd <- rlevd( x.gev.fit, return.period = c( 100, 50, 20 ) )
         ## paste0( "<b>", station.name, "</b>", "<br/>", "100y return level: ", x.rlevd[ 1 ], "<br/>",
         ##        "50y return level: ", x.rlevd[ 2 ], "<br/>", "20y return level: ", x.rlevd[ 3 ] )
-        x.df <- data.frame( x.rlevd, row.names = c( "100y return level", "50y return level",
-                                                   "20y return level" ) )
-        colnames( x.df ) <- station.name
+        x.df <- data.frame( names = c( "100y return level", "50y return level",
+                                          "20y return level" ),
+                           x.rlevd, row.names = NULL )
+        colnames( x.df ) <- c( station.name, "" )
         x.df
-     }, rownames = TRUE, digits = 3, width = 215 )
+     }, rownames = FALSE, digits = 3, width = 220 )
 }
 
 ##' @title The user interface for the \code{\link{climex}} function.
@@ -1043,8 +1071,8 @@ climex.ui <- function(){
                     leafletOutput( "leaflet.map", width = "100%", height = 1000 ),
                     absolutePanel( top = 49, right = 10,
                                   sliderInput( "slider.map", "Minimal length (years)",
-                                              0, 155, value = 30, step = 1, width = 215 ),
-                                  tableOutput( "table.map" ) ) ),
+                                              0, 155, value = 65, step = 1, width = 215 ),
+                                  tableOutput( "tableMap" ) ) ),
                 tabItem(
                     tabName = "tabGeneral",
                     fluidRow(
@@ -1066,7 +1094,7 @@ climex.ui <- function(){
                                                     "deseasonalize::ds", "descomponer", "none" ),
                                         selected = "Anomalies" ),
                             selectInput( "select.optimization", "Optimization/Fitting routine",
-                                        choices = c( "Nelder-Mead", "CG", "BFGS", "SANN",
+                                        choices = c( "Nelder-Mead", "CG", "BFGS", "GenSA::GenSA",
                                                     "ismev::gev.fit", "extRemes::fevd" ),
                                         selected = c( "Nelder-Mead" ) ) ) ),
                     fluidRow(
