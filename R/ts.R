@@ -18,22 +18,21 @@ aic <- function( x ){
         2* x$nllh + 2* length( x$mle )
 }
 
-##' @title Calculates the Bayesian information criterion of a gev.fit or climex.gev.fit object.
-##' @details The climex.gev.fit object is of identical structure as the output of the optim() function. In contrast to the aic the time series itself has to provided too.
+##' @title Calculates the Bayesian information criterion of a climex.gev.fit object.
+##' @details The climex.gev.fit object is of identical structure as the output of the optim() function.
 ##'
-##' @param x Optim()like fit of a time series.
-##' @param time.series Original time series.
+##' @param x Object of class climex.gev.fit. When ensuring the presence of all additional list elements an output of optim() can also be used.
 ##'
 ##' @seealso \code{\link{aic}}
 ##' @family ts
 ##' 
 ##' @return Numeric value
 ##' @author Philipp Mueller
-bic <- function( x, time.series = NULL ){
+bic <- function( x ){
     if ( ( any( class( x ) != "gev.fit" ) && any( class( x ) != "gpd.fit" ) ) && !any( class( x ) == "climex.gev.fit" ) )
         stop( "Wrong format provided in bic. An object of class 'gev.fit' is required!" )
     if ( any( class( x ) == "climex.gev.fit" ) ){
-        2* x$value + length( x$par )* log( length( time.series ) )
+        2* x$value + length( x$par )* log( length( x$x ) )
     } else
         2* x$nllh + length( x$mle )* log( length( x$data ) )
 }

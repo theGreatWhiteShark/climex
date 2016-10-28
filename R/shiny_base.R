@@ -119,13 +119,20 @@ climex.server <- function( input, output ){
             NULL } )
     output$slider.gev.statistics <- renderMenu( {
         x.deseasonalized <- deseasonalization()
-        if ( input$radio.gev.statistics == "blocks" ){
+        if ( input$radio.gev.statistics == "Blocks" ){
             sliderInput( "slider.box.length", "Box length in days:", 1, 365*3, 365 )
-        } else 
-            sliderInput( "slider.threshold.gev", "threshold:",
-                        round( min( x.deseasonalized, na.rm = TRUE ) ),
-                        round( max( x.deseasonalized, na.rm = TRUE ) ),
-                        round( 0.8* max( x.deseasonalized, na.rm = TRUE ) ) )
+        } else {
+         ##  if ( input$button.min.max == "Max" || is.null( input$button.min.max ) ){
+                sliderInput( "slider.threshold.gev", "Threshold:",
+                            round( min( x.deseasonalized, na.rm = TRUE ) ),
+                            round( max( x.deseasonalized, na.rm = TRUE ) ),
+                            round( 0.8* max( x.deseasonalized, na.rm = TRUE ) ) )
+          ##   } else
+        ##         sliderInput( "slider.threshold.gev", "Threshold:",
+        ##                     round( min( x.deseasonalized, na.rm = TRUE ) ),
+        ##                     round( max( x.deseasonalized, na.rm = TRUE ) ),
+        ##                     round( 0.8* min( x.deseasonalized, na.rm = TRUE ) ) )
+        }
     } )
     output$menu.data.cleaning <- renderMenu( {
         ## When applying the blocking method incomplete years distort the time series and
@@ -133,10 +140,13 @@ climex.server <- function( input, output ){
         ## are most likely to occure due to short range correlations. This has to be
         ## avoided by using declustering algorithms (which mainly picks the maximum of a
         ## specific cluster)
-        if ( input$radio.gev.statistics == "blocks" ){
-            checkboxInput( "check.box.incomplete.years", "Remove incomplete years", FALSE )
+        if ( !is.null( input$radio.gev.statistics ) ) {
+            if ( input$radio.gev.statistics == "Blocks" ){
+                checkboxInput( "check.box.incomplete.years", "Remove incomplete years", FALSE )
+            } else
+                checkboxInput( "check.box.decluster", "Declustering of the data", FALSE )
         } else
-            checkboxInput( "check.box.decluster", "Declustering of the data", FALSE )
+            checkboxInput( "check.box.incomplete.years", "Remove incomplete years", FALSE )
     } )
 #################################################################################### 
     
@@ -178,7 +188,9 @@ climex.server <- function( input, output ){
         ## The cutting of the time series to a specific range is not sone here but in
         ## the generate.data function
         file.loading()
-        if ( input$select.data.base == "DWD" ){
+        if ( is.null( input$select.data.base ) ){
+            x.xts <- x.input
+        } else if ( input$select.data.base == "DWD" ){
             if ( is.null( input$select.data.source ) ){
                 map.click <- input$leaflet.map_marker_click
                 ## no station choosen yet. Using Potsdam as default
@@ -200,7 +212,9 @@ climex.server <- function( input, output ){
                                                     station.name ) ]]
                     }
                 } else {
-                    if ( input$select.data.type == "Daily max. temp." ){
+                    if ( is.null( input$select.data.type ) ){
+                        x.xts <- stations.temp.max[[ which( names( stations.temp.max ) == "Potsdam" ) ]]
+                    } else if ( input$select.data.type == "Daily max. temp." ){
                         x.xts <- stations.temp.max[[ which( names( stations.temp.max ) == "Potsdam" ) ]]
                     } else if ( input$select.data.type == "Daily min. temp." ){
                         x.xts <- stations.temp.min[[ which( names( stations.temp.min ) == "Potsdam" ) ]]
@@ -239,13 +253,14 @@ climex.server <- function( input, output ){
                 } else
                     x.xts <- x.input[[ as.numeric( input$select.list.entry.numerical ) ]]
             }
-        } else if ( is.null( input$select.data.base ) )
-            x.xts <- x.input
+        }
         ## getting rid of artifacts
         x.xts[ which( x.xts == -999 ) ] <- NA
-        if ( input$check.box.incomplete.years ){
+        if ( !is.null( input$check.box.incomplete.years ) ){
+            if ( input$check.box.incomplete.years ){
             ## Remove all incomplete years from time series
-            x.xts <- remove.incomplete.years( x.xts ) }
+                x.xts <- remove.incomplete.years( x.xts ) }
+        }
         return( x.xts ) } )
     data.blocking <- reactive( {
         ## Decides if either the GEV distribution with block maxima or the Pareto
@@ -254,12 +269,17 @@ climex.server <- function( input, output ){
         x.xts <- data.selection( )
         x.deseasonalized <- deseasonalization( )
         ## Toggle if maxima of minima are going to be used
-        ifelse( input$button.min.max == "max", block.mode <- "max", block.mode <- "min")
+        if ( is.null( input$button.min.max ) ){
+            block.mode <- "max"
+        } else if ( input$button.min.max == "Max" ){
+            block.mode <- "max"
+        } else
+            block.mode <- "min"
         if ( is.null( input$radio.gev.statistics ) ){
             ## While initialization input$radio.gev.statistics and input$slider.box.length are
             ## NULL. Therefore this is the fallback default x.block
             x.block <- block( x.deseasonalized, separation.mode = "years", block.mode = block.mode )
-        } else if ( input$radio.gev.statistics == "blocks" ){
+        } else if ( input$radio.gev.statistics == "Blocks" ){
             ## Box size as dynamic input parameter
             if ( is.null( input$slider.box.length ) ||  input$slider.box.length == 366 ||
                  input$slider.box.length == 365 ){
@@ -268,17 +288,20 @@ climex.server <- function( input, output ){
             } else
                 x.block <- block( x.deseasonalized, block.length = input$slider.box.length,
                                  block.mode = block.mode )
-        } else if ( input$radio.gev.statistics == "threshold" ){
+        } else if ( input$radio.gev.statistics == "Threshold" ){
             ## Due to "historical" reasons the vector containing the resulting values will
             ## still be called x.block. The "block.mode" and the corresponding
             ## "input$button.min.max" are still use full and decide if the values above
             ## or below the threshold are going to be extracted
-            if ( input$check.box.decluster )
-                x.deseasonalized <- declustering( x.deseasonalized, input$slider.threshold.gev )
-            if ( block.mode == "max" ){
-                x.block <- x.deseasonalized[ x.deseasonalized >= input$slider.threshold.gev ]
+            if ( is.null( input$slider.threshold.gev ) ){
+                x.block <- x.deseasonalized[ x.deseasonalized >= max( x.deseasonalized )* .8 ]
             } else
-                x.block <- x.deseasonalized[ x.deseasonalized <= input$slider.threshold.gev ]
+                x.block <- x.deseasonalized[ x.deseasonalized >= input$slider.threshold.gev ]
+            if ( !is.null( input$check.box.decluster ) ){
+                if ( input$check.box.decluster )
+                    x.block <- declustering( x.block, input$slider.threshold.gev )
+            }
+           
         }
             
         x.block <<- x.block
@@ -355,10 +378,14 @@ climex.server <- function( input, output ){
     colour.ts.light <- "#7171EC"
     colour.extremes.light <- grDevices::rgb( 1, 0.9, 0.8 )
     function.get.y.label <- function( input ){
-        if ( input$select.data.base == "artificial data" ){
+        if ( is.null( input$select.data.base ) ){
+                y.label <- "temperature in °C"            
+        } else if ( input$select.data.base == "artificial data" ){
             y.label <- "GEV sample"
         } else if ( input$select.data.base == "DWD" ){
-            if ( input$select.data.type == "Daily precipitation" ){
+            if ( is.null( input$select.data.type ) ){
+                y.label <- "temperature in °C"
+            } else if ( input$select.data.type == "Daily precipitation" ){
                 y.label <- "precipitation in mm"
             } else {
                 y.label <- "temperature in °C" }
@@ -416,9 +443,13 @@ climex.server <- function( input, output ){
         ## Plots the result of the fitted GEV
         x.block <- generate.data( )[[ 1 ]]
         x.kept <- x.block[ reactive.values$keep.rows ]
+        if ( !is.null( input$button.min.max ) ){
+            if ( input$button.min.max == "Min" && input$radio.gev.statistics == "Blocks" )
+                x.kept <- ( -1 )* x.kept
+        }
         x.lim <- c( max( x.kept ), min( x.kept ) )
         x.gev.fit <- fit.gev( )
-        if ( input$radio.gev.statistics == "blocks" ){
+        if ( input$radio.gev.statistics == "Blocks" ){
             ## GEV
             ## determining the limits of the PDF plot
             threshold.pdf.plot <- 5E-4
@@ -440,11 +471,13 @@ climex.server <- function( input, output ){
         } else {
             ## Generalized Pareto
             ## Since the Pareto function does not have a location parameter
+            if ( is.null( input$slider.threshold.gev ) ){
+                threshold <- max( x.kept )* .8
+            } else 
+                threshold <- input$slider.threshold.gev
             plot.range <- seq( x.lim[ 2 ], x.lim[ 1 ]* 1.1, 0.01 )
             plot.data <- data.frame( x = plot.range,
-                                    y = ismev::gpd.dens( x.gev.fit$par,
-                                                        input$slider.threshold.gev,
-                                                        plot.range ) )
+                                    y = ismev::gpd.dens( x.gev.fit$par, threshold, plot.range ) )
             plot.data <- plot.data[ !is.na( plot.data[[ 2 ]] ), ]
             plot.data[ nrow( plot.data ) + 1, ] <- c( plot.data[[ 1 ]][ 1 ],
                                                      plot.data[[ 2 ]][ nrow( plot.data ) ] )
@@ -452,65 +485,122 @@ climex.server <- function( input, output ){
         }
         ## splitting the plot.data$y in half and determining which index is closest to threshold
         x.label <- function.get.y.label( input )
-        suppressWarnings(
-            ggplot() + geom_histogram( data = x.kept, colour = colour.ts, alpha = 1,
-                                      aes( x = as.numeric( x.kept ), y = ..density..,
-                                          fill = colour.ts.light ) ) +
+        gg1 <- ggplot() + geom_histogram( data = x.kept, colour = colour.ts, alpha = 1,
+                                         aes( x = as.numeric( x.kept ), y = ..density..,
+                                             fill = colour.ts.light ), na.rm = TRUE,
+                                         bins = length( x.kept )* .5 ) +
             geom_polygon( data = plot.data, alpha = 0.7, colour = colour.ts,
                          aes( x = x, y = y, fill = colour.extremes ) ) +            
             scale_fill_manual( values = c( colour.ts.light, colour.extremes ),
                               labels = c( "Histogram data", "Fitted distribution"  ) ) +
             theme_bw() + xlab( x.label ) + xlim( plot.lim ) +
-            theme( legend.position = "none" ) )
-        return( last_plot() )
+            theme( legend.position = "none" )
+        if ( is.null( input$button.min.max ) ){
+            return( gg1 )
+        } else if ( input$button.min.max == "Min" ){
+            ## Adding a note when the minima are fitted
+            ## upper point of the density plot
+            y.lim.density <- max( density( x.kept )$y )
+            ## upper point of the histogram (at least more or less since a different
+            ## amount of breaks are used )
+            y.lim.histogram <- max( hist( x.kept, plot = FALSE )$density )
+            if ( input$radio.gev.statistics == "Threshold" ){
+                plot.text <- data.frame( x = max( x.lim ),
+                                        y = max( y.lim.density, y.lim.histogram )* 1.2,
+                                        label = "No minimum extremes supported \n for the Generalized Pareto distribution!" )
+            } else
+                plot.text <- data.frame( x = max( x.lim ),
+                                        y = max( y.lim.density, y.lim.histogram )* 1.2,
+                                        label = "Since the minimal extremes are chosen the GEV distribution \n will be fitted to the negated time series" )
+            gg1 <- gg1 + geom_label( data = plot.text, aes( x = x, y = y, label = label ),
+                                         fill = "white", colour = "firebrick", fontface = "bold")
+
+        }
+        return( gg1 )
     } )
     output$plot.fit.qq <- renderPlot( {
         ## Quantile-quantile plot for fit statistics
         x.block <- generate.data( )[[ 1 ]]
         x.kept <- x.block[ reactive.values$keep.rows ]
-        x.gev.fit <- fit.gev( )
-        if ( input$radio.gev.statistics == "blocks" ){
-            plot.data <- data.frame(
-                model = extRemes::qevd( ppoints( length( x.kept ), 0 ),
-                                       loc = x.gev.fit$par[ 1 ], scale = x.gev.fit$par[ 2 ],
-                                       shape = x.gev.fit$par[ 3 ], type = "GEV" ),
-                empirical = sort( as.numeric( x.kept ) ) )
+        x.gev.fit <- fit.gev()
+        if ( input$radio.gev.statistics == "Blocks" ){
+            if ( is.null( input$button.min.max ) ){
+                plot.data <- data.frame(
+                    model = extRemes::qevd( ppoints( length( x.kept ), 0 ),
+                                           loc = x.gev.fit$par[ 1 ], scale = x.gev.fit$par[ 2 ],
+                                           shape = x.gev.fit$par[ 3 ], type = "GEV" ),
+                    empirical = sort( as.numeric( x.kept ) ) )
+            } else if ( input$button.min.max == "Min" && input$radio.gev.statistics == "Blocks" ){
+                plot.data <- data.frame(
+                    model = extRemes::qevd( ppoints( length( x.kept ), 0 ),
+                                           loc = x.gev.fit$par[ 1 ], scale = x.gev.fit$par[ 2 ],
+                                           shape = x.gev.fit$par[ 3 ], type = "GEV" ),
+                    empirical = -1* sort( as.numeric( -x.kept ) ) )
+            } else
+                plot.data <- data.frame(
+                    model = extRemes::qevd( ppoints( length( x.kept ), 0 ),
+                                           loc = x.gev.fit$par[ 1 ], scale = x.gev.fit$par[ 2 ],
+                                           shape = x.gev.fit$par[ 3 ], type = "GEV" ),
+                    empirical = sort( as.numeric( x.kept ) ) )
         } else {
+            if ( is.null( input$slider.threshold.gev ) ){
+                threshold <- max( x.kept )* .8
+            } else 
+                threshold <- input$slider.threshold.gev
             plot.data <- data.frame(
-                model = extRemes::qevd( ppoints( length( x.kept ), 0 ),
-                                       scale = x.gev.fit$par[ 1 ],
+                model = extRemes::qevd( ppoints( length( x.kept ), 0 ), scale = x.gev.fit$par[ 1 ], 
                                        shape = x.gev.fit$par[ 2 ], type = "GP",
-                                       threshold = input$slider.threshold.gev ),
+                                       threshold = threshold ),
                 empirical = sort( as.numeric( x.kept ) ) ) }
         plot.fit <- lm( model ~ empirical, plot.data )[[ 1 ]]
-        ggplot() + geom_point( data = plot.data, aes( x = model, y = empirical ),
-                              colour = colour.ts,
-                              shape = 1, size = 2, alpha = 0.8 ) +
-            geom_abline( intercept = plot.fit[ 1 ], slope = plot.fit[ 2 ], colour = colour.ts,
+        gg.qq1 <- ggplot() + geom_point( data = plot.data, aes( x = model, y = empirical ),
+                                        colour = colour.ts,
+                                        shape = 1, size = 2, alpha = 0.8 ) +
+            geom_abline( intercept = plot.fit[ 1 ], slope = -plot.fit[ 2 ], colour = colour.ts,
                         linetype = 2 ) +
             geom_abline( intercept = 0, slope = 1, colour = colour.extremes ) +
-            theme_bw() } )
+            theme_bw()
+        if ( !is.null( input$button.min.max ) ){
+            if ( input$button.min.max == "Min" && input$radio.gev.statistics == "Blocks")
+                gg.qq1 <- gg.qq1 + scale_y_reverse()
+        }
+        return( gg.qq1 ) } )
     output$plot.fit.qq2 <- renderPlot( {
         ## Quantile-quantile plot for fit statistics with samples drawn from fitted GEV
         x.block <- generate.data( )[[ 1 ]]
         x.kept <- x.block[ reactive.values$keep.rows ]
-        x.gev.fit <- fit.gev( )
-        if ( input$radio.gev.statistics == "blocks" ){
+        x.gev.fit <- fit.gev()
+        if ( input$radio.gev.statistics == "Blocks" ){
             sampled <- sort( extRemes::revd( length( x.kept ), loc = x.gev.fit$par[ 1 ],
                                             scale = x.gev.fit$par[ 2 ],
                                             shape = x.gev.fit$par[ 3 ], type = "GEV" ) )
-        } else
+            if ( !is.null( input$button.min.max ) ){
+                if ( input$button.min.max == "Min" )
+                    sampled <- -1* sampled
+            }
+        } else{
             sampled <- sort( extRemes::revd( length( x.kept ), scale = x.gev.fit$par[ 1 ],
                                             shape = x.gev.fit$par[ 2 ], type = "GEV",
                                             threshold = input$slider.threshold.gev ) )
-        empirical <- sort( as.numeric( x.kept ) )
+        }
+        if ( is.null( input$button.min.max ) ){
+            empirical <- sort( as.numeric( x.kept ) )
+        } else if ( input$button.min.max == "Min" && input$radio.gev.statistics == "Blocks" ){
+            empirical <- -1* sort( as.numeric( -x.kept ) )
+        } else
+            empirical <- sort( as.numeric( x.kept ) )
         length.e <- length( empirical )
         length.s <- length( sampled )
         ## inspired by extRemes::qqplot( plot.data$empirical, plot.data$sampled )
         ## function giving a linear interpolation 
         function.sampled.interpolate <- approxfun( seq( 0, 1, length = length( sampled ) ),
                                                   sort( sampled ), yleft = NA, yright = NA )
-        period <- ( 1 : length( empirical ) - 1 )/ ( length( empirical ) - 1 )
+        if ( is.null( input$button.min.max ) ){
+            period <- ( 1 : length( empirical ) - 1 )/ ( length( empirical ) - 1 )
+        } else if ( input$button.min.max == "Min" && input$radio.gev.statistics == "Blocks" ){
+            period <- rev( ( 1 : length( empirical ) - 1 )/ ( length( empirical ) - 1 ) )
+        } else
+            period <- ( 1 : length( empirical ) - 1 )/ ( length( empirical ) - 1 )
         sampled.interpolate <- function.sampled.interpolate( period )
         sampled.ci.low <- function.sampled.interpolate(
             period - 1.36/ sqrt( length.e* length.s/ ( length.e + length.s ) ) )
@@ -518,52 +608,114 @@ climex.server <- function( input, output ){
             period + 1.36/ sqrt( length.e* length.s/ ( length.e + length.s ) ) )
         plot.data <- data.frame( empirical = empirical, sampled = sampled.interpolate,
                                 ci.low = sampled.ci.low, ci.high = sampled.ci.high )
-        plot.fit <- lm( sampled ~ empirical, plot.data )[[ 1 ]]
-        suppressWarnings(
-        ggplot() + geom_point( data = plot.data, aes( x = sampled, y = empirical ),
-                              colour = colour.ts, shape = 1, size = 2, alpha = 0.8 ) +
+        plot.fit <- lm( empirical ~ sampled, plot.data )[[ 1 ]]
+        gg.qq2 <- ggplot() + geom_point( data = plot.data, aes( x = sampled, y = empirical ),
+                                        colour = colour.ts, shape = 1, size = 2, alpha = 0.8,
+                                        na.rm = TRUE ) +
             geom_line( data = plot.data, aes( x = sampled.ci.low, y = empirical ), linetype = 2,
-                      colour = colour.extremes ) +
+                      colour = colour.extremes, na.rm = TRUE ) +
             geom_line( data = plot.data, aes( x = sampled.ci.high, y = empirical ), linetype = 2,
-                      colour = colour.extremes ) +
+                      colour = colour.extremes, na.rm = TRUE ) +
             geom_abline( intercept = plot.fit[ 1 ], slope = plot.fit[ 2 ], colour = colour.ts,
-                        linetype = 2 ) +
-            geom_abline( intercept = 0, slope = 1, colour = colour.extremes ) +
-            theme_bw()  )} )
+                        linetype = 2 ) + theme_bw() +
+            geom_abline( intercept = 0, slope = 1, colour = colour.extremes )
+        if ( !is.null( input$button.min.max ) ){
+            if ( input$button.min.max == "Min" && input$radio.gev.statistics == "Blocks" )
+                gg.qq2 <- gg.qq2 + scale_y_reverse() + scale_x_reverse()
+        }
+        return( gg.qq2 )        
+    } )
     output$plot.fit.return.level <- renderPlot( {
-        ## Return level plot
-        x.block <- generate.data( )[[ 1 ]]
+        x.block <- generate.data()[[ 1 ]]
         x.kept <- x.block[ reactive.values$keep.rows ]
-        x.gev.fit <- fit.gev( )
+        x.gev.fit <- fit.gev()
+        if ( input$select.optimization == "ismev::gev.fit" ){
+            ## blame the extRemes package
+            x.gev.fit <- gev.fit( x.kept, method = "Nelder-Mead" )
+        }
         x.period <- c( 2, 5, 10, 20, 50, 80, 100, 120, 200, 250, 300, 500, 800 )
-        if ( input$radio.gev.statistics == "blocks" ){
-            x.return.level <- extRemes::rlevd( x.period, type = "GEV", loc = x.gev.fit$par[ 1 ],
-                                              scale = x.gev.fit$par[ 2 ],
-                                              shape = x.gev.fit$par[ 3 ] )
-            x.confidence.intervals <- extRemes::ci.fevd.mle( as.fevd( x.kept, x.gev.fit,
-                                                                     type = "GEV"),
-                                                            return.period = x.period )
+        if ( input$radio.gev.statistics == "Blocks" ){
+            if ( is.null( input$button.min.max ) ){
+                ## the true block maxima and their return levels will be calculated
+                x.confidence.intervals <- extRemes::ci.fevd.mle( as.fevd( x.kept, x.gev.fit,
+                                                                         type = "GEV"),
+                                                                return.period = x.period )
+                plot.data <- data.frame( x = -1/ log( ppoints( length( x.kept ), 0 ) ),
+                                        y = sort( as.numeric( x.kept ) ) )
+                plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
+                                   max( x.confidence.intervals[ , 3 ] ) )
+            } else if ( input$button.min.max == "Min" ){
+                ## the time series will be negated and the results too to aquire the
+                ## return levels of the minima
+                x.confidence.intervals <- ( -1 )* extRemes::ci.fevd.mle( as.fevd( -x.kept, x.gev.fit,
+                                                                                 type = "GEV"),
+                                                                        return.period = x.period )
+                plot.data <- data.frame( x = -1/ log( ppoints( length( x.kept ), 0 ) ),
+                                        y = -1* sort( as.numeric( -x.kept ) ) )
+                plot.y.limits <- c( min( x.confidence.intervals[ , 3 ] ),
+                                   max( plot.data$y ) )
+            } else {
+                ## the true block maxima and their return levels will be calculated
+                x.confidence.intervals <- extRemes::ci.fevd.mle( as.fevd( x.kept, x.gev.fit,
+                                                                         type = "GEV"),
+                                                                return.period = x.period )
+                plot.data <- data.frame( x = -1/ log( ppoints( length( x.kept ), 0 ) ),
+                                        y = sort( as.numeric( x.kept ) ) )
+                plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
+                                   max( x.confidence.intervals[ , 3 ] ) )
+            } 
             plot.statistics <- data.frame( period = -1/ ( log( 1 - 1/ x.period ) ),
                                           level = as.numeric( x.confidence.intervals[ , 2 ] ),
                                           ci.low = as.numeric( x.confidence.intervals[ , 1 ] ), 
                                           ci.high = as.numeric( x.confidence.intervals[ , 3 ] ) )
-        } else
+        } else {
+            ## the extRemes::ci.fevd.mle and the fevd object is accepts seems to be build in
+            ## such a way that the maximum possible affort is necessary to use with non-native
+            ## data. To circumvent this horrible programming style I will refit using extRemes::fevd
+
+            ## well this just looks to awkward. Also the diagnostic plots in the ismev and the
+            ## extRemes package look wrong for all data examples I just tried.
+            ## I will leave this one blank.
+            ## x.gpd.fit <- extRemes::fevd(  x.kept, threshold = input$slider.threshold.gev,
+            ##                             type = "GP" )
+            ## x.return.level <- extRemes::rlevd( x.period, type = "GP",
+            ##                                   scale = x.gpd.fit$results$par[ 1 ],
+            ##                                   shape = x.gpd.fit$results$par[ 2 ],
+            ##                                   threshold = input$slider.threshold.gev )
+            
+            ## x.confidence.intervals <- extRemes::ci.fevd.mle( x.gpd.fit, return.period = x.period )
+            ## plot.statistics <- data.frame( period = x.period,
+            ##                               level = as.numeric( x.confidence.intervals[ , 2 ] ),
+            ##                               ci.low = as.numeric( x.confidence.intervals[ , 1 ] ), 
+            ##                               ci.high = as.numeric( x.confidence.intervals[ , 3 ] ) )
+            ## x.sort <- sort( as.numeric( x.kept ) )
+            
+            ## plot.data <- data.frame( x = -1/ log( ppoints( length( x.kept ), 0 ) )[
+            ##                                      x.sort > input$slider.threshold.gev ],
+            ##                         y = x.sort[ x.sort > input$slider.threshold.gev ] )
+            ## plot.data <- data.frame( x = x.period,
+            ##                         y = input$slider.threshold.gev +
+            ##                             x.gpd.fit$results$par[ 1 ]/ x.gpd.fit$results$par[ 2 ]* (
+            ##                                 x.period^x.gpd.fit$results$par[ 2 ] - 1 ) )
             return( NULL )
-        plot.data <- data.frame( x = -1/ log( ppoints( length( x.kept ), 0 ) ),
-                                y = sort( as.numeric( x.kept ) ) )
-        suppressWarnings(
-        ggplot() + geom_point( data = plot.data, aes( x = x, y = y ), colour = colour.ts,
-                              shape = 1,
-                              size = 2, alpha = 0.8 ) +
+        }
+        gg.rl <- ggplot() + geom_point( data = plot.data, aes( x = x, y = y ), colour = colour.ts,
+                                       shape = 1, size = 2, alpha = 0.8, na.rm = TRUE ) +
             geom_line( data = plot.statistics, aes( x = period, y = level ),
-                      colour = colour.extremes ) +
+                      colour = colour.extremes, na.rm = TRUE ) +
             geom_line( data = plot.statistics, aes( x = period, y = ci.low ), linetype = 2,
-                      colour = colour.extremes ) +
+                      colour = colour.extremes, na.rm = TRUE ) +
             geom_line( data = plot.statistics, aes( x = period, y = ci.high ), linetype = 2,
-                      colour = colour.extremes ) + xlab( "return period [years]" ) +
-            ylab( "return level" ) + theme_bw() + scale_x_log10( limits = c( 1, 1000 ) ) +
-            ylim( c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
-                    max( plot.statistics$ci.high ) ) ) ) } )
+                      colour = colour.extremes, na.rm = TRUE ) + xlab( "return period [years]" ) +
+            ylab( "return level" ) + theme_bw() + scale_x_log10( limits = c( 1, 1000 ) )
+
+        if ( !is.null( input$button.min.max ) ){
+            if ( input$button.min.max == "Min" && input$radio.gev.statistics == "Blocks" ){
+                gg.rl <- gg.rl + scale_y_reverse() 
+            } else
+                gg.rl <- gg.rl + ylim( plot.y.limits )
+        }
+        return( gg.rl )  } )
 ####################################################################################
     
 ####################################################################################
@@ -572,9 +724,11 @@ climex.server <- function( input, output ){
     deseasonalization <- reactive( {
         ## Dropdown for deseasonalization method
         x.xts <- data.selection( )
-        if ( input$select.data.base == "artificial data" ){
-            ## For the artificial data there is no need for deseasonalization
-            return( x.xts ) }
+        if ( !is.null( input$select.data.base ) ){
+            if ( input$select.data.base == "artificial data" ){
+                ## For the artificial data there is no need for deseasonalization
+                return( x.xts ) }
+        }
         if ( input$select.deseasonalize == "Anomalies" ){
             x.deseasonalized <- anomalies( x.xts )
         } else if ( input$select.deseasonalize == "decompose" ){
@@ -603,8 +757,13 @@ climex.server <- function( input, output ){
     fit.gev <- reactive( {
         x.block <- generate.data( )[[ 1 ]]
         x.kept <- x.block[ reactive.values$keep.rows ]
+        ## negating the time series to derive the statistics for the minima
+        if ( !is.null( input$button.min.max ) ){
+            if ( input$button.min.max == "Min" && input$radio.gev.statistics == "Blocks" )
+                x.kept <- ( -1 )* x.kept
+        }
         ##! Drop-down menu to decide which fitting routine should be used
-        if ( input$radio.gev.statistics == "blocks" ){
+        if ( input$radio.gev.statistics == "Blocks" ){
             ## Fits of GEV parameters to blocked data set
             if ( input$select.optimization == "Nelder-Mead" ){
                 x.gev.fit <- suppressWarnings( gev.fit( x.kept, method = "Nelder-Mead" ) )
@@ -615,41 +774,44 @@ climex.server <- function( input, output ){
             } else if ( input$select.optimization == "GenSA::GenSA" ) {
                 x.gev.fit <- suppressWarnings( gev.fit( x.kept, method = "SANN" ) )
             } else if ( input$select.optimization == "ismev::gev.fit" ) {
-                x.gev.fit <- suppressWarnings( ismev::gev.fit( x.kept  ) )
-                x.gev.fit$convergence <- x.gev.fit$conv
+                x.gev.fit <- ismev::gev.fit( x.kept, show = FALSE )
                 x.gev.fit$value <- x.gev.fit$nllh
                 x.gev.fit$par <- x.gev.fit$mle
+                x.gev.fit$x <- x.kept
+                ## very very dirty. but the extRemes package seems to be written to prevent
+                ## nice interactions with its functions
+                x.gev.fit$hessian <- gev.fit( x.kept, method = "Nelder-Mead",
+                                             initial = as.numeric( x.gev.fit$par ) )$hessian
             } else if ( input$select.optimization == "extRemes::fevd" ) {
                 x.gev.fit <- suppressWarnings( extRemes::fevd( x.kept )$results ) }
             class( x.gev.fit ) <- c("list", "climex.gev.fit")
         } else {
-            if ( input$button.min.max == "min" ){
-                ## Apply GP fit to all values below a certain threshold
-                x.kept <- -1* x.kept }
             ## Fits of GPD parameters to blocked data set
+            if ( is.null( input$slider.threshold.gev ) ){
+                threshold <- max( x.kept )* .8
+            } else
+                threshold <- input$slider.threshold.gev
             if ( input$select.optimization == "Nelder-Mead" ){
                 x.gev.fit <- suppressWarnings(
-                    ismev::gpd.fit( x.kept, input$slider.threshold.gev,
-                                   method = "Nelder-Mead", show = FALSE ) )
+                    ismev::gpd.fit( x.kept, threshold, method = "Nelder-Mead", show = FALSE ) )
             } else if ( input$select.optimization == "CG" ) {
                 x.gev.fit <- suppressWarnings(
-                    ismev::gpd.fit( x.kept, input$slider.threshold.gev,
-                                   method = "CG", show = FALSE ) )
+                    ismev::gpd.fit( x.kept, threshold, method = "CG", show = FALSE ) )
             } else if ( input$select.optimization == "BFGS" ) {
                 x.gev.fit <- suppressWarnings(
-                    ismev::gpd.fit( x.kept, input$slider.threshold.gev,
-                                   method = "BFGS", show = FALSE ) )
+                    ismev::gpd.fit( x.kept, threshold, method = "BFGS", show = FALSE ) )
             } else if ( input$select.optimization == "SANN" ) {
                 x.gev.fit <- suppressWarnings(
-                    ismev::gpd.fit( x.kept, input$slider.threshold.gev,
-                                   method = "SANN", show = FALSE ) )
+                    ismev::gpd.fit( x.kept, threshold, method = "SANN", show = FALSE ) )
             } else {
                 stop( "other fitting functions arn't supported yet!" )
             }
             ## For comparability.
+            x.gev.fit$par <- x.gev.fit$mle
             names( x.gev.fit$par ) <- c( "scale", "shape" )
             x.gev.fit$convergence <- x.gev.fit$conv
             x.gev.fit$value <- x.gev.fit$nllh
+            x.gev.fit$x <- x.kept
         }
         return( x.gev.fit )
     } )
@@ -666,16 +828,21 @@ climex.server <- function( input, output ){
     output$table.statistics <- renderUI( {
         ## define the colour for increasing or decreasing values
         css.colours <- c( "#C53100", "#0D8F20" ) # >0, <0, normal
-        x.block <- generate.data( )[[ 1 ]]
         x.gev.fit <- fit.gev( )
-        if ( input$radio.gev.statistics == "blocks" ){
+        x.block <- generate.data( )[[ 1 ]]
+        if ( input$radio.gev.statistics == "Blocks" ){
             current <- c( x.gev.fit$par[ 1 ], x.gev.fit$par[ 2 ], x.gev.fit$par[ 3 ],
                          x.gev.fit$value, aic( x.gev.fit ),
-                         bic( x.gev.fit, x.block ), rlevd( x.gev.fit$par ) )
+                         bic( x.gev.fit ), rlevd( x.gev.fit$par, error.estimation = "none" ) )
         } else 
             current <- c( 0, x.gev.fit$par[ 1 ], x.gev.fit$par[ 2 ],
                          x.gev.fit$value, aic( x.gev.fit ),
-                         bic( x.gev.fit, x.block ), rlevd( x.gev.fit$par ) )
+                         bic( x.gev.fit ), rlevd( x.gev.fit, error.estimation = "none" ) )
+        ## negating the return level to get the correct results for the minium
+        if ( !is.null( input$button.min.max ) ){
+            if ( input$button.min.max == "Min" && input$radio.gev.statistics == "Blocks" )
+                current[ 7 ] <- ( -1 )* current[ 7 ]
+        }
         ## history of the statistics
         last.3 <<- last.2
         last.2 <<- last.1
@@ -1012,7 +1179,10 @@ climex.server <- function( input, output ){
             addMarkers( data = map.click, group = "selected", icon = red.icon, lng = ~lng, lat = ~lat )
         ## calculate the GEV fit and various return levels
         x.gev.fit <- fit.gev()
-        x.rlevd <- rlevd( x.gev.fit, return.period = c( 100, 50, 20 ) )
+        if ( input$button.min.max == "Max" ){
+            x.rlevd <- rlevd( x.gev.fit, return.period = c( 100, 50, 20 ) )
+        } else
+            x.rlevd <- ( -1 )* rlevd( x.gev.fit, return.period = c( 100, 50, 20 ) )
         ## paste0( "<b>", station.name, "</b>", "<br/>", "100y return level: ", x.rlevd[ 1 ], "<br/>",
         ##        "50y return level: ", x.rlevd[ 2 ], "<br/>", "20y return level: ", x.rlevd[ 3 ] )
         x.df <- data.frame( names = c( "100y return level", "50y return level",
@@ -1053,7 +1223,8 @@ climex.ui <- function(){
         dashboardSidebar(
             sidebarMenu(
                 menuItem( "Map", tabName = "tabMap", icon = icon( "leaf", lib = "glyphicon" ) ),
-                menuItem( "General", tabName = "tabGeneral", icon = icon( "bar-chart" ) ),
+                menuItem( "General", tabName = "tabGeneral", icon = icon( "bar-chart" ),
+                         selected = TRUE ),
                 menuItem( "Likelihood", tabName = "tabLikelihood",
                          icon = icon( "wrench", lib = "glyphicon" ) ),
                 menuItemOutput( "menu.select.data.base" ),
@@ -1085,13 +1256,13 @@ climex.ui <- function(){
                         box( title = h2( "Options" ), collapsible = TRUE,
                             width = 4, height = 550, background = "orange",
                             radioButtons( "radio.gev.statistics", label = NULL, inline = TRUE,
-                                         choices = c( "blocks", "threshold" ), selected = "blocks" ),
+                                         choices = c( "Blocks", "Threshold" ), selected = "Blocks" ),
                             menuItemOutput( "slider.gev.statistics" ),
                             radioButtons( "button.min.max", "Type of extreme", inline = TRUE,
-                                         choices = c( "max", "min" ), selected = "max" ),
+                                         choices = c( "Max", "Min" ), selected = "Max" ),
                             selectInput( "select.deseasonalize", "Deseasonalization method",
-                                        choices = c( "Anomalies", "stl", "decompose", "X-13ARIMA",
-                                                    "deseasonalize::ds", "descomponer", "none" ),
+                                        choices = c( "Anomalies", "stl", "decompose",
+                                                    "deseasonalize::ds", "none" ),
                                         selected = "Anomalies" ),
                             selectInput( "select.optimization", "Optimization/Fitting routine",
                                         choices = c( "Nelder-Mead", "CG", "BFGS", "GenSA::GenSA",

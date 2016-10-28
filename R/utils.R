@@ -53,12 +53,13 @@ as.fevd <- function( x, fit = stats::optim( x ), call = "fevd(x = x)", data.name
                                                         shape = character( 0 ) ) ),
                     const.loc = TRUE, const.scale = TRUE, const.shape = TRUE, n = length( x ),
                     na.action = "na.fail", parnames = c( "location", "scale", "shape" ),
-                    results = fit, initial.results = NULL ){
+                    results = fit, initial.results = NULL, threshold = NULL, npy = NULL ){
     output <- list( call = call, data.name = data.name, weights = weights, in.data = in.data,
                    x = as.numeric( x ), method = method, type = type, period.basis = period.basis,
                    par.models = par.models, const.loc = const.loc, const.scale = const.scale,
                    const.shape = const.shape, n = n, na.action = na.action, parnames = parnames,
-                   results = results, initial.results = initial.results )
+                   results = results, initial.results = initial.results, threshold = threshold,
+                   npy = npy )
     class( output ) <- "fevd"
     return( output )
 }

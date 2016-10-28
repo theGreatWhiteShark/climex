@@ -225,6 +225,10 @@ rlevd <- function( x, return.period = 100, error.estimation = c( "none", "MC", "
     } else if ( class( x ) == "gev.fit" || class( x ) == "gum.fit" ){
         return.levels <- Reduce( c, lapply( return.period, function( y )
             as.numeric( extRemes::rlevd( y, x$mle[ 1 ], x$mle[ 2 ], x$mle[ 3 ] ) ) ) )
+    } else if ( class( x ) == "gpd.fit" ){
+        return.levels <- Reduce( c, lapply( return.period, function( y )
+            as.numeric( extRemes::rlevd( y, scale = x$mle[ 1 ], shape = x$mle[ 2 ],
+                                       threshold = x$threshold, type = "GP" ) ) ) )
     } else if ( class( x ) == "fevd" ){
         return.levels <- Reduce( c, lapply( return.period, function( y )
             as.numeric( extRemes::rlevd( y, x$results$par[ 1 ], x$results$par[ 2 ],
