@@ -1223,8 +1223,7 @@ climex.ui <- function(){
         dashboardSidebar(
             sidebarMenu(
                 menuItem( "Map", tabName = "tabMap", icon = icon( "leaf", lib = "glyphicon" ) ),
-                menuItem( "General", tabName = "tabGeneral", icon = icon( "bar-chart" ),
-                         selected = TRUE ),
+                menuItem( "General", tabName = "tabGeneral", icon = icon( "bar-chart" ) ),
                 menuItem( "Likelihood", tabName = "tabLikelihood",
                          icon = icon( "wrench", lib = "glyphicon" ) ),
                 menuItemOutput( "menu.select.data.base" ),
