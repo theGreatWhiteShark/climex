@@ -961,7 +961,10 @@ climex.server <- function( input, output ){
         x.block <- generate.data()[[ 1 ]]
         input$table.draw.points
         par.init <- mle.parameter.likelihood()
-        if ( input$slider.number.initial.points != 1 ){
+        if ( is.null( input$slider.number.initial.points ) || is.null( input$slider.location.lim ) ||
+             is.null( input$slider.scale.lim ) || is.null( input$slider.shape.lim ) ){
+            return( c( NaN, NaN, NaN ) ) 
+        } else if ( input$slider.number.initial.points != 1 ){
             table.init <- data.frame( location = rep( input$slider.location.lim,
                                                      input$slider.number.initial.points ),
                                      scale = runif( input$slider.number.initial.points,
@@ -1009,27 +1012,35 @@ climex.server <- function( input, output ){
         return( x.df ) },
         options = list( dom = 't' ) )
     output$draw.likelihood.animation <- renderUI( {
-        ## This reactive content only depends on the action button because of the use of the isolate() functions
-        input$button.draw.animation
-        ## Don't make the plot the first time I look at the tab
-        if ( input$button.draw.animation < 1 )
-            return( NULL )
-        isolate( initial.parameters <- initial.parameters.likelihood() )
-        isolate( x.block <- generate.data()[[ 1 ]] )
-        isolate( {
-            if ( input$select.optimization.procedure.likelihood == "dfoptim::nmk" ){
-                optimization.function <- nmk.modified
-            } else if ( input$select.optimization.procedure.likelihood == "dfoptim::nmk.modified"){
-                optimization.function <- nmk.modified
-            }
-            print( "starting animation......." )
-            likelihood.gui( time.series = x.block,
-                           starting.points = initial.parameters,
-                           scale.lim = isolate( input$slider.scale.lim ),
-                           shape.lim = isolate( input$slider.shape.lim ),
-                           optimization.function = optimization.function,
-                           optimization.steps =
-                               isolate( input$slider.optimization.steps) ) } ) } )
+        ## This reactive content only depends on the action button because of
+        ## the use of the isolate() functions
+        ## Since the calculation of the animation is rather costly and the images have to
+        ## be saved in different directories for the each specific client this option will
+        ## be disabled as soon as the user running the script in Linux is 'shiny'. Therefore
+        ## local deploying is still allowed
+        if ( system2( "echo", args = "$USER", stdout = TRUE ) == "shiny" ){
+            return( helpText( "Attention: calculating the animation of the optimization is rather costly. Therefore it is disabled in the current climex version. You can nevertheless deploy it using the app locally:\n require( climex )\n climex()\nSee the vignette of the package for further info. https://github.com/theGreatWhiteShark/climex/blob/master/vignettes/dwd_data_import.Rmd" ) )
+        } else {
+            input$button.draw.animation
+            ## Don't make the plot the first time I look at the tab
+            if ( input$button.draw.animation < 1 )
+                return( NULL )
+            isolate( initial.parameters <- initial.parameters.likelihood() )
+            isolate( x.block <- generate.data()[[ 1 ]] )
+            isolate( {
+                if ( input$select.optimization.procedure.likelihood == "dfoptim::nmk" ){
+                    optimization.function <- nmk.modified
+                } else if ( input$select.optimization.procedure.likelihood == "dfoptim::nmk.modified"){
+                    optimization.function <- nmk.modified
+                }
+                print( "starting animation......." )
+                likelihood.gui( time.series = x.block,
+                               starting.points = initial.parameters,
+                               scale.lim = isolate( input$slider.scale.lim ),
+                               shape.lim = isolate( input$slider.shape.lim ),
+                               optimization.function = optimization.function,
+                               optimization.steps =
+                                   isolate( input$slider.optimization.steps) ) } ) } } )
 ####################################################################################
     
 ####################################################################################
@@ -1082,7 +1093,8 @@ climex.server <- function( input, output ){
     
     output$leaflet.map <- renderLeaflet( {
         leaflet() %>% fitBounds( 5, 46, 13, 55 ) %>%
-            addTiles( "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" ) } )
+            addTiles( "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+                     attribution = '<code> Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a> </code>' ) } )
     
     observe( {
         data.selected <- data.chosen()

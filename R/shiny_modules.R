@@ -210,8 +210,9 @@ return Rcpp::wrap( L );')
                 ggseg.heuristic <- ggseg.random
             suppressWarnings(
                 gg.plot <- ggseg.heuristic + xlim( scale.lim ) + ylim( shape.lim ) +
-                scale_shape_manual( labels = c( TeX( "minor $\\Delta\\mu$" ),
-                                               TeX( "major $\\Delta\\mu$" ) ), values = c( 1, 4 ) ) +
+                scale_shape_manual( labels = c( latex2exp::TeX( "minor $\\Delta\\mu$" ),
+                                               latex2exp::TeX( "major $\\Delta\\mu$" ) ),
+                                   values = c( 1, 4 ) ) +
                 scale_colour_gradientn( colours = rev( RColorBrewer::brewer.pal( 7, "Blues" ) ),
                                  na.value = "white", trans = "log" ) +
                 scale_alpha( guide = FALSE ) )
@@ -294,8 +295,10 @@ return Rcpp::wrap( L );')
     ## animation out of it. But there is a problem: the UI is always lunched in a separate
     ## window as a html widget independent of the R process. So its unfortunately not
     ## compatible with my climex-shiny app.
+    browser()
 
     ## Before I create new plots I have to delete the existing ones!
+    ## But this part is not suited for server-side application
     if ( dir.exists( "images" ) )
         unlink( "images/", recursive = TRUE )
     if ( nrow( starting.points ) > 1 ){
@@ -303,13 +306,13 @@ return Rcpp::wrap( L );')
             plot.trajectories( trajectories, gg.plane ) },
             img.name = "grad.evolution", htmlfile = "grad.evolution.html", ani.height = 850, 
             ani.width = 850, title = "Evolution of the Optimization for different starting points", 
-            description = "Each color corresponds to a distinct starting point whilst the black one is the heuristic one." )
+            description = "Each color corresponds to a distinct starting point whilst the black one is the heuristic one.", verbose = FALSE)
     } else {
         saveHTML( expr = { ani.options( interval = 0.4 )
             plot.follow.trajectory( trajectories, scale.lim, shape.lim, time.series ) },
             img.name = "grad.evolution", htmlfile = "grad.evolution.html", ani.height = 850, 
             ani.width = 850, title = "Evolution of the Optimization for a specific starting point", 
-            description = "Each color corresponds to a distinct starting point whilst the black one is the heuristic one." )
+            description = "Each color corresponds to a distinct starting point whilst the black one is the heuristic one.", verbose = FALSE )
     }
     ui <- fluidPage(
         titlePanel( "Grad.evolution demo" ),

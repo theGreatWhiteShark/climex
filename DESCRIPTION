@@ -26,6 +26,7 @@ Imports:
     ismev,
     extRemes,
     inline,
+    RcppArmadillo,
     markdown,
     dygraphs,
     parallel,
