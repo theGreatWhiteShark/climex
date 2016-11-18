@@ -2,20 +2,18 @@
 % Please edit documentation in R/ts.R
 \name{bic}
 \alias{bic}
-\title{Calculates the Bayesian information criterion of a gev.fit or climex.gev.fit object.}
+\title{Calculates the Bayesian information criterion of a climex.gev.fit object.}
 \usage{
-bic(x, time.series = NULL)
+bic(x)
 }
 \arguments{
-\item{x}{Optim()like fit of a time series.}
-
-\item{time.series}{Original time series.}
+\item{x}{Object of class climex.gev.fit. When ensuring the presence of all additional list elements an output of optim() can also be used.}
 }
 \value{
 Numeric value
 }
 \details{
-The climex.gev.fit object is of identical structure as the output of the optim() function. In contrast to the aic the time series itself has to provided too.
+The climex.gev.fit object is of identical structure as the output of the optim() function.
 }
 \author{
 Philipp Mueller

@@ -19,6 +19,7 @@ It possible to provide a time series of type xts to a list of elements of this t
 Philipp Mueller
 }
 \seealso{
-Other shiny: \code{\link{likelihood.gui}}
+Other shiny: \code{\link{animation.wrapper}},
+  \code{\link{plot.animation}}
 }
 

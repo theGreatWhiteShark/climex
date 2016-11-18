@@ -14,6 +14,8 @@
 ##' @author Philipp Mueller 
 climex <- function( x.input = NULL ){
     source.data( pick.default = TRUE, import = "global" )
+    ## will contain the folder in which the images of the animation can be found
+    temp.folder <<- NULL
     if ( !is.null( x.input ) ){
         if ( any( class( x.input ) == c( "xts") ) ) {
             x.block <<- block( x.input )
@@ -300,10 +302,8 @@ climex.server <- function( input, output ){
             if ( !is.null( input$check.box.decluster ) ){
                 if ( input$check.box.decluster )
                     x.block <- declustering( x.block, input$slider.threshold.gev )
-            }
-           
+            }           
         }
-            
         x.block <<- x.block
         return( list( blocked.data = x.block, deseasonalized.data = x.deseasonalized,
                      pure.data = x.xts ) ) } )
@@ -525,7 +525,6 @@ climex.server <- function( input, output ){
                                         label = "Since the minimal extremes are chosen the GEV distribution \n will be fitted to the negated time series" )
             gg1 <- gg1 + geom_label( data = plot.text, aes( x = x, y = y, label = label ),
                                          fill = "white", colour = "firebrick", fontface = "bold")
-
         }
         return( gg1 )
     } )
@@ -683,7 +682,6 @@ climex.server <- function( input, output ){
             ## the extRemes::ci.fevd.mle and the fevd object is accepts seems to be build in
             ## such a way that the maximum possible affort is necessary to use with non-native
             ## data. To circumvent this horrible programming style I will refit using extRemes::fevd
-
             ## well this just looks to awkward. Also the diagnostic plots in the ismev and the
             ## extRemes package look wrong for all data examples I just tried.
             ## I will leave this one blank.
@@ -692,15 +690,13 @@ climex.server <- function( input, output ){
             ## x.return.level <- extRemes::rlevd( x.period, type = "GP",
             ##                                   scale = x.gpd.fit$results$par[ 1 ],
             ##                                   shape = x.gpd.fit$results$par[ 2 ],
-            ##                                   threshold = input$slider.threshold.gev )
-            
+            ##                                   threshold = input$slider.threshold.gev )            
             ## x.confidence.intervals <- extRemes::ci.fevd.mle( x.gpd.fit, return.period = x.period )
             ## plot.statistics <- data.frame( period = x.period,
             ##                               level = as.numeric( x.confidence.intervals[ , 2 ] ),
             ##                               ci.low = as.numeric( x.confidence.intervals[ , 1 ] ), 
             ##                               ci.high = as.numeric( x.confidence.intervals[ , 3 ] ) )
-            ## x.sort <- sort( as.numeric( x.kept ) )
-            
+            ## x.sort <- sort( as.numeric( x.kept ) )            
             ## plot.data <- data.frame( x = -1/ log( ppoints( length( x.kept ), 0 ) )[
             ##                                      x.sort > input$slider.threshold.gev ],
             ##                         y = x.sort[ x.sort > input$slider.threshold.gev ] )
@@ -719,7 +715,6 @@ climex.server <- function( input, output ){
             geom_line( data = plot.statistics, aes( x = period, y = ci.high ), linetype = 2,
                       colour = colour.extremes, na.rm = TRUE ) + xlab( "return period [years]" ) +
             ylab( "return level" ) + theme_bw() + scale_x_log10( limits = c( 1, 1000 ) )
-
         if ( !is.null( input$button.min.max ) ){
             if ( input$button.min.max == "Min" && input$radio.gev.statistics == "Blocks" ){
                 gg.rl <- gg.rl + scale_y_reverse() 
@@ -913,46 +908,34 @@ climex.server <- function( input, output ){
 ####################################################################################
     ## Fitting the MLE again with the algorithm of choice
     output$menu.slider.location.lim <- renderMenu( {
-        x.gev.fit <- fit.gev( )
+        x.gev.fit <- fit.gev()
         x.block <- generate.data()[[ 1 ]]
         par.init <- likelihood.initials( x.block )
-        if ( input$slider.number.initial.points != 1 ){
-            sliderInput( "slider.location.lim", "Location offset",
-                        round( x.gev.fit$par[ 1 ] - 10, 1 ),
-                        round( x.gev.fit$par[ 1 ] + 10, 1 ), round( x.gev.fit$par[ 1 ], 1 ) )
-        } else
-            numericInput( "numeric.location.set", "Location value",
-                         value = par.init[ 1 ] ) } )
+        sliderInput( "slider.location.lim", "Location limits", round( x.gev.fit$par[ 1 ], 1 ) - 10,
+                    round( x.gev.fit$par[ 1 ] + 10, 1 ),
+                    c( round( x.gev.fit$par[ 1 ], 1 ) - 5, round( x.gev.fit$par[ 1 ], 1 ) + 5 ) ) } )
     output$menu.slider.scale.lim <- renderMenu( {
         x.gev.fit <- fit.gev()
         x.block <- generate.data()[[ 1 ]]
         par.init <- likelihood.initials( x.block )
-        if ( input$slider.number.initial.points != 1 ){
-            ifelse( x.gev.fit$par[ 2 ] - 5 < 0, scale.min <- 0,
-                   scale.min <- x.gev.fit$par[ 2 ] - 5 )
-            ifelse( x.gev.fit$par[ 2 ] - 2 < 0, scale.set <- 0,
-                   scale.set <- x.gev.fit$par[ 2 ] - 2 )
-            sliderInput( "slider.scale.lim", "Scale limits", round( scale.min, 1 ),
-                        round( x.gev.fit$par[ 2 ] + 5, 1 ),
-                        c( round( scale.set, 1 ), round( x.gev.fit$par[ 2 ], 1 ) + 2 ) )
-        } else
-            numericInput( "numeric.scale.set", "Scale value", par.init[ 2 ] ) } )
+        sliderInput( "slider.scale.lim", "Scale limits",
+                    round( max( 0, x.gev.fit$par[ 2 ]  - 10 ), 1 ),
+                    round( x.gev.fit$par[ 2 ] + 10, 1 ),
+                    c( round( max( 0, x.gev.fit$par[ 2 ] - 5 ), 1 ),
+                      round( x.gev.fit$par[ 2 ], 1 ) + 5 ) ) } )
     output$menu.slider.shape.lim <- renderMenu( {
         x.gev.fit <- fit.gev()
         x.block <- generate.data()[[ 1 ]]
         par.init <- likelihood.initials( x.block )
-        if ( input$slider.number.initial.points != 1 ){
             sliderInput( "slider.shape.lim", "Shape limits",
-                        round( x.gev.fit$par[ 3 ] - 0.7, 1 ),
-                        round( x.gev.fit$par[ 3 ] + 0.7, 1 ),
+                        round( x.gev.fit$par[ 3 ] - 1, 1 ),
+                        round( x.gev.fit$par[ 3 ] + 1, 1 ),
                         c( round( x.gev.fit$par[ 3 ], 1 ) - .3,
-                          round( x.gev.fit$par[ 3 ], 1 ) + .3  ) )
-        } else
-            numericInput( "numeric.shape.set", "Shape value", par.init[ 3 ] ) } )
+                          round( x.gev.fit$par[ 3 ], 1 ) + .3  ) ) } )
     mle.parameter.likelihood <- reactive( {
         x.block <- generate.data()[[ 1 ]]
         if ( input$select.optimization.procedure.likelihood == "dfoptim::nmk" ){
-            par.mle <- try( nmk.modified( x = x.block )$par )
+            suppressWarnings( par.mle <- try( nmk.modified( x = x.block )$par ) )
             if ( class( par.mle ) == "try-error" )
                 par.mle <- gev.fit( x.block )$par
             return( par.mle )  } } )                
@@ -963,36 +946,33 @@ climex.server <- function( input, output ){
         par.init <- mle.parameter.likelihood()
         if ( is.null( input$slider.number.initial.points ) || is.null( input$slider.location.lim ) ||
              is.null( input$slider.scale.lim ) || is.null( input$slider.shape.lim ) ){
-            return( c( NaN, NaN, NaN ) ) 
-        } else if ( input$slider.number.initial.points != 1 ){
-            table.init <- data.frame( location = rep( input$slider.location.lim,
-                                                     input$slider.number.initial.points ),
-                                     scale = runif( input$slider.number.initial.points,
-                                                   input$slider.scale.lim[ 1 ],
-                                                   input$slider.scale.lim[ 2 ] ),
-                                     shape = runif( input$slider.number.initial.points,
-                                                   input$slider.shape.lim[ 1 ],
-                                                   input$slider.shape.lim[ 2 ] ) )
-            ## but we only want to have starting points which do not result in a NA
-            while ( any( is.nan( apply( table.init, 1, likelihood, x.in = x.block ) ) ) ){
-                for ( ii in 1 : nrow( table.init ) ){
-                    if ( is.nan( likelihood( as.numeric( table.init[ ii, ] ),
-                                            x.in = x.block ) ) )
-                        table.init[ ii, ] <- c( input$slider.location.lim,
-                                               runif( 1, input$slider.scale.lim[ 1 ],
-                                                     input$slider.scale.lim[ 2 ] ),
-                                               runif( 1, input$slider.shape.lim[ 1 ],
-                                                     input$slider.shape.lim[ 2 ] ) ) } }
-            return( table.init )
-        } else {
-            table.init <- data.frame( location = input$numeric.location.set,
-                                     scale = input$numeric.scale.set,
-                                     shape = input$numeric.shape.set )
-            if ( is.nan( likelihood( as.numeric( table.init ), x.block ) ) )
-                stop( "The chosen parameter combination is not definied for the likelihood function of the chosen time series!" ) }
+            return( c( NaN, NaN, NaN ) )
+        }
+        table.init <- data.frame( location = runif( input$slider.number.initial.points,
+                                                   input$slider.location.lim[ 1 ],
+                                                   input$slider.location.lim[ 2 ] ),
+                                 scale = runif( input$slider.number.initial.points,
+                                               input$slider.scale.lim[ 1 ],
+                                               input$slider.scale.lim[ 2 ] ),
+                                 shape = runif( input$slider.number.initial.points,
+                                               input$slider.shape.lim[ 1 ],
+                                               input$slider.shape.lim[ 2 ] ) )
+        ## but we only want to have starting points which do not result in a NA
+        while ( any( is.nan( apply( table.init, 1, likelihood, x.in = x.block ) ) ) ){
+            for ( ii in 1 : nrow( table.init ) ){
+                if ( is.nan( likelihood( as.numeric( table.init[ ii, ] ),
+                                        x.in = x.block ) ) )
+                    table.init[ ii, ] <- c( runif( 1, input$slider.location.lim[ 1 ],
+                                                  input$slider.location.lim[ 2 ] ),
+                                           runif( 1, input$slider.scale.lim[ 1 ],
+                                                 input$slider.scale.lim[ 2 ] ),
+                                           runif( 1, input$slider.shape.lim[ 1 ],
+                                                 input$slider.shape.lim[ 2 ] ) ) } }
         return( table.init ) } )
     output$table.initial.points <- renderDataTable( {
         initial.parameters <- initial.parameters.likelihood()
+        if ( all( is.na( initial.parameters ) ) )
+            return( NULL )
         initial.parameters$ID <- seq( 1, nrow( initial.parameters ) )
         return( initial.parameters ) },
         options = list( dom = 't' ) )
@@ -1003,7 +983,7 @@ climex.server <- function( input, output ){
         x.mom <- likelihood.initials( x.block, type = "mom" )
         x.lmom <- likelihood.initials( x.block, type = "lmom" )
         x.df <- data.frame( estimate = c( "Method of moments", "Lmoments", "MLE" ),
-                           location = c( round( x.mom[ 1 ], 2 ),round( x.lmom[ 1 ], 2 ),
+                           loc = c( round( x.mom[ 1 ], 2 ),round( x.lmom[ 1 ], 2 ),
                                         round( x.mle.par[ 1 ], 2 ) ),
                            scale = c( round( x.mom[ 2 ], 2 ), round( x.lmom[ 2 ], 2 ),
                                      round( x.mle.par[ 2 ], 2 ) ),
@@ -1034,13 +1014,28 @@ climex.server <- function( input, output ){
                     optimization.function <- nmk.modified
                 }
                 print( "starting animation......." )
-                likelihood.gui( time.series = x.block,
-                               starting.points = initial.parameters,
-                               scale.lim = isolate( input$slider.scale.lim ),
-                               shape.lim = isolate( input$slider.shape.lim ),
-                               optimization.function = optimization.function,
-                               optimization.steps =
-                                   isolate( input$slider.optimization.steps) ) } ) } } )
+                ## a temporary folder will be generate to harvest the images of the animation
+                ## whenever the animation will be redone the old folder should be removed to avoid
+                ## wasting memory of the server. Therefore the folder name has to be a global variable
+                if ( !is.null( temp.folder ) )
+                    unlink( temp.folder, recursive = TRUE )
+                temp.folder <<- paste0( "/srv/shiny-server/assets/tmp/images_",
+                                       as.numeric ( as.POSIXct( lubridate::now() ) ) )
+                dir.create( temp.folder, recursive = TRUE )
+                animation.wrapper( time.series = x.block, starting.points = initial.parameters,
+                                  location.lim = isolate( input$slider.location.lim ),
+                                  scale.lim = isolate( input$slider.scale.lim ),
+                                  shape.lim = isolate( input$slider.shape.lim ),
+                                  optimization.function = optimization.function,
+                                  optimization.steps = isolate( input$slider.optimization.steps ),
+                                  width = 300, height = 300, delay = 300, loopMode = "loop",
+                                  folder = temp.folder )
+                return( div( class = "scianimator", style = "display: inline-block;",
+                            tags$script( src = "../assets/animation.js" ),
+                            div( id = "animationLocSc", style = "display: inline-block;" ),
+                            div( id = "animationLocSh", style = "display: inline-block;" ),
+                            div( id = "animationScSh", style = "display: inline-block;" ) ) )
+            } ) } } )
 ####################################################################################
     
 ####################################################################################
@@ -1247,7 +1242,7 @@ climex.ui <- function(){
             sidebarMenu(
                 menuItem( "Map", tabName = "tabMap", icon = icon( "leaf", lib = "glyphicon" ) ),
                 menuItem( "General", tabName = "tabGeneral", icon = icon( "bar-chart" ) ),
-                menuItem( "Likelihood", tabName = "tabLikelihood",
+                menuItem( "Likelihood", tabName = "tabLikelihood", selected = TRUE,
                          icon = icon( "wrench", lib = "glyphicon" ) ),
                 menuItemOutput( "menu.select.data.base" ),
                 menuItemOutput( "menu.select.data.source.1" ),
@@ -1255,8 +1250,17 @@ climex.ui <- function(){
                 menuItemOutput( "menu.select.data.source.3" ),
                 menuItemOutput( "menu.data.cleaning" ) ) ),
         dashboardBody(
+            ## shinyjs::useShinyjs(),
             includeCSS( paste0( system.file( "climex_app", package = "climex" ),
-                               "/www/climex.css" ) ),
+                               "/css/climex.css" ) ),
+            includeCSS( paste0( system.file( "climex_app", package = "climex" ),
+                               "/css/reset.css" ) ),
+            includeCSS( paste0( system.file( "climex_app", package = "climex" ),
+                               "/css/styles.css" ) ),
+            includeCSS( paste0( system.file( "climex_app", package = "climex" ),
+                               "/css/scianimator.css" ) ),
+            tags$head( tags$script( src = paste0( system.file( "climex_app", package = "climex" ),
+                               "/js/jquery.scianimator.min.js" ) ) ),
             tabItems(
                 tabItem(
                     tabName = "tabMap",
@@ -1305,10 +1309,10 @@ climex.ui <- function(){
                                         actionButton( "exclude.blocked.toggle", "Brush" ) ) ) ) ),
                 tabItem( tabName = "tabLikelihood",                                  
                         box( title = h2( "Likelihood of the time series and optimization routes of different initial conditions" ),
-                            width = 7, status = "primary", dataTableOutput( "table.initial.points" ),
+                            width = 8, status = "primary", dataTableOutput( "table.initial.points" ),
                             actionButton( "table.draw.points", "Reset" ),
-                            uiOutput( "draw.likelihood.animation" ) ),
-                        box( width = 5, background = "orange",
+                            htmlOutput( "draw.likelihood.animation" ) ),
+                        box( width = 4, background = "orange",
                             dataTableOutput( "table.heuristic.estimates" ),
                             sliderInput( "slider.number.initial.points",
                                         "Number of initial points", 1, 20, 5 ),
