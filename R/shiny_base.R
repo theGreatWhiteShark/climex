@@ -1031,7 +1031,7 @@ climex.server <- function( input, output ){
                                   width = 300, height = 300, delay = 300, loopMode = "loop",
                                   folder = temp.folder )
                 return( div( class = "scianimator", style = "display: inline-block;",
-                            tags$script( src = "../assets/animation.js" ),
+                            tags$script( src = "/assets/animation.js" ),
                             div( id = "animationLocSc", style = "display: inline-block;" ),
                             div( id = "animationLocSh", style = "display: inline-block;" ),
                             div( id = "animationScSh", style = "display: inline-block;" ) ) )
@@ -1259,8 +1259,9 @@ climex.ui <- function(){
                                "/css/styles.css" ) ),
             includeCSS( paste0( system.file( "climex_app", package = "climex" ),
                                "/css/scianimator.css" ) ),
-            tags$head( tags$script( src = paste0( system.file( "climex_app", package = "climex" ),
-                               "/js/jquery.scianimator.min.js" ) ) ),
+            ## tags$head( tags$script( src = paste0( system.file( "climex_app", package = "climex" ),
+            ##                    "/js/jquery.scianimator.min.js" ) ) ),
+            tags$head( tags$script( src = "/assets/jquery.scianimator.min.js" ) ),
             tabItems(
                 tabItem(
                     tabName = "tabMap",
@@ -1298,10 +1299,10 @@ climex.ui <- function(){
                         box( title = h2( "Results" ), width = 3, background = "orange",
                             uiOutput( "table.statistics", colHeaders = "provided" ) ),
                         tabBox( title = h2( "Time series" ), selected = "Blocked ts", width = 9,
-                               tabPanel( "Pure ts", dygraphOutput( "plot.time.series", height = 250 ) ),
-                               tabPanel( "Deseasonalized ts", dygraphOutput( "plot.deseasonalized",
+                               tabPanel( "Pure", dygraphOutput( "plot.time.series", height = 250 ) ),
+                               tabPanel( "Deseasonalized", dygraphOutput( "plot.deseasonalized",
                                                                             height = 250 ) ),
-                               tabPanel( "Blocked ts",
+                               tabPanel( "Remaining",
                                         plotOutput( "plot.blocked", height = 250,
                                                    click = "plot.blocked.click",
                                                    brush = brushOpts( id = "plot.blocked.brush" ) ),

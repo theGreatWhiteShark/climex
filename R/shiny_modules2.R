@@ -257,7 +257,7 @@ animation.wrapper <- function( time.series, starting.points, location.lim, scale
         paste0( folder.name, "/", x ) ) )
     ## I try to link the /tmp folder in the assets of the shiny-server to make the images
     ## accessible to the client
-    files.all <- sub( "/srv/shiny-server/assets/tmp", "../assets/tmp", files.all )
+    files.all <- sub( "/srv/shiny-server/assets/tmp", "/assets/tmp", files.all )
     template[ grep( "%imgLocSc", template ) ] <-
         sub( "%imgLocSc", paste0( "'", grep( "loc.sc", files.all, value = TRUE ), "'",
                                  collapse = ", " ), template[ grep( "%imgLocSc", template ) ] )
@@ -278,6 +278,8 @@ animation.wrapper <- function( time.series, starting.points, location.lim, scale
                                                  template[ grep( "%loop", template ) ] )
     ## write the results to a JavaScript file
     writeLines( template, con = paste0( "/srv/shiny-server/assets/animation.js" ) )
+    print( "I'm here right now" )
+    print( getwd() )
     invisible( template )
 }
 
