@@ -8,13 +8,7 @@ Authors@R: person("Philipp","Developer", role = c("aut","cre"),
     email = "thetruephil@googlemail.com")
 Author: Philipp Mueller
 Maintainer: Philipp Mueller <thetruephil@googlemail.com>
-<<<<<<< HEAD
 Description: This package has three purposes: 1. it provides a webscrapper easing the pain of downloading the station data of the German weather service, 2. it provides tools for the Maximum Likelihood fitting of GEV functions of time series and 3. it contains a shiny app enabling the user to both easily analyse a large amount of data and check the validity of the fitting results (avoidance of local minima).
-=======
-Description: Provides tools for maximum likelihood fittin of GEV functions
-    of time series. It also contains a shiny app easing the use of extreme
-    value analysis.
->>>>>>> 093b8302905676d301f421efadc088e4414df461
 URL: https://github.com/theGreatWhiteShark/climex
 Depends:
     R(>= 3.0.1),
