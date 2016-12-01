@@ -12,7 +12,7 @@ as.fevd(x, fit = stats::optim(x), call = "fevd(x = x)", data.name = c("x",
   character(0))), const.loc = TRUE, const.scale = TRUE,
   const.shape = TRUE, n = length(x), na.action = "na.fail",
   parnames = c("location", "scale", "shape"), results = fit,
-  initial.results = NULL)
+  initial.results = NULL, threshold = NULL, npy = NULL)
 }
 \arguments{
 \item{x}{Time series on which the.}

@@ -4,12 +4,15 @@
 \alias{source.data}
 \title{Access to the manually imported weather data.}
 \usage{
-source.data(pick.default = TRUE, download.path = CLIMEX.PATH)
+source.data(pick.default = TRUE, download.path = CLIMEX.PATH,
+  import = c("local", "global"))
 }
 \arguments{
 \item{pick.default}{If TRUE it just search for the .RData file with "default" in it's name and skips the interactive picking}
 
 \item{download.path}{Specifies the data is stored.}
+
+\item{import}{Specifies if the data should be attached to the environment the function is called from or to the global one. The latter is necessary for deploying the app in the shiny server. Default = "local".}
 }
 \value{
 Has no specific output but attaches .RData file to search path.
