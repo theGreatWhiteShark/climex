@@ -220,11 +220,41 @@ tfoot {
 .box-solid {
     min-width: 400px !important;
 }
+/* fitting the animations in one row of the likelihood box */
+.animationClimex {
+    display: inline;
+    width: 33.3% !important;
+    float: left;
+    position: relative;
+}
+
+/* customize the appearance of the scianimator control panel */
+.scianimator .controls, .scianimator .control {
+    border: 0px solid !important;
+    font-size: 100% !important;
+    border-radius: 7px !important; /*display navigator point as real circles*/
+}
+.scianimator a {
+    color: #191970 !important;
+}
+.scianimator .box a.control.navigator, .scianimator .box a.control.navigator:hover {
+    background: #191970 !important;
+    box-shadow: 2px 2px 2px 2px #FFA333 inset, 1px 1px 1px 1px #191970 !important;
+}
+.scianimator .box a.control.navigator.current, .scianimator .box a.control.navigator.currrent:hover {
+    background: #FF8C00 !important;
+    box-shadow: 2px 2px 2px 2px #191970 inset, 1px 1px 1px 1px #191970 !important;
+}
 @media screen and (max-width: 1080px){
     /* assigning individual classes to the box objects in shiny won't do any good, since the
        class definition only enters an inner box and not the parent */
     .col-sm-4, .col-sm-8, .col-sm-3, .col-sm-9 {
 	display: block !important;
+	width: 100% !important;
+    }
+    /* display the animation plots in one column if the display is getting go narrow */
+    .animationClimex {
+	display: block;
 	width: 100% !important;
     }
 }
