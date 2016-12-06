@@ -39,7 +39,7 @@ color.table <- function( x.html.table, css.colours, style = "table-condensed tab
 ##' @param width of both the images and the form with the playback options in pixel.
 ##' @param height of both the images and the form with the playback options in pixel.
 ##' @param colors List of colors used to generate the plots.
-##' @param folder.name where the generated pictures should be saved.
+##' @param image.folder where the generated pictures should be saved.
 ##'
 ##' @family shiny
 ##'
@@ -55,7 +55,7 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
                            colors = list( plane.low = "skyblue1", plane.high = "#191970",
                                          plane.contour = "white", path.low = "yellow",
                                          path.high = "darkred", path.true = "black" ),
-                           folder.name = "images" ){
+                           image.folder = "images" ){
     ## conversion to ensure functionality
     if ( class( starting.points ) == "numeric" )
         starting.points <- data.frame( location = starting.points[ 1 ], scale = starting.points[ 2 ],
@@ -173,7 +173,7 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
         ## plotting of the individual png files containing the likelihood plane and a segment
         ## of the trajectory. Those files are going to be concatenated to the animation
         individual.plots <- function( segment, id ){
-            png( filename = paste0( folder.name, "/plane_", plane.name, id, ".png" ),
+            png( filename = paste0( image.folder, "/plane_", plane.name, id, ".png" ),
                 width = width, height = height )
             ## here I assume that the entries in segment are ordered according to their id
             gg.plot <- gg.plane + geom_segment(
@@ -232,7 +232,8 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
 ##' @param height of both the images and the form with the playback options in pixel.
 ##' @param delay Time for which the individual pictures stay visible during the animation in ms. Default = 300.
 ##' @param loopMode Scianimator parameter declaring what will happen after a full run through all the images. Default = "loop".
-##' @param folder.name where the generated pictures should be saved.
+##' @param image.folder where the generated pictures should be saved.
+##' @param working.folder the overall folder containing the generated pictures, JavaScript files etc.
 ##'
 ##' @family shiny
 ##'
@@ -241,23 +242,28 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
 ##' @author Philipp Mueller 
 animation.wrapper <- function( time.series, starting.points, location.lim, scale.lim, shape.lim,
                   optimization.function = climex:::nmk.modified, optimization.steps,
-                  width, height, delay = 300, loopMode = "loop", folder.name ){
+                  width, height, delay = 300, loopMode = "loop", image.folder, working.folder ){
     ## load the JavaScript template file
     template <- readLines( paste0( system.file( "climex_app", package = "climex" ),
                                   "/js/template2.js" ) )
     ## Creating a new folder for the animation images
-    ## if ( dir.exists(folder.name ) )
-    ##     unlink( paste0( folder.name, "/" ), recursive = TRUE )
-    ## dir.create( folder.name )
+    ## if ( dir.exists(image.folder ) )
+    ##     unlink( paste0( image.folder, "/" ), recursive = TRUE )
+    ## dir.create( image.folder )
     ## create the images
     plot.animation( time.series, starting.points, location.lim, scale.lim, shape.lim,
-                   optimization.function, optimization.steps, height, width, folder = folder.name )
+                   optimization.function, optimization.steps, height, width, image.folder = image.folder )
     ## get the image names including the folder name and write them in the JavaScript template
-    files.all <- Reduce( c, lapply( list.files( folder.name ), function( x )
-        paste0( folder.name, "/", x ) ) )
+    files.all <- Reduce( c, lapply( list.files( image.folder ), function( x )
+        paste0( image.folder, "/", x ) ) )
     ## I try to link the /tmp folder in the assets of the shiny-server to make the images
     ## accessible to the client
-    files.all <- sub( "/srv/shiny-server/assets/tmp", "/assets/tmp", files.all )
+    if ( substr( working.folder, 1, 17 ) == "/srv/shiny-server" ){
+        ## If the server is not running of localhost the client is not able to see the folders using
+        ## the full path
+        files.all <- sub( "/srv/shiny-server/assets/tmp", "/assets/tmp", files.all )
+    } else
+        files.all <- sub( CLIMEX.PATH, "", files.all )
     template[ grep( "%imgLocSc", template ) ] <-
         sub( "%imgLocSc", paste0( "'", grep( "loc.sc", files.all, value = TRUE ), "'",
                                  collapse = ", " ), template[ grep( "%imgLocSc", template ) ] )
@@ -277,7 +283,7 @@ animation.wrapper <- function( time.series, starting.points, location.lim, scale
     template[ grep( "%loop", template ) ] <- sub( "%loop", loopMode,
                                                  template[ grep( "%loop", template ) ] )
     ## write the results to a JavaScript file
-    writeLines( template, con = paste0( "/srv/shiny-server/assets/animation.js" ) )
+    writeLines( template, con = paste0( working.folder, "/animation.js" ) )
     print( "I'm here right now" )
     print( getwd() )
     invisible( template )

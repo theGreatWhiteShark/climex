@@ -15,7 +15,7 @@
 climex <- function( x.input = NULL ){
     source.data( pick.default = TRUE, import = "global" )
     ## will contain the folder in which the images of the animation can be found
-    temp.folder <<- NULL
+    image.folder <<- NULL
     if ( !is.null( x.input ) ){
         if ( any( class( x.input ) == c( "xts") ) ) {
             x.block <<- block( x.input )
@@ -34,6 +34,9 @@ climex <- function( x.input = NULL ){
         x.block <<- block( anomalies( stations.temp.max[[ 303 ]] ) )
         type.input <<- "none"
     }
+    ## this is unfortunately necessary since some JavaScript scripts are written out and
+    ## some images are plotted which have to be accessible within the shiny app
+    #runApp( paste0( CLIMEX.PATH, "app" ) )
     shinyApp( climex.ui, climex.server )
 }
 
@@ -48,7 +51,7 @@ climex <- function( x.input = NULL ){
 ##' @import dygraphs
 ##' @import ggplot2
 ##' @author Philipp Mueller 
-climex.server <- function( input, output ){
+climex.server <- function( input, output, session ){
 ####################################################################################
 ######################## Customizing the sidebar menu ##############################    
 ####################################################################################
@@ -1096,11 +1099,25 @@ climex.server <- function( input, output ){
                 ## a temporary folder will be generate to harvest the images of the animation
                 ## whenever the animation will be redone the old folder should be removed to avoid
                 ## wasting memory of the server. Therefore the folder name has to be a global variable
-                if ( !is.null( temp.folder ) )
-                    unlink( temp.folder, recursive = TRUE )
-                temp.folder <<- paste0( "/srv/shiny-server/assets/tmp/images_",
-                                       as.numeric ( as.POSIXct( lubridate::now() ) ) )
-                dir.create( temp.folder, recursive = TRUE )
+                if ( !is.null( image.folder ) )
+                    unlink( image.folder, recursive = TRUE )
+                ## if the shiny server is running on localhost it is run in the CLIMEX.PATH
+                ## folder and the folder containing the images is constantly overwritten
+                ## to prevent the script from occupying to much space. Due to a setwd in
+                ## the climex() wrapper we are already in this folder
+                if ( session$clientData$url_hostname == "localhost" ||
+                     session$clientData$url_hostname == "127.0.0.1"  ){
+                    working.folder <- paste0( CLIMEX.PATH, "www" )
+                    ## I decided to make the variable image.folder a global one because in this way
+                    ## the folder addressed with it can be deleted the next time this function is
+                    ## called
+                    image.folder <<- paste0( working.folder, "/images" )
+                } else {
+                    working.folder <- "/srv/shiny-server/assets" 
+                    image.folder <<- paste0( "/srv/shiny-server/assets/tmp/images_",
+                                            as.numeric ( as.POSIXct( lubridate::now() ) ) )
+                }
+                dir.create( image.folder, recursive = TRUE )
                 animation.wrapper( time.series = x.block, starting.points = initial.parameters,
                                   location.lim = isolate( input$sliderLocationLim ),
                                   scale.lim = isolate( input$sliderScaleLim ),
@@ -1108,9 +1125,16 @@ climex.server <- function( input, output ){
                                   optimization.function = optimization.function,
                                   optimization.steps = isolate( input$sliderOptimizationSteps ),
                                   width = 300, height = 300, delay = 300, loopMode = "loop",
-                                  folder = temp.folder )
+                                  image.folder = image.folder, working.folder = working.folder )
+                ## if the code is not running on localhost the shiny server won't find
+                ## the animation.js script using its absolute path
+                if ( session$clientData$url_hostname != "localhost" &&
+                    session$clientData$url_hostname != "127.0.0.1" ){
+                    working.folder <- sub( "/srv/shiny-server", "", working.folder )
+                } else
+                    working.folder <- "www"
                 return( div( class = "scianimator", style = "display: inline-block;",
-                            tags$script( src = "/assets/animation.js" ),
+                            tags$script( src = paste0( working.folder, "/animation.js" ) ),
                             div( id = "animationLocSc", class = "animationClimex" ),
                             div( id = "animationLocSh", class = "animationClimex" ),
                             div( id = "animationScSh", class = "animationClimex" ) ) )
