@@ -1111,9 +1111,9 @@ climex.server <- function( input, output ){
                                   folder = temp.folder )
                 return( div( class = "scianimator", style = "display: inline-block;",
                             tags$script( src = "/assets/animation.js" ),
-                            div( id = "animationLocSc", style = "display: inline-block;" ),
-                            div( id = "animationLocSh", style = "display: inline-block;" ),
-                            div( id = "animationScSh", style = "display: inline-block;" ) ) )
+                            div( id = "animationLocSc", class = "animationClimex" ),
+                            div( id = "animationLocSh", class = "animationClimex" ),
+                            div( id = "animationScSh", class = "animationClimex" ) ) )
             } ) } } )
 ####################################################################################
     
