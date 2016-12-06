@@ -10,7 +10,7 @@
 	'images': [%imgLocSh],
 	'width': %width,
 	'delay': %delay,
-	'control': [ 'first', 'play', 'last' ],
+	'controls': [ 'first', 'play', 'last' ],
 	'loopMode': '%loop'
     });
     $('#animationScSh').scianimator({
