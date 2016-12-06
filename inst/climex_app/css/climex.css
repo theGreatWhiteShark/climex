@@ -54,8 +54,8 @@ h3 small {
     color: #191970 !important;
     background-color: #FF8C00 !important;
 }
-/* increase the size of the boxes titles*/
-.box-header h2 {
+/* increase the size of the boxes titles (including the one for the navbox)*/
+.box-header h2, .nav-tabs-custom > .nav-tabs > li.header {
     color: #191970; !important;
     font-weight: bold; !important;
     font-size: 150%; !important;
