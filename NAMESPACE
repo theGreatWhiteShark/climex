@@ -3,6 +3,8 @@
 export(anomalies)
 export(block)
 export(climex)
+export(climex.server)
+export(climex.ui)
 export(decluster)
 export(download.data.dwd)
 export(gev.fit)
