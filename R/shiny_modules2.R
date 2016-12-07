@@ -251,8 +251,9 @@ animation.wrapper <- function( time.series, starting.points, location.lim, scale
     ##     unlink( paste0( image.folder, "/" ), recursive = TRUE )
     ## dir.create( image.folder )
     ## create the images
-    plot.animation( time.series, starting.points, location.lim, scale.lim, shape.lim,
-                   optimization.function, optimization.steps, height, width, image.folder = image.folder )
+    climex:::plot.animation( time.series, starting.points, location.lim, scale.lim, shape.lim,
+                            optimization.function, optimization.steps, height, width,
+                            image.folder = image.folder )
     ## get the image names including the folder name and write them in the JavaScript template
     files.all <- Reduce( c, lapply( list.files( image.folder ), function( x )
         paste0( image.folder, "/", x ) ) )
@@ -263,7 +264,7 @@ animation.wrapper <- function( time.series, starting.points, location.lim, scale
         ## the full path
         files.all <- sub( "/srv/shiny-server/assets/tmp", "/assets/tmp", files.all )
     } else
-        files.all <- sub( CLIMEX.PATH, "", files.all )
+        files.all <- sub( paste0( CLIMEX.PATH, "app/www/" ), "", files.all )
     template[ grep( "%imgLocSc", template ) ] <-
         sub( "%imgLocSc", paste0( "'", grep( "loc.sc", files.all, value = TRUE ), "'",
                                  collapse = ", " ), template[ grep( "%imgLocSc", template ) ] )
@@ -284,8 +285,6 @@ animation.wrapper <- function( time.series, starting.points, location.lim, scale
                                                  template[ grep( "%loop", template ) ] )
     ## write the results to a JavaScript file
     writeLines( template, con = paste0( working.folder, "/animation.js" ) )
-    print( "I'm here right now" )
-    print( getwd() )
     invisible( template )
 }
 
