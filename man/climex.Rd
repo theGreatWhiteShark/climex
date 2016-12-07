@@ -13,7 +13,7 @@ climex(x.input = NULL)
 starts a shiny app.
 }
 \details{
-It possible to provide a time series of type xts to a list of elements of this type. This app need the its own css file.
+It possible to provide a time series of type xts to a list of elements of this type. This app need the its own css file. This function will be exclusively called when the climex app is run on localhost. In order to assure its correct behavior the necessary file/folder structure in the CLIMEX.PATH (global variable which has to be set beforehand; see vignette for details) will be check and if necesary generated.
 }
 \author{
 Philipp Mueller

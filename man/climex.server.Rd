@@ -4,13 +4,13 @@
 \alias{climex.server}
 \title{Server-side part of the \code{\link{climex}} function.}
 \usage{
-climex.server(input, output)
+climex.server(input, output, session)
 }
 \value{
 Function acting as the shiny server.
 }
 \details{
-Since it grew organically most of the features are defined inside the function
+Since it grew organically most of the features are defined inside this function. Okay, why did I decided to define the climex.server and the climex.ui function? Since in this way I can provide a local and a server side variant of the code which is maintained in the same place. I do not really like the idea of installing the newest version of the code from Github and than copy/pasting the code in some files somewhere in /srv/shiny-server.
 }
 \author{
 Philipp Mueller

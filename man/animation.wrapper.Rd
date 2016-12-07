@@ -7,7 +7,7 @@
 animation.wrapper(time.series, starting.points, location.lim, scale.lim,
   shape.lim, optimization.function = climex:::nmk.modified,
   optimization.steps, width, height, delay = 300, loopMode = "loop",
-  folder.name)
+  image.folder, working.folder)
 }
 \arguments{
 \item{time.series}{Blocked data for which the GEV fit is performed}
@@ -32,7 +32,9 @@ animation.wrapper(time.series, starting.points, location.lim, scale.lim,
 
 \item{loopMode}{Scianimator parameter declaring what will happen after a full run through all the images. Default = "loop".}
 
-\item{folder.name}{where the generated pictures should be saved.}
+\item{image.folder}{where the generated pictures should be saved.}
+
+\item{working.folder}{the overall folder containing the generated pictures, JavaScript files etc.}
 }
 \value{
 An invisible copy of the generated JavaScript file.
