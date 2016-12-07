@@ -7,7 +7,7 @@
 \method{plot}{animation}(time.series, starting.points, location.lim = NULL,
   scale.lim = NULL, shape.lim = NULL,
   optimization.function = climex:::nmk.modified, optimization.steps = c(0.1,
-  0.5), height = 300, width = 300, colors = list(plane.low = "skyblue1",
+  0.5), height = 300, width = 300, colors = list(plane.low = "#eaeafa",
   plane.high = "#191970", plane.contour = "white", path.low = "yellow",
   path.high = "darkred", path.true = "black"), image.folder = "images")
 }
@@ -38,7 +38,7 @@
 Opens a HTML widget showing the animation of the optimization routine.
 }
 \details{
-Three orthogonal 2D plots are done for the negative log-likelihood of the GEV function intersecting in the actual result of the default optimization. Caution: the trajectories will move out of the planes and so the precise position of the trajectory might be misleading. But the overall goal is to check for local minima. A bunch of images will be generated in the provided folder.
+Three orthogonal 2D plots are done for the negative log-likelihood of the GEV function intersecting in the actual result of the default optimization. Caution: the trajectories will move out of the planes and so the precise position of the trajectory might be misleading. But the overall goal is to check for local minima. A bunch of images will be generated in the provided folder. Since the likelihood values cover quite some orders of magnitude they will be cut 1E3 above the minimal value. Also mind the differing height value: for a plot containing the legend (in this version of the script it is just the last one) the height value is increased to also cover the additional legend.
 }
 \author{
 Philipp Mueller

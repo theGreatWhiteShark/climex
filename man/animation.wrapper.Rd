@@ -40,7 +40,7 @@ animation.wrapper(time.series, starting.points, location.lim, scale.lim,
 An invisible copy of the generated JavaScript file.
 }
 \details{
-All the images as well as the JavaScript script will be produced in a folder in the /tmp/ directory, while the template will be extracted from the climex app system files. A huge thank towards Brent Ertz for his awesome scianimator jquery plugin \url{https://github.com/brentertz/scianimator} and Yihui Xie who's animation R package was the basis for this code.
+All the images as well as the JavaScript script will be produced in a folder in the /tmp/ directory, while the template will be extracted from the climex app system files. A huge thank towards Brent Ertz for his awesome scianimator jquery plugin \url{https://github.com/brentertz/scianimator} and Yihui Xie who's animation R package was the basis for this code. The warning messages "Removed x rows ..." appear since a couple of trajectories are outside the plotted area.
 }
 \author{
 Philipp Mueller
