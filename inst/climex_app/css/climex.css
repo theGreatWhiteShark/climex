@@ -231,6 +231,7 @@ tfoot {
 /* customize the appearance of the scianimator control panel */
 .scianimator .controls, .scianimator .control {
     border: 0px solid !important;
+    margin: 0 0 0 14% !important;
     font-size: 100% !important;
     border-radius: 7px !important; /*display navigator point as real circles*/
 }
@@ -244,6 +245,13 @@ tfoot {
 .scianimator .box a.control.navigator.current, .scianimator .box a.control.navigator.currrent:hover {
     background: #FF8C00 !important;
     box-shadow: 2px 2px 2px 2px #191970 inset, 1px 1px 1px 1px #191970 !important;
+}
+/* a gif image is going to be displayed while the pictures for the animation are generated */
+#loadingGif {
+    display: block;
+    width: 0%;
+    visibility: hidden;
+    float: right;
 }
 @media screen and (max-width: 1080px){
     /* assigning individual classes to the box objects in shiny won't do any good, since the
