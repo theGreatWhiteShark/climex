@@ -27,7 +27,7 @@ color.table <- function( x.html.table, css.colours, style = "table-condensed tab
 
 ##' @title Displays the contour plots of the GEV likelihood function of a time series and the optimization routes for a bunch of provided initial points.
 ##'
-##' @details Three orthogonal 2D plots are done for the negative log-likelihood of the GEV function intersecting in the actual result of the default optimization. Caution: the trajectories will move out of the planes and so the precise position of the trajectory might be misleading. But the overall goal is to check for local minima. A bunch of images will be generated in the provided folder. 
+##' @details Three orthogonal 2D plots are done for the negative log-likelihood of the GEV function intersecting in the actual result of the default optimization. Caution: the trajectories will move out of the planes and so the precise position of the trajectory might be misleading. But the overall goal is to check for local minima. A bunch of images will be generated in the provided folder. Since the likelihood values cover quite some orders of magnitude they will be cut 1E3 above the minimal value. Also mind the differing height value: for a plot containing the legend (in this version of the script it is just the last one) the height value is increased to also cover the additional legend.
 ##'
 ##' @param time.series Vector of block maxima.
 ##' @param starting.points Data.frame of the starting points where each one is contained in the single row and the columns are spanned by location, scale and shape.
@@ -52,7 +52,7 @@ color.table <- function( x.html.table, css.colours, style = "table-condensed tab
 plot.animation <- function( time.series, starting.points, location.lim = NULL, scale.lim = NULL,
                            shape.lim = NULL, optimization.function = climex:::nmk.modified,
                            optimization.steps = c( .1, .5 ), height = 300, width = 300,
-                           colors = list( plane.low = "skyblue1", plane.high = "#191970",
+                           colors = list( plane.low = "#eaeafa", plane.high = "#191970",
                                          plane.contour = "white", path.low = "yellow",
                                          path.high = "darkred", path.true = "black" ),
                            image.folder = "images" ){
@@ -143,6 +143,28 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
         path = Reduce( rbind, list.segments ),
         id = factor( Reduce( c, lapply( seq( 1, nrow( starting.points ) ), function( x )
             rep( x, nrow( list.segments[[ x ]] ) ) ) ) ) )
+    ## it is not really useful to see individual trajectories disappearing. So the NA in segments.plot
+    ## will be replaced by the last finite value.
+    for ( ii in as.numeric( unique( segments.plot$id ) ) ){
+        if ( any( Reduce( c, lapply( segments.plot[ segments.plot$id == ii, ], is.na ) ) ) ){
+            segments.values <- segments.plot[ segments.plot$id == ii, ]
+            ## the following variable contains the content of the last row without any NA
+            segments.last.values <- as.numeric( segments.plot[
+                segments.plot$path.step == ( max( segments.plot$path.step[ segments.plot$id == ii ],
+                                                 na.rm = TRUE ) - 1 ) & segments.plot$id == ii &
+                                           !is.na( segments.plot$path.step ), ] )
+            ## filling all NA
+            for ( rr in 1 : nrow( segments.values ) ){
+                if ( any( is.na( segments.values[ rr, ] ) ) )
+                    segments.values[ rr, ] <- segments.last.values
+            }
+            ## but for the step number this not really makes any sense
+            segments.values$path.step <- seq( min( segments.values$path.step ),
+                                             nrow( segments.values) - 1 +
+                                             min( segments.values$path.step ) )
+            segments.plot[ segments.plot$id == ii, ] <- segments.values
+        }
+    }
     ## New approach: just displaying specific number of points every time with a opacity
     ## increasing with the time that pasted.
     plot.plane <- function( plane, col1, col2 ){
@@ -153,13 +175,25 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
                          aes_string( x = names( plane[ col1 ] ), y = names( plane )[ col2 ],
                                     z = "likelihood.lower" ) ) +
             scale_fill_gradient2( low = colors$plane.low, high = colors$plane.high,
-                                   na.value = "white", trans = "log" )
+                                   na.value = "white", trans = "log", label = function( x ) {
+                                       options( digits = 2 ); format( x, scientific = TRUE ) } ) +
+            theme_bw() +
+            theme( axis.title = element_text( size = 15, colour = "#191970" ),
+                  axis.text = element_text( size = 12, colour = "#191970" ),
+                  axis.line = element_line( colour = "#191970" ),
+                  panel.grid.major = element_line( colour = "#FFFFFF" ),
+                  panel.grid.minor = element_line( colour = "#FFFFFF" ),
+                  legend.title = element_text( size = 15, colour = "#191970" ),
+                  legend.text = element_text( size = 12, colour = "#191970" ),
+                  legend.position = "bottom", legend.direction = "horizontal"
+                  )
         return( last_plot() )
     } 
     ## plane.name gives an extension to the .png files identifying the 2D section of the likelihood
     ## space. col1 and col2 specify which of the dimensions should be taken. 1 = location,
     ## 2 = scale, 3 = shape
-    plot.trajectories <- function( segments, gg.plane, plane.name, col1, col2, x.lim, y.lim ){
+    plot.trajectories <- function( segments, gg.plane, plane.name, col1, col2, x.lim, y.lim,
+                                  plot.legend = 0 ){
         ## just plot number.plot.points a time and increase the alpha value for points further in
         ## the past
         number.plot.points <- 5
@@ -172,9 +206,15 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
             nrow( starting.points ) - 1 ) )
         ## plotting of the individual png files containing the likelihood plane and a segment
         ## of the trajectory. Those files are going to be concatenated to the animation
-        individual.plots <- function( segment, id ){
+        individual.plots <- function( segment, id, plot.legend = 0 ){
+            ## if the legend should be printed as well the height value is increased by 15%
+            ## to keep the symmetry while containing the additional legend
+            if ( plot.legend > 0 ){
+                height.plot <- height* 1.14
+            } else
+                height.plot <- height
             png( filename = paste0( image.folder, "/plane_", plane.name, id, ".png" ),
-                width = width, height = height )
+                 width = width, height = height.plot )
             ## here I assume that the entries in segment are ordered according to their id
             gg.plot <- gg.plane + geom_segment(
                                       data = segment,
@@ -192,10 +232,19 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
                            aes_string( x = names( true.end )[ col1 ],
                                       y = names( true.end )[ col2 ] ) ) +
                 xlim( x.lim ) + ylim( y.lim ) + scale_alpha( guide = FALSE ) +
-                scale_colour_manual( values = color.points ) + theme_bw() +
-                guides( fill = guide_legend( title = "nllh" ) )
+                scale_colour_manual( values = color.points ) +
+                theme( legend.box = "vertical", legend.box.just = "bottom" ) +
+                guides( fill = guide_legend( title = "Likelihood" ) )
                 ## ggsave( filename = paste0( folder, "/plane_", plane.name, id, ".png" ),
             ##        device = "png", width = width, height = height, units = "cm", dpi = 500 )
+            ## depending on the position there is a different legend shown or none (where the
+            ## navigation tool resides)
+            if ( plot.legend == 0 ){
+                gg.plot <- gg.plot + theme( legend.position = "none" )
+            } else if ( plot.legend == 1 ){
+                gg.plot <- gg.plot + guides( fill = FALSE )
+            } else if ( plot.legend == 2 )
+                gg.plot <- gg.plot + guides( colour = FALSE )
             print( gg.plot )
             dev.off()
             invisible()
@@ -205,21 +254,22 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
         for ( ii in step.begin : ( step.end - number.plot.points + 1 ) ){
             print( paste( "likelihood.gui: plotting frame", ii, "of",
                          step.end - number.plot.points + 1  ) )
-            individual.plots( segments[ ii <= segments$path.step & segments$path.step <= ii + 4, ], ii )
+            individual.plots( segments[ ii <= segments$path.step &
+                                        segments$path.step <= ( ii + 4 ), ], ii, plot.legend )
         }
         invisible()
     }
     ## actual plotting
     plot.trajectories( segments.plot, plot.plane( plane.loc.sc, 1, 2 ), "loc.sc", 1, 2,
-                      x.lim = location.lim, y.lim = scale.lim )
+                      x.lim = location.lim, y.lim = scale.lim, plot.legend = 1 )
     plot.trajectories( segments.plot, plot.plane( plane.loc.sh, 1, 3 ), "loc.sh", 1, 3,
-                      x.lim = location.lim, y.lim = shape.lim )
+                      x.lim = location.lim, y.lim = shape.lim, plot.legend = 0 )
     plot.trajectories( segments.plot, plot.plane( plane.sc.sh, 2, 3 ), "sc.sh", 2, 3,
-                      x.lim = scale.lim, y.lim = shape.lim )
+                      x.lim = scale.lim, y.lim = shape.lim, plot.legend = 2 )
 }
 
 ##' @title Help function filling the JavaScript template which produces the likelihood animation.
-##' @details All the images as well as the JavaScript script will be produced in a folder in the /tmp/ directory, while the template will be extracted from the climex app system files. A huge thank towards Brent Ertz for his awesome scianimator jquery plugin \url{https://github.com/brentertz/scianimator} and Yihui Xie who's animation R package was the basis for this code.
+##' @details All the images as well as the JavaScript script will be produced in a folder in the /tmp/ directory, while the template will be extracted from the climex app system files. A huge thank towards Brent Ertz for his awesome scianimator jquery plugin \url{https://github.com/brentertz/scianimator} and Yihui Xie who's animation R package was the basis for this code. The warning messages "Removed x rows ..." appear since a couple of trajectories are outside the plotted area.
 ##'
 ##' @param time.series Blocked data for which the GEV fit is performed
 ##' @param starting.points of the optimization.

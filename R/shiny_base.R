@@ -49,8 +49,12 @@ climex <- function( x.input = NULL ){
     if ( !dir.exists( paste0( CLIMEX.PATH, "app/www/jquery.scianimator.min.js" ) ) ){
         file.copy( paste0( system.file( "climex_app", package = "climex" ),
                           "/js/jquery.scianimator.min.js" ),
-                  to = paste0( CLIMEX.PATH, "app/www/jquery.scianimator.min.js" ) )
+                  to = paste0( CLIMEX.PATH, "app/www/jquery.scianimator.min.js" ), overwrite = TRUE )
     }
+    file.copy( paste0( system.file( "climex_app", package = "climex" ), "/js/loadingGif.js" ),
+              to = paste0( CLIMEX.PATH, "app/www/loadingGif.js" ), overwrite = TRUE ) 
+    file.copy( paste0( system.file( "climex_app", package = "climex" ), "/res/loading.gif" ),
+              to = paste0( CLIMEX.PATH, "app/www/loading.gif" ) )        
     if ( !file.exists( paste0( CLIMEX.PATH, "app/ui.R" ) ) ||
          !file.exists( paste0( CLIMEX.PATH, "app/server.R" ) ) ){
         writeLines( "shinyUI( climex.ui )", con = paste0( CLIMEX.PATH, "app/ui.R" ) )
@@ -1093,7 +1097,24 @@ climex.server <- function( input, output, session ){
         return( x.df ) },
         options = list( dom = 't',
                        drawCallback = I( "function( settings )
-            {document.getElementById( 'tableHeuristicEstimates' ).style.width = '100%';}") ) )    
+            {document.getElementById( 'tableHeuristicEstimates' ).style.width = '100%';}") ) )
+    output$plotPlaceholder <- renderPlot({
+        ttplot( x.block ) } )
+    output$loadingImage <- renderUI({
+        if ( session$clientData$url_hostname != "localhost" &&
+             session$clientData$url_hostname != "127.0.0.1" ){
+            folder <- "/assets/"
+        } else
+            folder <- ""
+        return( img( src = paste0( folder, "loading.gif" ), id = "loadingGif" ) ) } )
+    output$loadingScript <- renderUI({
+        if ( session$clientData$url_hostname != "localhost" &&
+             session$clientData$url_hostname != "127.0.0.1" ){
+            folder <- "/assets/"
+        } else
+            folder <- ""
+        return( div( tags$head( singleton(
+            tags$script( src = paste0( folder, "/loadingGif.js"  ) ) ) ) ) ) } )
     output$drawLikelihoodAnimation <- renderUI( {
         ## This reactive content only depends on the action button because of
         ## the use of the isolate() functions        
@@ -1108,6 +1129,10 @@ climex.server <- function( input, output, session ){
             } else if ( input$selectOptimizationProcedureLikelihood == "dfoptim::nmk.modified"){
                 optimization.function <- nmk.modified
             }
+            ## I use the plot "plotPlaceholder" to determine the width of the current box and adjust
+            ## the pixel width of the png pictures
+            session.width <- session$clientData$output_plotPlaceholder_width
+            session.plot.width <- floor( session.width/ 3 )
             print( "starting animation......." )
             ## a temporary folder will be generate to harvest the images of the animation
             ## whenever the animation will be redone the old folder should be removed to avoid
@@ -1138,7 +1163,8 @@ climex.server <- function( input, output, session ){
                                        shape.lim = isolate( input$sliderShapeLim ),
                                        optimization.function = optimization.function,
                                        optimization.steps = isolate( input$sliderOptimizationSteps ),
-                                       width = 300, height = 300, delay = 300, loopMode = "loop",
+                                       width = session.plot.width, height = 300, delay = 300,
+                                       loopMode = "loop",
                                        image.folder = image.folder, working.folder = working.folder )
             ## if the code is not running on localhost the shiny server won't find
             ## the animation.js script using its absolute path
@@ -1430,6 +1456,16 @@ climex.ui <- function(){
                 tabItem( tabName = "tabLikelihood",                                  
                         box( title = h2( "Starting points of the optimization routine" ),
                             width = 8, status = "primary", dataTableOutput( "tableInitialPoints" ),
+                            ## a plot of height 0? Well, its actually a very nice trick since I need
+                            ## a width value for the generated pngs in the animation in pixel. But
+                            ## I really want to make app to be rendered nicely on different screen
+                            ## sizes. Via the session$clientData I can access the width and height of
+                            ## plots. Thus I can access the width of this specific box via the
+                            ## plotPlaceholder without seeing it at all.
+                            plotOutput( "plotPlaceholder", height = 0 ),
+                            ## while plotting the images for the animation a gif should be shown
+                            div( uiOutput( "loadingScript" ), uiOutput( "loadingImage" ),
+                                id = "loadingWrapper" ),
                             htmlOutput( "drawLikelihoodAnimation" ) ),
                         box( title = h2( "Options" ), width = 4, background = "orange",
                             dataTableOutput( "tableHeuristicEstimates" ),
