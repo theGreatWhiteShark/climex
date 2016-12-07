@@ -1,6 +1,6 @@
 ##' @title Shiny app combining most of the tools used in extreme value analysis using GEV fitting via maximum likelihood.
 ##'
-##' @details It possible to provide a time series of type xts to a list of elements of this type. This app need the its own css file.
+##' @details It possible to provide a time series of type xts to a list of elements of this type. This app need the its own css file. This function will be exclusively called when the climex app is run on localhost. In order to assure its correct behavior the necessary file/folder structure in the CLIMEX.PATH (global variable which has to be set beforehand; see vignette for details) will be check and if necesary generated.
 ##'
 ##' @param x.input Time series of type xts or list of such time series. Default = NULL
 ##'
@@ -14,8 +14,6 @@
 ##' @author Philipp Mueller 
 climex <- function( x.input = NULL ){
     source.data( pick.default = TRUE, import = "global" )
-    ## will contain the folder in which the images of the animation can be found
-    image.folder <<- NULL
     if ( !is.null( x.input ) ){
         if ( any( class( x.input ) == c( "xts") ) ) {
             x.block <<- block( x.input )
@@ -34,22 +32,45 @@ climex <- function( x.input = NULL ){
         x.block <<- block( anomalies( stations.temp.max[[ 303 ]] ) )
         type.input <<- "none"
     }
+    if ( !"CLIMEX.PATH" %in% ls( envir = .GlobalEnv ) )
+        stop( "Please define a global variable named CLIMEX.PATH (storing of the DWD data and the app interna) (see vignette for details)!" )
+    ## will contain the folder in which the images of the animation can be found
+    image.folder <<- paste0( CLIMEX.PATH, "app/www/images" )
     ## this is unfortunately necessary since some JavaScript scripts are written out and
     ## some images are plotted which have to be accessible within the shiny app
-    #runApp( paste0( CLIMEX.PATH, "app" ) )
-    shinyApp( climex.ui, climex.server )
+    ## If there are not the appropriate files present to run the shiny app, the apps as well
+    ## as the folder structure has to be generated
+    if ( !dir.exists( paste0( CLIMEX.PATH, "app" ) ) )
+        dir.create( paste0( CLIMEX.PATH, "app" ) )
+    if ( !dir.exists( paste0( CLIMEX.PATH, "app/www" ) ) )
+        dir.create( paste0( CLIMEX.PATH, "app/www" ) )
+    ## In order to display the animation the app needs the jquery scianimator. Since it is not able
+    ## to access a system file on its own the wrapper climex() will copy it to the apps folder
+    if ( !dir.exists( paste0( CLIMEX.PATH, "app/www/jquery.scianimator.min.js" ) ) ){
+        file.copy( paste0( system.file( "climex_app", package = "climex" ),
+                          "/js/jquery.scianimator.min.js" ),
+                  to = paste0( CLIMEX.PATH, "app/www/jquery.scianimator.min.js" ) )
+    }
+    if ( !file.exists( paste0( CLIMEX.PATH, "app/ui.R" ) ) ||
+         !file.exists( paste0( CLIMEX.PATH, "app/server.R" ) ) ){
+        writeLines( "shinyUI( climex.ui )", con = paste0( CLIMEX.PATH, "app/ui.R" ) )
+        writeLines( "shinyServer( climex.server )", con = paste0( CLIMEX.PATH, "app/server.R" ) )
+    }
+    runApp( paste0( CLIMEX.PATH, "app" ) )
+    #shinyApp( climex.ui, climex.server )
 }
 
 
 ##' @title Server-side part of the \code{\link{climex}} function.
 ##'
-##' @details Since it grew organically most of the features are defined inside the function
+##' @details Since it grew organically most of the features are defined inside this function. Okay, why did I decided to define the climex.server and the climex.ui function? Since in this way I can provide a local and a server side variant of the code which is maintained in the same place. I do not really like the idea of installing the newest version of the code from Github and than copy/pasting the code in some files somewhere in /srv/shiny-server.
 ##'
 ##' @return Function acting as the shiny server.
 ##' @import shiny
 ##' @import xts
 ##' @import dygraphs
 ##' @import ggplot2
+##' @export
 ##' @author Philipp Mueller 
 climex.server <- function( input, output, session ){
 ####################################################################################
@@ -669,7 +690,7 @@ climex.server <- function( input, output, session ){
         if ( input$radioGevStatistics == "Blocks" ){
             if ( is.null( input$buttonMinMax ) ){
                 ## the true block maxima and their return levels will be calculated
-                x.confidence.intervals <- extRemes::ci.fevd.mle( as.fevd( x.kept, x.gev.fit,
+                x.confidence.intervals <- extRemes::ci.fevd.mle( climex:::as.fevd( x.kept, x.gev.fit,
                                                                          type = "GEV"),
                                                                 return.period = x.period )
                 plot.data <- data.frame( x = -1/ log( ppoints( length( x.kept ), 0 ) ),
@@ -679,16 +700,16 @@ climex.server <- function( input, output, session ){
             } else if ( input$buttonMinMax == "Min" ){
                 ## the time series will be negated and the results too to aquire the
                 ## return levels of the minima
-                x.confidence.intervals <- ( -1 )* extRemes::ci.fevd.mle( as.fevd( -x.kept, x.gev.fit,
-                                                                                 type = "GEV"),
-                                                                        return.period = x.period )
+                x.confidence.intervals <- ( -1 )*
+                    extRemes::ci.fevd.mle( climex:::as.fevd( -x.kept, x.gev.fit, type = "GEV"),
+                                          return.period = x.period )
                 plot.data <- data.frame( x = -1/ log( ppoints( length( x.kept ), 0 ) ),
                                         y = -1* sort( as.numeric( -x.kept ) ) )
                 plot.y.limits <- c( min( x.confidence.intervals[ , 3 ] ),
                                    max( plot.data$y ) )
             } else {
                 ## the true block maxima and their return levels will be calculated
-                x.confidence.intervals <- extRemes::ci.fevd.mle( as.fevd( x.kept, x.gev.fit,
+                x.confidence.intervals <- extRemes::ci.fevd.mle( climex:::as.fevd( x.kept, x.gev.fit,
                                                                          type = "GEV"),
                                                                 return.period = x.period )
                 plot.data <- data.frame( x = -1/ log( ppoints( length( x.kept ), 0 ) ),
@@ -878,12 +899,12 @@ climex.server <- function( input, output, session ){
         x.block <- generate.data( )[[ 1 ]]
         if ( input$radioGevStatistics == "Blocks" ){
             current <- c( x.gev.fit$par[ 1 ], x.gev.fit$par[ 2 ], x.gev.fit$par[ 3 ],
-                         x.gev.fit$value, aic( x.gev.fit ),
-                         bic( x.gev.fit ), rlevd( x.gev.fit$par, error.estimation = "none" ) )
+                         x.gev.fit$value, climex:::aic( x.gev.fit ), climex:::bic( x.gev.fit ),
+                         climex:::rlevd( x.gev.fit$par, error.estimation = "none" ) )
         } else 
             current <- c( 0, x.gev.fit$par[ 1 ], x.gev.fit$par[ 2 ],
-                         x.gev.fit$value, aic( x.gev.fit ),
-                         bic( x.gev.fit ), rlevd( x.gev.fit, error.estimation = "none" ) )
+                         x.gev.fit$value, climex:::aic( x.gev.fit ), climex:::bic( x.gev.fit ),
+                         climex:::rlevd( x.gev.fit, error.estimation = "none" ) )
         ## negating the return level to get the correct results for the minium
         if ( !is.null( input$buttonMinMax ) ){
             if ( input$buttonMinMax == "Min" && input$radioGevStatistics == "Blocks" )
@@ -940,7 +961,7 @@ climex.server <- function( input, output, session ){
             text = pander::pandoc.table.return( x.table, style = "rmarkdown",
                                                split.tables = Inf ),
             fragment.only = TRUE )
-        x.color.table <- color.table( x.html.table, css.colours ) })
+        x.color.table <- climex:::color.table( x.html.table, css.colours ) })
 ####################################################################################
     
 ####################################################################################
@@ -1075,70 +1096,67 @@ climex.server <- function( input, output, session ){
             {document.getElementById( 'tableHeuristicEstimates' ).style.width = '100%';}") ) )    
     output$drawLikelihoodAnimation <- renderUI( {
         ## This reactive content only depends on the action button because of
-        ## the use of the isolate() functions
-        ## Since the calculation of the animation is rather costly and the images have to
-        ## be saved in different directories for the each specific client this option will
-        ## be disabled as soon as the user running the script in Linux is 'shiny'. Therefore
-        ## local deploying is still allowed
-        if ( system2( "echo", args = "$USER", stdout = TRUE ) == "shiny" ){
-            return( helpText( "Attention: calculating the animation of the optimization is rather costly. Therefore it is disabled in the current climex version. You can nevertheless deploy it using the app locally:\n require( climex )\n climex()\nSee the vignette of the package for further info. https://github.com/theGreatWhiteShark/climex/blob/master/vignettes/dwd_data_import.Rmd" ) )
-        } else {
-            input$buttonDrawAnimation
-            ## Don't make the plot the first time I look at the tab
-            if ( input$buttonDrawAnimation < 1 )
-                return( NULL )
-            isolate( initial.parameters <- initial.parameters.likelihood() )
-            isolate( x.block <- generate.data()[[ 1 ]] )
-            isolate( {
-                if ( input$selectOptimizationProcedureLikelihood == "dfoptim::nmk" ){
-                    optimization.function <- nmk.modified
-                } else if ( input$selectOptimizationProcedureLikelihood == "dfoptim::nmk.modified"){
-                    optimization.function <- nmk.modified
-                }
-                print( "starting animation......." )
-                ## a temporary folder will be generate to harvest the images of the animation
-                ## whenever the animation will be redone the old folder should be removed to avoid
-                ## wasting memory of the server. Therefore the folder name has to be a global variable
-                if ( !is.null( image.folder ) )
-                    unlink( image.folder, recursive = TRUE )
-                ## if the shiny server is running on localhost it is run in the CLIMEX.PATH
-                ## folder and the folder containing the images is constantly overwritten
-                ## to prevent the script from occupying to much space. Due to a setwd in
-                ## the climex() wrapper we are already in this folder
-                if ( session$clientData$url_hostname == "localhost" ||
-                     session$clientData$url_hostname == "127.0.0.1"  ){
-                    working.folder <- paste0( CLIMEX.PATH, "www" )
-                    ## I decided to make the variable image.folder a global one because in this way
-                    ## the folder addressed with it can be deleted the next time this function is
-                    ## called
-                    image.folder <<- paste0( working.folder, "/images" )
-                } else {
-                    working.folder <- "/srv/shiny-server/assets" 
-                    image.folder <<- paste0( "/srv/shiny-server/assets/tmp/images_",
-                                            as.numeric ( as.POSIXct( lubridate::now() ) ) )
-                }
-                dir.create( image.folder, recursive = TRUE )
-                animation.wrapper( time.series = x.block, starting.points = initial.parameters,
-                                  location.lim = isolate( input$sliderLocationLim ),
-                                  scale.lim = isolate( input$sliderScaleLim ),
-                                  shape.lim = isolate( input$sliderShapeLim ),
-                                  optimization.function = optimization.function,
-                                  optimization.steps = isolate( input$sliderOptimizationSteps ),
-                                  width = 300, height = 300, delay = 300, loopMode = "loop",
-                                  image.folder = image.folder, working.folder = working.folder )
-                ## if the code is not running on localhost the shiny server won't find
-                ## the animation.js script using its absolute path
-                if ( session$clientData$url_hostname != "localhost" &&
-                    session$clientData$url_hostname != "127.0.0.1" ){
-                    working.folder <- sub( "/srv/shiny-server", "", working.folder )
-                } else
-                    working.folder <- "www"
-                return( div( class = "scianimator", style = "display: inline-block;",
-                            tags$script( src = paste0( working.folder, "/animation.js" ) ),
-                            div( id = "animationLocSc", class = "animationClimex" ),
-                            div( id = "animationLocSh", class = "animationClimex" ),
-                            div( id = "animationScSh", class = "animationClimex" ) ) )
-            } ) } } )
+        ## the use of the isolate() functions        
+        ## Don't make the plot the first time I look at the tab
+        if ( input$buttonDrawAnimation < 1 )
+            return( NULL )
+        isolate( initial.parameters <- initial.parameters.likelihood() )
+        isolate( x.block <- generate.data()[[ 1 ]] )
+        isolate( {
+            if ( input$selectOptimizationProcedureLikelihood == "dfoptim::nmk" ){
+                optimization.function <- nmk.modified
+            } else if ( input$selectOptimizationProcedureLikelihood == "dfoptim::nmk.modified"){
+                optimization.function <- nmk.modified
+            }
+            print( "starting animation......." )
+            ## a temporary folder will be generate to harvest the images of the animation
+            ## whenever the animation will be redone the old folder should be removed to avoid
+            ## wasting memory of the server. Therefore the folder name has to be a global variable
+            if ( !is.null( image.folder ) )
+                unlink( image.folder, recursive = TRUE )
+            ## if the shiny server is running on localhost it is run in the CLIMEX.PATH
+            ## folder and the folder containing the images is constantly overwritten
+            ## to prevent the script from occupying to much space. Due to a setwd in
+            ## the climex() wrapper we are already in this folder
+            if ( session$clientData$url_hostname == "localhost" ||
+                 session$clientData$url_hostname == "127.0.0.1"  ){
+                working.folder <- paste0( CLIMEX.PATH, "app/www" )
+                ## in case of the local session the variable image.folder was already set in the
+                ## wrapper climex::climex()
+            } else {
+                ## I decided to make the variable image.folder a global one because in this way
+                ## the folder addressed with it can be deleted the next time this function is
+                ## called
+                working.folder <- "/srv/shiny-server/assets" 
+                image.folder <<- paste0( "/srv/shiny-server/assets/tmp/images_",
+                                        as.numeric ( as.POSIXct( lubridate::now() ) ) )
+            }
+            dir.create( image.folder, recursive = TRUE )
+            climex:::animation.wrapper( time.series = x.block, starting.points = initial.parameters,
+                                       location.lim = isolate( input$sliderLocationLim ),
+                                       scale.lim = isolate( input$sliderScaleLim ),
+                                       shape.lim = isolate( input$sliderShapeLim ),
+                                       optimization.function = optimization.function,
+                                       optimization.steps = isolate( input$sliderOptimizationSteps ),
+                                       width = 300, height = 300, delay = 300, loopMode = "loop",
+                                       image.folder = image.folder, working.folder = working.folder )
+            ## if the code is not running on localhost the shiny server won't find
+            ## the animation.js script using its absolute path
+            if ( session$clientData$url_hostname != "localhost" &&
+                 session$clientData$url_hostname != "127.0.0.1" ){
+                working.folder <- sub( "/srv/shiny-server", "", working.folder )
+                animation.script <- "/assets/"
+            } else {
+                working.folder <- ""
+                animation.script <- ""
+            }
+            return( div( class = "scianimator", style = "display: inline-block;",
+                        tags$script( src = paste0( animation.script, "jquery.scianimator.min.js" ) ),
+                        tags$script( src = paste0( working.folder, "/animation.js" ) ),
+                        div( id = "animationLocSc", class = "animationClimex" ),
+                        div( id = "animationLocSh", class = "animationClimex" ),
+                        div( id = "animationScSh", class = "animationClimex" ) ) )
+        } ) } )
 ####################################################################################
     
 ####################################################################################
@@ -1268,7 +1286,7 @@ climex.server <- function( input, output, session ){
     ##         data.selected[[ 2 ]]$name[ which( data.selected[[ 2 ]]$latitude %in% map.click$lat &
     ##                                           data.selected[[ 2 ]]$longitude %in% map.click$lng ) ] )
     ##     x.gev.fit <- fit.gev()
-    ##     x.rlevd <- rlevd( x.gev.fit, return.period = c( 100, 50, 20 ) )
+    ##     x.rlevd <- climex:::rlevd( x.gev.fit, return.period = c( 100, 50, 20 ) )
     ##     x.popup <- paste0( "<b>", station.name, "</b>", "<br/>",
     ##                       "100y return level: ", x.rlevd[ 1 ], "<br/>",
     ##                       "50y return level: ", x.rlevd[ 2 ], "<br/>",
@@ -1297,9 +1315,9 @@ climex.server <- function( input, output, session ){
         if ( is.null( x.gev.fit ) )
             return( NULL )
         if ( input$buttonMinMax == "Max" ){
-            x.rlevd <- rlevd( x.gev.fit, return.period = c( 100, 50, 20 ) )
+            x.rlevd <- climex:::rlevd( x.gev.fit, return.period = c( 100, 50, 20 ) )
         } else
-            x.rlevd <- ( -1 )* rlevd( x.gev.fit, return.period = c( 100, 50, 20 ) )
+            x.rlevd <- ( -1 )* climex:::rlevd( x.gev.fit, return.period = c( 100, 50, 20 ) )
         ## paste0( "<b>", station.name, "</b>", "<br/>", "100y return level: ", x.rlevd[ 1 ], "<br/>",
         ##        "50y return level: ", x.rlevd[ 2 ], "<br/>", "20y return level: ", x.rlevd[ 3 ] )
         x.df <- data.frame( names = c( "100y return level", "50y return level",
@@ -1331,6 +1349,7 @@ climex.server <- function( input, output, session ){
 ##' @importFrom dygraphs dygraphOutput
 ##' @importFrom htmltools includeCSS
 ##' @importFrom htmltools h2
+##' @export
 ##' @author Philipp Mueller 
 climex.ui <- function(){
     dashboardPage( 
@@ -1359,9 +1378,6 @@ climex.ui <- function(){
                                "/css/styles.css" ) ),
             includeCSS( paste0( system.file( "climex_app", package = "climex" ),
                                "/css/scianimator.css" ) ),
-            ## tags$head( tags$script( src = paste0( system.file( "climex_app", package = "climex" ),
-            ##                    "/js/jquery.scianimator.min.js" ) ) ),
-            tags$head( tags$script( src = "/assets/jquery.scianimator.min.js" ) ),
             tabItems(
                 tabItem(
                     tabName = "tabMap",
