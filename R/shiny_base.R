@@ -51,6 +51,9 @@ climex <- function( x.input = NULL ){
                           "/js/jquery.scianimator.min.js" ),
                   to = paste0( CLIMEX.PATH, "app/www/jquery.scianimator.min.js" ), overwrite = TRUE )
     }
+    ## source of the gif: http://i.imgur.com/seuaOqf.gif
+    ## since this is a non-commercial product there shouldn't be any problems
+    ## http://imgur.com/tos
     file.copy( paste0( system.file( "climex_app", package = "climex" ), "/js/loadingGif.js" ),
               to = paste0( CLIMEX.PATH, "app/www/loadingGif.js" ), overwrite = TRUE ) 
     file.copy( paste0( system.file( "climex_app", package = "climex" ), "/res/loading.gif" ),
