@@ -265,4 +265,10 @@ tfoot {
 	display: block;
 	width: 100% !important;
     }
+    /* Due to reordering and a fixed height the slider and the 
+       table in the leaflet map are partly covered */
+    #leafletBox {
+	top: 100px !important;
+    }
+    
 }
