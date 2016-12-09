@@ -20,7 +20,7 @@ climex <- function( x.input = NULL ){
             x.input <<- x.input
             type.input <<- "single"
         } else if ( class( x.input ) == "list" &&
-                    all( unique( Reduce( c, lapply( x.input, class ) ) ) == c( "xts", "zoo" ) ) ){
+                                                  all( unique( Reduce( c, lapply( x.input, class ) ) ) == c( "xts", "zoo" ) ) ){
             ## I don't want to have any NULL, NA or whatsoever in those classes
             x.block <<- x.input[[ 1 ]]
             x.input <<- x.input
@@ -59,12 +59,12 @@ climex <- function( x.input = NULL ){
     file.copy( paste0( system.file( "climex_app", package = "climex" ), "/res/loading.gif" ),
               to = paste0( CLIMEX.PATH, "app/www/loading.gif" ) )        
     if ( !file.exists( paste0( CLIMEX.PATH, "app/ui.R" ) ) ||
-         !file.exists( paste0( CLIMEX.PATH, "app/server.R" ) ) ){
+              !file.exists( paste0( CLIMEX.PATH, "app/server.R" ) ) ){
         writeLines( "shinyUI( climex.ui )", con = paste0( CLIMEX.PATH, "app/ui.R" ) )
         writeLines( "shinyServer( climex.server )", con = paste0( CLIMEX.PATH, "app/server.R" ) )
     }
     runApp( paste0( CLIMEX.PATH, "app" ) )
-    #shinyApp( climex.ui, climex.server )
+                                        #shinyApp( climex.ui, climex.server )
 }
 
 
@@ -86,6 +86,11 @@ climex.server <- function( input, output, session ){
     ## So everything in my code is always of the style this.is.a.name. So why do I use the
     ## camel case thisIsAName for the shiny objects? Well, since CSS file do not support
     ## the point separator.
+    ##
+    ## For now there are three different data sources you can choose:
+    ## the input provided when calling climex::climex() and running it on
+    ## localhost, the station data of the German weather service (DWD) and
+    ## artificial data sampled from a GEV distribution
     output$menuSelectDataBase <- renderMenu( {
         if ( type.input != "none" ){
             selectInput( "selectDataBase", "Data base",
@@ -94,38 +99,52 @@ climex.server <- function( input, output, session ){
             selectInput( "selectDataBase", "Data base",
                         choices = c( "input", "DWD", "artificial data" ), selected = "DWD" )
     } )
+    ## Using this drop down menu one can select the specific type of input
+    ## data to use, since the DWD data base provides different
+    ## measurements recorded at the individual stations.
+    ## TODO: it's not general enough to work with different station lists
     output$menuSelectDataSource1 <- renderMenu( {
-        file.loading()
-        if ( !is.null( input$selectDataBase ) ){
-            if ( input$selectDataBase == "DWD" ){
-                if ( input$selectDataType == "Daily max. temp." ){
-                    selectInput( "selectDataSource", "Station",
-                                choices = names( stations.temp.max ),
-                                selected = "Potsdam" )
-                } else if ( input$selectDataType == "Daily min. temp." ){
-                    selectInput( "selectDataSource", "Station",
-                                choices = names( stations.temp.min ),
-                                selected = "Potsdam" )
-                } else if ( input$selectDataType == "Daily precipitation" ){
-                    selectInput( "selectDataSource", "Station",
-                                choices = names( stations.prec ),
-                                selected = "Potsdam" )
-                }
-            } else if ( input$selectDataBase == "artificial data" ){
-                sliderInput( "sliderArtificialDataLocation", "location", -30, 30, 1, round = 15 )
-            } else if ( input$selectDataBase == "input" ){
-                if ( type.input == "single" ){
-                    NULL
-                } else if ( type.input == "list" ){
-                    if ( !is.null( names( x.input ) ) ){
-                        ## it's a named list
-                        selectInput( "selectListEntryName", "Entry", choices = names( x.input ),
-                                    selected = names( x.input )[ 1 ] )
-                    } else
-                        selectInput( "selectListEntryNumerical", "Entry",
-                                    choices = 1 : length( x.input ), selected = 1 )
-                }
+        ## If artificial data was choosen as the input source, display
+        ## a slider for the location parameter of the parent GEV
+        ## distribution
+        if ( !is.null( input$selectDataBase ) &&
+                  input$selectDataBase == "artificial data" ){
+            return( sliderInput( "sliderArtificialDataLocation",
+                                "location", -30, 30, 1, round = 15 ) )
+        }
+        ## just show the stations which amount of years is larger than the
+        ## specified number (slider)
+        ## list(stations.selected, position.selected). This already does
+        ## the look-up in file.loading(), input$selectDataBase and
+        ## input$selectDataType so no need to repeat these steps.
+        data.selected <- data.chosen() 
+        ## Since this is not a crucial element and the other elements have
+        ## a fallback to the Potsdam time series we can just wait until
+        ## input$selectDataBase and input$sliderMap( used in data.chosen )
+        ## are initialized 
+        if ( !is.null( input$selectDataBase ) &&
+                  !is.null( data.selected ) ){
+            ## use the leaflet map to choose a individual station
+            if ( !is.null( input$leafletMap_marker_click) ){
+                map.click <- input$leafletMap_marker_click
+                ## picked station
+                station.name <- as.character(
+                    data.selected[[ 2 ]]$name[ which(
+                                            data.selected[[ 2 ]]$latitude
+                                            %in% map.click$lat &                                                      data.selected[[ 2 ]]$longitude
+                                            %in% map.click$lng ) ] )
+            } else {
+                ## if not just use the Potsdam station for the DWD data
+                ## or the first station in the list for every other source
+                if ( input$selectDataBase == "DWD" ){
+                    station.name <- "Potsdam"
+                } else
+                    station.name <- data.selected[[ 2 ]]$name[ 1 ]
             }
+            ## export drop-down menu
+            selectInput( "selectDataSource", "Station",
+                        choices = as.character(  data.selected[[ 2 ]]$name ),
+                        selected = station.name )
         } else
             NULL } )
     output$menuSelectDataSource2 <- renderMenu( {
@@ -155,19 +174,24 @@ climex.server <- function( input, output, session ){
             NULL } )
     output$sliderGevStatistics <- renderMenu( {
         x.deseasonalized <- deseasonalization()
+        if ( is.null( x.deseasonalized ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         if ( input$radioGevStatistics == "Blocks" ){
             sliderInput( "sliderBoxLength", "Box length in days", 1, 365*3, 365 )
         } else {
-         ##  if ( input$buttonMinMax == "Max" || is.null( input$buttonMinMax ) ){
-                sliderInput( "sliderThresholdGev", "Threshold",
-                            round( min( x.deseasonalized, na.rm = TRUE ) ),
-                            round( max( x.deseasonalized, na.rm = TRUE ) ),
-                            round( 0.8* max( x.deseasonalized, na.rm = TRUE ) ) )
-          ##   } else
-        ##         sliderInput( "sliderThresholdGev", "Threshold:",
-        ##                     round( min( x.deseasonalized, na.rm = TRUE ) ),
-        ##                     round( max( x.deseasonalized, na.rm = TRUE ) ),
-        ##                     round( 0.8* min( x.deseasonalized, na.rm = TRUE ) ) )
+            ##  if ( input$buttonMinMax == "Max" || is.null( input$buttonMinMax ) ){
+            sliderInput( "sliderThresholdGev", "Threshold",
+                        round( min( x.deseasonalized, na.rm = TRUE ) ),
+                        round( max( x.deseasonalized, na.rm = TRUE ) ),
+                        round( 0.8* max( x.deseasonalized, na.rm = TRUE ) ) )
+            ##   } else
+            ##         sliderInput( "sliderThresholdGev", "Threshold:",
+            ##                     round( min( x.deseasonalized, na.rm = TRUE ) ),
+            ##                     round( max( x.deseasonalized, na.rm = TRUE ) ),
+            ##                     round( 0.8* min( x.deseasonalized, na.rm = TRUE ) ) )
         }
     } )
     output$menuDataCleaning <- renderMenu( {
@@ -221,80 +245,34 @@ climex.server <- function( input, output, session ){
     data.selection <- reactive( {
         ## Selecting the data out of a pool of different possibilities or generate them
         ## artificially
-        ## The cutting of the time series to a specific range is not sone here but in
-        ## the generate.data function
-        file.loading()
-        if ( is.null( input$selectDataBase ) ){
-            x.xts <- x.input
-        } else if ( input$selectDataBase == "DWD" ){
-            if ( is.null( input$selectDataSource ) ){
-                map.click <- input$leafletMapMarkerClick
-                ## no station choosen yet. Using Potsdam as default
-                if ( !is.null( map.click ) ){
-                    data.selected <- data.chosen()
-                    station.name <- as.character(
-                        data.selected[[ 2 ]]$name[ which( data.selected[[ 2 ]]$latitude %in%
-                                                          map.click$lat &
-                                                          data.selected[[ 2 ]]$longitude %in%
-                                                          map.click$lng ) ] )
-                    if ( input$selectDataType == "Daily max. temp." ){
-                    x.xts <- stations.temp.max[[ which( names( stations.temp.max ) %in%
-                                                        station.name ) ]]
-                    } else if ( input$selectDataType == "Daily min. temp." ){
-                        x.xts <- stations.temp.min[[ which( names( stations.temp.min ) %in%
-                                                            station.name ) ]]
-                    } else if ( input$selectDataType == "Daily precipitation" ){
-                        x.xts <- stations.prec[[ which( names( stations.prec ) %in%
-                                                    station.name ) ]]
-                    }
-                } else {
-                    if ( is.null( input$selectDataType ) ){
-                        x.xts <- stations.temp.max[[ which( names( stations.temp.max ) == "Potsdam" ) ]]
-                    } else if ( input$selectDataType == "Daily max. temp." ){
-                        x.xts <- stations.temp.max[[ which( names( stations.temp.max ) == "Potsdam" ) ]]
-                    } else if ( input$selectDataType == "Daily min. temp." ){
-                        x.xts <- stations.temp.min[[ which( names( stations.temp.min ) == "Potsdam" ) ]]
-                    } else if ( input$selectDataType == "Daily precipitation" ){
-                        x.xts <- stations.prec[[ which( names( stations.prec ) == "Potsdam" ) ]]
-                    } else
-                        x.xts <- stations.temp.max[[ which( names( stations.temp.max ) == "Potsdam" ) ]]
-                }
-            } else {
-                if ( input$selectDataType == "Daily max. temp." ){
-                    x.xts <- stations.temp.max[[ which( names( stations.temp.max ) %in%
-                                                        input$selectDataSource ) ]]
-                } else if ( input$selectDataType == "Daily min. temp." ){
-                    x.xts <- stations.temp.min[[ which( names( stations.temp.min ) %in%
-                                                        input$selectDataSource ) ]]
-                } else if ( input$selectDataType == "Daily precipitation" ){
-                    x.xts <- stations.prec[[ which( names( stations.prec ) %in%
-                                                input$selectDataSource ) ]]
-                }
-            }
+        data.selected <- data.chosen()
+        if ( is.null( data.selected ) ){
+            ## as long as the menus are not initialized yet, just assign
+            ## the default time series.
+            ## x.xts <- x.input
+            return( NULL )
         } else if( input$selectDataBase == "artificial data" ){
-            ## For the artificial data set the length is determined by the Potsdam
-            ## temperature series
-            x.xts <- xts( extRemes::revd( length( stations.temp.max[[ 64 ]] ),
+            ## The length of the artificial time series is determined by
+            ## the number of years chosen via the input$sliderMap slider
+            ## in the leaflet tab
+            x.xts <- xts( extRemes::revd( input$sliderMap,
                                          loc = input$sliderArtificialDataLocation,
                                          scale = input$sliderArtificialDataScale,
                                          shape = input$sliderArtificialDataShape, type = "GEV" ),
                          order.by = index( stations.temp.max[[ 64 ]] ) )
-        } else if ( input$selectDataBase == "input" ){
-            if ( type.input == "single" ){
-                x.xts <- x.input
-            } else if ( type.input == "list" ){
-                if ( !is.null( names( x.input ) ) ){
-                    x.xts <- x.input[[ which( names( x.input ) %in%
-                                              input$selectListEntryName ) ]]
-                } else
-                    x.xts <- x.input[[ as.numeric( input$selectListEntryNumerical ) ]]
-            }
+        } else {
+            ## In all other cases the possible choices are contained in
+            ## the data.selected object and are agnostic of the data base
+            ## /input chosen
+            x.xts <- data.selected[[ 1 ]][[ which( names( data.selected[[ 1 ]] ) == input$selectDataSource ) ]]
         }
-        ## getting rid of artifacts
+        ## getting rid of artifacts since they would spoil our results
+        ## (the German weather service DWD uses -999 to mark missing
+        ## measurements)
         x.xts[ which( x.xts == -999 ) ] <- NA
         if ( !is.null( input$checkBoxIncompleteYears ) ){
             if ( input$checkBoxIncompleteYears ){
-            ## Remove all incomplete years from time series
+                ## Remove all incomplete years from time series
                 x.xts <- remove.incomplete.years( x.xts ) }
         }
         return( x.xts ) } )
@@ -302,7 +280,12 @@ climex.server <- function( input, output, session ){
         ## Decides if either the GEV distribution with block maxima or the Pareto
         ## distribution if threshold excedence should be considered.
         ## Import data set, cut it to the desired intervale, deseasonalize and block it
-        x.xts <- data.selection( )
+        x.xts <- data.selection()
+        if ( is.null( x.xts ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         x.deseasonalized <- deseasonalization( )
         ## Toggle if maxima of minima are going to be used
         if ( is.null( input$buttonMinMax ) ){
@@ -318,7 +301,7 @@ climex.server <- function( input, output, session ){
         } else if ( input$radioGevStatistics == "Blocks" ){
             ## Box size as dynamic input parameter
             if ( is.null( input$sliderBoxLength ) ||  input$sliderBoxLength == 366 ||
-                 input$sliderBoxLength == 365 ){
+                                                          input$sliderBoxLength == 365 ){
                 x.block <- block( x.deseasonalized, separation.mode = "years",
                                  block.mode = block.mode )
             } else
@@ -353,23 +336,49 @@ climex.server <- function( input, output, session ){
     ## Update the length whenever another data source is loaded
     generate.data <- reactive( {
         x.data <- data.blocking()
+        if ( is.null( x.data ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         reactive.values$keep.rows <- rep( TRUE, length( x.data[[ 1 ]] ) )
         return( x.data ) } )
     ## Toggle points that are clicked
     observeEvent( input$plotBlockedClick, {
         x.block <- generate.data()[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            ## Just a precaution but no way this point is reached before
+            ## initialization 
+            return( NULL )
+        }
         df.block <- data.frame( date = index( x.block ), value = as.numeric( x.block ) )
         result <- nearPoints( df.block, input$plotBlockedClick, allRows = TRUE )
         reactive.values$keep.rows <- xor( reactive.values$keep.rows, result$selected_ ) } )
     ## Toggle points that are brushed
     observeEvent( input$excludeBlockedToggle, {
         x.block <- generate.data()[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            ## Just a precaution but no way this point is reached before
+            ## initialization 
+            return( NULL )
+        }
         df.block <- data.frame( date = index( x.block ), value = as.numeric( x.block ) )
         result <- brushedPoints( df.block, input$plotBlockedBrush, allRows = TRUE )
         reactive.values$keep.rows <- xor( reactive.values$keep.rows, result$selected_ ) } )
     ## Reset plot
     observeEvent( input$excludeBlockedReset, {
         x.block <- generate.data()[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            ## Just a precaution but no way this point is reached before
+            ## initialization 
+            return( NULL )
+        }
         reactive.values$keep.rows <- rep( TRUE, length( x.block ) ) } )
 ############################# declustering of the ts ###############################
     ## Inspired by extRemes::decluster.intervals and based on Ferro, C. A. T. and Segers, J.
@@ -413,7 +422,7 @@ climex.server <- function( input, output, session ){
     colour.extremes.light <- grDevices::rgb( 1, 0.9, 0.8 )
     function.get.y.label <- function( input ){
         if ( is.null( input$selectDataBase ) ){
-                y.label <- "temperature in °C"            
+            y.label <- "temperature in °C"            
         } else if ( input$selectDataBase == "artificial data" ){
             y.label <- "GEV sample"
         } else if ( input$selectDataBase == "DWD" ){
@@ -443,6 +452,11 @@ climex.server <- function( input, output, session ){
     ## deseasonalized time series
     output$plotDeseasonalized <- renderDygraph( {
         x.data <- generate.data( )
+        if ( is.null( x.data ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         x.blocked <- x.data[[ 2 ]][ which( index( x.data[[ 2 ]] ) %in% index( x.data[[ 1 ]] ) ) ]
         plot.blocked <- x.data[[ 2 ]]
         plot.blocked[ !index( x.data[[ 2 ]] ) %in% index( x.blocked ) ] <- NA
@@ -458,6 +472,11 @@ climex.server <- function( input, output, session ){
     ## Plot the result
     output$plotBlocked <- renderPlot( {
         x.block <- generate.data( )[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         x.kept <- x.block[ reactive.values$keep.rows ]
         x.excluded <- x.block[ !reactive.values$keep.rows ]
         plot.kept <- data.frame( date = index( x.kept ), value = as.numeric( x.kept ) )
@@ -466,18 +485,23 @@ climex.server <- function( input, output, session ){
         y.label <- function.get.y.label( input )
         ggplot() + geom_line( data = plot.kept, aes( x = date, y = value ),
                              colour = colour.ts ) +
-            geom_point( data = plot.kept, aes( x = date, y = value ), colour = colour.extremes,
-                       fill = colour.extremes, size = 2, shape = 21 ) +
-            geom_point( data = plot.excluded, aes( x = date, y = value ),
-                       colour = colour.extremes,
-                       fill = "white", size = 2, shape = 21 ) + ylab( y.label ) + theme_bw() +
-            theme( axis.title = element_text( size = 17, colour = colour.ts ),
-                  axis.text = element_text( size = 13, colour = colour.ts ) )
+                       geom_point( data = plot.kept, aes( x = date, y = value ), colour = colour.extremes,
+                                  fill = colour.extremes, size = 2, shape = 21 ) +
+                       geom_point( data = plot.excluded, aes( x = date, y = value ),
+                                  colour = colour.extremes,
+                                  fill = "white", size = 2, shape = 21 ) + ylab( y.label ) + theme_bw() +
+                       theme( axis.title = element_text( size = 17, colour = colour.ts ),
+                             axis.text = element_text( size = 13, colour = colour.ts ) )
     } )
 ###### GEV fit and analysis plots ##################################################  
     output$plotFitGev <- renderPlot( {
         ## Plots the result of the fitted GEV
         x.block <- generate.data( )[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         x.kept <- x.block[ reactive.values$keep.rows ]
         if ( !is.null( input$buttonMinMax ) ){
             if ( input$buttonMinMax == "Min" && input$radioGevStatistics == "Blocks" )
@@ -506,10 +530,10 @@ climex.server <- function( input, output, session ){
             plot.lim <- c(
                 plot.data[[ 1 ]][ which.min(
                              abs( plot.data[[ 2 ]][ 1 : which.max( plot.data[[ 2 ]] ) ]-
-                                  threshold.pdf.plot ) ) ],
+                                                     threshold.pdf.plot ) ) ],
                 plot.data[[ 1 ]][ which.min( abs( plot.data[[ 2 ]][
                              which.max( plot.data[[ 2 ]] ) : length( plot.data[[ 2 ]] ) ] -
-                             threshold.pdf.plot ) ) + which.max( plot.data[[ 2 ]] ) - 1 ] )
+                                                                     threshold.pdf.plot ) ) + which.max( plot.data[[ 2 ]] ) - 1 ] )
             if ( plot.lim[ 1 ] > x.lim[ 1 ] )
                 plot.lim[ 1 ] <- x.lim[ 1 ] - abs( x.lim[ 1 ] )* 0.05 
             if ( plot.lim[ 2 ] < x.lim[ 2 ] )
@@ -538,14 +562,14 @@ climex.server <- function( input, output, session ){
                                          aes( x = as.numeric( x.kept ), y = ..density..,
                                              fill = colour.ts.light ), na.rm = TRUE,
                                          bins = gg1.bins* length( x.kept ) ) +
-            geom_polygon( data = plot.data, alpha = 0.7, colour = colour.ts,
-                         aes( x = x, y = y, fill = colour.extremes ) ) +            
-            scale_fill_manual( values = c( colour.ts.light, colour.extremes ),
-                              labels = c( "Histogram data", "Fitted distribution"  ) ) +
-            theme_bw() + xlab( x.label ) + xlim( plot.lim ) +
-            theme( legend.position = "none" ) +
-            theme( axis.title = element_text( size = 17, colour = colour.ts ),
-                  axis.text = element_text( size = 13, colour = colour.ts ) )
+                          geom_polygon( data = plot.data, alpha = 0.7, colour = colour.ts,
+                                       aes( x = x, y = y, fill = colour.extremes ) ) +            
+                          scale_fill_manual( values = c( colour.ts.light, colour.extremes ),
+                                            labels = c( "Histogram data", "Fitted distribution"  ) ) +
+                          theme_bw() + xlab( x.label ) + xlim( plot.lim ) +
+                          theme( legend.position = "none" ) +
+                          theme( axis.title = element_text( size = 17, colour = colour.ts ),
+                                axis.text = element_text( size = 13, colour = colour.ts ) )
         if ( is.null( input$buttonMinMax ) ){
             return( gg1 )
         } else if ( input$buttonMinMax == "Min" ){
@@ -564,13 +588,18 @@ climex.server <- function( input, output, session ){
                                         y = max( y.lim.density, y.lim.histogram )* 1.2,
                                         label = "Since the minimal extremes are chosen the GEV distribution \n will be fitted to the negated time series" )
             gg1 <- gg1 + geom_label( data = plot.text, aes( x = x, y = y, label = label ),
-                                         fill = "white", colour = "firebrick", fontface = "bold")
+                                    fill = "white", colour = "firebrick", fontface = "bold")
         }
         return( gg1 )
     } )
     output$plotFitQQ <- renderPlot( {
         ## Quantile-quantile plot for fit statistics
         x.block <- generate.data( )[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         x.kept <- x.block[ reactive.values$keep.rows ]
         x.gev.fit <- fit.gev()
         if ( is.null( x.gev.fit ) )
@@ -608,12 +637,12 @@ climex.server <- function( input, output, session ){
         gg.qq1 <- ggplot() + geom_point( data = plot.data, aes( x = model, y = empirical ),
                                         colour = colour.ts,
                                         shape = 1, size = 2, alpha = 0.8 ) +
-            geom_abline( intercept = plot.fit[ 1 ], slope = -plot.fit[ 2 ], colour = colour.ts,
-                        linetype = 2 ) +
-            geom_abline( intercept = 0, slope = 1, colour = colour.extremes ) +
-            theme_bw() +
-            theme( axis.title = element_text( size = 15, colour = colour.ts ),
-                  axis.text = element_text( size = 12, colour = colour.ts ) )
+                             geom_abline( intercept = plot.fit[ 1 ], slope = -plot.fit[ 2 ], colour = colour.ts,
+                                         linetype = 2 ) +
+                             geom_abline( intercept = 0, slope = 1, colour = colour.extremes ) +
+                             theme_bw() +
+                             theme( axis.title = element_text( size = 15, colour = colour.ts ),
+                                   axis.text = element_text( size = 12, colour = colour.ts ) )
         if ( !is.null( input$buttonMinMax ) ){
             if ( input$buttonMinMax == "Min" && input$radioGevStatistics == "Blocks")
                 gg.qq1 <- gg.qq1 + scale_y_reverse()
@@ -622,6 +651,11 @@ climex.server <- function( input, output, session ){
     output$plotFitQQ2 <- renderPlot( {
         ## Quantile-quantile plot for fit statistics with samples drawn from fitted GEV
         x.block <- generate.data( )[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         x.kept <- x.block[ reactive.values$keep.rows ]
         x.gev.fit <- fit.gev()
         if ( is.null( x.gev.fit ) )
@@ -668,15 +702,15 @@ climex.server <- function( input, output, session ){
         gg.qq2 <- ggplot() + geom_point( data = plot.data, aes( x = sampled, y = empirical ),
                                         colour = colour.ts, shape = 1, size = 2, alpha = 0.8,
                                         na.rm = TRUE ) +
-            geom_line( data = plot.data, aes( x = sampled.ci.low, y = empirical ), linetype = 2,
-                      colour = colour.extremes, na.rm = TRUE ) +
-            geom_line( data = plot.data, aes( x = sampled.ci.high, y = empirical ), linetype = 2,
-                      colour = colour.extremes, na.rm = TRUE ) +
-            geom_abline( intercept = plot.fit[ 1 ], slope = plot.fit[ 2 ], colour = colour.ts,
-                        linetype = 2 ) + theme_bw() +
-            geom_abline( intercept = 0, slope = 1, colour = colour.extremes )+
-            theme( axis.title = element_text( size = 15, colour = colour.ts ),
-                  axis.text = element_text( size = 12, colour = colour.ts ) )
+                             geom_line( data = plot.data, aes( x = sampled.ci.low, y = empirical ), linetype = 2,
+                                       colour = colour.extremes, na.rm = TRUE ) +
+                             geom_line( data = plot.data, aes( x = sampled.ci.high, y = empirical ), linetype = 2,
+                                       colour = colour.extremes, na.rm = TRUE ) +
+                             geom_abline( intercept = plot.fit[ 1 ], slope = plot.fit[ 2 ], colour = colour.ts,
+                                         linetype = 2 ) + theme_bw() +
+                             geom_abline( intercept = 0, slope = 1, colour = colour.extremes )+
+                             theme( axis.title = element_text( size = 15, colour = colour.ts ),
+                                   axis.text = element_text( size = 12, colour = colour.ts ) )
         if ( !is.null( input$buttonMinMax ) ){
             if ( input$buttonMinMax == "Min" && input$radioGevStatistics == "Blocks" )
                 gg.qq2 <- gg.qq2 + scale_y_reverse() + scale_x_reverse()
@@ -685,6 +719,11 @@ climex.server <- function( input, output, session ){
     } )
     output$plotFitReturnLevel <- renderPlot( {
         x.block <- generate.data()[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         x.kept <- x.block[ reactive.values$keep.rows ]
         x.gev.fit <- fit.gev()
         if ( is.null( x.gev.fit ) )
@@ -698,7 +737,7 @@ climex.server <- function( input, output, session ){
             if ( is.null( input$buttonMinMax ) ){
                 ## the true block maxima and their return levels will be calculated
                 x.confidence.intervals <- extRemes::ci.fevd.mle( climex:::as.fevd( x.kept, x.gev.fit,
-                                                                         type = "GEV"),
+                                                                                  type = "GEV"),
                                                                 return.period = x.period )
                 plot.data <- data.frame( x = -1/ log( ppoints( length( x.kept ), 0 ) ),
                                         y = sort( as.numeric( x.kept ) ) )
@@ -708,8 +747,8 @@ climex.server <- function( input, output, session ){
                 ## the time series will be negated and the results too to aquire the
                 ## return levels of the minima
                 x.confidence.intervals <- ( -1 )*
-                    extRemes::ci.fevd.mle( climex:::as.fevd( -x.kept, x.gev.fit, type = "GEV"),
-                                          return.period = x.period )
+                                              extRemes::ci.fevd.mle( climex:::as.fevd( -x.kept, x.gev.fit, type = "GEV"),
+                                                                    return.period = x.period )
                 plot.data <- data.frame( x = -1/ log( ppoints( length( x.kept ), 0 ) ),
                                         y = -1* sort( as.numeric( -x.kept ) ) )
                 plot.y.limits <- c( min( x.confidence.intervals[ , 3 ] ),
@@ -717,7 +756,7 @@ climex.server <- function( input, output, session ){
             } else {
                 ## the true block maxima and their return levels will be calculated
                 x.confidence.intervals <- extRemes::ci.fevd.mle( climex:::as.fevd( x.kept, x.gev.fit,
-                                                                         type = "GEV"),
+                                                                                  type = "GEV"),
                                                                 return.period = x.period )
                 plot.data <- data.frame( x = -1/ log( ppoints( length( x.kept ), 0 ) ),
                                         y = sort( as.numeric( x.kept ) ) )
@@ -758,15 +797,15 @@ climex.server <- function( input, output, session ){
         }
         gg.rl <- ggplot() + geom_point( data = plot.data, aes( x = x, y = y ), colour = colour.ts,
                                        shape = 1, size = 2, alpha = 0.8, na.rm = TRUE ) +
-            geom_line( data = plot.statistics, aes( x = period, y = level ),
-                      colour = colour.extremes, na.rm = TRUE ) +
-            geom_line( data = plot.statistics, aes( x = period, y = ci.low ), linetype = 2,
-                      colour = colour.extremes, na.rm = TRUE ) +
-            geom_line( data = plot.statistics, aes( x = period, y = ci.high ), linetype = 2,
-                      colour = colour.extremes, na.rm = TRUE ) + xlab( "return period" ) +
-            ylab( "return level" ) + theme_bw() + scale_x_log10( limits = c( 1, 1000 ) )+
-            theme( axis.title = element_text( size = 15, colour = colour.ts ),
-                  axis.text = element_text( size = 12, colour = colour.ts ) )
+                            geom_line( data = plot.statistics, aes( x = period, y = level ),
+                                      colour = colour.extremes, na.rm = TRUE ) +
+                            geom_line( data = plot.statistics, aes( x = period, y = ci.low ), linetype = 2,
+                                      colour = colour.extremes, na.rm = TRUE ) +
+                            geom_line( data = plot.statistics, aes( x = period, y = ci.high ), linetype = 2,
+                                      colour = colour.extremes, na.rm = TRUE ) + xlab( "return period" ) +
+                            ylab( "return level" ) + theme_bw() + scale_x_log10( limits = c( 1, 1000 ) )+
+                            theme( axis.title = element_text( size = 15, colour = colour.ts ),
+                                  axis.text = element_text( size = 12, colour = colour.ts ) )
         if ( !is.null( input$buttonMinMax ) ){
             if ( input$buttonMinMax == "Min" && input$radioGevStatistics == "Blocks" ){
                 gg.rl <- gg.rl + scale_y_reverse() 
@@ -782,6 +821,11 @@ climex.server <- function( input, output, session ){
     deseasonalization <- reactive( {
         ## Dropdown for deseasonalization method
         x.xts <- data.selection( )
+        if ( is.null( x.xts ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         if ( !is.null( input$selectDataBase ) ){
             if ( input$selectDataBase == "artificial data" ){
                 ## For the artificial data there is no need for deseasonalization
@@ -814,6 +858,11 @@ climex.server <- function( input, output, session ){
 ####################################################################################
     fit.gev <- reactive( {
         x.block <- generate.data( )[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         x.initial <- initial.parameters()
         if ( is.null( x.initial ) ){
             print( "the fitting will start as soon as the initial parameters are available" )
@@ -896,7 +945,7 @@ climex.server <- function( input, output, session ){
     ## to the three last fits
     ## ! (and highlight positive values with with green and negative with red)
     last.values <- last.1 <- last.1.aux <- last.1.int <- last.2 <- last.3 <-
-        current.white <- rep( 0,  )
+                                                                       current.white <- rep( 0,  )
     output$tableStatistics <- renderUI( {
         ## define the colour for increasing or decreasing values
         css.colours <- c( "#C53100", "#0D8F20" ) # >0, <0, normal
@@ -904,6 +953,11 @@ climex.server <- function( input, output, session ){
         if ( is.null( x.gev.fit ) )
             return( NULL )
         x.block <- generate.data( )[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         if ( input$radioGevStatistics == "Blocks" ){
             current <- c( x.gev.fit$par[ 1 ], x.gev.fit$par[ 2 ], x.gev.fit$par[ 3 ],
                          x.gev.fit$value, climex:::aic( x.gev.fit ), climex:::bic( x.gev.fit ),
@@ -929,38 +983,38 @@ climex.server <- function( input, output, session ){
                 last.1.int <- last.1.aux
                 break
             } else if( abs( last.1.aux[ ll ] - current[ ll ] ) < 0.01* current[ ll ] ){
-                    if ( last.1.aux[ ll ] > 0 ){
-                        last.1.int[ ll ] <- paste0( 
-                            "+", as.character( format(  last.1.aux[ ll ], digits = 4 ) ),
-                            " ", css.colours[ 1 ] )
-                    } else
-                        last.1.int[ ll ] <- paste( 
-                        as.character( format(  last.1.aux[ ll ], digits = 4 ) ),
-                        css.colours[ 1 ] )
+                if ( last.1.aux[ ll ] > 0 ){
+                    last.1.int[ ll ] <- paste0( 
+                                        "+", as.character( format(  last.1.aux[ ll ], digits = 4 ) ),
+                                        " ", css.colours[ 1 ] )
+                } else
+                    last.1.int[ ll ] <- paste( 
+                                        as.character( format(  last.1.aux[ ll ], digits = 4 ) ),
+                                        css.colours[ 1 ] )
             } else {
-                    last.1.int[ ll ] <- paste( as.character( format(  last.1.aux[ ll ],
-                                                                    digits = 4 ) ),
-                                              " ", css.colours[ 2 ] ) } }
+                last.1.int[ ll ] <- paste( as.character( format(  last.1.aux[ ll ],
+                                                                digits = 4 ) ),
+                                          " ", css.colours[ 2 ] ) } }
         ## For the test statistic all changes to lower values are marked green
         for ( ll in ( length( x.gev.fit$par ) + 1 ) : length( last.1.aux ) ){
             if( last.1.aux[ ll ] > 0 ){
                 last.1.int[ ll ] <- paste0(
-                    "+", as.character( format(  last.1.aux[ ll ], digits = 4 ) ),
-                    " ", css.colours[ 1 ] )
+                                    "+", as.character( format(  last.1.aux[ ll ], digits = 4 ) ),
+                                    " ", css.colours[ 1 ] )
             } else if ( last.1.aux[ ll ] < 0 ){
                 last.1.int[ ll ] <- paste( as.character( format(  last.1.aux[ ll ],
                                                                 digits = 4 ) ),
                                           " ", css.colours[ 2 ] )
-                } else {
-                    last.1.int[ ll ] <- as.character( format(  last.1.aux[ ll ], digits = 4 ) )
-                } }
+            } else {
+                last.1.int[ ll ] <- as.character( format(  last.1.aux[ ll ], digits = 4 ) )
+            } }
         last.1 <<- last.1.int
         if ( all( last.values == 0 ) ){
             ## I don't want to see the statistics during the initialization
             last.1 <<- rep( 0, length( last.1 ) ) }
         last.values <<- current
         x.table <- data.frame( current = current, h_1 = last.1,
-                                  h_2 = last.2, h_3 = last.3,
+                              h_2 = last.2, h_3 = last.3,
                               row.names = c( "location", "scale",
                                             "shape", "nllh", "AIC", "BIC", "rlevel" ) )
         ## generate a html table with the 'pander' and the 'markdown' package
@@ -980,6 +1034,11 @@ climex.server <- function( input, output, session ){
         if ( is.null( x.gev.fit ) )
             return( NULL )
         x.block <- generate.data()[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         par.init <- likelihood.initials( x.block )
         sliderInput( "sliderLocationLim", "Location sampling limits",
                     round( x.gev.fit$par[ 1 ], 1 ) - 10,
@@ -990,6 +1049,11 @@ climex.server <- function( input, output, session ){
         if ( is.null( x.gev.fit ) )
             return( NULL )
         x.block <- generate.data()[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         par.init <- likelihood.initials( x.block )
         sliderInput( "sliderScaleLim", "Scale sampling limits",
                     round( max( 0, x.gev.fit$par[ 2 ]  - 10 ), 1 ),
@@ -1001,6 +1065,11 @@ climex.server <- function( input, output, session ){
         if ( is.null( x.gev.fit ) )
             return( NULL )
         x.block <- generate.data()[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         par.init <- likelihood.initials( x.block )
         sliderInput( "sliderShapeLim", "Shape sampling limits",
                     round( x.gev.fit$par[ 3 ] - 1, 1 ),
@@ -1009,6 +1078,11 @@ climex.server <- function( input, output, session ){
                       round( x.gev.fit$par[ 3 ], 1 ) + .3  ) ) } )
     mle.parameter.likelihood <- reactive( {
         x.block <- generate.data()[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         x.initials <- initial.parameters()
         if ( input$selectOptimizationProcedureLikelihood == "dfoptim::nmk" ){
             suppressWarnings( par.mle <- try( nmk.modified( par = x.initials, x = x.block )$par ) )
@@ -1020,33 +1094,58 @@ climex.server <- function( input, output, session ){
     ## default and a reactive vector gluing all together
     output$inputInitialLocation <- renderMenu( {
         x.block <- generate.data()[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         parameter.default <- climex::likelihood.initials( x.block )
         numericInput( "initialLocation", "", value = round( parameter.default[ 1 ], 4 ) ) } )
     output$inputInitialScale <- renderMenu( {
         x.block <- generate.data()[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         parameter.default <- climex::likelihood.initials( x.block )
         numericInput( "initialScale", "", value = round( parameter.default[ 2 ], 4 ), min = 0 ) } )
     output$inputInitialShape <- renderMenu( {
         x.block <- generate.data()[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         parameter.default <- climex::likelihood.initials( x.block )
         numericInput( "initialShape", "", value = round( parameter.default[ 3 ], 4 ) ) } )
     ##Why I need this reactive content? Well, not really necessary but quite convenient
     initial.parameters <- reactive( {
         if ( is.null( input$initialLocation ) | is.null( input$initialScale ) |
-             is.null( input$initialShape ) ){
+                 is.null( input$initialShape ) ){
             ## If the sliders arn't set yet, I will just use the default values
             x.block <- generate.data()[[ 1 ]]
+            if ( is.null( x.block ) ){
+                ## if the initialization has not finished yet just wait a
+                ## little longer
+                return( NULL )
+            }
             return( climex::likelihood.initials( x.block ) )
         } else
             return( c( input$initialLocation, input$initialScale, input$initialShape ) ) } )
     cached.table.init <- NULL
     initial.parameters.likelihood <- reactive( {
         x.block <- generate.data()[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         x.initial <- initial.parameters()
         input$tableDrawPoints
         par.init <- mle.parameter.likelihood()
         if ( is.null( input$sliderNumberInitialPoints ) || is.null( input$sliderLocationLim ) ||
-             is.null( input$sliderScaleLim ) || is.null( input$sliderShapeLim ) ){
+                 is.null( input$sliderScaleLim ) || is.null( input$sliderShapeLim ) ){
             return( c( NaN, NaN, NaN ) )
         }
         ## the first entry of the table should always be the actual point the optimization
@@ -1090,6 +1189,11 @@ climex.server <- function( input, output, session ){
     ## Displaying of the heuristic estimates for a wiser picking of the limits
     output$tableHeuristicEstimates <- renderDataTable( {
         x.block <- generate.data()[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
         x.mle.par <- mle.parameter.likelihood()
         x.initial <- initial.parameters()
         x.suggested <- likelihood.initials( x.block )
@@ -1105,14 +1209,14 @@ climex.server <- function( input, output, session ){
         ttplot( x.block ) } )
     output$loadingImage <- renderUI({
         if ( session$clientData$url_hostname != "localhost" &&
-             session$clientData$url_hostname != "127.0.0.1" ){
+                                                               session$clientData$url_hostname != "127.0.0.1" ){
             folder <- "/assets/"
         } else
             folder <- ""
         return( img( src = paste0( folder, "loading.gif" ), id = "loadingGif" ) ) } )
     output$loadingScript <- renderUI({
         if ( session$clientData$url_hostname != "localhost" &&
-             session$clientData$url_hostname != "127.0.0.1" ){
+                                                               session$clientData$url_hostname != "127.0.0.1" ){
             folder <- "/assets/"
         } else
             folder <- ""
@@ -1124,8 +1228,13 @@ climex.server <- function( input, output, session ){
         ## Don't make the plot the first time I look at the tab
         if ( input$buttonDrawAnimation < 1 )
             return( NULL )
+        isolate( { x.block <- generate.data()[[ 1 ]]
+            if ( is.null( x.block ) ){
+                ## if the initialization has not finished yet just wait a
+                ## little longer
+                return( NULL )
+            } } )
         isolate( initial.parameters <- initial.parameters.likelihood() )
-        isolate( x.block <- generate.data()[[ 1 ]] )
         isolate( {
             if ( input$selectOptimizationProcedureLikelihood == "dfoptim::nmk" ){
                 optimization.function <- nmk.modified
@@ -1147,7 +1256,7 @@ climex.server <- function( input, output, session ){
             ## to prevent the script from occupying to much space. Due to a setwd in
             ## the climex() wrapper we are already in this folder
             if ( session$clientData$url_hostname == "localhost" ||
-                 session$clientData$url_hostname == "127.0.0.1"  ){
+                                                                   session$clientData$url_hostname == "127.0.0.1"  ){
                 working.folder <- paste0( CLIMEX.PATH, "app/www" )
                 ## in case of the local session the variable image.folder was already set in the
                 ## wrapper climex::climex()
@@ -1172,7 +1281,7 @@ climex.server <- function( input, output, session ){
             ## if the code is not running on localhost the shiny server won't find
             ## the animation.js script using its absolute path
             if ( session$clientData$url_hostname != "localhost" &&
-                 session$clientData$url_hostname != "127.0.0.1" ){
+                                                                   session$clientData$url_hostname != "127.0.0.1" ){
                 working.folder <- sub( "/srv/shiny-server", "", working.folder )
                 animation.script <- "/assets/"
             } else {
@@ -1197,6 +1306,12 @@ climex.server <- function( input, output, session ){
     ## return level calculated with the setting in the
     ## basic map without station positions        
     ## select only those stations in Germany with a certain minimum number of years
+    ##
+    ## This functions extracts all stations containing more than a
+    ## specified number of years of data
+    ## TODO: This is also not general enough to work with different lists
+    ## of input data
+    ## TODO: Add support for file.loading()
     data.chosen <- reactive( {
         if ( !is.null( input$selectDataBase ) && input$selectDataBase == "DWD" ){
             if ( is.null( input$selectDataType ) ){
@@ -1218,10 +1333,26 @@ climex.server <- function( input, output, session ){
             } 
             position.selected <- station.positions[ selection,  ]
             list( stations.selected, position.selected )
+        } else if ( !is.null( input$selectDataBase ) &&
+                         input$selectDataBase == "input" ){
+            file.loading()
+            if ( type.input == "single" ){
+                NULL
+            } else if ( type.input == "list" ){
+                if ( !is.null( names( x.input ) ) ){
+                    ## it's a named list
+                    selectInput( "selectListEntryName", "Entry", choices = names( x.input ),
+                                selected = names( x.input )[ 1 ] )
+                } else
+                    selectInput( "selectListEntryNumerical", "Entry",
+                                choices = 1 : length( x.input ), selected = 1 )
+            }
         } else
             NULL
     } )
-    ## create custom markers
+    ## create custom markers.
+    ## This is essentially the same marker but with different colors. The selected one
+    ## should be colored red and all the others blue. 
     blue.icon <-  makeIcon( iconUrl = paste0( system.file( "climex_app", package = "climex" ),
                                              "/www/marker-icon.png" ),
                            iconWidth = 25, iconHeight = 41, iconAnchorX = 12.5, iconAnchorY = 41,
@@ -1229,15 +1360,19 @@ climex.server <- function( input, output, session ){
                                               "/www/marker-shadow.png" ), shadowWidth = 41,
                            shadowHeight = 41, shadowAnchorX = 12.5, shadowAnchorY = 41 )
     red.icon <-  makeIcon( iconUrl = paste0( system.file( "climex_app", package = "climex" ),
-                                             "/www/select-marker.png" ),
-                           iconWidth = 25, iconHeight = 41, iconAnchorX = 12.5, iconAnchorY = 41,
-                           shadowUrl = paste0( system.file( "climex_app", package = "climex" ),
-                                              "/www/marker-shadow.png" ), shadowWidth = 41,
-                          shadowHeight = 41, shadowAnchorX = 12.5, shadowAnchorY = 41 )    
+                                            "/www/select-marker.png" ),
+                          iconWidth = 25, iconHeight = 41, iconAnchorX = 12.5, iconAnchorY = 41,
+                          shadowUrl = paste0( system.file( "climex_app", package = "climex" ),
+                                             "/www/marker-shadow.png" ), shadowWidth = 41,
+                          shadowHeight = 41, shadowAnchorX = 12.5, shadowAnchorY = 41 )
+    ## Create the underlying map containing the Openstreetmap tile. This is the
+    ## fundamental layer and all the markers will be added on top of it.
     output$leafletMap <- renderLeaflet( {
         leaflet() %>% fitBounds( 5, 46, 13, 55 ) %>%
             addTiles( "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-                     attribution = '<code> Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a> </code>' ) } )    
+                     attribution = '<code> Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a> </code>' ) } )
+    ## Depending on the number of minimal years and the selected data source markers
+    ## will be placed at the geo-coordinates of the individual stations. 
     observe( {
         data.selected <- data.chosen()
         if ( !is.null( data.selected ) ){
@@ -1248,83 +1383,6 @@ climex.server <- function( input, output, session ){
                            icon = blue.icon, lat = ~latitude,
                            options = popupOptions( closeButton = FALSE ) )
         } } )
-    output$menuSelectDataSource1 <- renderMenu( {        
-        if ( !is.null( input$selectDataBase ) ){
-            if ( input$selectDataBase == "DWD" ){
-                map.click <- input$leafletMapMarkerClick
-                data.selected <- data.chosen()
-                if ( is.null( data.selected ) || is.null( map.click ) ){
-                    ## no data was chosen yet. Setting the Potsdam station as default
-                    if ( is.null( input$selectDataType ) ){
-                        selectInput( "selectDataSource", "Station",
-                                    choices = names( stations.temp.max ), selected = "Potsdam" )
-                    } else if ( input$selectDataType == "Daily max. temp." ){
-                        selectInput( "selectDataSource", "Station",
-                                    choices = names( stations.temp.max ), selected = "Potsdam" )
-                    } else if ( input$selectDataType == "Daily min. temp." ){
-                        selectInput( "selectDataSource", "Station",
-                                    choices = names( stations.temp.min ), selected = "Potsdam" )
-                    } else if ( input$selectDataType == "Daily precipitation" ){
-                        selectInput( "selectDataSource", "Station",
-                                    choices = names( stations.prec ), selected = "Potsdam" )
-                    }
-                } else {
-                    station.name <- as.character(
-                        data.selected[[ 2 ]]$name[ which(
-                                                data.selected[[ 2 ]]$latitude %in% map.click$lat &
-                                                data.selected[[ 2 ]]$longitude %in% map.click$lng ) ] )
-                    if ( input$selectDataType == "Daily max. temp." ){
-                        selectInput( "selectDataSource", "Station",
-                                    choices = names( stations.temp.max ),
-                                    selected = station.name )
-                    } else if ( input$selectDataType == "Daily min. temp." ){
-                        selectInput( "selectDataSource", "Station",
-                                    choices = names( stations.temp.min ),
-                                    selected = station.name )
-                    } else if ( input$selectDataType == "Daily precipitation" ){
-                        selectInput( "selectDataSource", "Station",
-                                    choices = names( stations.prec ),
-                                    selected = station.name )
-                    }
-                }
-            } else if ( input$selectDataBase == "artificial data" ){
-                sliderInput( "sliderArtificialDataLocation", "location", -30, 30, 1, round = 15 )
-            } else if ( input$selectDataBase == "input" ){
-                if ( type.input == "single" ){
-                    NULL
-                } else if ( type.input == "list" ){
-                    if ( !is.null( names( x.input ) ) ){
-                        ## it's a named list
-                        selectInput( "selectListEntryName", "Entry", choices = names( x.input ),
-                                    selected = names( x.input )[ 1 ] )
-                    } else
-                        selectInput( "selectListEntryNumerical", "Entry",
-                                    choices = 1 : length( x.input ), selected = 1 )
-                }
-            }
-        } else
-            NULL } )
-    ## observe( {
-    ##     map.click <- input$leafletMapMarkerClick
-    ##     if ( is.null( map.click ) )
-    ##         return()
-    ##     data.selected <- data.chosen()
-    ##     if ( is.null( data.selected ) )
-    ##         return()
-    ##     station.name <- as.character(
-    ##         data.selected[[ 2 ]]$name[ which( data.selected[[ 2 ]]$latitude %in% map.click$lat &
-    ##                                           data.selected[[ 2 ]]$longitude %in% map.click$lng ) ] )
-    ##     x.gev.fit <- fit.gev()
-    ##     x.rlevd <- climex:::rlevd( x.gev.fit, return.period = c( 100, 50, 20 ) )
-    ##     x.popup <- paste0( "<b>", station.name, "</b>", "<br/>",
-    ##                       "100y return level: ", x.rlevd[ 1 ], "<br/>",
-    ##                       "50y return level: ", x.rlevd[ 2 ], "<br/>",
-    ##                       "20y return level: ", x.rlevd[ 3 ] )        
-    ##     leafletProxy( "leafletMap" ) %>%
-    ##             clearGroup( group = "selected" )
-    ##     leafletProxy( "leafletMap" ) %>%
-    ##         addMarkers( data = map.click, group = "selected", icon = red.icon, popup = x.popup,
-    ##                    lng = ~lng, lat = ~lat, options = popupOptions( closeButton = FALSE ) ) } )
     output$tableMap <- renderTable( {
         map.click <- input$leafletMap_marker_click
         if ( is.null( map.click ) )
@@ -1334,9 +1392,9 @@ climex.server <- function( input, output, session ){
             return( NULL )
         station.name <- as.character(
             data.selected[[ 2 ]]$name[ which( data.selected[[ 2 ]]$latitude %in% map.click$lat &
-                                              data.selected[[ 2 ]]$longitude %in% map.click$lng ) ] )
+                                                                                     data.selected[[ 2 ]]$longitude %in% map.click$lng ) ] )
         leafletProxy( "leafletMap" ) %>%
-                clearGroup( group = "selected" )
+            clearGroup( group = "selected" )
         leafletProxy( "leafletMap" ) %>%
             addMarkers( data = map.click, group = "selected", icon = red.icon, lng = ~lng, lat = ~lat )
         ## calculate the GEV fit and various return levels
@@ -1350,11 +1408,11 @@ climex.server <- function( input, output, session ){
         ## paste0( "<b>", station.name, "</b>", "<br/>", "100y return level: ", x.rlevd[ 1 ], "<br/>",
         ##        "50y return level: ", x.rlevd[ 2 ], "<br/>", "20y return level: ", x.rlevd[ 3 ] )
         x.df <- data.frame( names = c( "100y return level", "50y return level",
-                                          "20y return level" ),
+                                      "20y return level" ),
                            x.rlevd, row.names = NULL )
         colnames( x.df ) <- c( station.name, "" )
         x.df
-     }, rownames = FALSE, digits = 3, width = 220 )
+    }, rownames = FALSE, digits = 3, width = 220 )
 }
 
 ##' @title The user interface for the \code{\link{climex}} function.
@@ -1412,7 +1470,7 @@ climex.ui <- function(){
                     tabName = "tabMap",
                     tags$style( type = "text/css", "#leafletMap {height: calc(100vh - 80px) !important;}" ),
                     leafletOutput( "leafletMap", width = "100%", height = 1000 ),
-                    absolutePanel( top = 49, right = 10,
+                    absolutePanel( top = 49, right = 10, id = "leafletBox",
                                   sliderInput( "sliderMap", "Minimal length (years)",
                                               0, 155, value = 65, step = 1, width = 215 ),
                                   tableOutput( "tableMap" ) ) ),
@@ -1449,7 +1507,7 @@ climex.ui <- function(){
                         tabBox( title = h2( "Time series" ), selected = "Remaining", width = 9,
                                tabPanel( "Pure", dygraphOutput( "plotTimeSeries", height = 250 ) ),
                                tabPanel( "Deseasonalized", dygraphOutput( "plotDeseasonalized",
-                                                                            height = 250 ) ),
+                                                                         height = 250 ) ),
                                tabPanel( "Remaining",
                                         plotOutput( "plotBlocked", height = 250,
                                                    click = "plotBlockedClick",
