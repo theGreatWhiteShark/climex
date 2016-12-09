@@ -2,7 +2,12 @@
 ##'
 ##' @details It possible to provide a time series of type xts to a list of elements of this type. This app need the its own css file. This function will be exclusively called when the climex app is run on localhost. In order to assure its correct behavior the necessary file/folder structure in the CLIMEX.PATH (global variable which has to be set beforehand; see vignette for details) will be check and if necesary generated.
 ##'
-##' @param x.input Time series of type xts or list of such time series. Default = NULL
+##' @param x.input The input time series is accepted in three different formats:
+##' \itemize{
+##'  \item{ 1.) as a single time series in the formatted using the xts package }
+##'  \item{ 2.) as a named list of various xts time series }
+##'  \item{ 3.) as a list containing two elements: a list of xts time series and a data.frame with the columns 'longitude', 'latitude', 'altitude', 'name' corresponding to the stations geo-coordinates, height and name }
+##' }
 ##'
 ##' @family shiny
 ##'
@@ -15,23 +20,20 @@
 climex <- function( x.input = NULL ){
     source.data( pick.default = TRUE, import = "global" )
     if ( !is.null( x.input ) ){
-        if ( any( class( x.input ) == c( "xts") ) ) {
-            x.block <<- block( x.input )
+        ## checking for the right format of the input series
+        if ( any( class( x.input ) != "xts" ) ){
+            ## global because the other functions have to have access to it
             x.input <<- x.input
-            type.input <<- "single"
-        } else if ( class( x.input ) == "list" &&
-                                                  all( unique( Reduce( c, lapply( x.input, class ) ) ) == c( "xts", "zoo" ) ) ){
-            ## I don't want to have any NULL, NA or whatsoever in those classes
-            x.block <<- x.input[[ 1 ]]
-            x.input <<- x.input
-            type.input <<- "list"
-        } else
-            warning( "climex::climex: Input has the wrong format!" )
-    } else {
-        x.input <<- stations.temp.max[[ 303 ]]
-        x.block <<- block( anomalies( stations.temp.max[[ 303 ]] ) )
-        type.input <<- "none"
+        } else if ( class( x.input ) == "list" ){
+            if ( all( class( x.input ) == "xts" ) || (
+                length( x.input ) == 2 &&
+                "list" %in% Reduce( c, lapply( x.input, class ) ) &&
+                "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) )
+                x.input <<- x.input
+        }
+        stop( "the input time series has the wrong format!" )
     }
+    x.input <<- NULL
     if ( !"CLIMEX.PATH" %in% ls( envir = .GlobalEnv ) )
         stop( "Please define a global variable named CLIMEX.PATH (storing of the DWD data and the app interna) (see vignette for details)!" )
     ## will contain the folder in which the images of the animation can be found
@@ -92,7 +94,7 @@ climex.server <- function( input, output, session ){
     ## localhost, the station data of the German weather service (DWD) and
     ## artificial data sampled from a GEV distribution
     output$menuSelectDataBase <- renderMenu( {
-        if ( type.input != "none" ){
+        if ( !is.null( x.input ) ){
             selectInput( "selectDataBase", "Data base",
                         choices = c( "input", "DWD", "artificial data" ), selected = "input" )
         } else
@@ -161,17 +163,19 @@ climex.server <- function( input, output, session ){
             }
         } else
             NULL } )
+    ## Display either the shape slider or the option to load a .RData file from
+    ## disk (only on localhost)
     output$menuSelectDataSource3 <- renderMenu( {
-        if ( !is.null( input$selectDataBase ) ){
-            if ( input$selectDataBase == "DWD" ){
-                NULL
-            } else if ( input$selectDataBase == "artificial data" ){
-                sliderInput( "sliderArtificialDataShape", "shape", -1.5, 1.5, -0.25, round = -2 )
-            } else if ( input$selectDataBase == "input" ){
-                fileInput( "fileInputSelection", "Choose a .RData file" )
-            }
+        if ( !is.null( input$selectDataBase ) )
+            return( NULL )
+        if ( input$selectDataBase == "artificial data" ){
+            sliderInput( "sliderArtificialDataShape", "shape", -1.5, 1.5, -0.25, round = -2 )
+        } else if ( input$selectDataBase == "input" && session$clientData$url_hostname != "localhost" &&                                                                  session$clientData$url_hostname != "127.0.0.1" ){
+            ## due to security concerns only allow the file selection on
+            ## localhost
+            fileInput( "fileInputSelection", "Choose a .RData file" )
         } else
-            NULL } )
+            return( NULL ) } )
     output$sliderGevStatistics <- renderMenu( {
         x.deseasonalized <- deseasonalization()
         if ( is.null( x.deseasonalized ) ){
@@ -215,33 +219,29 @@ climex.server <- function( input, output, session ){
 ####################################################################################
     file.loading <- reactive( {
         ## If no file is chosen, don't do anything
-        if ( !is.null( input$fileInputSelection$datapath ) ){
-            ## load selected file
-            load( input$fileInputSelection$datapath, file.load.env <- new.env() )
-            if ( length( ls( file.load.env ) ) > 1 ){
-                ## more than one object was contained in the .RData file
-                file.list <- list()
-                for ( ll in ls( file.load.env ) )
-                    file.list <- c( file.list, get( ll, envir = file.load.env ) )
-                if ( !all( unique( lapply( file.list, class )[[ 1 ]] ) == c( "xts", "zoo" ) ) )
-                    stop( "selected file has to contain objects of type xts or a list of those!" )
-                x.input <<- file.list
-                type.input <- "list"
-            } else {
-                file.input <- get( ls( file.load.env ), envir = file.load.env )
-                if ( class( file.input ) == "list" ){
-                    if ( !all( unique( lapply( file.input, class )[[ 1 ]] ) == c( "xts", "zoo" ) ) )
-                        stop( "selected file has to contain objects of type xts or a list of those!" )
+        if ( is.null( input$fileInputSelection$datapath ) )
+            return( NULL )
+        ## load selected file
+        load( input$fileInputSelection$datapath, file.load.env <- new.env() )
+        if ( length( ls( file.load.env ) ) == 1 ){
+            ## Just one object is contained in the .RData file
+            file.input <- get( ls( file.load.env ), envir = file.load.env )
+            if ( any( class( file.input ) ) == "xts" ){
+                x.input <<- file.input
+                return( x.input )
+            } else if ( class( file.input ) == "list" ){
+                if ( all( class( x.input ) == "xts" ) || (
+                  length( x.input ) == 2 &&
+                  "list" %in% Reduce( c, lapply( x.input, class ) ) &&
+                  "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) ){
                     x.input <<- file.input
-                    type.input <- "list"
-                } else if ( any( class( file.input ) == "xts" ) ){
-                    x.input <<- file.input
-                    type.input <- "single"
-                } else
-                    stop( "selected file has to contain objects of type xts or a list of those!" )
+                    return( x.input )
+                }
             }
         }
-    } )          
+        toastr_warning( "Sorry but this feature is implemented for the format in which the argument x.input is accepted in climex::climex only! Please do the conversion and formatting in R beforehand and just save a .RData containing a single object" )
+        return( NULL )
+    } )       
     data.selection <- reactive( {
         ## Selecting the data out of a pool of different possibilities or generate them
         ## artificially
@@ -1313,42 +1313,43 @@ climex.server <- function( input, output, session ){
     ## of input data
     ## TODO: Add support for file.loading()
     data.chosen <- reactive( {
-        if ( !is.null( input$selectDataBase ) && input$selectDataBase == "DWD" ){
-            if ( is.null( input$selectDataType ) ){
-                selection <- Reduce( c, lapply( stations.temp.max, function( x )
-                    length( unique( lubridate::year( x ) ) ) ) ) >= input$sliderMap
-                stations.selected <- stations.temp.max[ selection ]
-            } else if ( input$selectDataType == "Daily max. temp." ){
-                selection <- Reduce( c, lapply( stations.temp.max, function( x )
-                    length( unique( lubridate::year( x ) ) ) ) ) >= input$sliderMap
-                stations.selected <- stations.temp.max[ selection ]
-            } else if ( input$selectDataType == "Daily min. temp." ){
-                selection <- Reduce( c, lapply( stations.temp.min, function( x )
-                    length( unique( lubridate::year( x ) ) ) ) ) >= input$sliderMap
-                stations.selected <- stations.temp.min[ selection ]
-            } else if  ( input$selectDataType == "Daily precipitation" ){
-                selection <- Reduce( c, lapply( stations.prec, function( x )
-                    length( unique( lubridate::year( x ) ) ) ) ) >= input$sliderMap
-                stations.selected <- stations.prec[ selection ]
-            } 
-            position.selected <- station.positions[ selection,  ]
-            list( stations.selected, position.selected )
-        } else if ( !is.null( input$selectDataBase ) &&
-                         input$selectDataBase == "input" ){
+        if ( is.null( input$selectDataBase ) || is.null( input$selectDataType ) ||
+                 is.null( input$sliderMap ) )
+            return( NULL )
+        ## the generation of the artificial data is handled in the
+        ## data.selection reactive function
+        if ( input$selectDataBase == "DWD" ){
+            selection.list <- switch( input$selectDataType,
+                                     "Daily max. temp." = stations.temp.max,
+                                     "Daily min. temp." = stations.temp.min,
+                                     "Daily precipitation" = stations.prec )
+        } else if ( input$selectDataBase == "input" ){
             file.loading()
-            if ( type.input == "single" ){
-                NULL
-            } else if ( type.input == "list" ){
-                if ( !is.null( names( x.input ) ) ){
-                    ## it's a named list
-                    selectInput( "selectListEntryName", "Entry", choices = names( x.input ),
-                                selected = names( x.input )[ 1 ] )
+            if ( class( x.input ) == "xts" ){
+                ## to assure compatibility
+                return( list( x.input,
+                             data.frame( longitude = NULL, latitude = NULL,
+                                        altitude = NULL, name = "Input" ) ) )
+            } else {
+                ## two cases are accepted here: a list containing stations xts
+                ## time series of contain such a list and a data.frame specifying
+                ## the stations positions
+                if ( class( x.input ) == "list" &&
+                     class( x.input[[ 1 ]] ) == "list" ){
+                    selection.list <- x.input[[ 1 ]]
                 } else
-                    selectInput( "selectListEntryNumerical", "Entry",
-                                choices = 1 : length( x.input ), selected = 1 )
+                    selection.list <- x.input
             }
-        } else
-            NULL
+        }
+        ## select time series with sufficient length 
+        selection <- Reduce( c, lapply( selection.list, function( x )
+            length( unique( lubridate::year( x ) ) ) ) ) >= input$sliderMap
+        stations.selected <- selection.list[ selection ]
+        position.selected <- station.positions[ selection,  ]
+        ## first element contains a list of all selected stations
+        ## second element contains a data.frame with the longitude, latitude,
+        ## altitude and name of each selected station
+        return( list( stations.selected, position.selected ) )
     } )
     ## create custom markers.
     ## This is essentially the same marker but with different colors. The selected one
@@ -1384,12 +1385,10 @@ climex.server <- function( input, output, session ){
                            options = popupOptions( closeButton = FALSE ) )
         } } )
     output$tableMap <- renderTable( {
-        map.click <- input$leafletMap_marker_click
-        if ( is.null( map.click ) )
-            return( NULL )
         data.selected <- data.chosen()
         if ( is.null( data.selected ) )
             return( NULL )
+        map.click <- input$leafletMap_marker_click
         station.name <- as.character(
             data.selected[[ 2 ]]$name[ which( data.selected[[ 2 ]]$latitude %in% map.click$lat &
                                                                                      data.selected[[ 2 ]]$longitude %in% map.click$lng ) ] )
@@ -1439,7 +1438,8 @@ climex.server <- function( input, output, session ){
 ##' @export
 ##' @author Philipp Mueller 
 climex.ui <- function(){
-    dashboardPage( 
+    dashboardPage(
+        shinytoastr::useToastr(),
         dashboardHeader( 
             title = a( "Climex", href = "https://github.com/theGreatWhiteShark/climex",
                       id = "climexLink" )
