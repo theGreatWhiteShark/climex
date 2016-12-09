@@ -7,7 +7,12 @@
 climex(x.input = NULL)
 }
 \arguments{
-\item{x.input}{Time series of type xts or list of such time series. Default = NULL}
+\item{x.input}{The input time series is accepted in three different formats:
+\itemize{
+ \item{ 1.) as a single time series in the formatted using the xts package }
+ \item{ 2.) as a named list of various xts time series }
+ \item{ 3.) as a list containing two elements: a list of xts time series and a data.frame with the columns 'longitude', 'latitude', 'altitude', 'name' corresponding to the stations geo-coordinates, height and name }
+}}
 }
 \value{
 starts a shiny app.
