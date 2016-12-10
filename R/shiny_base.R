@@ -19,21 +19,31 @@
 ##' @author Philipp Mueller 
 climex <- function( x.input = NULL ){
     source.data( pick.default = TRUE, import = "global" )
+    if ( missing( x.input ) ){
+        ## since we define this amigo global we also have to set it to
+        ## NULL by hand when not providing it to this function
+        x.input <<- NULL
+    }
     if ( !is.null( x.input ) ){
         ## checking for the right format of the input series
-        if ( any( class( x.input ) != "xts" ) ){
+        if ( any( class( x.input ) == "xts" ) ){
             ## global because the other functions have to have access to it
             x.input <<- x.input
         } else if ( class( x.input ) == "list" ){
             if ( all( class( x.input ) == "xts" ) || (
                 length( x.input ) == 2 &&
                 "list" %in% Reduce( c, lapply( x.input, class ) ) &&
-                "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) )
+                "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) ) {
                 x.input <<- x.input
+            } else {
+                x.input <<- NULL
+                stop( "the input time series has the wrong format!" )
+            }
+        } else {
+            x.input <<- NULL
+            stop( "the input time series has the wrong format!" )
         }
-        stop( "the input time series has the wrong format!" )
     }
-    x.input <<- NULL
     if ( !"CLIMEX.PATH" %in% ls( envir = .GlobalEnv ) )
         stop( "Please define a global variable named CLIMEX.PATH (storing of the DWD data and the app interna) (see vignette for details)!" )
     ## will contain the folder in which the images of the animation can be found
@@ -59,14 +69,17 @@ climex <- function( x.input = NULL ){
     file.copy( paste0( system.file( "climex_app", package = "climex" ), "/js/loadingGif.js" ),
               to = paste0( CLIMEX.PATH, "app/www/loadingGif.js" ), overwrite = TRUE ) 
     file.copy( paste0( system.file( "climex_app", package = "climex" ), "/res/loading.gif" ),
-              to = paste0( CLIMEX.PATH, "app/www/loading.gif" ) )        
-    if ( !file.exists( paste0( CLIMEX.PATH, "app/ui.R" ) ) ||
-              !file.exists( paste0( CLIMEX.PATH, "app/server.R" ) ) ){
-        writeLines( "shinyUI( climex.ui )", con = paste0( CLIMEX.PATH, "app/ui.R" ) )
-        writeLines( "shinyServer( climex.server )", con = paste0( CLIMEX.PATH, "app/server.R" ) )
+              to = paste0( CLIMEX.PATH, "app/www/loading.gif" ) )      
+    writeLines( "shinyUI( climex.ui() )", con = paste0( CLIMEX.PATH, "app/ui.R" ) )
+    writeLines( "shinyServer( climex.server )", con = paste0( CLIMEX.PATH, "app/server.R" ) )
+    ## If one or more time series without any map information are
+    ## provided as input arguments, start the app in the "General" tab
+    ## right away
+    if ( !is.null( x.input ) && length( x.input ) != 2 ){ 
+        writeLines( "shinyUI( climex.ui( selected = 'General' ) )",
+                   con = paste0( CLIMEX.PATH, "app/ui.R" ) )
     }
     runApp( paste0( CLIMEX.PATH, "app" ) )
-                                        #shinyApp( climex.ui, climex.server )
 }
 
 
@@ -127,7 +140,7 @@ climex.server <- function( input, output, session ){
         if ( !is.null( input$selectDataBase ) &&
                   !is.null( data.selected ) ){
             ## use the leaflet map to choose a individual station
-            if ( !is.null( input$leafletMap_marker_click) ){
+            if ( !is.null( input$leafletMap_marker_click ) ){
                 map.click <- input$leafletMap_marker_click
                 ## picked station
                 station.name <- as.character(
@@ -141,12 +154,13 @@ climex.server <- function( input, output, session ){
                 if ( input$selectDataBase == "DWD" ){
                     station.name <- "Potsdam"
                 } else
-                    station.name <- data.selected[[ 2 ]]$name[ 1 ]
+                    station.name <- as.character(
+                        data.selected[[ 2 ]]$name[ 1 ] )
             }
             ## export drop-down menu
             selectInput( "selectDataSource", "Station",
                         choices = as.character(  data.selected[[ 2 ]]$name ),
-                        selected = station.name )
+                        selected = as.character( station.name ) )
         } else
             NULL } )
     output$menuSelectDataSource2 <- renderMenu( {
@@ -166,7 +180,7 @@ climex.server <- function( input, output, session ){
     ## Display either the shape slider or the option to load a .RData file from
     ## disk (only on localhost)
     output$menuSelectDataSource3 <- renderMenu( {
-        if ( !is.null( input$selectDataBase ) )
+        if ( is.null( input$selectDataBase ) )
             return( NULL )
         if ( input$selectDataBase == "artificial data" ){
             sliderInput( "sliderArtificialDataShape", "shape", -1.5, 1.5, -0.25, round = -2 )
@@ -831,25 +845,36 @@ climex.server <- function( input, output, session ){
                 ## For the artificial data there is no need for deseasonalization
                 return( x.xts ) }
         }
-        if ( input$selectDeseasonalize == "Anomalies" ){
-            x.deseasonalized <- anomalies( x.xts )
-        } else if ( input$selectDeseasonalize == "decompose" ){
-            ## WARNING: only the seasonal component and not the trend was removed
-            x.decomposed <- decompose( ts( as.numeric( x.xts ), frequency = 365.25 ) )
-            x.deseasonalized <- x.xts - as.numeric( x.decomposed$seasonal )
-        } else if ( input$selectDeseasonalize == "stl" ){
-            ## WARNING: only the seasonal component and not the trend was removed and
-            ## a s window of 30 was used
-            x.decomposed <- stl( ts( as.numeric( x.xts ), frequency = 365.25 ), 30 )
-            x.deseasonalized <- x.xts - as.numeric( x.decomposed$time.series[ , 1 ] )
-        } else if ( input$selectDeseasonalize == "deseasonalize::ds" ){
-            x.aux <- deseasonalize::ds( x.xts )$z
-            x.deseasonalized <- xts( x.aux, order.by = index( x.xts ) )
-        } else if ( input$selectDeseasonalize == "none" ){
-            x.deseasonalized <- x.xts
-        } else {
-            warning( "the decomponer function takes forever and X-13ARIMA is not implemented yet. Anomalies are use instead" )
-            x.deseasonalized <- anomalies( x.xts ) }
+        x.deseasonalized <- switch(
+            input$selectDeseasonalize,
+            "Anomalies" = anomalies( x.xts ),
+            "decompose" = {
+                shinytoastr::toastr_warning(
+                    "WARNING: only the seasonal component and not the trend was removed" )
+                if ( any( is.na( x.xts ) ) ){
+                    ## There are missing values in the time series. This
+                    ## is lethal for the decompose function. So the
+                    ## incomplete years have to be removed
+                    shinytoastr::toastr_info(
+                        "Incomplete years were removed internally" )
+                    x.xts <- climex::remove.incomplete.years( x.xts )
+                }
+                x.decomposed <- decompose( ts( as.numeric( x.xts ),
+                                              frequency = 365.25 ) ) 
+                x.xts - as.numeric( x.decomposed$seasonal ) },
+            "stl" = {
+                shinytoastr::toastr_warning(
+                    "WARNING: only the seasonal component and not the trend was removed and a s window of 30 was used" )
+                x.decomposed <- stl( ts( as.numeric( x.xts ),
+                                        frequency = 365.25 ), 30 )
+                x.xts - as.numeric( x.decomposed$time.series[ , 1 ] ) }, 
+            "deseasonalize::ds" = {
+                x.aux <- deseasonalize::ds( x.xts )$z
+                xts( x.aux, order.by = index( x.xts ) ) },
+            "none" = x.xts,
+            { shinytoastr::toastr_warning(
+                  "the decomponer function takes forever and X-13ARIMA is not implemented yet. Anomalies are use instead" ) 
+                anomalies( x.xts ) } )
         return( x.deseasonalized ) } )
 ####################################################################################
     
@@ -877,56 +902,47 @@ climex.server <- function( input, output, session ){
         ##! Drop-down menu to decide which fitting routine should be used
         if ( input$radioGevStatistics == "Blocks" ){
             ## Fits of GEV parameters to blocked data set
-            if ( input$selectOptimization == "Nelder-Mead" ){
-                x.gev.fit <- suppressWarnings( gev.fit( x.kept, initial = x.initial,
-                                                       method = "Nelder-Mead" ) )
-            } else if ( input$selectOptimization == "CG" ) {
-                x.gev.fit <- suppressWarnings( gev.fit( x.kept, initial = x.initial,
-                                                       method = "CG" ) )
-            } else if ( input$selectOptimization == "BFGS" ) {
-                x.gev.fit <- suppressWarnings( gev.fit( x.kept, initial = x.initial,
-                                                       method = "BFGS" ) )
-            } else if ( input$selectOptimization == "GenSA::GenSA" ) {
-                x.gev.fit <- suppressWarnings( gev.fit( x.kept, initial = x.initial,
-                                                       method = "SANN" ) )
-            } else if ( input$selectOptimization == "ismev::gev.fit" ) {
-                x.gev.fit <- ismev::gev.fit( x.kept, muinit = x.initial[ 1 ], siginit = x.initial[ 2 ],
-                                            shinit = x.initial[ 3 ],show = FALSE )
-                x.gev.fit$value <- x.gev.fit$nllh
-                x.gev.fit$par <- x.gev.fit$mle
-                x.gev.fit$x <- x.kept
-                ## very very dirty. but the extRemes package seems to be written to prevent
-                ## nice interactions with its functions
-                x.gev.fit$hessian <- gev.fit( x.kept, method = "Nelder-Mead",
-                                             initial = as.numeric( x.gev.fit$par ) )$hessian
-            } else if ( input$selectOptimization == "extRemes::fevd" ) {
-                x.gev.fit <- suppressWarnings( extRemes::fevd( x.kept,
-                                                              initial = list(
-                                                                  location = x.initial[ 1 ],
-                                                                  scale = x.initial[ 2 ],
-                                                                  shape = x.initial[ 3 ] ) )$results ) }
-            class( x.gev.fit ) <- c("list", "climex.gev.fit")
+            x.gev.fit <- suppressWarnings( switch(
+                input$selectOptimization,
+                "Nelder-Mead" = gev.fit( x.kept, initial = x.initial,
+                                        method = "Nelder-Mead" ),
+                "CG" = gev.fit( x.kept, initial = x.initial,
+                               method = "CG" ),
+                "BFGS" = gev.fit( x.kept, initial = x.initial,
+                                 method = "BFGS" ),
+                "SANN" = gev.fit( x.kept, initial = x.initial,
+                                 method = "SANN" ),
+                "ismev::gev.fit" = {
+                    aux <- ismev::gev.fit( x.kept, muinit = x.initial[ 1 ],
+                                          siginit = x.initial[ 2 ],
+                                          shinit = x.initial[ 3 ], show = FALSE )
+                    aux$value <- aux$nllh
+                    aux$par <- aux$mle
+                    aux$x <- x.kept
+                    ## very very dirty. but the extRemes package seems to be written to prevent
+                    ## nice interactions with its functions
+                    aux$hessian <- gev.fit(
+                        x.kept, method = "Nelder-Mead",
+                        initial = as.numeric( aux$par ) )$hessian
+                    aux },
+                "extRemes::fevd" = extRemes::fevd( x.kept,
+                                                  initial = list(
+                                                      location = x.initial[ 1 ],
+                                                      scale = x.initial[ 2 ],
+                                                      shape = x.initial[ 3 ] )
+                                                  )$results ) ) 
+            class( x.gev.fit ) <- c( "list", "climex.gev.fit" )
         } else {
             ## Fits of GPD parameters to blocked data set
             if ( is.null( input$sliderThresholdGev ) ){
                 threshold <- max( x.kept )* .8
             } else
                 threshold <- input$sliderThresholdGev
-            if ( input$selectOptimization == "Nelder-Mead" ){
-                x.gev.fit <- suppressWarnings(
-                    ismev::gpd.fit( x.kept, threshold, method = "Nelder-Mead", show = FALSE ) )
-            } else if ( input$selectOptimization == "CG" ) {
-                x.gev.fit <- suppressWarnings(
-                    ismev::gpd.fit( x.kept, threshold, method = "CG", show = FALSE ) )
-            } else if ( input$selectOptimization == "BFGS" ) {
-                x.gev.fit <- suppressWarnings(
-                    ismev::gpd.fit( x.kept, threshold, method = "BFGS", show = FALSE ) )
-            } else if ( input$selectOptimization == "SANN" ) {
-                x.gev.fit <- suppressWarnings(
-                    ismev::gpd.fit( x.kept, threshold, method = "SANN", show = FALSE ) )
-            } else {
-                stop( "other fitting functions arn't supported yet!" )
-            }
+            suppressWarnings(
+                x.gev.fit <- ismev::gpd.fit( x.kept, threshold,
+                                            show = FALSE,
+                                            method =
+                                                input$selectionOptimization ) )
             ## For comparability.
             x.gev.fit$par <- x.gev.fit$mle
             names( x.gev.fit$par ) <- c( "scale", "shape" )
@@ -1313,23 +1329,30 @@ climex.server <- function( input, output, session ){
     ## of input data
     ## TODO: Add support for file.loading()
     data.chosen <- reactive( {
-        if ( is.null( input$selectDataBase ) || is.null( input$selectDataType ) ||
-                 is.null( input$sliderMap ) )
+        if ( is.null( input$selectDataBase ) || is.null( input$sliderMap ) )
             return( NULL )
         ## the generation of the artificial data is handled in the
         ## data.selection reactive function
         if ( input$selectDataBase == "DWD" ){
+            if ( is.null( input$selectDataType ) )
+                return( NULL )
             selection.list <- switch( input$selectDataType,
                                      "Daily max. temp." = stations.temp.max,
                                      "Daily min. temp." = stations.temp.min,
                                      "Daily precipitation" = stations.prec )
+            ## to also cope the possibility of importing such position data
+            positions.all <- station.positions
         } else if ( input$selectDataBase == "input" ){
             file.loading()
-            if ( class( x.input ) == "xts" ){
+            if ( any( class( x.input ) == "xts" ) ){
                 ## to assure compatibility
-                return( list( x.input,
-                             data.frame( longitude = NULL, latitude = NULL,
-                                        altitude = NULL, name = "Input" ) ) )
+                aux <- list( x.input,
+                            data.frame( longitude = NA, latitude = NA,
+                                       altitude = NA, name = "1" ) )
+                names( aux[[ 1 ]] ) <- c( "1" )
+                ## adding a dummy name which is going to be displayed in
+                ## the sidebar
+                return( aux )
             } else {
                 ## two cases are accepted here: a list containing stations xts
                 ## time series of contain such a list and a data.frame specifying
@@ -1337,19 +1360,35 @@ climex.server <- function( input, output, session ){
                 if ( class( x.input ) == "list" &&
                      class( x.input[[ 1 ]] ) == "list" ){
                     selection.list <- x.input[[ 1 ]]
-                } else
+                    ## I will assume the second element of this list is a
+                    ## data.frame containing the coordinated, height and name of
+                    ## the individual stations
+                    positions.all <- x.input[[ 2 ]]
+                } else {
+                    ## Just an ordinary list of xts elements
                     selection.list <- x.input
+                    ##  dummy names
+                    if ( is.null( names( selection.list ) ) )
+                        names( selection.list ) <- as.character(
+                                                   seq( 1, length( selection.list ) ) ) 
+                    ## create a dummy
+                    positions.all <- data.frame(
+                        longitude = rep( NA, length( selection.list ) ),
+                        latitude = rep( NA, length( selection.list ) ),
+                        altitude = rep( NA, length( selection.list ) ),
+                        name = names( selection.list ) )
+                }
             }
         }
         ## select time series with sufficient length 
         selection <- Reduce( c, lapply( selection.list, function( x )
             length( unique( lubridate::year( x ) ) ) ) ) >= input$sliderMap
         stations.selected <- selection.list[ selection ]
-        position.selected <- station.positions[ selection,  ]
+        positions.selected <- positions.all[ selection,  ]
         ## first element contains a list of all selected stations
         ## second element contains a data.frame with the longitude, latitude,
         ## altitude and name of each selected station
-        return( list( stations.selected, position.selected ) )
+        return( list( stations.selected, positions.selected ) )
     } )
     ## create custom markers.
     ## This is essentially the same marker but with different colors. The selected one
@@ -1377,8 +1416,15 @@ climex.server <- function( input, output, session ){
     observe( {
         data.selected <- data.chosen()
         if ( !is.null( data.selected ) ){
-            leafletProxy( "leafletMap" ) %>%
-                clearGroup( group = "stations" )
+            if ( any( is.na( c( data.selected[[ 2 ]]$longitude,
+                               data.selected[[ 2 ]]$latitude ) ) ) ){
+                ## I am dealing with either a placeholder or a compromised
+                ## data.frame. Anyway, the leaflet map can not handle it
+                return( NULL )
+            }
+            ## TODO: Does this line has any effect on the app?
+            ## leafletProxy( "leafletMap" ) %>%
+            ##      clearGroup( group = "stations" ) %>%
             leafletProxy( "leafletMap" ) %>%
                 addMarkers( data = data.selected[[ 2 ]], group = "stations", lng = ~longitude,
                            icon = blue.icon, lat = ~latitude,
@@ -1386,7 +1432,8 @@ climex.server <- function( input, output, session ){
         } } )
     output$tableMap <- renderTable( {
         data.selected <- data.chosen()
-        if ( is.null( data.selected ) )
+        if ( is.null( data.selected ) ||
+                 is.null( input$leafletMap_marker_click) )
             return( NULL )
         map.click <- input$leafletMap_marker_click
         station.name <- as.character(
@@ -1416,6 +1463,8 @@ climex.server <- function( input, output, session ){
 
 ##' @title The user interface for the \code{\link{climex}} function.
 ##'
+##' @param selected Choose which tab is supposed to be selected when starting the app
+##'
 ##' @details Contains all the HTML codes.
 ##'
 ##' @return HTML code of the interface
@@ -1437,25 +1486,35 @@ climex.server <- function( input, output, session ){
 ##' @importFrom htmltools h2
 ##' @export
 ##' @author Philipp Mueller 
-climex.ui <- function(){
+climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
+    if ( missing( selected ) )
+        selected <- "Map"
+    selected <- match.arg( selected )
     dashboardPage(
         shinytoastr::useToastr(),
-        dashboardHeader( 
+        header = dashboardHeader(
             title = a( "Climex", href = "https://github.com/theGreatWhiteShark/climex",
                       id = "climexLink" )
         ),
-        dashboardSidebar(
+        sidebar = dashboardSidebar(
             sidebarMenu(
-                menuItem( "Map", tabName = "tabMap", icon = icon( "leaf", lib = "glyphicon" ) ),
-                menuItem( "General", tabName = "tabGeneral", icon = icon( "bar-chart" ) ),
+                menuItem( "Map", tabName = "tabMap",
+                         icon = icon( "leaf", lib = "glyphicon" ),
+                         selected = ifelse( selected == "Map",
+                                           TRUE, FALSE ) ),
+                menuItem( "General", tabName = "tabGeneral", icon = icon( "bar-chart" ),
+                         selected = ifelse( selected == "General",
+                                           TRUE, FALSE ) ),
                 menuItem( "Likelihood", tabName = "tabLikelihood",
-                         icon = icon( "wrench", lib = "glyphicon" ) ),
+                         icon = icon( "wrench", lib = "glyphicon" ),
+                         selected = ifelse( selected == "Likelihood",
+                                           TRUE, FALSE ) ),
                 menuItemOutput( "menuSelectDataBase" ),
                 menuItemOutput( "menuSelectDataSource1" ),
                 menuItemOutput( "menuSelectDataSource2" ),
                 menuItemOutput( "menuSelectDataSource3" ),
                 menuItemOutput( "menuDataCleaning" ) ) ),
-        dashboardBody(
+        body = dashboardBody(
             ## shinyjs::useShinyjs(),
             includeCSS( paste0( system.file( "climex_app", package = "climex" ),
                                "/css/climex.css" ) ),
@@ -1498,7 +1557,7 @@ climex.ui <- function(){
                                                     "deseasonalize::ds", "none" ),
                                         selected = "Anomalies" ),
                             selectInput( "selectOptimization", "Fitting routine",
-                                        choices = c( "Nelder-Mead", "CG", "BFGS", "GenSA::GenSA",
+                                        choices = c( "Nelder-Mead", "CG", "BFGS", "SANN",
                                                     "ismev::gev.fit", "extRemes::fevd" ),
                                         selected = c( "Nelder-Mead" ) ) ) ),
                     fluidRow(
