@@ -30,7 +30,8 @@ climex <- function( x.input = NULL ){
             ## global because the other functions have to have access to it
             x.input <<- x.input
         } else if ( class( x.input ) == "list" ){
-            if ( all( class( x.input ) == "xts" ) || (
+            if ( all( Reduce( c, lapply( x.input, function ( y )
+                any( class( x ) == "xts" ) ) ) ) || (
                 length( x.input ) == 2 &&
                 "list" %in% Reduce( c, lapply( x.input, class ) ) &&
                 "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) ) {
@@ -184,7 +185,7 @@ climex.server <- function( input, output, session ){
             return( NULL )
         if ( input$selectDataBase == "artificial data" ){
             sliderInput( "sliderArtificialDataShape", "shape", -1.5, 1.5, -0.25, round = -2 )
-        } else if ( input$selectDataBase == "input" && session$clientData$url_hostname != "localhost" &&                                                                  session$clientData$url_hostname != "127.0.0.1" ){
+        } else if ( input$selectDataBase == "input" && ( session$clientData$url_hostname == "localhost" ||                                                                  session$clientData$url_hostname == "127.0.0.1"  )){
             ## due to security concerns only allow the file selection on
             ## localhost
             fileInput( "fileInputSelection", "Choose a .RData file" )
@@ -278,7 +279,22 @@ climex.server <- function( input, output, session ){
             ## In all other cases the possible choices are contained in
             ## the data.selected object and are agnostic of the data base
             ## /input chosen
-            x.xts <- data.selected[[ 1 ]][[ which( names( data.selected[[ 1 ]] ) == input$selectDataSource ) ]]
+            if ( any( class( data.selected[[ 1 ]] ) == "xts" ) ){
+                x.xts <- data.selected[[ 1 ]]
+            } else {
+                ## There is a bug when switching from one data base into
+                ## another: since the input$selectDataSource needs a
+                ## little bit longer to update it tries to access a value
+                ## in here which is might not present in the newly
+                ## selected one. If this happens, just select the first
+                ## element instead
+                if ( !any(  names( data.selected[[ 1 ]] ) == input$selectDataSource ) ){
+                    x.xts <- data.selected[[ 1 ]][[ 1 ]]
+                    shinytoastr::toastr_info(
+                        "Please check the selected station after changing the data base!" ) 
+                } else
+                    x.xts <- data.selected[[ 1 ]][[ which( names( data.selected[[ 1 ]] ) == input$selectDataSource ) ]]
+            }
         }
         ## getting rid of artifacts since they would spoil our results
         ## (the German weather service DWD uses -999 to mark missing
@@ -351,7 +367,7 @@ climex.server <- function( input, output, session ){
         ## a listing of all the points of the actual time series which are used during
         ## the fitting procedure)
         reactive.values$keep.rows <- rep( TRUE, length( x.data[[ 1 ]] ) )
-    } )
+    }, priority = 1 ) # or else the plot functions are reached beforehand
     ## Toggle points that are clicked
     observeEvent( input$plotBlockedClick, {
         x.block <- data.blocking()[[ 1 ]]
