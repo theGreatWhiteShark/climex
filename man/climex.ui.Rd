@@ -4,7 +4,10 @@
 \alias{climex.ui}
 \title{The user interface for the \code{\link{climex}} function.}
 \usage{
-climex.ui()
+climex.ui(selected = c("Map", "General", "Likelihood"))
+}
+\arguments{
+\item{selected}{Choose which tab is supposed to be selected when starting the app}
 }
 \value{
 HTML code of the interface
