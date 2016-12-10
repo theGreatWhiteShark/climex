@@ -260,7 +260,7 @@ climex.server <- function( input, output, session ){
         ## Selecting the data out of a pool of different possibilities or generate them
         ## artificially
         data.selected <- data.chosen()
-        if ( is.null( data.selected ) ){
+        if ( is.null( data.selected ) || is.null( input$selectDataSource ) ){
             ## as long as the menus are not initialized yet, just assign
             ## the default time series.
             ## x.xts <- x.input
@@ -335,7 +335,6 @@ climex.server <- function( input, output, session ){
                     x.block <- declustering( x.block, input$sliderThresholdGev )
             }           
         }
-        x.block <<- x.block
         return( list( blocked.data = x.block, deseasonalized.data = x.deseasonalized,
                      pure.data = x.xts ) ) } )
 ####################################################################################
@@ -345,21 +344,17 @@ climex.server <- function( input, output, session ){
 ####################################################################################
     ## By doing this the value is temporary removed from the ts (after removal of
     ## incomplete years) and a new extremum is calculated for the correspondig year
-    reactive.values <- reactiveValues(
-        keep.rows = rep( TRUE, length( x.block[[ 1 ]] ) ) ) # which deleted
-    ## Update the length whenever another data source is loaded
-    generate.data <- reactive( {
+    reactive.values <- reactiveValues( keep.rows = NULL )
+    observe( {
         x.data <- data.blocking()
-        if ( is.null( x.data ) ){
-            ## if the initialization has not finished yet just wait a
-            ## little longer
-            return( NULL )
-        }
+        ## use the x.block variable to update the reactive value keep.row (containing
+        ## a listing of all the points of the actual time series which are used during
+        ## the fitting procedure)
         reactive.values$keep.rows <- rep( TRUE, length( x.data[[ 1 ]] ) )
-        return( x.data ) } )
+    } )
     ## Toggle points that are clicked
     observeEvent( input$plotBlockedClick, {
-        x.block <- generate.data()[[ 1 ]]
+        x.block <- data.blocking()[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -372,7 +367,7 @@ climex.server <- function( input, output, session ){
         reactive.values$keep.rows <- xor( reactive.values$keep.rows, result$selected_ ) } )
     ## Toggle points that are brushed
     observeEvent( input$excludeBlockedToggle, {
-        x.block <- generate.data()[[ 1 ]]
+        x.block <- data.blocking()[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -385,7 +380,7 @@ climex.server <- function( input, output, session ){
         reactive.values$keep.rows <- xor( reactive.values$keep.rows, result$selected_ ) } )
     ## Reset plot
     observeEvent( input$excludeBlockedReset, {
-        x.block <- generate.data()[[ 1 ]]
+        x.block <- data.blocking()[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -452,7 +447,7 @@ climex.server <- function( input, output, session ){
         return( y.label ) }
     ## Pure time series 
     output$plotTimeSeries <- renderDygraph( {
-        x.data <- generate.data( )
+        x.data <- data.blocking( )
         x.blocked <- x.data[[ 3 ]][ which( index( x.data[[ 3 ]] ) %in% index( x.data[[ 1 ]] ) ) ]
         plot.blocked <- x.data[[ 3 ]]
         plot.blocked[ !index( x.data[[ 3 ]] ) %in% index( x.blocked ) ] <- NA
@@ -465,7 +460,7 @@ climex.server <- function( input, output, session ){
                      strokeWidth = 0, pointSize = 2 ) } )
     ## deseasonalized time series
     output$plotDeseasonalized <- renderDygraph( {
-        x.data <- generate.data( )
+        x.data <- data.blocking( )
         if ( is.null( x.data ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -485,7 +480,7 @@ climex.server <- function( input, output, session ){
 ########## Using ggplot2 for an interactive excluding of points in x.block #########    
     ## Plot the result
     output$plotBlocked <- renderPlot( {
-        x.block <- generate.data( )[[ 1 ]]
+        x.block <- data.blocking( )[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -510,7 +505,7 @@ climex.server <- function( input, output, session ){
 ###### GEV fit and analysis plots ##################################################  
     output$plotFitGev <- renderPlot( {
         ## Plots the result of the fitted GEV
-        x.block <- generate.data( )[[ 1 ]]
+        x.block <- data.blocking( )[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -608,7 +603,7 @@ climex.server <- function( input, output, session ){
     } )
     output$plotFitQQ <- renderPlot( {
         ## Quantile-quantile plot for fit statistics
-        x.block <- generate.data( )[[ 1 ]]
+        x.block <- data.blocking( )[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -664,7 +659,7 @@ climex.server <- function( input, output, session ){
         return( gg.qq1 ) } )
     output$plotFitQQ2 <- renderPlot( {
         ## Quantile-quantile plot for fit statistics with samples drawn from fitted GEV
-        x.block <- generate.data( )[[ 1 ]]
+        x.block <- data.blocking( )[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -732,7 +727,7 @@ climex.server <- function( input, output, session ){
         return( gg.qq2 )        
     } )
     output$plotFitReturnLevel <- renderPlot( {
-        x.block <- generate.data()[[ 1 ]]
+        x.block <- data.blocking()[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -882,7 +877,7 @@ climex.server <- function( input, output, session ){
 ######################## Fitting of the GEV distribution ###########################
 ####################################################################################
     fit.gev <- reactive( {
-        x.block <- generate.data( )[[ 1 ]]
+        x.block <- data.blocking( )[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -968,7 +963,7 @@ climex.server <- function( input, output, session ){
         x.gev.fit <- fit.gev( )
         if ( is.null( x.gev.fit ) )
             return( NULL )
-        x.block <- generate.data( )[[ 1 ]]
+        x.block <- data.blocking( )[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -1049,7 +1044,7 @@ climex.server <- function( input, output, session ){
         x.gev.fit <- fit.gev()
         if ( is.null( x.gev.fit ) )
             return( NULL )
-        x.block <- generate.data()[[ 1 ]]
+        x.block <- data.blocking()[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -1064,7 +1059,7 @@ climex.server <- function( input, output, session ){
         x.gev.fit <- fit.gev()
         if ( is.null( x.gev.fit ) )
             return( NULL )
-        x.block <- generate.data()[[ 1 ]]
+        x.block <- data.blocking()[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -1080,7 +1075,7 @@ climex.server <- function( input, output, session ){
         x.gev.fit <- fit.gev()
         if ( is.null( x.gev.fit ) )
             return( NULL )
-        x.block <- generate.data()[[ 1 ]]
+        x.block <- data.blocking()[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -1093,7 +1088,7 @@ climex.server <- function( input, output, session ){
                     c( round( x.gev.fit$par[ 3 ], 1 ) - .3,
                       round( x.gev.fit$par[ 3 ], 1 ) + .3  ) ) } )
     mle.parameter.likelihood <- reactive( {
-        x.block <- generate.data()[[ 1 ]]
+        x.block <- data.blocking()[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -1109,7 +1104,7 @@ climex.server <- function( input, output, session ){
     ## it needs two things: three numerical inputs chosing the climex::likelihood.initials as
     ## default and a reactive vector gluing all together
     output$inputInitialLocation <- renderMenu( {
-        x.block <- generate.data()[[ 1 ]]
+        x.block <- data.blocking()[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -1118,7 +1113,7 @@ climex.server <- function( input, output, session ){
         parameter.default <- climex::likelihood.initials( x.block )
         numericInput( "initialLocation", "", value = round( parameter.default[ 1 ], 4 ) ) } )
     output$inputInitialScale <- renderMenu( {
-        x.block <- generate.data()[[ 1 ]]
+        x.block <- data.blocking()[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -1127,7 +1122,7 @@ climex.server <- function( input, output, session ){
         parameter.default <- climex::likelihood.initials( x.block )
         numericInput( "initialScale", "", value = round( parameter.default[ 2 ], 4 ), min = 0 ) } )
     output$inputInitialShape <- renderMenu( {
-        x.block <- generate.data()[[ 1 ]]
+        x.block <- data.blocking()[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -1140,7 +1135,7 @@ climex.server <- function( input, output, session ){
         if ( is.null( input$initialLocation ) | is.null( input$initialScale ) |
                  is.null( input$initialShape ) ){
             ## If the sliders arn't set yet, I will just use the default values
-            x.block <- generate.data()[[ 1 ]]
+            x.block <- data.blocking()[[ 1 ]]
             if ( is.null( x.block ) ){
                 ## if the initialization has not finished yet just wait a
                 ## little longer
@@ -1151,7 +1146,7 @@ climex.server <- function( input, output, session ){
             return( c( input$initialLocation, input$initialScale, input$initialShape ) ) } )
     cached.table.init <- NULL
     initial.parameters.likelihood <- reactive( {
-        x.block <- generate.data()[[ 1 ]]
+        x.block <- data.blocking()[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -1204,7 +1199,7 @@ climex.server <- function( input, output, session ){
             {document.getElementById( 'tableInitialPoints' ).style.width = '100%';}") ) )
     ## Displaying of the heuristic estimates for a wiser picking of the limits
     output$tableHeuristicEstimates <- renderDataTable( {
-        x.block <- generate.data()[[ 1 ]]
+        x.block <- data.blocking()[[ 1 ]]
         if ( is.null( x.block ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -1244,7 +1239,7 @@ climex.server <- function( input, output, session ){
         ## Don't make the plot the first time I look at the tab
         if ( input$buttonDrawAnimation < 1 )
             return( NULL )
-        isolate( { x.block <- generate.data()[[ 1 ]]
+        isolate( { x.block <- data.blocking()[[ 1 ]]
             if ( is.null( x.block ) ){
                 ## if the initialization has not finished yet just wait a
                 ## little longer
