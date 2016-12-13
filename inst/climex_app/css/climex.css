@@ -253,6 +253,32 @@ tfoot {
     visibility: hidden;
     float: right;
 }
+/**/
+/* boxes and elements in the leaflet map */
+/**/
+#leafletBox, #leafletMarkerBox {
+    background-color: #FF8C00DD !important;
+}
+.leaflet-control-layers {
+    background-color: ##FF8C00DD !important;
+    width: 215px !important;
+    bottom: 100px !important;
+    margin-right: 0px !important;
+}
+.leaflet-control-layers label {
+    display: inline-block !important;
+    font-family: 'Source Sans Pro','Helvetica Neue',Helvetica,Arial,sans-serif;
+    font-weight: 100 !important;
+    font: inherit !important;
+    font-size: 110% !important;
+    color: #191970 !important;
+    margin: 0 10px 0 21px !important;
+    text-align: center !important;
+}
+#buttonDrawMarkers {
+    font-weight: 100 !important;
+    font-size: 100% !important;
+}
 @media screen and (max-width: 1080px){
     /* assigning individual classes to the box objects in shiny won't do any good, since the
        class definition only enters an inner box and not the parent */
@@ -264,7 +290,9 @@ tfoot {
     .animationClimex {
 	display: block;
 	width: 100% !important;
-    }
+    }    
+}
+@media screen and (max-width: 720px){
     /* Due to reordering and a fixed height the slider and the 
        table in the leaflet map are partly covered */
     #leafletBox {
