@@ -277,7 +277,7 @@ likelihood.initials <- function( x, type = c( "best", "mom", "lmom" ), modified 
     if ( modified ){
         x.skewness <- moments::skewness( x )
         ## When, for some reason, the time series consists of just a sequence of one unique number the calculation of the skewness returns NaN and the function throws an error
-        if ( is.nan( x.skewness ) )
+        if ( is.na( x.skewness ) )
             x.skewness <- 0
         if ( x.skewness >= .7 && x.skewness <= 1.6 ){
             sh.init <- 0.001
