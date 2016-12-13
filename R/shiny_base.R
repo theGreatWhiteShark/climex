@@ -17,7 +17,7 @@
 ##' @import leaflet
 ##' @import xts
 ##' @author Philipp Mueller 
-climex <- function( x.input ){
+climex <- function( x.input = NULL ){
     source.data( pick.default = TRUE, import = "global" )
     if ( missing( x.input ) ){
         ## since we define this amigo global we also have to set it to
@@ -118,7 +118,6 @@ climex.server <- function( input, output, session ){
     ## Using this drop down menu one can select the specific type of input
     ## data to use, since the DWD data base provides different
     ## measurements recorded at the individual stations.
-    ## TODO: it's not general enough to work with different station lists
     output$menuSelectDataSource1 <- renderMenu( {
         ## If artificial data was choosen as the input source, display
         ## a slider for the location parameter of the parent GEV
@@ -192,7 +191,8 @@ climex.server <- function( input, output, session ){
         } else
             return( NULL ) } )
     output$sliderGevStatistics <- renderMenu( {
-        x.deseasonalized <- deseasonalization()
+        x.xts <- data.selection()
+        x.deseasonalized <- deseasonalize.interactive( x.xts )
         if ( is.null( x.deseasonalized ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -296,16 +296,21 @@ climex.server <- function( input, output, session ){
                     x.xts <- data.selected[[ 1 ]][[ which( names( data.selected[[ 1 ]] ) == input$selectDataSource ) ]]
             }
         }
+        return( cleaning.interactive( x.xts ) )
+    } )
+    cleaning.interactive <- function( x.xts ){
         ## getting rid of artifacts since they would spoil our results
         ## (the German weather service DWD uses -999 to mark missing
         ## measurements)
-        x.xts[ which( x.xts == -999 ) ] <- NA
+        x.xts[ which( is.na( x.xts ) ) ] <- NaN
+        x.xts[ which( x.xts == -999 ) ] <- NaN
         if ( !is.null( input$checkBoxIncompleteYears ) ){
             if ( input$checkBoxIncompleteYears ){
                 ## Remove all incomplete years from time series
                 x.xts <- remove.incomplete.years( x.xts ) }
         }
-        return( x.xts ) } )
+        return( x.xts )
+    }
     data.blocking <- reactive( {
         ## Decides if either the GEV distribution with block maxima or the Pareto
         ## distribution if threshold excedence should be considered.
@@ -316,7 +321,12 @@ climex.server <- function( input, output, session ){
             ## little longer
             return( NULL )
         }
-        x.deseasonalized <- deseasonalization( )
+        x.deseasonalized <- deseasonalize.interactive( x.xts )
+        x.block <- blocking.interactive( x.deseasonalized )
+        return( list( blocked.data = x.block, deseasonalized.data = x.deseasonalized,
+                     pure.data = x.xts ) ) } )
+    ## wrapper blocking time series according to the set slider etc. values
+    blocking.interactive <- function( x.xts ){
         ## Toggle if maxima of minima are going to be used
         if ( is.null( input$buttonMinMax ) ){
             block.mode <- "max"
@@ -327,15 +337,15 @@ climex.server <- function( input, output, session ){
         if ( is.null( input$radioGevStatistics ) ){
             ## While initialization input$radioGevStatistics and input$sliderBoxLength are
             ## NULL. Therefore this is the fallback default x.block
-            x.block <- block( x.deseasonalized, separation.mode = "years", block.mode = block.mode )
+            x.block <- block( x.xts, separation.mode = "years", block.mode = block.mode )
         } else if ( input$radioGevStatistics == "Blocks" ){
             ## Box size as dynamic input parameter
             if ( is.null( input$sliderBoxLength ) ||  input$sliderBoxLength == 366 ||
                                                           input$sliderBoxLength == 365 ){
-                x.block <- block( x.deseasonalized, separation.mode = "years",
+                x.block <- block( x.xts, separation.mode = "years",
                                  block.mode = block.mode )
             } else
-                x.block <- block( x.deseasonalized, block.length = input$sliderBoxLength,
+                x.block <- block( x.xts, block.length = input$sliderBoxLength,
                                  block.mode = block.mode )
         } else if ( input$radioGevStatistics == "Threshold" ){
             ## Due to "historical" reasons the vector containing the resulting values will
@@ -343,16 +353,16 @@ climex.server <- function( input, output, session ){
             ## "input$buttonMinMax" are still use full and decide if the values above
             ## or below the threshold are going to be extracted
             if ( is.null( input$sliderThresholdGev ) ){
-                x.block <- x.deseasonalized[ x.deseasonalized >= max( x.deseasonalized )* .8 ]
+                x.block <- x.xts[ x.xts >= max( x.xts )* .8 ]
             } else
-                x.block <- x.deseasonalized[ x.deseasonalized >= input$sliderThresholdGev ]
+                x.block <- x.xts[ x.xts >= input$sliderThresholdGev ]
             if ( !is.null( input$checkBoxDecluster ) ){
                 if ( input$checkBoxDecluster )
                     x.block <- declustering( x.block, input$sliderThresholdGev )
-            }           
+            }
+            return( x.block )
         }
-        return( list( blocked.data = x.block, deseasonalized.data = x.deseasonalized,
-                     pure.data = x.xts ) ) } )
+    }
 ####################################################################################
     
 ####################################################################################
@@ -843,9 +853,10 @@ climex.server <- function( input, output, session ){
 ####################################################################################
 ######################## Deseasonalization of the data #############################
 ####################################################################################
-    deseasonalization <- reactive( {
+    ## since the deseasonalization will also be applied to a large variety of different
+    ## stations in the leaflet plot, it will become a separate function
+    deseasonalize.interactive <- function( x.xts ){
         ## Dropdown for deseasonalization method
-        x.xts <- data.selection( )
         if ( is.null( x.xts ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
@@ -856,8 +867,11 @@ climex.server <- function( input, output, session ){
                 ## For the artificial data there is no need for deseasonalization
                 return( x.xts ) }
         }
+        ## if not all elements are initialized yet, define some defaults
+        select.deseasonalize <- ifelse( is.null( input$selectDeseasonalize ), "Anomalies",
+                                       input$selectDeseasonalize )
         x.deseasonalized <- switch(
-            input$selectDeseasonalize,
+            select.deseasonalize,
             "Anomalies" = anomalies( x.xts ),
             "decompose" = {
                 shinytoastr::toastr_warning(
@@ -886,43 +900,31 @@ climex.server <- function( input, output, session ){
             { shinytoastr::toastr_warning(
                   "the decomponer function takes forever and X-13ARIMA is not implemented yet. Anomalies are use instead" ) 
                 anomalies( x.xts ) } )
-        return( x.deseasonalized ) } )
+        return( x.deseasonalized ) }
 ####################################################################################
     
 ####################################################################################
 ######################## Fitting of the GEV distribution ###########################
 ####################################################################################
-    fit.gev <- reactive( {
-        x.block <- data.blocking( )[[ 1 ]]
-        if ( is.null( x.block ) ){
-            ## if the initialization has not finished yet just wait a
-            ## little longer
+    ## Since I will fit a couple of times with the chosen fitting parameters/algorithms
+    ## I will hard code it and just call it at the required points 
+    fit.interactive <- function( x.kept, x.initial = likelihood.initials( x.kept ) ){
+        ## wait for the initialization
+        if ( is.null( input$radioGevStatistics ) || is.null( input$selectOptimization ) )
             return( NULL )
-        }
-        x.initial <- initial.parameters()
-        if ( is.null( x.initial ) ){
-            print( "the fitting will start as soon as the initial parameters are available" )
-            return( NULL )
-        }
-        x.kept <- x.block[ reactive.values$keep.rows ]
-        ## negating the time series to derive the statistics for the minima
-        if ( !is.null( input$buttonMinMax ) ){
-            if ( input$buttonMinMax == "Min" && input$radioGevStatistics == "Blocks" )
-                x.kept <- ( -1 )* x.kept
-        }
         ##! Drop-down menu to decide which fitting routine should be used
         if ( input$radioGevStatistics == "Blocks" ){
             ## Fits of GEV parameters to blocked data set
             x.gev.fit <- suppressWarnings( switch(
                 input$selectOptimization,
                 "Nelder-Mead" = gev.fit( x.kept, initial = x.initial,
-                                        method = "Nelder-Mead" ),
+                                        method = "Nelder-Mead", error.estimation = "none" ),
                 "CG" = gev.fit( x.kept, initial = x.initial,
-                               method = "CG" ),
+                               method = "CG", error.estimation = "none" ),
                 "BFGS" = gev.fit( x.kept, initial = x.initial,
-                                 method = "BFGS" ),
+                                 method = "BFGS", error.estimation = "none" ),
                 "SANN" = gev.fit( x.kept, initial = x.initial,
-                                 method = "SANN" ),
+                                 method = "SANN", error.estimation = "none" ),
                 "ismev::gev.fit" = {
                     aux <- ismev::gev.fit( x.kept, muinit = x.initial[ 1 ],
                                           siginit = x.initial[ 2 ],
@@ -962,7 +964,54 @@ climex.server <- function( input, output, session ){
             x.gev.fit$x <- x.kept
         }
         return( x.gev.fit )
+    }
+    ## Fitting of the time series selected via a click on the map or the select form in the sidebar
+    ## For this time series it is possible to exclude individual points via clicking on them in the
+    ## Time series::remaining plot
+    fit.gev <- reactive( {
+        x.block <- data.blocking( )[[ 1 ]]
+        if ( is.null( x.block ) ){
+            ## if the initialization has not finished yet just wait a
+            ## little longer
+            return( NULL )
+        }
+        x.initial <- initial.parameters()
+        if ( is.null( x.initial ) ){
+            print( "the fitting will start as soon as the initial parameters are available" )
+            return( NULL )
+        }
+        x.kept <- x.block[ reactive.values$keep.rows ]
+        ## negating the time series to derive the statistics for the minima
+        if ( !is.null( input$buttonMinMax ) ){
+            if ( input$buttonMinMax == "Min" && input$radioGevStatistics == "Blocks" )
+                x.kept <- ( -1 )* x.kept
+        }
+        return( fit.interactive( x.kept, x.initial ) )
     } )
+    ## the purpose of this function is to supply a data.frame containing the 50/100/500 year return
+    ## level of all selected stations. Lets see how fast it will be. Maybe I will just calculate one
+    ## return level per station.
+    ## This will be calculated on demand (as soon as the user clicks the corresponding form)
+    calculate.chosen.return.levels <- reactive( {
+        data.selected <- data.chosen()
+        return.level <- input$sliderMapReturnLevel # selected return level
+        ## wait for initialization
+        if ( is.null( input$sliderMapReturnLevel ) || is.null( data.selected ) )
+            return( NULL )
+        ## if no geo-coordinates are provided for the time series, don't calculate the return levels
+        if ( any( is.na( c( data.selected[[ 2 ]]$longitude, data.selected[[ 2 ]]$latitude ) ) ) )
+            return( NULL )
+        ## clean the stations
+        data.cleaned <- lapply( data.selected[[ 1 ]], cleaning.interactive )
+        ## deseasonalize them
+        data.deseasonalized <- lapply( data.cleaned, deseasonalize.interactive )
+        ## block them
+        data.blocked <- lapply( data.deseasonalized, blocking.interactive )
+        ## calculate the return level and append it to the data.selected[[ 2 ]] data.frame
+        data.selected[[ 2 ]]$rlevd <- Reduce( c, lapply( data.blocked, function( x )
+            climex::rlevd( fit.interactive( x ), return.level ) ) )
+        return( data.selected[[ 2 ]] )
+    } ) 
 ####################################################################################
     
 ####################################################################################
@@ -1336,9 +1385,6 @@ climex.server <- function( input, output, session ){
     ##
     ## This functions extracts all stations containing more than a
     ## specified number of years of data
-    ## TODO: This is also not general enough to work with different lists
-    ## of input data
-    ## TODO: Add support for file.loading()
     data.chosen <- reactive( {
         if ( is.null( input$selectDataBase ) || is.null( input$sliderMap ) )
             return( NULL )
@@ -1433,13 +1479,41 @@ climex.server <- function( input, output, session ){
                 ## data.frame. Anyway, the leaflet map can not handle it
                 return( NULL )
             }
-            ## TODO: Does this line has any effect on the app?
-            ## leafletProxy( "leafletMap" ) %>%
-            ##      clearGroup( group = "stations" ) %>%
             leafletProxy( "leafletMap" ) %>%
+                clearGroup( "stations" ) %>%
                 addMarkers( data = data.selected[[ 2 ]], group = "stations", lng = ~longitude,
                            icon = blue.icon, lat = ~latitude,
                            options = popupOptions( closeButton = FALSE ) )
+        } } )
+    observe( {
+        ## the calculation of all the return levels of the stations just takes too long. I put it
+        ## in a different observe object and the only way to start the calculation will be using a
+        ## button
+        if ( is.null( input$buttonDrawMarkers ) || input$buttonDrawMarkers < 1 )
+            return( NULL )
+        isolate( data.return.levels <- calculate.chosen.return.levels() )
+        if ( !is.null( data.return.levels ) ){
+            if ( any( is.na( c( data.return.levels$longitude,
+                               data.return.levels$latitude ) ) ) ){
+                ## I am dealing with either a placeholder or a compromised
+                ## data.frame. Anyway, the leaflet map can not handle it
+                return( NULL )
+            }
+            ## range of the return levels
+            color.max <- max( data.return.levels$rlevd )
+            color.min <- min( data.return.levels$rlevd )
+            ## create a palette for the return levels of the individual circles
+            palette <- colorNumeric( c( "navy", "skyblue", "limegreen", "yellow",
+                                       "darkorange", "firebrick4" ), c( color.min, color.max ) )
+            leafletProxy( "leafletMap" ) %>%
+                clearGroup( "returns" ) %>%
+                addCircleMarkers( data = data.return.levels, group = "returns", lng = ~longitude,
+                                 color = ~palette( rlevd ), lat = ~latitude,
+                                 options = popupOptions( closeButton = FALSE ) ) %>%
+                ## layer control to turn the return level layer on and off
+                addLayersControl( baseGroups = c( "stations", "returns" ), position = "bottomright",
+                                 options = layersControlOptions( collapsed = FALSE ) ) %>%
+                addLegend( pal = palette, values = c( color.min, color.max ), title = "[years]" )
         } } )
     output$tableMap <- renderTable( {
         data.selected <- data.chosen()
@@ -1449,7 +1523,7 @@ climex.server <- function( input, output, session ){
         map.click <- input$leafletMap_marker_click
         station.name <- as.character(
             data.selected[[ 2 ]]$name[ which( data.selected[[ 2 ]]$latitude %in% map.click$lat &
-                                                                                     data.selected[[ 2 ]]$longitude %in% map.click$lng ) ] )
+                                              data.selected[[ 2 ]]$longitude %in% map.click$lng ) ] )
         leafletProxy( "leafletMap" ) %>%
             clearGroup( group = "selected" )
         leafletProxy( "leafletMap" ) %>%
@@ -1524,7 +1598,17 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                 menuItemOutput( "menuSelectDataSource1" ),
                 menuItemOutput( "menuSelectDataSource2" ),
                 menuItemOutput( "menuSelectDataSource3" ),
-                menuItemOutput( "menuDataCleaning" ) ) ),
+                menuItemOutput( "menuDataCleaning" ),
+                ## a plot of height 0? Well, its actually a very nice trick since I need
+                ## a width value for the generated pngs in the animation in pixel. But
+                ## I really want to make app to be rendered nicely on different screen
+                ## sizes. Via the session$clientData I can access the width and height of
+                ## plots. Thus I can access the width of this specific box via the
+                ## plotPlaceholder without seeing it at all.
+                plotOutput( "plotPlaceholder", height = 0 ),
+                ## while plotting the images for the animation a gif should be shown
+                div( uiOutput( "loadingScript" ), uiOutput( "loadingImage" ),
+                    id = "loadingWrapper" ) ) ),
         body = dashboardBody(
             ## shinyjs::useShinyjs(),
             includeCSS( paste0( system.file( "climex_app", package = "climex" ),
@@ -1540,10 +1624,15 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                     tabName = "tabMap",
                     tags$style( type = "text/css", "#leafletMap {height: calc(100vh - 80px) !important;}" ),
                     leafletOutput( "leafletMap", width = "100%", height = 1000 ),
-                    absolutePanel( top = 49, right = 10, id = "leafletBox",
+                    absolutePanel( top = 49, right = 11, id = "leafletBox",
                                   sliderInput( "sliderMap", "Minimal length (years)",
                                               0, 155, value = 65, step = 1, width = 215 ),
-                                  tableOutput( "tableMap" ) ) ),
+                                  tableOutput( "tableMap" ) ),
+                    absolutePanel( bottom = 25, right = 11, id = "leafletMarkerBox",
+                                  sliderInput( "sliderMapReturnLevel", "Return level (years)",
+                                              30, 1000, value = 100, width = 215 ),
+                                  actionButton( "buttonDrawMarkers", "Calculate return levels",
+                                               width = 215 ) ) ),
                 tabItem(
                     tabName = "tabGeneral",
                     ## In order guarantee the correct behavior of the rendering of the boxes and
@@ -1587,16 +1676,6 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                 tabItem( tabName = "tabLikelihood",                                  
                         box( title = h2( "Starting points of the optimization routine" ),
                             width = 8, status = "primary", dataTableOutput( "tableInitialPoints" ),
-                            ## a plot of height 0? Well, its actually a very nice trick since I need
-                            ## a width value for the generated pngs in the animation in pixel. But
-                            ## I really want to make app to be rendered nicely on different screen
-                            ## sizes. Via the session$clientData I can access the width and height of
-                            ## plots. Thus I can access the width of this specific box via the
-                            ## plotPlaceholder without seeing it at all.
-                            plotOutput( "plotPlaceholder", height = 0 ),
-                            ## while plotting the images for the animation a gif should be shown
-                            div( uiOutput( "loadingScript" ), uiOutput( "loadingImage" ),
-                                id = "loadingWrapper" ),
                             htmlOutput( "drawLikelihoodAnimation" ) ),
                         box( title = h2( "Options" ), width = 4, background = "orange",
                             dataTableOutput( "tableHeuristicEstimates" ),
