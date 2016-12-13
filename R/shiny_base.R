@@ -1,13 +1,13 @@
 ##' @title Shiny app combining most of the tools used in extreme value analysis using GEV fitting via maximum likelihood.
 ##'
-##' @details It possible to provide a time series of type xts to a list of elements of this type. This app need the its own css file. This function will be exclusively called when the climex app is run on localhost. In order to assure its correct behavior the necessary file/folder structure in the CLIMEX.PATH (global variable which has to be set beforehand; see vignette for details) will be check and if necesary generated.
-##'
-##' @param x.input The input time series is accepted in three different formats:
-##' \itemize{
-##'  \item{ 1.) as a single time series in the formatted using the xts package }
-##'  \item{ 2.) as a named list of various xts time series }
-##'  \item{ 3.) as a list containing two elements: a list of xts time series and a data.frame with the columns 'longitude', 'latitude', 'altitude', 'name' corresponding to the stations geo-coordinates, height and name }
+##' @details It possible to provide a time series of type \pkg{xts} to a list of elements of this type. This app need the its own css file. This function will be exclusively called when the climex app is run on localhost. In order to assure its correct behavior the necessary file/folder structure in the CLIMEX.PATH (global variable which has to be set beforehand; see vignette for details) will be check and if necesary generated. The input time series is accepted in three different formats
+##' \enumerate{
+##'  \item As a single time series in the formatted using the \pkg{xts} package 
+##'  \item As a named list of various xts time series 
+##'  \item As a list containing two elements;  a list of xts time series and a data.frame with the columns \emph{longitude}, \emph{latitude}, \emph{altitude}, \emph{name} corresponding to the stations geo-coordinates, height and name 
 ##' }
+##'
+##' @param x.input Time series of one of the formats mentioned in the details section. 
 ##'
 ##' @family shiny
 ##'
@@ -17,7 +17,7 @@
 ##' @import leaflet
 ##' @import xts
 ##' @author Philipp Mueller 
-climex <- function( x.input = NULL ){
+climex <- function( x.input ){
     source.data( pick.default = TRUE, import = "global" )
     if ( missing( x.input ) ){
         ## since we define this amigo global we also have to set it to
