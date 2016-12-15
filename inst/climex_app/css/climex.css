@@ -247,37 +247,59 @@ tfoot {
     box-shadow: 2px 2px 2px 2px #191970 inset, 1px 1px 1px 1px #191970 !important;
 }
 /* a gif image is going to be displayed while the pictures for the animation are generated */
+/* since it is displayed in the sidebar, always center it */
+/* TODO: not visible on narrow screens */
 #loadingGif {
-    display: block;
     width: 0%;
     visibility: hidden;
-    float: right;
+    position: relative !important;
+    left: 25% !important;
 }
 /**/
 /* boxes and elements in the leaflet map */
 /**/
 #leafletBox, #leafletMarkerBox {
     background-color: #FF8C00DD !important;
+    padding: 8px;
+    border-radius: 9px;
+    width: 350px !important;
+}
+#leafletBox .form-group {
+    margin-bottom: 0px !important;
 }
 .leaflet-control-layers {
-    background-color: ##FF8C00DD !important;
-    width: 215px !important;
-    bottom: 100px !important;
+    background-color: #FF8C00DD !important;
+    width: 320px !important;
+    /* here I assume the size of #leafletMarkerBox not to change + 10px margin + 17px license */
+    bottom: 170.85px !important;
+    position: absolute !important;
+    right: 0px !important;
     margin-right: 0px !important;
+    margin-bottom: 0px !important;
+    border-radius: 9px !important;
+}
+/* make the input sliders fill the whole box */
+.shiny-input-container:not(.shiny-input-container-inline) {
+    width: 100% !important;
 }
 .leaflet-control-layers label {
     display: inline-block !important;
     font-family: 'Source Sans Pro','Helvetica Neue',Helvetica,Arial,sans-serif;
     font-weight: 100 !important;
     font: inherit !important;
-    font-size: 110% !important;
+    font-size: 120% !important;
     color: #191970 !important;
-    margin: 0 10px 0 21px !important;
+    margin: 0 25% 0 0 !important;
     text-align: center !important;
+    position: relative !important;
+    left: 0;
 }
 #buttonDrawMarkers {
     font-weight: 100 !important;
     font-size: 100% !important;
+    /* center the button within the box */
+    position: relative !important;
+    left: 25% !important;
 }
 @media screen and (max-width: 1080px){
     /* assigning individual classes to the box objects in shiny won't do any good, since the
@@ -290,13 +312,31 @@ tfoot {
     .animationClimex {
 	display: block;
 	width: 100% !important;
-    }    
-}
+    }
+    /* adjusting the size of the boxes on the leaflet map */
+    #leafletBox, #leafletMarkerBox {
+	width: 250px !important;
+    }
+    .leaflet-control-layers {
+	width: 250px !important;
+    }
+    #buttonDrawMarkers {
+	left: 0% !important;
+    }
 @media screen and (max-width: 720px){
     /* Due to reordering and a fixed height the slider and the 
        table in the leaflet map are partly covered */
     #leafletBox {
 	top: 100px !important;
     }
-    
+    /* adjusting the size of the boxes on the leaflet map */
+    #leafletBox, #leafletMarkerBox {
+	width: 200px !important;
+    }
+    .leaflet-control-layers {
+	width: 200px !important;
+    }
+    #buttonDrawMarkers {
+	left: 0% !important;
+    }    
 }
