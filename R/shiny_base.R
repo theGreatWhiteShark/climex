@@ -1505,15 +1505,19 @@ climex.server <- function( input, output, session ){
             ## create a palette for the return levels of the individual circles
             palette <- colorNumeric( c( "navy", "skyblue", "limegreen", "yellow",
                                        "darkorange", "firebrick4" ), c( color.min, color.max ) )
-            leafletProxy( "leafletMap" ) %>%
-                clearGroup( "returns" ) %>%
-                addCircleMarkers( data = data.return.levels, group = "returns", lng = ~longitude,
-                                 color = ~palette( rlevd ), lat = ~latitude,
-                                 options = popupOptions( closeButton = FALSE ) ) %>%
-                ## layer control to turn the return level layer on and off
-                addLayersControl( baseGroups = c( "stations", "returns" ), position = "bottomright",
-                                 options = layersControlOptions( collapsed = FALSE ) ) %>%
-                addLegend( pal = palette, values = c( color.min, color.max ), title = "[years]" )
+            map.leaflet <- leafletProxy( "leafletMap" )
+            map.leaflet <- clearGroup( map.leaflet, "returns" )
+            map.leaflet <- addCircleMarkers( map.leaflet, data = data.return.levels,
+                                            group = "returns", lng = ~longitude,
+                                            color = ~palette( rlevd ), lat = ~latitude,
+                                            options = popupOptions( closeButton = FALSE ) )
+            ## layer control to turn the return level layer on and off
+            map.leaflet <- addLayersControl( map.leaflet, baseGroups = c( "stations", "returns" ),
+                                            position = "bottomright",
+                                            options = layersControlOptions( collapsed = FALSE ) )
+            map.leaflet <- addLegend( map.leaflet, pal = palette, values = c( color.min, color.max ),
+                                     title = "[years]", layerId = "leafletLegend" )
+            return( map.leaflet )
         } } )
     output$tableMap <- renderTable( {
         data.selected <- data.chosen()
@@ -1624,15 +1628,16 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                     tabName = "tabMap",
                     tags$style( type = "text/css", "#leafletMap {height: calc(100vh - 80px) !important;}" ),
                     leafletOutput( "leafletMap", width = "100%", height = 1000 ),
-                    absolutePanel( top = 49, right = 11, id = "leafletBox",
+                    ## 50px is the thickness of the top navigation bar
+                    absolutePanel( top = 50, right = 0, id = "leafletBox",
                                   sliderInput( "sliderMap", "Minimal length (years)",
-                                              0, 155, value = 65, step = 1, width = 215 ),
+                                              0, 155, value = 65, step = 1 ),
                                   tableOutput( "tableMap" ) ),
-                    absolutePanel( bottom = 25, right = 11, id = "leafletMarkerBox",
+                    ## lift it a little but upwards so one can still see the card licensing
+                    absolutePanel( bottom = 32, right = 0, id = "leafletMarkerBox",
                                   sliderInput( "sliderMapReturnLevel", "Return level (years)",
-                                              30, 1000, value = 100, width = 215 ),
-                                  actionButton( "buttonDrawMarkers", "Calculate return levels",
-                                               width = 215 ) ) ),
+                                              30, 1000, value = 100 ),
+                                  actionButton( "buttonDrawMarkers", "Calculate return levels" ) ) ),
                 tabItem(
                     tabName = "tabGeneral",
                     ## In order guarantee the correct behavior of the rendering of the boxes and
