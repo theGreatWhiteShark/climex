@@ -1516,7 +1516,8 @@ climex.server <- function( input, output, session ){
                                             position = "bottomright",
                                             options = layersControlOptions( collapsed = FALSE ) )
             map.leaflet <- addLegend( map.leaflet, pal = palette, values = c( color.min, color.max ),
-                                     title = "[years]", layerId = "leafletLegend" )
+                                     title = "[years]", layerId = "leafletLegend",
+                                     orientation = "horizontal" )
             return( map.leaflet )
         } } )
     output$tableMap <- renderTable( {
