@@ -32,9 +32,9 @@ climex <- function( x.input = NULL ){
         } else if ( class( x.input ) == "list" ){
             if ( all( Reduce( c, lapply( x.input, function ( y )
                 any( class( x ) == "xts" ) ) ) ) || (
-                length( x.input ) == 2 &&
-                "list" %in% Reduce( c, lapply( x.input, class ) ) &&
-                "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) ) {
+                    length( x.input ) == 2 &&
+                                        "list" %in% Reduce( c, lapply( x.input, class ) ) &&
+                                                        "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) ) {
                 x.input <<- x.input
             } else {
                 x.input <<- NULL
@@ -246,9 +246,9 @@ climex.server <- function( input, output, session ){
                 return( x.input )
             } else if ( class( file.input ) == "list" ){
                 if ( all( class( x.input ) == "xts" ) || (
-                  length( x.input ) == 2 &&
-                  "list" %in% Reduce( c, lapply( x.input, class ) ) &&
-                  "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) ){
+                    length( x.input ) == 2 &&
+                                        "list" %in% Reduce( c, lapply( x.input, class ) ) &&
+                                                        "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) ){
                     x.input <<- file.input
                     return( x.input )
                 }
@@ -1415,7 +1415,7 @@ climex.server <- function( input, output, session ){
                 ## time series of contain such a list and a data.frame specifying
                 ## the stations positions
                 if ( class( x.input ) == "list" &&
-                     class( x.input[[ 1 ]] ) == "list" ){
+                                                   class( x.input[[ 1 ]] ) == "list" ){
                     selection.list <- x.input[[ 1 ]]
                     ## I will assume the second element of this list is a
                     ## data.frame containing the coordinated, height and name of
@@ -1528,7 +1528,7 @@ climex.server <- function( input, output, session ){
         map.click <- input$leafletMap_marker_click
         station.name <- as.character(
             data.selected[[ 2 ]]$name[ which( data.selected[[ 2 ]]$latitude %in% map.click$lat &
-                                              data.selected[[ 2 ]]$longitude %in% map.click$lng ) ] )
+                                                                                     data.selected[[ 2 ]]$longitude %in% map.click$lng ) ] )
         leafletProxy( "leafletMap" ) %>%
             clearGroup( group = "selected" )
         leafletProxy( "leafletMap" ) %>%
@@ -1646,13 +1646,18 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                     ## boxes and reconfigure their ordering using CSS3 if the
                     ## max-width is below a certain threshold
                     fluidRow(
-                        box( title = h2( "GEV fit" ), status = "primary", solidheader = TRUE, width = 8,
-                            column( 9, plotOutput( "plotFitGev" ) ),
-                            column( 3, plotOutput( "plotFitQQ", height = 140 ),
-                                   plotOutput( "plotFitQQ2", height = 140 ),
-                                   plotOutput( "plotFitReturnLevel",
-                                              height = 140 ) ) ),
-                        box( title = h2( "Options" ), width = 4, height = 550, background = "orange",
+                        box( title = h2( "GEV fit" ),
+                                    status = "primary", 
+                                    solidheader = TRUE, width = 8,
+                                    id = "boxPlotFit",
+                                    column( 9, plotOutput( "plotFitGev" ) ),
+                                    column( 3, plotOutput( "plotFitQQ", height = 140 ),
+                                           plotOutput( "plotFitQQ2", height = 140 ),
+                                           plotOutput( "plotFitReturnLevel",
+                                                      height = 140 ) ) ),
+                        box( title = h2( "Options" ), width = 4,
+                                    height = 550, background = "orange",
+                                    id = "boxGevStatistics",
                             radioButtons( "radioGevStatistics", label = NULL, inline = TRUE,
                                          choices = c( "Blocks", "Threshold" ), selected = "Blocks" ),
                             menuItemOutput( "sliderGevStatistics" ),
@@ -1667,9 +1672,12 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                                                     "ismev::gev.fit", "extRemes::fevd" ),
                                         selected = c( "Nelder-Mead" ) ) ) ),
                     fluidRow(
-                        box( title = h2( "Results" ), width = 3, background = "orange",
+                        box( title = h2( "Results" ), width = 3,
+                            background = "orange", id = "boxGevResults",
                             uiOutput( "tableStatistics", colHeaders = "provided" ) ),
-                        tabBox( title = h2( "Time series" ), selected = "Remaining", width = 9,
+                        tabBox( title = h2( "Time series" ),
+                               selected = "Remaining", width = 9,
+                               id = "boxTimeSeries",
                                tabPanel( "Pure", dygraphOutput( "plotTimeSeries", height = 250 ) ),
                                tabPanel( "Deseasonalized", dygraphOutput( "plotDeseasonalized",
                                                                          height = 250 ) ),
@@ -1679,12 +1687,15 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                                                    brush = brushOpts( id = "plotBlockedBrush" ) ),
                                         actionButton( "excludeBlockedReset", "Reset" ),
                                         actionButton( "excludeBlockedToggle", "Brush" ) ) ) ) ),
-                tabItem( tabName = "tabLikelihood",                                  
+                tabItem( tabName = "tabLikelihood",
                         box( title = h2( "Starting points of the optimization routine" ),
-                            width = 8, status = "primary", dataTableOutput( "tableInitialPoints" ),
+                            width = 8, status = "primary",
+                            id = "boxStartingPoints",
+                            dataTableOutput( "tableInitialPoints" ),
                             htmlOutput( "drawLikelihoodAnimation" ) ),
-                        box( title = h2( "Options" ), width = 4, background = "orange",
-                            dataTableOutput( "tableHeuristicEstimates" ),
+                        box( title = h2( "Options" ), width = 4,
+                                    background = "orange", id = "boxHeuristic",
+                                    dataTableOutput( "tableHeuristicEstimates" ),
                             div( p( "actual initials", id = "tableInitialDescription" ),
                                 uiOutput( "inputInitialLocation" ),
                                 uiOutput( "inputInitialScale" ), uiOutput( "inputInitialShape" ),
