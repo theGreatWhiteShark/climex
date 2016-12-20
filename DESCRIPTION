@@ -40,7 +40,8 @@ Imports:
     leaflet,
     GenSA,
     numDeriv
-Remotes: theGreatWhiteShark/leaflet
+Remotes: theGreatWhiteShark/leaflet,
+    theGreatWhiteShark/shinydashboard
 License: GPL (>= 3)
 LinkingTo: Rcpp, RcppArmadillo
 VignetteBuilder: knitr
