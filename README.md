@@ -21,3 +21,11 @@ General Public License for more details.
 
 A copy of the GNU General Public License, version 3, is available at
 <http://www.r-project.org/Licenses/GPL-3>
+
+---
+
+### TODO
+
+- The labels of the leaflet legends do not really fit the positions.
+- If there is not a big range in the leaflet's return levels the indices do not have the appropriate precision (e.g. 14 14 14 15 15 15 16).
+- For some input combinations there are still errors thrown.
