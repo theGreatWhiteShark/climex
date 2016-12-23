@@ -1626,12 +1626,12 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                     leafletOutput( "leafletMap", width = "100%", height = 1000 ),
                     ## 50px is the thickness of the top navigation bar
                     absolutePanel( top = 50, right = 0, id = "leafletBox",
-                                  sliderInput( "sliderMap", "Minimal length (years)",
+                                  sliderInput( "sliderMap", "Minimal length [years]",
                                               0, 155, value = 65, step = 1 ),
                                   tableOutput( "tableMap" ) ),
                     ## lift it a little but upwards so one can still see the card licensing
                     absolutePanel( bottom = 32, right = 0, id = "leafletMarkerBox",
-                                  sliderInput( "sliderMapReturnLevel", "Return level (years)",
+                                  sliderInput( "sliderMapReturnLevel", "Return level [years]",
                                               30, 1000, value = 100 ),
                                   actionButton( "buttonDrawMarkers", "Calculate return levels" ) ) ),
                 tabItem(

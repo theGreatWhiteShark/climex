@@ -315,6 +315,7 @@ tfoot {
     position: relative !important;
     left: 25% !important;
 }
+
 @media screen and (max-width: 1400px){
     /* design for my Aspire S3 */
     #boxPlotFit {
