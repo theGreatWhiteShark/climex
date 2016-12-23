@@ -234,7 +234,8 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
                 xlim( x.lim ) + ylim( y.lim ) + scale_alpha( guide = FALSE ) +
                 scale_colour_manual( values = color.points ) +
                 theme( legend.box = "vertical", legend.box.just = "bottom" ) +
-                guides( fill = guide_legend( title = "Likelihood" ) )
+                guides( fill = guide_legend( title = "Likelihood",
+                                            title.position = "top" ) )
                 ## ggsave( filename = paste0( folder, "/plane_", plane.name, id, ".png" ),
             ##        device = "png", width = width, height = height, units = "cm", dpi = 500 )
             ## depending on the position there is a different legend shown or none (where the
@@ -301,9 +302,10 @@ animation.wrapper <- function( time.series, starting.points, location.lim, scale
     ##     unlink( paste0( image.folder, "/" ), recursive = TRUE )
     ## dir.create( image.folder )
     ## create the images
-    climex:::plot.animation( time.series, starting.points, location.lim, scale.lim, shape.lim,
-                            optimization.function, optimization.steps, height, width,
-                            image.folder = image.folder )
+    climex:::plot.animation( time.series, starting.points, location.lim,
+                            scale.lim, shape.lim, optimization.function,
+                            optimization.steps, height,
+                            width = width, image.folder = image.folder )
     ## get the image names including the folder name and write them in the JavaScript template
     files.all <- Reduce( c, lapply( list.files( image.folder ), function( x )
         paste0( image.folder, "/", x ) ) )

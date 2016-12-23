@@ -1345,15 +1345,17 @@ climex.server <- function( input, output, session ){
                                         as.numeric ( as.POSIXct( lubridate::now() ) ) )
             }
             dir.create( image.folder, recursive = TRUE )
-            climex:::animation.wrapper( time.series = x.block, starting.points = initial.parameters,
-                                       location.lim = isolate( input$sliderLocationLim ),
-                                       scale.lim = isolate( input$sliderScaleLim ),
-                                       shape.lim = isolate( input$sliderShapeLim ),
-                                       optimization.function = optimization.function,
-                                       optimization.steps = isolate( input$sliderOptimizationSteps ),
-                                       width = session.plot.width, height = 300, delay = 300,
-                                       loopMode = "loop",
-                                       image.folder = image.folder, working.folder = working.folder )
+            climex:::animation.wrapper(
+                time.series = x.block,
+                starting.points = initial.parameters,
+                location.lim = isolate( input$sliderLocationLim ),
+                scale.lim = isolate( input$sliderScaleLim ),
+                shape.lim = isolate( input$sliderShapeLim ),
+                optimization.function = optimization.function,
+                optimization.steps = isolate( input$sliderOptimizationSteps ),
+                width = session.plot.width, height = 300, delay = 300,
+                loopMode = "loop",
+                image.folder = image.folder, working.folder = working.folder )
             ## if the code is not running on localhost the shiny server won't find
             ## the animation.js script using its absolute path
             if ( session$clientData$url_hostname != "localhost" &&
@@ -1604,13 +1606,6 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                 menuItemOutput( "menuSelectDataSource2" ),
                 menuItemOutput( "menuSelectDataSource3" ),
                 menuItemOutput( "menuDataCleaning" ),
-                ## a plot of height 0? Well, its actually a very nice trick since I need
-                ## a width value for the generated pngs in the animation in pixel. But
-                ## I really want to make app to be rendered nicely on different screen
-                ## sizes. Via the session$clientData I can access the width and height of
-                ## plots. Thus I can access the width of this specific box via the
-                ## plotPlaceholder without seeing it at all.
-                plotOutput( "plotPlaceholder", height = 0 ),
                 ## while plotting the images for the animation a gif should be shown
                 div( uiOutput( "loadingScript" ), uiOutput( "loadingImage" ),
                     id = "loadingWrapper" ) ) ),
@@ -1692,6 +1687,14 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                             width = 8, status = "primary",
                             id = "boxStartingPoints",
                             dataTableOutput( "tableInitialPoints" ),
+                ## a plot of height 0? Well, its actually a very nice trick since I need
+                ## a width value for the generated pngs in the animation in pixel. But
+                ## I really want to make app to be rendered nicely on different screen
+                ## sizes. Via the session$clientData I can access the width and height of
+                ## plots. Thus I can access the width of this specific box via the
+                ## plotPlaceholder without seeing it at all.
+                            plotOutput( "plotPlaceholder", height = 0,
+                                       width = '100%' ),
                             htmlOutput( "drawLikelihoodAnimation" ) ),
                         box( title = h2( "Options" ), width = 4,
                                     background = "orange", id = "boxHeuristic",
