@@ -347,6 +347,9 @@ tfoot {
     #inputInitialLocation {
 	margin-left: 4% !important;
     }
+    .scianimator .controls, .scianimator .control {
+	margin: 0 0 0 10% !important;
+    }
 }
 
 @media screen and (max-width: 1080px){
