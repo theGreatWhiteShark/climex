@@ -21,7 +21,6 @@ body {
     colour: #FF8C00 !important;
     background-color: #FF8C00 !important;
 }
-
 h3 small {
     color: #FFFFFF;
 }
@@ -61,10 +60,12 @@ h3 small {
     font-size: 150%; !important;
 }
 /* I want the colorful part of the slider to have the same color as the bars in the histogram */
-.irs-bar{
-    backgorund-color: #7171EC !important;
-    border-bottom-color: #7171EC !important;
-    border-top-color: #7171EC !important;
+.irs-bar, .irs-bar-edge {
+    background-color: #191970 !important;
+    border-bottom-color: #2525a7 !important;
+    border-top-color: #2525a7 !important;
+    border-left-color: #2525a7 !important;
+    border-right-color: #2525a7 !important;
 }
 .box.box-primary {
     border-top-color: #191970 !important;
@@ -227,7 +228,6 @@ tfoot {
     float: left;
     position: relative;
 }
-
 /* customize the appearance of the scianimator control panel */
 .scianimator .controls, .scianimator .control {
     border: 0px solid !important;
@@ -237,6 +237,10 @@ tfoot {
 }
 .scianimator a {
     color: #191970 !important;
+}
+.scianimator {
+    /* else it won't fill the whole box width */
+    display: block !important;
 }
 .scianimator .box a.control.navigator, .scianimator .box a.control.navigator:hover {
     background: #191970 !important;
@@ -294,6 +298,13 @@ tfoot {
     position: relative !important;
     left: 0;
 }
+.leaflet-top .legend {
+    background: #ff8c00dd !important;
+    color: #191970 !important;
+    position: absolute;
+    right: 0px !important;
+    top: 240px !important;
+}
 #buttonDrawMarkers {
     font-weight: 100 !important;
     font-size: 100% !important;
@@ -301,10 +312,44 @@ tfoot {
     position: relative !important;
     left: 25% !important;
 }
+@media screen and (max-width: 1400px){
+    /* design for my Aspire S3 */
+    #boxPlotFit {
+	width: 60% !important;
+    }
+    #boxGevStatistics {
+	width: 40% !important;
+	padding-left: 0px !important;
+    }
+    #boxGevResults{
+	width: 40% !important;
+    }
+    #boxTimeSeries {
+	width: 60% !important;
+	padding-left: 0px !important;
+    }
+    #boxStartingPoints {
+	width: 60% !important;
+	padding-left: 0px !important;
+    }
+    #boxHeuristic {
+	width: 40% !important;
+	padding: 0px !important;
+    }
+    /* the input in the tableHeuristic is not aligned anymore */
+    #tableInitialDescription {
+	width: 30% !important;
+	left: 0px !important;
+    }
+    #inputInitialLocation {
+	margin-left: 4% !important;
+    }
+}
+
 @media screen and (max-width: 1080px){
     /* assigning individual classes to the box objects in shiny won't do any good, since the
        class definition only enters an inner box and not the parent */
-    .col-sm-4, .col-sm-8, .col-sm-3, .col-sm-9 {
+    #boxHeuristic, #boxStartingPoints, #boxGevResults, #boxTimeSeries, #boxGevStatistics, #boxPlotFit {
 	display: block !important;
 	width: 100% !important;
     }
@@ -323,6 +368,8 @@ tfoot {
     #buttonDrawMarkers {
 	left: 0% !important;
     }
+}
+
 @media screen and (max-width: 720px){
     /* Due to reordering and a fixed height the slider and the 
        table in the leaflet map are partly covered */
