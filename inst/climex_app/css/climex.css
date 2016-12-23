@@ -17,6 +17,9 @@ body {
     color: #FFFFFF !important;
     border-bottom: #222D32 !important;
 }
+.skin-blue .sidebar-menu > li.active > a, .skin-blue .sidebar-menu > li:hover > a {
+    border-left-color: #FF8C00 !important;
+}
 .alert-warning, .label-warning {
     colour: #FF8C00 !important;
     background-color: #FF8C00 !important;
