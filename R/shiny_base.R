@@ -1161,7 +1161,7 @@ climex.server <- function( input, output, session ){
         }
         x.initials <- initial.parameters()
         if ( input$selectOptimizationProcedureLikelihood == "dfoptim::nmk" ){
-            suppressWarnings( par.mle <- try( nmk.modified( par = x.initials, x = x.block )$par ) )
+            suppressWarnings( par.mle <- try( dfoptim::nmk( par = x.initials, x = x.block )$par ) )
             if ( class( par.mle ) == "try-error" )
                 par.mle <- gev.fit( x.block )$par
             return( par.mle )  } } )
@@ -1313,9 +1313,9 @@ climex.server <- function( input, output, session ){
         isolate( initial.parameters <- initial.parameters.likelihood() )
         isolate( {
             if ( input$selectOptimizationProcedureLikelihood == "dfoptim::nmk" ){
-                optimization.function <- nmk.modified
-            } else if ( input$selectOptimizationProcedureLikelihood == "dfoptim::nmk.modified"){
-                optimization.function <- nmk.modified
+                optimization.function <- dfoptim::nmk
+            } else if ( input$selectOptimizationProcedureLikelihood == "dfoptim::nmk"){
+                optimization.function <- dfoptim::nmk
             }
             ## I use the plot "plotPlaceholder" to determine the width of the current box and adjust
             ## the pixel width of the png pictures
@@ -1705,7 +1705,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                                 id = "initialTable" ),
                             selectInput( "selectOptimizationProcedureLikelihood",
                                         "Optimization procedure",
-                                        choices = c( "dfoptim::nmk", "dfoptim::nmk.modified" ),
+                                        choices = c( "dfoptim::nmk" ),
                                         selected = "dfoptim::nmk" ),
                             sliderInput( "sliderNumberInitialPoints",
                                         "Number of initial points", 1, 20, 5 ),

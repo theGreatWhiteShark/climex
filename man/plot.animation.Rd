@@ -6,8 +6,8 @@
 \usage{
 \method{plot}{animation}(time.series, starting.points, location.lim = NULL,
   scale.lim = NULL, shape.lim = NULL,
-  optimization.function = climex:::nmk.modified, optimization.steps = c(0.1,
-  0.5), height = 300, width = 300, colors = list(plane.low = "#eaeafa",
+  optimization.function = dfoptim::nmk, optimization.steps = c(0.1, 0.5),
+  height = 300, width = 300, colors = list(plane.low = "#eaeafa",
   plane.high = "#191970", plane.contour = "white", path.low = "yellow",
   path.high = "darkred", path.true = "black"), image.folder = "images")
 }
@@ -22,7 +22,7 @@
 
 \item{shape.lim}{Region of the shape parameter for which the likelihood function is going to be evaluated and plotted as a density plot and a contour plot.}
 
-\item{optimization.function}{Function use for preforming the GEV fit. This must be a function providing the list element "x.update" containing the parameters evaluated at each step of the optimization procedure and a list element "par" containing a vector of the GEV parameter estimates. For now only the function nmk.modified is available. Default = nmk.modified.}
+\item{optimization.function}{Function use for preforming the GEV fit. This must be a function providing the list element "x.update" containing the parameters evaluated at each step of the optimization procedure and a list element "par" containing a vector of the GEV parameter estimates. For now only the function dfoptim::nmk is available (the one from my forked version install_github( "theGreatWhiteShark/dfoptim" ). Default = nmk.}
 
 \item{optimization.steps}{Vector containing two numbers from 0 to 1 specifying the start and the end point of the optimization. Since the number of steps is unknown beforehand it will be chosen relativley to the total number of steps. Default = c( 0, 1 ).}
 
