@@ -1,0 +1,20 @@
+---
+title: "Usage of the climex web application"
+author: "Philipp Müller"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Usage of the climex web application}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# About
+
+First of all the global variable **CLIMEX.PATH** has to be set. Just add the following lines to ~/.Rprofile
+```{r}
+CLIMEX.PATH <<- "~/R/climex/"
+if ( !dir.exists( CLIMEX.PATH ) )
+    dir.create( CLIMEX.PATH, recursive = TRUE )
+```
+
