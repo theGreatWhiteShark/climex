@@ -15,7 +15,7 @@
 ##' 
 ##' @family optimization
 ##' 
-##' @return Output of the optim function with class == c( "list", "climex.gev.fit" )
+##' @return Output of the optim function with class == c( "list", "climex.fit.gev" )
 ##' \itemize{
 ##'  \item{ par = MLE of the GEV parameters }
 ##'  \item{ value = Value of the negative log-likelihood evaluated at the MLE }
@@ -33,8 +33,8 @@
 ##' @examples
 ##' potsdam.anomalies <- anomalies( temp.potsdam )
 ##' potsdam.blocked <- block( potsdam.anomalies )
-##' gev.fit( potsdam.blocked )
-gev.fit <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihood,
+##' fit.gev( potsdam.blocked )
+fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihood,
                     gradient.function = likelihood.gradient,
                     error.estimation = c( "MLE", "MC", "none" ),
                     method = c( "Nelder-Mead", "BFGS", "CG", "SANN" ),
@@ -104,7 +104,7 @@ gev.fit <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
                 for ( rr in 1 : length( return.period ) )
                     errors <- cbind( errors, sqrt( stats::var(
                                                  Reduce( c, lapply( samples.fit, function( z )
-                        rlevd( z, return.period = return.period[ rr ] ) ) ) ) ) )
+                        return.level( z, return.period = return.period[ rr ] ) ) ) ) ) )
             }
             names( errors ) <- c( "location", "scale", "shape", paste0( return.period, ".rlevel" ) )
         } else {
@@ -160,11 +160,11 @@ gev.fit <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
     ## Naming of the resulting fit parameter (necessary for a correct conversion with as.fevd)
     names( res.optim$par ) <- c( "location", "scale", "shape" )
     ## introducing a new data type for handling fits done with climex
-    class( res.optim ) <- c( "list", "climex.gev.fit" )
+    class( res.optim ) <- c( "list", "climex.fit.gev" )
 
     ## adding the return levels
     res.optim$return.level <- Reduce( c, lapply( return.period,
-                                                function( y ) rlevd( res.optim, y ) ) )
+                                                function( y ) return.level( res.optim, y ) ) )
     names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
     res.optim$x <- x
     return( res.optim )
