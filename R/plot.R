@@ -108,7 +108,7 @@ ttplot <- function( data.input, main = "Time series", ylab = NULL, x.df = NULL )
 
 ##' @title Generates three 2D slices of the likelihood of a provided time series.
 ##'
-##' @details The likelihood will be plotted around its optimal value. To determine it the time series will be fitted via \code{\link{gev.fit}}. Its also possible to provide another point the likelihood will be centered around using 'center'.
+##' @details The likelihood will be plotted around its optimal value. To determine it the time series will be fitted via \code{\link{fit.gev}}. Its also possible to provide another point the likelihood will be centered around using 'center'.
 ##'
 ##' @param time.series Data for which the likelihood function is going to be calculated.
 ##' @param location.lim Boundaries of the plotted likelihood region. Default = +/- 2.5 times the minimum value.
@@ -117,7 +117,7 @@ ttplot <- function( data.input, main = "Time series", ylab = NULL, x.df = NULL )
 ##' @param center It set this point (3D) will be the new center of the likelihood plot. Default = NULL
 ##' @param initial Initial parameters which can be provided for the fit of the time series.
 ##' @param main Title for the multiplot. Default = NULL.
-##' @param true.minima Provide the true minima of the neg log-likelihood function if gev.fit does not provide it in the first run. Default = NULL.
+##' @param true.minima Provide the true minima of the neg log-likelihood function if fit.gev does not provide it in the first run. Default = NULL.
 ##'
 ##' @import ggplot2
 ##' @return returns a multiplot of planes through the negative log-likelihood of the GEV function calculated using the input time series.
@@ -126,7 +126,7 @@ likelihood.plot <- function( time.series, location.lim = NULL, scale.lim = NULL,
                                center = NULL, initial = NULL, main = NULL, true.minima = NULL ){
     ## determining the center and the limits
     if ( is.null( true.minima ) ){
-        time.series.mle <- gev.fit( x = time.series, initial = initial )$par
+        time.series.mle <- fit.gev( x = time.series, initial = initial )$par
     } else
         time.series.mle <- true.minima
     if ( is.null( center ) )
@@ -223,15 +223,16 @@ return Rcpp::wrap( L );')
               main = main )
 }
 
-##' @title Plots the GEV function fitted using \code{\link{gev.fit}}
+##' @title Plots the GEV function fitted using \code{\link{fit.gev}}
 ##'
 ##' @details Uses ggplot2
 ##'
 ##' @param x Fitted GEV object.
 ##'
+##' @export
 ##' @import ggplot2
 ##' @return ggplot2 object.
-plot.climex.gev.fit <- function( x ){
+plot.climex.fit.gev <- function( x ){
     x.data <- x$x
     x.lim <- c( max( x.data, na.rm = TRUE ), min( x.data, na.rm = TRUE ) )
     threshold.pdf.plot <- 5E-4
