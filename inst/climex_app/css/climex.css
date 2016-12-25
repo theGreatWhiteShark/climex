@@ -157,9 +157,9 @@ tfoot {
 .bg-orange .table > tbody > tr > ts {
     border-bottom: 1px solid #FFFFFF !important;
 }
-#tableMap {
-    background-color: #FF8C00 !important;
-    opacity: 0.8;
+/* make the popup table transparent as well */
+#tableMap, #tableMap > table > thead > tr {
+     background-color: transparent !important;
 }
 /* disabling the bullet for the box length slider*/
 #sliderGevStatistics {
