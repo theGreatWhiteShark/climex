@@ -1509,10 +1509,12 @@ climex.server <- function( input, output, session ){
                                        "darkorange", "firebrick4" ), c( color.min, color.max ) )
             map.leaflet <- leafletProxy( "leafletMap" )
             map.leaflet <- clearGroup( map.leaflet, "returns" )
-            map.leaflet <- addCircleMarkers( map.leaflet, data = data.return.levels,
-                                            group = "returns", lng = ~longitude,
-                                            color = ~palette( return.level ), lat = ~latitude,
-                                            options = popupOptions( closeButton = FALSE ) )
+            map.leaflet <- addCircleMarkers(
+                map.leaflet, data = data.return.levels,
+                group = "returns", lng = ~longitude,
+                color = ~palette( return.level ), lat = ~latitude,
+                options = popupOptions( closeButton = FALSE ),
+                fillOpacity = .8 )
             ## layer control to turn the return level layer on and off
             map.leaflet <- addLayersControl( map.leaflet, baseGroups = c( "stations", "returns" ),
                                             position = "bottomright",
