@@ -29,6 +29,7 @@ Imports:
     dygraphs,
     parallel,
     shiny,
+    htmltools,
     animation,
     latex2exp,
     shinydashboard,
