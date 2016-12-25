@@ -31,3 +31,5 @@ A copy of the GNU General Public License, version 3, is available at
 - For some input combinations there are still errors thrown.
 - The package still relies on the dfoptim version of the Nelder-Mead optimization which is not as reliable as the stats::optim one. In addition the visualization of the optimization routine is not available for BFGS, SANN and CG
 - For enhancing the speed of the generation of the colored markers when calculating the return levels for all stations the blocking and anomalies function should be ported to C++
+- Customizing loading gif
+- Change return level in leaflet map to logarithmic scale
