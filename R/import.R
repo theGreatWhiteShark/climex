@@ -285,8 +285,8 @@ download.data.dwd <- function( save.downloads = TRUE, download.path = CLIMEX.PAT
         ## and in the next the county consisting of one word (including a minus)
         line.full <- unlist( strsplit( line.raw, " " ) )
         line <- line.full[ line.full != "" ]
-        line.last.digit <- tail( grep( "[[:digit:]]", line ), 1 )
-        line.last.word <- tail( grep( "[[:alpha:]]", line ), 1 )
+        line.last.digit <- utils::tail( grep( "[[:digit:]]", line ), 1 )
+        line.last.word <- utils::tail( grep( "[[:alpha:]]", line ), 1 )
         station.name <- line[ line.last.digit + 1 ]
         if ( line.last.word - 1 > line.last.digit + 1 ){
             ## the stations name consists of more than one word
