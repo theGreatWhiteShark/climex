@@ -113,16 +113,21 @@ In a last step we will fit a GEV distribution onto the time series and use the f
 ```{r fit, dependson = "blocking"}
 ## The result will be a list of objects similar to the output of the
 ## optim function.
-gev.potsdam <- climex::gev.fit( temp.potsdam.blocked )
+gev.potsdam <- fit.gev( temp.potsdam.blocked )
 
-return.level.potsdam <- climex::rlevd( gev.potsdam )
+return.level.potsdam <- return.level( gev.potsdam )
 print( return.level.potsdam )
+
+## another convenience function to easily bundle plots
+multiplot( plotlist = list( ttplot( temp.potsdam.blocked ),
+                           plot( gev.potsdam ) ), cols = 2,
+          main = "Blocked temperature anomalies and GEV fit" )
 ```
 
 ## Note
 I highly recommend not to use just the command line interface of the package but also its web app which contains a variety of tools to check the validity of the fit.
 
-During my work I focused on the GEV distribution and the blocking approach in extreme value theory. If you are more into the threshold one and the generalized Pareto (GP) distribution please use the *ismev::gpd.fit()* function instead of *climex::gev.fit()*. Support of this approach will probably be added in a future release.
+During my work I focused on the GEV distribution and the blocking approach in extreme value theory. If you are more into the threshold one and the generalized Pareto (GP) distribution please use the *ismev::gpd.fit()* function instead of *climex::fit.gev()*. Support of this approach will probably be added in a future release.
 
 # Distinction from other packages fitting GEV distributions
 Okay, so far so good. But **why** to use this package instead of all the other R packages out there performing both the GEV and GP fit?
