@@ -23,13 +23,13 @@ likelihood.plot(time.series, location.lim = NULL, scale.lim = NULL,
 
 \item{main}{Title for the multiplot. Default = NULL.}
 
-\item{true.minima}{Provide the true minima of the neg log-likelihood function if gev.fit does not provide it in the first run. Default = NULL.}
+\item{true.minima}{Provide the true minima of the neg log-likelihood function if fit.gev does not provide it in the first run. Default = NULL.}
 }
 \value{
 returns a multiplot of planes through the negative log-likelihood of the GEV function calculated using the input time series.
 }
 \details{
-The likelihood will be plotted around its optimal value. To determine it the time series will be fitted via \code{\link{gev.fit}}. Its also possible to provide another point the likelihood will be centered around using 'center'.
+The likelihood will be plotted around its optimal value. To determine it the time series will be fitted via \code{\link{fit.gev}}. Its also possible to provide another point the likelihood will be centered around using 'center'.
 }
 \author{
 Philipp Mueller

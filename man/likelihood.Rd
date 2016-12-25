@@ -23,7 +23,7 @@ This function is only meant to work with constant parameters and no covariats. x
 Philipp Mueller
 }
 \seealso{
-Other optimization: \code{\link{gev.fit}},
+Other optimization: \code{\link{fit.gev}},
   \code{\link{likelihood.gradient}},
   \code{\link{likelihood.initials}}
 }

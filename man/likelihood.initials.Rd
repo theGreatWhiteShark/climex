@@ -28,7 +28,7 @@ Two main methods are used for the estimation: the L-moments method of Hosking & 
 Philipp Mueller
 }
 \seealso{
-Other optimization: \code{\link{gev.fit}},
+Other optimization: \code{\link{fit.gev}},
   \code{\link{likelihood.gradient}},
   \code{\link{likelihood}}
 }
