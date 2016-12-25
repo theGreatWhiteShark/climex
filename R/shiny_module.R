@@ -61,7 +61,7 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
         starting.points <- data.frame( location = starting.points[ 1 ], scale = starting.points[ 2 ],
                                       shape = starting.points[ 3 ] )
     ## MLE estimates of the provided time.series
-    time.series.par <- gev.fit( x = time.series )$par
+    time.series.par <- fit.gev( x = time.series )$par
     ## Initial parameters of the fitting routine
     time.series.initials <- likelihood.initials( time.series )
     ## Calculation of the likelihood surface/space
@@ -202,7 +202,7 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
         ## The first trajectory belongs to the true starting points of the optimization and
         ## should have a distinct color
         color.points <- c( colors$path.true,
-                          colorRampPalette( colors = c( colors$path.low, colors$path.high ) )(
+                          grDevices::colorRampPalette( colors = c( colors$path.low, colors$path.high ) )(
             nrow( starting.points ) - 1 ) )
         ## plotting of the individual png files containing the likelihood plane and a segment
         ## of the trajectory. Those files are going to be concatenated to the animation
@@ -213,7 +213,7 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
                 height.plot <- height* 1.14
             } else
                 height.plot <- height
-            png( filename = paste0( image.folder, "/plane_", plane.name, id, ".png" ),
+            grDevices::png( filename = paste0( image.folder, "/plane_", plane.name, id, ".png" ),
                  width = width, height = height.plot )
             ## here I assume that the entries in segment are ordered according to their id
             gg.plot <- gg.plane + geom_segment(
@@ -247,7 +247,7 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
             } else if ( plot.legend == 2 )
                 gg.plot <- gg.plot + guides( colour = FALSE )
             print( gg.plot )
-            dev.off()
+            grDevices::dev.off()
             invisible()
         }
         ## iterate through the steps and just hand those rows over corresponding to a
