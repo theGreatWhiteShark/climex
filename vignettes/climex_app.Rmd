@@ -1,0 +1,39 @@
+---
+title: "Usage of the climex web application"
+author: "Philipp Müller"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Usage of the climex web application}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# About
+This vignette describes the basic functions of the package's web application. Its main purposes are
+- To allow the user to interactively and persistently alter the default preprocessing and fitting options for the maximum likelihood fit of the generalized extreme value (GEV) distribution 
+- To apply it consistently to many different time series.
+- To verify the validity of the optimization procedure using a variety of goodness of fit plots and an animation of the actual optimization procedure.
+
+
+# Prerequisites
+First of all the global variable **CLIMEX.PATH** has to be set. Just add the following lines to ~/.Rprofile
+
+```{r prerequisites, cache = TRUE}
+CLIMEX.PATH <<- "~/R/climex/"
+if ( !dir.exists( CLIMEX.PATH ) )
+    dir.create( CLIMEX.PATH, recursive = TRUE )
+```
+
+Afterwards the web app is invoked locally by calling the *climex()* wrapper function and browsing shown IP (e.g. *http://127.0.0.1:3838*)
+```{r wrapper, eval = FALSE, dependson = "prerequisites"}
+require( climex )
+climex()
+```
+This wrapper function will copy several assets into the **CLIMEX.PATH** folder which will also contain the images necessary to create the animation.
+
+
+# leaflet tab
+# general tab
+# likelihood tab
+# deploying the app on server side
