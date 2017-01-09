@@ -29,6 +29,7 @@ Imports:
     dygraphs,
     parallel,
     shiny,
+    htmltools,
     animation,
     latex2exp,
     shinydashboard,
@@ -39,8 +40,11 @@ Imports:
     moments,
     leaflet,
     GenSA,
+    dfoptim,
     numDeriv
-Remotes: theGreatWhiteShark/leaflet
+Remotes: theGreatWhiteShark/leaflet,
+    theGreatWhiteShark/shinydashboard,
+    theGreatWhiteShark/dfoptim
 License: GPL (>= 3)
 LinkingTo: Rcpp, RcppArmadillo
 VignetteBuilder: knitr

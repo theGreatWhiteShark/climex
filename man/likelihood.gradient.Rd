@@ -21,7 +21,7 @@ Like \code{\{link{likelihood}} the quantity min.shape switches between the evalu
 Philipp Mueller
 }
 \seealso{
-Other optimization: \code{\link{gev.fit}},
+Other optimization: \code{\link{fit.gev}},
   \code{\link{likelihood.initials}},
   \code{\link{likelihood}}
 }

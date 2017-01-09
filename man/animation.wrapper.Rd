@@ -5,9 +5,8 @@
 \title{Help function filling the JavaScript template which produces the likelihood animation.}
 \usage{
 animation.wrapper(time.series, starting.points, location.lim, scale.lim,
-  shape.lim, optimization.function = climex:::nmk.modified,
-  optimization.steps, width, height, delay = 300, loopMode = "loop",
-  image.folder, working.folder)
+  shape.lim, optimization.function = dfoptim::nmk, optimization.steps, width,
+  height, delay = 300, loopMode = "loop", image.folder, working.folder)
 }
 \arguments{
 \item{time.series}{Blocked data for which the GEV fit is performed}

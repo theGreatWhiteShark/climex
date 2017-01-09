@@ -34,7 +34,7 @@ color.table <- function( x.html.table, css.colours, style = "table-condensed tab
 ##' @param location.lim Region of the location parameter for which the likelihood function is going to be evaluated and plotted as a density plot and a contour plot.
 ##' @param scale.lim Region of the scale parameter for which the likelihood function is going to be evaluated and plotted as a density plot and a contour plot.
 ##' @param shape.lim Region of the shape parameter for which the likelihood function is going to be evaluated and plotted as a density plot and a contour plot.
-##' @param optimization.function Function use for preforming the GEV fit. This must be a function providing the list element "x.update" containing the parameters evaluated at each step of the optimization procedure and a list element "par" containing a vector of the GEV parameter estimates. For now only the function nmk.modified is available. Default = nmk.modified.
+##' @param optimization.function Function use for preforming the GEV fit. This must be a function providing the list element "x.update" containing the parameters evaluated at each step of the optimization procedure and a list element "par" containing a vector of the GEV parameter estimates. For now only the function dfoptim::nmk is available (the one from my forked version install_github( "theGreatWhiteShark/dfoptim" ). Default = nmk.
 ##' @param optimization.steps Vector containing two numbers from 0 to 1 specifying the start and the end point of the optimization. Since the number of steps is unknown beforehand it will be chosen relativley to the total number of steps. Default = c( 0, 1 ).
 ##' @param width of both the images and the form with the playback options in pixel.
 ##' @param height of both the images and the form with the playback options in pixel.
@@ -50,7 +50,7 @@ color.table <- function( x.html.table, css.colours, style = "table-condensed tab
 ##' @return Opens a HTML widget showing the animation of the optimization routine.
 ##' @author Philipp Mueller 
 plot.animation <- function( time.series, starting.points, location.lim = NULL, scale.lim = NULL,
-                           shape.lim = NULL, optimization.function = climex:::nmk.modified,
+                           shape.lim = NULL, optimization.function = dfoptim::nmk,
                            optimization.steps = c( .1, .5 ), height = 300, width = 300,
                            colors = list( plane.low = "#eaeafa", plane.high = "#191970",
                                          plane.contour = "white", path.low = "yellow",
@@ -61,7 +61,7 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
         starting.points <- data.frame( location = starting.points[ 1 ], scale = starting.points[ 2 ],
                                       shape = starting.points[ 3 ] )
     ## MLE estimates of the provided time.series
-    time.series.par <- gev.fit( x = time.series )$par
+    time.series.par <- fit.gev( x = time.series )$par
     ## Initial parameters of the fitting routine
     time.series.initials <- likelihood.initials( time.series )
     ## Calculation of the likelihood surface/space
@@ -202,7 +202,7 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
         ## The first trajectory belongs to the true starting points of the optimization and
         ## should have a distinct color
         color.points <- c( colors$path.true,
-                          colorRampPalette( colors = c( colors$path.low, colors$path.high ) )(
+                          grDevices::colorRampPalette( colors = c( colors$path.low, colors$path.high ) )(
             nrow( starting.points ) - 1 ) )
         ## plotting of the individual png files containing the likelihood plane and a segment
         ## of the trajectory. Those files are going to be concatenated to the animation
@@ -213,7 +213,7 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
                 height.plot <- height* 1.14
             } else
                 height.plot <- height
-            png( filename = paste0( image.folder, "/plane_", plane.name, id, ".png" ),
+            grDevices::png( filename = paste0( image.folder, "/plane_", plane.name, id, ".png" ),
                  width = width, height = height.plot )
             ## here I assume that the entries in segment are ordered according to their id
             gg.plot <- gg.plane + geom_segment(
@@ -234,7 +234,8 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
                 xlim( x.lim ) + ylim( y.lim ) + scale_alpha( guide = FALSE ) +
                 scale_colour_manual( values = color.points ) +
                 theme( legend.box = "vertical", legend.box.just = "bottom" ) +
-                guides( fill = guide_legend( title = "Likelihood" ) )
+                guides( fill = guide_legend( title = "Likelihood",
+                                            title.position = "top" ) )
                 ## ggsave( filename = paste0( folder, "/plane_", plane.name, id, ".png" ),
             ##        device = "png", width = width, height = height, units = "cm", dpi = 500 )
             ## depending on the position there is a different legend shown or none (where the
@@ -246,7 +247,7 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
             } else if ( plot.legend == 2 )
                 gg.plot <- gg.plot + guides( colour = FALSE )
             print( gg.plot )
-            dev.off()
+            grDevices::dev.off()
             invisible()
         }
         ## iterate through the steps and just hand those rows over corresponding to a
@@ -291,7 +292,7 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
 ##' @seealso \code{\link{plot.animation}}
 ##' @author Philipp Mueller 
 animation.wrapper <- function( time.series, starting.points, location.lim, scale.lim, shape.lim,
-                  optimization.function = climex:::nmk.modified, optimization.steps,
+                  optimization.function = dfoptim::nmk, optimization.steps,
                   width, height, delay = 300, loopMode = "loop", image.folder, working.folder ){
     ## load the JavaScript template file
     template <- readLines( paste0( system.file( "climex_app", package = "climex" ),
@@ -301,9 +302,10 @@ animation.wrapper <- function( time.series, starting.points, location.lim, scale
     ##     unlink( paste0( image.folder, "/" ), recursive = TRUE )
     ## dir.create( image.folder )
     ## create the images
-    climex:::plot.animation( time.series, starting.points, location.lim, scale.lim, shape.lim,
-                            optimization.function, optimization.steps, height, width,
-                            image.folder = image.folder )
+    climex:::plot.animation( time.series, starting.points, location.lim,
+                            scale.lim, shape.lim, optimization.function,
+                            optimization.steps, height,
+                            width = width, image.folder = image.folder )
     ## get the image names including the folder name and write them in the JavaScript template
     files.all <- Reduce( c, lapply( list.files( image.folder ), function( x )
         paste0( image.folder, "/", x ) ) )

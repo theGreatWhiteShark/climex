@@ -1,5 +1,5 @@
-##' @title  Calculates the Akaike information criterion of a gev.fit or climex.gev.fit object.
-##' @details The climex.gev.fit object is of identical structure as the output of the optim() function.
+##' @title  Calculates the Akaike information criterion of a fit.gev or climex.fit.gev object.
+##' @details The climex.fit.gev object is of identical structure as the output of the optim() function.
 ##' 
 ##' @param x Optim()like fit of a time series.
 ##'
@@ -10,18 +10,18 @@
 ##' @author Philipp Mueller
 aic <- function( x ){
     if ( ( any( class( x ) != "gev.fit" ) && any( class( x ) != "gpd.fit" ) ) &&
-         !any( class( x ) == "climex.gev.fit" ) )
-        stop( "Wrong format provided in aic. An object of class 'gev.fit' is required!" )
-    if ( any( class( x ) == "climex.gev.fit" ) ){
+         !any( class( x ) == "climex.fit.gev" ) )
+        stop( "Wrong format provided in aic. The returned object of the GEV/GPD fit using the climex or ismev package is required!" )
+    if ( any( class( x ) == "climex.fit.gev" ) ){
         2* x$value + 2* length( x$par )
     } else
         2* x$nllh + 2* length( x$mle )
 }
 
-##' @title Calculates the Bayesian information criterion of a climex.gev.fit object.
-##' @details The climex.gev.fit object is of identical structure as the output of the optim() function.
+##' @title Calculates the Bayesian information criterion of a climex.fit.gev object.
+##' @details The climex.fit.gev object is of identical structure as the output of the optim() function.
 ##'
-##' @param x Object of class climex.gev.fit. When ensuring the presence of all additional list elements an output of optim() can also be used.
+##' @param x Object of class climex.fit.gev. When ensuring the presence of all additional list elements an output of optim() can also be used.
 ##'
 ##' @seealso \code{\link{aic}}
 ##' @family ts
@@ -29,9 +29,9 @@ aic <- function( x ){
 ##' @return Numeric value
 ##' @author Philipp Mueller
 bic <- function( x ){
-    if ( ( any( class( x ) != "gev.fit" ) && any( class( x ) != "gpd.fit" ) ) && !any( class( x ) == "climex.gev.fit" ) )
-        stop( "Wrong format provided in bic. An object of class 'gev.fit' is required!" )
-    if ( any( class( x ) == "climex.gev.fit" ) ){
+    if ( ( any( class( x ) != "gev.fit" ) && any( class( x ) != "gpd.fit" ) ) && !any( class( x ) == "climex.fit.gev" ) )
+        stop( "Wrong format provided in bic. The returned object of the GEV/GPD fit using the climex or ismev package is required!" )
+    if ( any( class( x ) == "climex.fit.gev" ) ){
         2* x$value + length( x$par )* log( length( x$x ) )
     } else
         2* x$nllh + length( x$mle )* log( length( x$data ) )

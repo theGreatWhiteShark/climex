@@ -61,112 +61,6 @@ block <- function( input.bulk, block.number = round( length( input.bulk )/ 50 ),
     return( extremes.xts )
 }
 
-##' @title Finding the appropriate block length before applying GEV fitting.
-##'
-##' @details Function fits GEV using gev.fit() after applying various block lengths and returns summary statistics. After a sufficient high block length the parameters of the distribution should converge. Function is implemented for inputs of the classes "xts" and "ts".
-##'
-##' @param x Time series of class "xts" or "ts"
-##' @param size.low Smallest block length applied to the data. Default = 10.
-##' @param size.high Blggest block length applied to the data. Default = 400.
-##' @param return.period Argument of the extRemes::return.level() function specifying the return period of the event the return level shall be calculated for. Default = 100.
-##' @param plot Plots the results. Default = TRUE
-##' @param main Title of the plot.
-##' @param ... Additional arguments applied for extRemes::fevd()
-##'
-##' @return Data.frame containing the summary statistic of the analysis:
-##' \itemize{
-##'  \item{ block = specific block length. }
-##'  \item{ loc = MLE estimate for the mean location parameter }
-##'  \item{ se.loc = MLE estimate for the standard deviation of the location parameter. }
-##'  \item{ sca= MLE estimate for the mean scale parameter }
-##'  \item{ se.sca = MLE estimate for the standard deviation of the scale parameter. }
-##'  \item{ sha = MLE estimate for the mean shape parameter }
-##'  \item{ se.sha = MLE estimate for the standard deviation of the shape parameter. }
-##'  \item{ nllh = Negative log-likelihood of the applied fit. }
-##'  \item{ AIC = Akaike information criterion of the applied fit. }
-##'  \item{ BIC = Bayesian information criterion of the applied fit. }
-##' }
-##' @import xts
-##' @import ggplot2
-##' @author Philipp Mueller
-find.block.length <- function( x, size.low = 20, size.high = 400, return.period = 100,
-                              plot = TRUE, main = NULL ){
-    ## Computes statistics for different block length and returns a table and a plot displaying
-    ## the results. This functions is made to help deciding for an appropriate block length.
-    ## Possible values of the return level
-
-    ## Indicating whether the evaluation of the confidence intervals of the return levels already has failed.
-    err.ret <- FALSE
-    if ( any( class( x ) == "bulk" ) ) {
-        x.data <- x[[ 2 ]]
-    } else
-        x.data <- as.numeric( x )
-
-    x.gev.fit <- gev.fit( x.data, show = FALSE )
-    ## Initiation of the matrix containing all the information
-    gev.sum <- data.frame( block = 1, loc = x.gev.fit$mle[ 1 ],
-                          se.loc = x.gev.fit$se[ 1 ], scale = x.gev.fit$mle[ 2 ],
-                          se.sca = x.gev.fit$se[ 2 ], shape = x.gev.fit$mle[ 3 ],
-                          se.sha = x.gev.fit$se[ 3 ], nllh = x.gev.fit$nllh,
-                          AIC = aic( x.gev.fit ), BIC = bic( x.gev.fit ),
-                          stringsAsFactors = FALSE )
-
-    bb.count <- 1
-    for ( bb in seq( size.low, size.high, , 20 ) ){
-        ## sometimes it just does not work
-        bb.gev.fit <- gev.fit( block( x, block.length = bb ), show = FALSE )
-        gev.sum[ bb.count, ] <- c( bb,  bb.gev.fit$mle[ 1 ], bb.gev.fit$se[ 1 ],
-                                  bb.gev.fit$mle[ 2 ], bb.gev.fit$se[ 2 ],
-                                  bb.gev.fit$mle[ 3 ], bb.gev.fit$se[ 3 ],
-                                  bb.gev.fit$nllh, aic( bb.gev.fit ),
-                                  bic( bb.gev.fit ) )
-        bb.count <- bb.count + 1
-    }
-
-    if ( is.null( main ) )
-        main <- "Summary statistics versus block length"
-    if ( plot ) {
-        p1 <- ggplot( data = gev.sum, aes( x = block ) ) +
-            geom_line( aes( y = AIC ), colour = "darkorange2" ) +
-            geom_point( aes( y = AIC, colour = "darkorange2" ) ) +
-            geom_line( aes( y = BIC ), colour = "navy" ) +
-            geom_point( aes( y = BIC, colour = "navy" ) ) +
-            scale_colour_manual( values = c( "darkorange2", "navy" ),
-                                labels = c( "AIC", "BIC" ) ) +
-            theme_bw() + theme( panel.grid.major = element_line(  colour = "grey75" ),
-                               panel.grid.minor = element_line( colour = "grey80" ),
-                               legend.title = element_blank() ) +
-            ylab( "Statistics of the fits to data of different block length" ) +
-            xlab( "block length" ) +
-            ggtitle( "Return levels versus block length" )
-        p2 <- ggplot( data = gev.sum, aes( x = block ) ) +
-            geom_line( aes( y = loc ), colour = "firebrick1" ) +
-            geom_errorbar( aes( y = loc,
-                               ymin = loc - se.loc/2,
-                               ymax = loc + se.loc/2,
-                               colour = "firebrick4" ) ) +
-            geom_line( aes( y = scale ), colour = "orange1" ) +
-            geom_errorbar( aes( y = scale,
-                               ymin = scale - se.sca/2,
-                               ymax = scale + se.sca/2,
-                               colour = "orange4" ) ) +
-            geom_line( aes( y = shape ), colour = "royalblue1" ) +
-            geom_errorbar( aes( y = shape,
-                               ymin = shape - se.sha/2,
-                               ymax = shape + se.sha/2,
-                               colour = "royalblue4" ) ) +
-            scale_colour_manual( values = c( "firebrick4", "orange4", "royalblue4" ),
-                                labels = c( "loc", "scale", "shape" ) ) +
-            xlab( "block length" ) + ylab( "" ) +
-            theme_bw() + theme( panel.grid.major = element_line(  colour = "grey75" ),
-                               panel.grid.minor = element_line( colour = "grey80" ),
-                               legend.title = element_blank() ) +
-            ggtitle( main )
-        multiplot( plotlist = list( p1, p2 ), cols = 1 )
-    }
-    return( gev.sum )
-}
-
 ##' @title Decluster point over threshold data used for GP fitting.
 ##'
 ##' @details Inspired by the decluster algorithm used in the extRemes package
@@ -205,9 +99,9 @@ decluster <- function( x, threshold ){
 
 ##' @title Calculation of the return levels.
 ##'
-##' @details Uses the extRemes::rlevd function at its core but also can handle multiple versions of the parameter input (as numeric, or direct outputs of various fitting procedures), is capable of calculating numerous return levels at once and also calculates the errors of the return levels. For the errors the ML fit is using the option hessian=TRUE (if not done already) or uses a Monte Carlo based approach. If no fitting object is provided, no errors will be calculated. The calculation of the error only works for objects fitted by gev.fit and not for ones fitted by foreign packages. Since it is also able of calculating the return levels for the output of the *extRemes::fevd()* function I decided to mask the original function from this package.
+##' @details Uses the extRemes::rlevd function at its core but also can handle multiple versions of the parameter input (as numeric, or direct outputs of various fitting procedures), is capable of calculating numerous return levels at once and also calculates the errors of the return levels. For the errors the ML fit is using the option hessian=TRUE (if not done already) or uses a Monte Carlo based approach. If no fitting object is provided, no errors will be calculated. The calculation of the error only works for objects fitted by fit.gev and not for ones fitted by foreign packages. Since it is also able of calculating the return levels for the output of the *extRemes::fevd()* function I decided to mask the original function from this package.
 ##'
-##' @param x Parameter input. Class numeric, climex.gev.fit, gev.fit (ismev) or fevd (extRemes)
+##' @param x Parameter input. Class numeric, climex.fit.gev, fit.gev (ismev) or fevd (extRemes)
 ##' @param return.period Numeric vector of the return periods the return levels should be calculated at. Default = 100.
 ##' @param error.estimation Method of calculating the standard errors of the return levels. Using option "MLE" it is calculated using the Delta method and the MLE of the GEV parameters. Alternative one can use Monte Carlo simulations with "MC" for which monte.carlo.sample.size samples of the same size as x will be drawn from a GEV distribution constituted by the obtained MLE of the GEV parameters of x. The standard error is then calculated via the square of the variance of the calculated return levels. Sometimes the inversion of the hessian fails (since the are some NaN in the hessian) (which is also the reason why the ismev package occasionally does not work). Option "none" just skips the calculation of the error and return just a numeric value of the estimate. To avoid broken dependencies  with existing code this option will be default. Default = "none".
 ##' @param monte.carlo.sample.size Number of samples used to obtain the Monte Carlo estimate of the standard error of the fitting. Default = 1000
@@ -215,21 +109,24 @@ decluster <- function( x, threshold ){
 ##' @return If error.estimation == "none" a numerical vector containing the estimates of the return levels will be returned. Else a list containing the estimates and their standard errors will be returned.
 ##' @export
 ##' @examples
-##' fit.results <- gev.fit( block( anomalies( temp.potsdam ) ) )
-##' rlevd( fit.results, return.period = c( 10, 50, 100 ), error.estimation = "MLE" )
-rlevd <- function( x, return.period = 100, error.estimation = c( "none", "MC", "MLE" ),
+##' fit.results <- fit.gev( block( anomalies( temp.potsdam ) ) )
+##' return.level( fit.results, return.period = c( 10, 50, 100 ), error.estimation = "MLE" )
+return.level <- function( x, return.period = 100, error.estimation = c( "none", "MC", "MLE" ),
                   monte.carlo.sample.size = 1000 ){
-    if ( any( class( x ) == "climex.gev.fit" ) ){
+    if ( any( class( x ) == "climex.fit.gev" ) ){
         return.levels <- Reduce( c, lapply( return.period, function( y )
             as.numeric( extRemes::rlevd( y, x$par[ 1 ], x$par[ 2 ], x$par[ 3 ] ) ) ) )
     } else if ( class( x ) == "gev.fit" || class( x ) == "gum.fit" ){
+        ## GEV fit performed by the ismev package
         return.levels <- Reduce( c, lapply( return.period, function( y )
             as.numeric( extRemes::rlevd( y, x$mle[ 1 ], x$mle[ 2 ], x$mle[ 3 ] ) ) ) )
     } else if ( class( x ) == "gpd.fit" ){
+        ## GPD fit performed by the ismev package
         return.levels <- Reduce( c, lapply( return.period, function( y )
             as.numeric( extRemes::rlevd( y, scale = x$mle[ 1 ], shape = x$mle[ 2 ],
                                        threshold = x$threshold, type = "GP" ) ) ) )
     } else if ( class( x ) == "fevd" ){
+        ## GEV/GPD fit performed by the extRemes package
         return.levels <- Reduce( c, lapply( return.period, function( y )
             as.numeric( extRemes::rlevd( y, x$results$par[ 1 ], x$results$par[ 2 ],
                                     x$results$par[ 3 ] ) ) ) )
@@ -237,7 +134,7 @@ rlevd <- function( x, return.period = 100, error.estimation = c( "none", "MC", "
         return.levels <- Reduce( c, lapply( return.period, function( y )
             as.numeric( extRemes::rlevd( y, x[ 1 ], x[ 2 ], x[ 3 ] ) ) ) )
     } else
-        stop( "as.numeric( rlevd is not implemented for this class of input values!" )
+        stop( "as.numeric( return.level is not implemented for this class of input values!" )
 
     if ( error.estimation == "none" || class( x ) == "numeric" ){
         return( return.levels )
@@ -276,7 +173,7 @@ rlevd <- function( x, return.period = 100, error.estimation = c( "none", "MC", "
         errors <- data.frame( a = 0 )
         for ( rr in 1 : length( return.period ) )
             errors <- cbind( errors, sqrt( stats::var( Reduce( c, lapply( samples.fit, function( z )
-                rlevd( z, return.period = return.period[ rr ] ) ) ) ) ) )
+                return.level( z, return.period = return.period[ rr ] ) ) ) ) ) )
         errors <- errors[ , -1 ]
         names( errors ) <- paste0( return.period, ".rlevel" )
     }
