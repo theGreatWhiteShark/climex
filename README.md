@@ -1,6 +1,6 @@
 ![leaflet map to handle a lot of station data](res/climex_map.png)
-![control all the different steps involved in the extreme value analysis](climex_time-series.png)
-![verify the results using an animation of the fitting procedure](climex_animation.png)
+![control all the different steps involved in the extreme value analysis](res/climex_time-series.png)
+![verify the results using an animation of the fitting procedure](res/climex_animation.png)
 
 # Features
 
