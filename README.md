@@ -10,19 +10,19 @@
   weather service (DWD) to get you started with your climate analysis.
   
 ![general-icon](res/glyphicons-42-charts.png)
-- You have full control all the steps involved GEV fitting via an intuitive
-  graphical interface in a persistent way (changes will be applied in the
+- You have full control of all the steps involved in GEV fitting via an intuitive
+  GUI in a persistent way (changes will be applied to the
   analysis of all following time series).
 - The fitting is done using a maximum likelihood procedure especially
   tuned to produce the best possible results.
   
 ![likelihood-icon](res/glyphicons-199-ok-circle.png)
-- You can verify if the fitting procedure worked or got stuck in a
+- You can verify whether the fitting procedure worked or got stucked in a
   local minimum via an animation.
   
 # Installation
 
-Install the app within R using the *devtools* package via Github.
+To install the app from within R you can use the [devtools](https://cran.r-project.org/web/packages/devtools/index.html) package.
 
 ```
 devtools::install_github( "theGreatWhiteShark/climex" )
