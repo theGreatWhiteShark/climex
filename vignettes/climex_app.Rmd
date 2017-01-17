@@ -78,13 +78,13 @@ statistics and the return level of all displayed stations.
 
 # ![general-icon](../res/glyphicons-42-charts.png) General tab
 
-![general-screenshot](../res/time-series.png)
+![general-screenshot](../res/climex_time-series.png)
 
 This tab provides both an interface to change the preprocessing and
 fitting options used throughout the whole application as well as a
 variety of tools to analyze individual time series.
 
-## The **Time series** box
+### The **Time series** box
 
 In the *Pure* tab of this box you can view the raw and unprocessed
 time series. The *Deseasonalized* tab uses the former series and
@@ -103,7 +103,7 @@ one) you can toggle all the points by clicking on them or brush them
 using your mouse. When deactivated they do not contribute to the GEV
 fitting anymore.
 
-## The **GEV fit** box
+### The **GEV fit** box
 
 This box contain four different plots: 
 
@@ -113,19 +113,19 @@ This box contain four different plots:
 - Three goodness-of-fit plots highlighting the quality of the
   individual fit. From top to bottom: p-p plot, q-q plot, return level plot.
 
-## The **Options** box
+### The **Options** box
 
 Via the settings in this box all the preprocessing of the time series
 and the fitting of the extreme events are controlled throughout the
 app.
 
-### Blocks vs. Threshold
+#### Blocks vs. Threshold
 
 This radio button controls rather to fit the generalized extreme value
 (GEV) distributions (*Blocks*) or to fit the generalized Pareto (GP)
 distribution function.
 
-### Box length in days | Threshold
+#### Box length in days | Threshold
 
 The actual meaning of this slider is determined by the previous
 *Blocks vs. Threshold* radio button. If set to *Blocks* it will be
@@ -148,12 +148,12 @@ Worth mentioning there is also the "Removing incomplete years* or
 the choice between *Blocks vs. Threshold*) which become very handy
 when dealing with real world data.
 
-### Type of extreme
+#### Type of extreme
 
 If set to *Min* the most lowest values of each block or all events
 below a certain threshold will be considered extreme events. 
 
-### Deseasonalization method
+#### Deseasonalization method
 
 Using this selector you can choose if and how to get rid off the
 short-range correlations in your time series introduced by the annual
@@ -161,14 +161,14 @@ cycle. Per default the anomalies will be calculated but you can also
 pick another R based implementation. For the description of these
 methods please refer to their individual documentation.
 
-### Fitting routine
+#### Fitting routine
 
 It is recommended not to touch this selector unless you really know
 what you are doing. After some careful analysis the author showed the
 *Nelder-Mead* algorithm to be the best method to fit the GEV
 parameters.
 
-## The **Results** box
+### The **Results** box
 
 This table displays several details of the GEV fitting procedure
 
@@ -205,14 +205,14 @@ visually verify if the optimization got stuck at a different point
 compared to the other routes or if all of them lead to the same
 result.
 
-## Staring points of the optimization routine
+### Staring points of the optimization routine
 
 As the name suggests this table holds the five initial positions the
 optimization is started from in the animation. The first one will be
 painted black and the IDs correspond to the ones color-coded in the
 animation.
 
-## Options
+### Options
 
 In the table on top of the **Options** box you see the initial
 parameters suggested by an heuristic used in the optimization
@@ -248,4 +248,4 @@ weather service downloaded in the other vignette of this package you
 have to copy its download directory to */srv/shiny-server/assets/downloads_dwd*.
 
 ---
-Icons: ©[Glyphicon](http://glyphicons.com/) [CC-By-SA](https://creativecommons.org/licenses/by-sa/3.0/)
+Icons: © [Glyphicon](http://glyphicons.com/) [CC-By-SA](https://creativecommons.org/licenses/by-sa/3.0/)
