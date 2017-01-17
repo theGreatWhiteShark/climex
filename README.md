@@ -9,14 +9,14 @@
 - The package contains a script for downloading all station data of the German
   weather service (DWD) to get you started with your climate analysis.
   
-![general-icon](res/glyphicons-41-stats.png)
+![general-icon](res/glyphicons-42-charts.png)
 - You have full control all the steps involved GEV fitting via an intuitive
   graphical interface in a persistent way (changes will be applied in the
   analysis of all following time series).
 - The fitting is done using a maximum likelihood procedure especially
   tuned to produce the best possible results.
   
-![likelihood-icon](glyphicons-199-ok-circle.png)
+![likelihood-icon](res/glyphicons-199-ok-circle.png)
 - You can verify if the fitting procedure worked or got stuck in a
   local minimum via an animation.
   
