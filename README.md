@@ -22,7 +22,7 @@
   
 # Installation
 
-Install the app using the *devtools* package via Github.
+Install the app within R using the *devtools* package via Github.
 
 ```
 devtools::install_github( "theGreatWhiteShark/climex" )
