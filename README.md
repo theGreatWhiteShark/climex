@@ -4,13 +4,15 @@
 
 # Features
 
-- Performing the extreme value analysis for a large number of
-  different stations
-- Control all the steps involved GEV fitting with an intuitive
-  interface in a persistent way (changes will be applied in the
-  analysis of all following time series)
+- You can perform the extreme value analysis for a large number of
+  different stations.
+- You have full control all the steps involved GEV fitting via an intuitive
+  graphical interface in a persistent way (changes will be applied in the
+  analysis of all following time series).
 - The fitting is done using a maximum likelihood procedure especially
-  tuned to produce the best possible results
+  tuned to produce the best possible results.
+- You can verify if the fitting procedure worked or got stuck in a
+  local minimum via an animation.
 - Contains a script for downloading all station data of the German
   weather service (DWD) to get you started with your climate analysis
   
