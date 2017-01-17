@@ -28,8 +28,8 @@ Install the app within R using the *devtools* package via Github.
 devtools::install_github( "theGreatWhiteShark/climex" )
 ```
 
-To get started with the shiny-based web application and the underlying
-R functions please refer to the package's vignettes.
+To get started with the shiny-based [web application](vignettes/climex_app.Rmd) and the [underlying
+R functions](vignettes/data_dwd_and_usage.Rmd) please refer to the package's vignettes.
 
 ---
 
