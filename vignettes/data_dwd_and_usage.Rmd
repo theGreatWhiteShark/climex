@@ -24,7 +24,7 @@ The usage of the shiny based climex web app will be covered in [another](./clime
 # Downloading and formatting of the station data of the DWD
 Since this package is intended to be used with climate data it comes along with a function to download and format all station data provided by the [German weather service (DWD)](http://www.dwd.de/DE/Home/home_node.html). I chose the daily measured time series since a higher temporal resolution would not make much sense in the context of extreme value analysis.
 
-Before using the data please read the [terms of use](ftp://ftp-cdc.dwd.de/pub/CDC/Terms_of_use.pdf) of the DWD carefully.
+Before using the data please read the terms of use of the DWD at *ftp://ftp-cdc.dwd.de/pub/CDC/Terms_of_use.pdf* carefully.
 
 The package as well as its shiny app can be used without downloading the data of the DWD. So if you already have your own data base feel free to skip to the next chapter.
 
