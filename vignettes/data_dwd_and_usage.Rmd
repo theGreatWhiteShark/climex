@@ -110,7 +110,7 @@ ttplot( temp.potsdam.complete )
 
 ```
 
-![potsdam-plot-complete](../res/vignette-plotsdam-plot-complete.png)
+![potsdam-plot-complete](../res/vignette-potsdam-plot-complete.png)
 
 #### Discard short time series
 
@@ -137,7 +137,7 @@ temp.potsdam.anomalies <- anomalies( temp.potsdam.complete )
 ttplot( temp.potsdam.anomalies )
 
 ```
-![potsdam-plot-anomalies](../res/vignette-plotsdam-plot-anomalies.png)
+![potsdam-plot-anomalies](../res/vignette-potsdam-plot-anomalies.png)
 
 
 Though you have way more data contributing to the analysis (you can
@@ -160,7 +160,7 @@ ttplot( temp.potsdam.blocked )
 
 ```
 
-![potsdam-plot-blocked](../res/vignette-plotsdam-plot-blocked.png)
+![potsdam-plot-blocked](../res/vignette-potsdam-plot-blocked.png)
 
 
 ## Fitting the GEV distribution
@@ -183,6 +183,6 @@ multiplot( plotlist = list( ttplot( temp.potsdam.blocked ),
 
 ```
 
-![potsdam-plot-fit](../res/vignette-plotsdam-plot-fit.png)
+![potsdam-plot-fit](../res/vignette-potsdam-plot-fit.png)
 
 
