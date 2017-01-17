@@ -1,23 +1,28 @@
 ---
-title: "Downloading station data from the DWD and basic usage"
+title: "Basic usage of the climex package"
 author: "Philipp Müller"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Downloading station data from the DWD and basic usage}
+  %\VignetteIndexEntry{Basic usage of the climex package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 # About
-This vignette gives an introduction into two of the main purposes of the **climex** package:
+This vignette provides an introduction into the basic usage of the **climex** package:
 
-1. Downloading and formatting of all the station data provided by the German weather service (DWD)
-2. Preprocessing of the time series and fitting of the generalized extreme value (GEV) distributions
+1. The download and formatting of all the station data provided by the
+   German weather service (DWD) will be described (optional, but handy if
+   you haven't build up your data base yet).
+2. The preprocessing of time series and fitting of the generalized
+   extreme value (GEV) distribution is explained.
+3. A comparison between this package and all the other R packages
+   dealing with GEV fitting is provided.
 
-The usage of the shiny based climex web app will be covered in another vignette.
+The usage of the shiny based climex web app will be covered in [another](./climex_app.Rmd) vignette.
 
 # Downloading and formatting of the station data of the DWD
-Since this package is intended to be used on climate data it comes along with a function to download and format all station data provided by the [German weather service (DWD)](http://www.dwd.de/DE/Home/home_node.html). I chose the daily measured time series since a higher temporal resolution would not make much sense in the context of extreme value analysis.
+Since this package is intended to be used with climate data it comes along with a function to download and format all station data provided by the [German weather service (DWD)](http://www.dwd.de/DE/Home/home_node.html). I chose the daily measured time series since a higher temporal resolution would not make much sense in the context of extreme value analysis.
 
 Before using the data please read the [terms of use](ftp://ftp-cdc.dwd.de/pub/CDC/Terms_of_use.pdf) of the DWD carefully.
 
