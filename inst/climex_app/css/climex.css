@@ -173,6 +173,9 @@ tfoot {
 #tableHeuristicEstimates .even, #tableHeuristicEstimates .odd {
     background-color: #FF8C00 !important;
 }
+table.table-bordered.dataTable {
+    border-collapse: collapse !important;
+}
 #inputInitialLocation, #inputInitialScale, #inputInitialShape {
     /* children container for the individual numerical input */
     margin-left: 3%;
@@ -200,6 +203,9 @@ tfoot {
 }
 #inputInitialShape{
     margin-left: 3% !important;
+}
+#boxHeuristic > .box > .box-body > .form-group > .checkbox > label > span {
+    text-weight: bold !important;
 }
 #tableInitialDescription {
     /* paragraph with the description of the numerical input */
