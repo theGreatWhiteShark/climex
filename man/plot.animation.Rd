@@ -6,10 +6,10 @@
 \usage{
 \method{plot}{animation}(time.series, starting.points, location.lim = NULL,
   scale.lim = NULL, shape.lim = NULL, optimization.method = "nmk",
-  optimization.steps = c(0.1, 0.5), height = 300, width = 300,
-  colors = list(plane.low = "#eaeafa", plane.high = "#191970", plane.contour =
-  "white", path.low = "yellow", path.high = "darkred", path.true = "black"),
-  image.folder = "images")
+  optimization.steps = c(0.1, 0.5), optimization.rerun = TRUE,
+  height = 300, width = 300, colors = list(plane.low = "#eaeafa",
+  plane.high = "#191970", plane.contour = "white", path.low = "yellow",
+  path.high = "darkred", path.true = "black"), image.folder = "images")
 }
 \arguments{
 \item{time.series}{Vector of block maxima.}
@@ -31,6 +31,9 @@ to modify since they link a lot of different libraries and I do not want to
 make an R fork just to get the animation going. Default = 'nmk'.}
 
 \item{optimization.steps}{Vector containing two numbers from 0 to 1 specifying the start and the end point of the optimization. Since the number of steps is unknown beforehand it will be chosen relativley to the total number of steps. Default = c( 0, 1 ).}
+
+\item{optimization.rerun}{Flag deciding if to rerun the optimization at the
+parameters determined by the first run. Default = TRUE.}
 
 \item{height}{of both the images and the form with the playback options in pixel.}
 

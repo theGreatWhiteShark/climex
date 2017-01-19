@@ -5,8 +5,9 @@
 \title{Help function filling the JavaScript template which produces the likelihood animation.}
 \usage{
 animation.wrapper(time.series, starting.points, location.lim, scale.lim,
-  shape.lim, optimization.method = "nmk", optimization.steps, width, height,
-  delay = 300, loopMode = "loop", image.folder, working.folder)
+  shape.lim, optimization.method = "nmk", optimization.steps,
+  optimization.rerun = TRUE, width, height, delay = 300,
+  loopMode = "loop", image.folder, working.folder)
 }
 \arguments{
 \item{time.series}{Blocked data for which the GEV fit is performed}
@@ -28,6 +29,9 @@ to modify since they link a lot of different libraries and I do not want to
 make an R fork just to get the animation going. Default = 'nmk'.}
 
 \item{optimization.steps}{Since the first updates contain a lot of jumps and the last ones almost no deviations in the GEV parameters the range of the trajectories can be limited.}
+
+\item{optimization.rerun}{Flag deciding if to rerun the optimization at the
+parameters determined by the first run. Default = TRUE.}
 
 \item{width}{of both the images and the form with the playback options in pixel.}
 
