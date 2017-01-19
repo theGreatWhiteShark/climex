@@ -1193,18 +1193,19 @@ climex.server <- function( input, output, session ){
         }
         ## the first entry of the table should always be the actual point the optimization
         ## is starting from
-        table.init <- data.frame( location = c( x.initial[ 1 ],
-                                               round( stats::runif( ( input$sliderNumberInitialPoints - 1 ),
-                                                            input$sliderLocationLim[ 1 ],
-                                                            input$sliderLocationLim[ 2 ] ), 4 ) ),
-                                 scale = c( x.initial[ 2 ],
-                                           round( stats::runif( ( input$sliderNumberInitialPoints - 1 ),
-                                                        input$sliderScaleLim[ 1 ],
-                                                        input$sliderScaleLim[ 2 ] ), 4 ) ),
-                                 shape = c( x.initial[ 3 ],
-                                           round( stats::runif( ( input$sliderNumberInitialPoints - 1 ),
-                                                        input$sliderShapeLim[ 1 ],
-                                                        input$sliderShapeLim[ 2 ] ), 4 ) ) )
+        table.init <- data.frame(
+            location = c( x.initial[ 1 ],
+                         round( stats::runif( ( input$sliderNumberInitialPoints - 1 ),
+                                             input$sliderLocationLim[ 1 ],
+                                             input$sliderLocationLim[ 2 ] ), 4 ) ),
+            scale = c( x.initial[ 2 ],
+                      round( stats::runif( ( input$sliderNumberInitialPoints - 1 ),
+                                          input$sliderScaleLim[ 1 ],
+                                          input$sliderScaleLim[ 2 ] ), 4 ) ),
+            shape = c( x.initial[ 3 ],
+                      round( stats::runif( ( input$sliderNumberInitialPoints - 1 ),
+                                          input$sliderShapeLim[ 1 ],
+                                          input$sliderShapeLim[ 2 ] ), 4 ) ) )
         ## but we only want to have starting points which do not result in a NA
         while ( any( is.nan( apply( table.init, 1, likelihood, x.in = x.block ) ) ) ){
             for ( ii in 1 : nrow( table.init ) ){
@@ -1253,14 +1254,14 @@ climex.server <- function( input, output, session ){
         ttplot( x.block ) } )
     output$loadingImage <- renderUI({
         if ( session$clientData$url_hostname != "localhost" &&
-                                                               session$clientData$url_hostname != "127.0.0.1" ){
+             session$clientData$url_hostname != "127.0.0.1" ){
             folder <- "/assets/"
         } else
             folder <- ""
         return( img( src = paste0( folder, "loading.gif" ), id = "loadingGif" ) ) } )
     output$loadingScript <- renderUI({
         if ( session$clientData$url_hostname != "localhost" &&
-                                                               session$clientData$url_hostname != "127.0.0.1" ){
+             session$clientData$url_hostname != "127.0.0.1" ){
             folder <- "/assets/"
         } else
             folder <- ""
@@ -1281,9 +1282,9 @@ climex.server <- function( input, output, session ){
         isolate( initial.parameters <- initial.parameters.likelihood() )
         isolate( {
             if ( input$selectOptimization == "dfoptim::nmk" ){
-                optimization.function <- dfoptim::nmk
+                optimization.method <- "nmk"
             } else 
-                optimization.function <- dfoptim::nmk
+                optimization.method <- input$selectOptimization
             ## I use the plot "plotPlaceholder" to determine the width of the current box and adjust
             ## the pixel width of the png pictures
             session.width <- session$clientData$output_plotPlaceholder_width
@@ -1299,7 +1300,7 @@ climex.server <- function( input, output, session ){
             ## to prevent the script from occupying to much space. Due to a setwd in
             ## the climex() wrapper we are already in this folder
             if ( session$clientData$url_hostname == "localhost" ||
-                                                                   session$clientData$url_hostname == "127.0.0.1"  ){
+                 session$clientData$url_hostname == "127.0.0.1"  ){
                 working.folder <- paste0( CLIMEX.PATH, "app/www" )
                 ## in case of the local session the variable image.folder was already set in the
                 ## wrapper climex::climex()
@@ -1318,7 +1319,7 @@ climex.server <- function( input, output, session ){
                 location.lim = isolate( input$sliderLocationLim ),
                 scale.lim = isolate( input$sliderScaleLim ),
                 shape.lim = isolate( input$sliderShapeLim ),
-                optimization.function = optimization.function,
+                optimization.method = optimization.method,
                 optimization.steps = isolate( input$sliderOptimizationSteps ),
                 width = session.plot.width, height = 300, delay = 300,
                 loopMode = "loop",
@@ -1326,7 +1327,7 @@ climex.server <- function( input, output, session ){
             ## if the code is not running on localhost the shiny server won't find
             ## the animation.js script using its absolute path
             if ( session$clientData$url_hostname != "localhost" &&
-                                                                   session$clientData$url_hostname != "127.0.0.1" ){
+                 session$clientData$url_hostname != "127.0.0.1" ){
                 working.folder <- sub( "/srv/shiny-server", "", working.folder )
                 animation.script <- "/assets/"
             } else {

@@ -5,11 +5,11 @@
 \title{Displays the contour plots of the GEV likelihood function of a time series and the optimization routes for a bunch of provided initial points.}
 \usage{
 \method{plot}{animation}(time.series, starting.points, location.lim = NULL,
-  scale.lim = NULL, shape.lim = NULL,
-  optimization.function = dfoptim::nmk, optimization.steps = c(0.1, 0.5),
-  height = 300, width = 300, colors = list(plane.low = "#eaeafa",
-  plane.high = "#191970", plane.contour = "white", path.low = "yellow",
-  path.high = "darkred", path.true = "black"), image.folder = "images")
+  scale.lim = NULL, shape.lim = NULL, optimization.method = "nmk",
+  optimization.steps = c(0.1, 0.5), height = 300, width = 300,
+  colors = list(plane.low = "#eaeafa", plane.high = "#191970", plane.contour =
+  "white", path.low = "yellow", path.high = "darkred", path.true = "black"),
+  image.folder = "images")
 }
 \arguments{
 \item{time.series}{Vector of block maxima.}
@@ -22,7 +22,13 @@
 
 \item{shape.lim}{Region of the shape parameter for which the likelihood function is going to be evaluated and plotted as a density plot and a contour plot.}
 
-\item{optimization.function}{Function use for preforming the GEV fit. This must be a function providing the list element "x.update" containing the parameters evaluated at each step of the optimization procedure and a list element "par" containing a vector of the GEV parameter estimates. For now only the function dfoptim::nmk is available (the one from my forked version install_github( "theGreatWhiteShark/dfoptim" ). Default = nmk.}
+\item{optimization.method}{For fitting the time.series using the provided
+starting.points the fit.gev() function of this package will be used. This
+parameter determines the 'method' argument. Caution: only for the 'nmk'
+method all the updates and therefore an animation can be displayed. The
+other methods from the stats::optim() function are not that straight forward
+to modify since they link a lot of different libraries and I do not want to
+make an R fork just to get the animation going. Default = 'nmk'.}
 
 \item{optimization.steps}{Vector containing two numbers from 0 to 1 specifying the start and the end point of the optimization. Since the number of steps is unknown beforehand it will be chosen relativley to the total number of steps. Default = c( 0, 1 ).}
 
@@ -38,7 +44,7 @@
 Opens a HTML widget showing the animation of the optimization routine.
 }
 \details{
-Three orthogonal 2D plots are done for the negative log-likelihood of the GEV function intersecting in the actual result of the default optimization. Caution: the trajectories will move out of the planes and so the precise position of the trajectory might be misleading. But the overall goal is to check for local minima. A bunch of images will be generated in the provided folder. Since the likelihood values cover quite some orders of magnitude they will be cut 1E3 above the minimal value. Also mind the differing height value: for a plot containing the legend (in this version of the script it is just the last one) the height value is increased to also cover the additional legend.
+Three orthogonal 2D plots are done for the negative log-likelihood of the GEV function intersecting in the actual result of the default optimization. Caution: An optimization only be displayed for optimization.method == 'nmk' and the trajectories will move out of the planes and so the precise position of the trajectory might be misleading. But the overall goal is to check for local minima. A bunch of images will be generated in the provided folder. Since the likelihood values cover quite some orders of magnitude they will be cut 1E3 above the minimal value. Also mind the differing height value: for a plot containing the legend (in this version of the script it is just the last one) the height value is increased to also cover the additional legend.
 }
 \author{
 Philipp Mueller

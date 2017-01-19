@@ -27,14 +27,20 @@ color.table <- function( x.html.table, css.colours, style = "table-condensed tab
 
 ##' @title Displays the contour plots of the GEV likelihood function of a time series and the optimization routes for a bunch of provided initial points.
 ##'
-##' @details Three orthogonal 2D plots are done for the negative log-likelihood of the GEV function intersecting in the actual result of the default optimization. Caution: the trajectories will move out of the planes and so the precise position of the trajectory might be misleading. But the overall goal is to check for local minima. A bunch of images will be generated in the provided folder. Since the likelihood values cover quite some orders of magnitude they will be cut 1E3 above the minimal value. Also mind the differing height value: for a plot containing the legend (in this version of the script it is just the last one) the height value is increased to also cover the additional legend.
+##' @details Three orthogonal 2D plots are done for the negative log-likelihood of the GEV function intersecting in the actual result of the default optimization. Caution: An optimization only be displayed for optimization.method == 'nmk' and the trajectories will move out of the planes and so the precise position of the trajectory might be misleading. But the overall goal is to check for local minima. A bunch of images will be generated in the provided folder. Since the likelihood values cover quite some orders of magnitude they will be cut 1E3 above the minimal value. Also mind the differing height value: for a plot containing the legend (in this version of the script it is just the last one) the height value is increased to also cover the additional legend.
 ##'
 ##' @param time.series Vector of block maxima.
 ##' @param starting.points Data.frame of the starting points where each one is contained in the single row and the columns are spanned by location, scale and shape.
 ##' @param location.lim Region of the location parameter for which the likelihood function is going to be evaluated and plotted as a density plot and a contour plot.
 ##' @param scale.lim Region of the scale parameter for which the likelihood function is going to be evaluated and plotted as a density plot and a contour plot.
 ##' @param shape.lim Region of the shape parameter for which the likelihood function is going to be evaluated and plotted as a density plot and a contour plot.
-##' @param optimization.function Function use for preforming the GEV fit. This must be a function providing the list element "x.update" containing the parameters evaluated at each step of the optimization procedure and a list element "par" containing a vector of the GEV parameter estimates. For now only the function dfoptim::nmk is available (the one from my forked version install_github( "theGreatWhiteShark/dfoptim" ). Default = nmk.
+##' @param optimization.method For fitting the time.series using the provided
+##' starting.points the fit.gev() function of this package will be used. This
+##' parameter determines the 'method' argument. Caution: only for the 'nmk'
+##' method all the updates and therefore an animation can be displayed. The
+##' other methods from the stats::optim() function are not that straight forward
+##' to modify since they link a lot of different libraries and I do not want to
+##' make an R fork just to get the animation going. Default = 'nmk'.
 ##' @param optimization.steps Vector containing two numbers from 0 to 1 specifying the start and the end point of the optimization. Since the number of steps is unknown beforehand it will be chosen relativley to the total number of steps. Default = c( 0, 1 ).
 ##' @param width of both the images and the form with the playback options in pixel.
 ##' @param height of both the images and the form with the playback options in pixel.
@@ -50,7 +56,7 @@ color.table <- function( x.html.table, css.colours, style = "table-condensed tab
 ##' @return Opens a HTML widget showing the animation of the optimization routine.
 ##' @author Philipp Mueller 
 plot.animation <- function( time.series, starting.points, location.lim = NULL, scale.lim = NULL,
-                           shape.lim = NULL, optimization.function = dfoptim::nmk,
+                           shape.lim = NULL, optimization.method = 'nmk',
                            optimization.steps = c( .1, .5 ), height = 300, width = 300,
                            colors = list( plane.low = "#eaeafa", plane.high = "#191970",
                                          plane.contour = "white", path.low = "yellow",
@@ -64,23 +70,6 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
     time.series.par <- fit.gev( x = time.series )$par
     ## Initial parameters of the fitting routine
     time.series.initials <- likelihood.initials( time.series )
-    ## Calculation of the likelihood surface/space
-    ## This is now replaced by the likelihood_GEV.cpp file in /src. inline was just not fast enough
-    ## C++ function calculating the likelihood for every parameter combination
-    ## calcNllh <- inline::cxxfunction( signature( parameters = "numeric", xin = "numeric" ),
-    ##                                     plugin = "RcppArmadillo", body = '
-    ## Rcpp::DataFrame parametersDataframe( parameters );
-    ## Rcpp::NumericVector xVector( xin );
-    ## Rcpp::NumericVector loc = parametersDataframe[ "location" ];
-    ## Rcpp::NumericVector sc = parametersDataframe[ "scale" ];
-    ## Rcpp::NumericVector sh = parametersDataframe[ "shape" ];
-    ## Rcpp::NumericVector L(loc.size());
-    ## Rcpp::NumericVector y( xVector.size() );
-    ## for ( int ii = 0; ii < sc.size(); ii++ ){
-    ##     y = 1 + ( ( xVector - loc[ii])/sc[ii] )*sh[ii];    
-    ##     L[ii] =  log( sc[ii] )* xVector.size() + sum( pow( y, -1/sh[ii] ) ) + sum( log( y ) )*(1/sh[ii] + 1 ) ;
-    ## }                                          
-    ## return Rcpp::wrap( L ); ')
     ## the likelihood will be calculated along three planes spanning the 3D likelihood space
     ## and all intersecting each other in the resulting point of the original fit (time.series.par)
     number.of.points <- 100
@@ -122,7 +111,9 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
     ## Every element of this list contains one trajetory of the optimization.
     suppressWarnings(
         trajectories <- apply( starting.points, 1, function( par ){
-            optimization.function( par = as.numeric( par ), x = time.series )$x.updates } ) )
+            climex::fit.gev( x = time.series, initial = as.numeric( par ),
+                            error.estimation = "none",
+                            method = optimization.method )$updates } ) )
     ## Choose the range in which the optimization is plotted
     step.max <- max( Reduce( rbind, trajectories )$step )
     step.begin <- round( optimization.steps[ 1 ]* step.max )
@@ -277,7 +268,13 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
 ##' @param location.lim Range of the location parameter in which the likelihood surface will be calculated.
 ##' @param scale.lim Range of the scale parameter in which the likelihood surface will be calculated.
 ##' @param shape.lim Range of the shape parameter in which the likelihood surface will be calculated.
-##' @param optimization.function For now only a internal hack of the dfoptim::nmk function is available. This is not really pleasant since it is not the original function of the optimization. I should expand this soon.
+##' @param optimization.method For fitting the time.series using the provided
+##' starting.points the fit.gev() function of this package will be used. This
+##' parameter determines the 'method' argument. Caution: only for the 'nmk'
+##' method all the updates and therefore an animation can be displayed. The
+##' other methods from the stats::optim() function are not that straight forward
+##' to modify since they link a lot of different libraries and I do not want to
+##' make an R fork just to get the animation going. Default = 'nmk'.
 ##' @param optimization.steps Since the first updates contain a lot of jumps and the last ones almost no deviations in the GEV parameters the range of the trajectories can be limited.
 ##' @param width of both the images and the form with the playback options in pixel.
 ##' @param height of both the images and the form with the playback options in pixel.
@@ -292,7 +289,7 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
 ##' @seealso \code{\link{plot.animation}}
 ##' @author Philipp Mueller 
 animation.wrapper <- function( time.series, starting.points, location.lim, scale.lim, shape.lim,
-                  optimization.function = dfoptim::nmk, optimization.steps,
+                  optimization.method = "nmk", optimization.steps,
                   width, height, delay = 300, loopMode = "loop", image.folder, working.folder ){
     ## load the JavaScript template file
     template <- readLines( paste0( system.file( "climex_app", package = "climex" ),
@@ -303,7 +300,7 @@ animation.wrapper <- function( time.series, starting.points, location.lim, scale
     ## dir.create( image.folder )
     ## create the images
     climex:::plot.animation( time.series, starting.points, location.lim,
-                            scale.lim, shape.lim, optimization.function,
+                            scale.lim, shape.lim, optimization.method,
                             optimization.steps, height,
                             width = width, image.folder = image.folder )
     ## get the image names including the folder name and write them in the JavaScript template

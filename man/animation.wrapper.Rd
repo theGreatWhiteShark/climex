@@ -5,8 +5,8 @@
 \title{Help function filling the JavaScript template which produces the likelihood animation.}
 \usage{
 animation.wrapper(time.series, starting.points, location.lim, scale.lim,
-  shape.lim, optimization.function = dfoptim::nmk, optimization.steps, width,
-  height, delay = 300, loopMode = "loop", image.folder, working.folder)
+  shape.lim, optimization.method = "nmk", optimization.steps, width, height,
+  delay = 300, loopMode = "loop", image.folder, working.folder)
 }
 \arguments{
 \item{time.series}{Blocked data for which the GEV fit is performed}
@@ -19,7 +19,13 @@ animation.wrapper(time.series, starting.points, location.lim, scale.lim,
 
 \item{shape.lim}{Range of the shape parameter in which the likelihood surface will be calculated.}
 
-\item{optimization.function}{For now only a internal hack of the dfoptim::nmk function is available. This is not really pleasant since it is not the original function of the optimization. I should expand this soon.}
+\item{optimization.method}{For fitting the time.series using the provided
+starting.points the fit.gev() function of this package will be used. This
+parameter determines the 'method' argument. Caution: only for the 'nmk'
+method all the updates and therefore an animation can be displayed. The
+other methods from the stats::optim() function are not that straight forward
+to modify since they link a lot of different libraries and I do not want to
+make an R fork just to get the animation going. Default = 'nmk'.}
 
 \item{optimization.steps}{Since the first updates contain a lot of jumps and the last ones almost no deviations in the GEV parameters the range of the trajectories can be limited.}
 
