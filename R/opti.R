@@ -61,7 +61,7 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
     if ( method %in% c( "Nelder-Mead", "BFGS", "CG" ) ){
         suppressWarnings(
             res.optim <- stats::optim( initial, optim.function, gr = gradient.function, x = x,
-                                      hessian = hessian.calculate, ... ) )
+                                      hessian = hessian.calculate, method = method, ... ) )
     } else if ( method == "SANN" ){
         ## Since this implementation didn't yielded nice results I switch to another package
         aux <- GenSA::GenSA( as.numeric( initial ), optim.function, lower = c( -Inf, 0, -Inf ),
@@ -97,7 +97,7 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
             suppressWarnings(
                 res.optim.rerun <- try( stats::optim( par = res.optim$par, fn = optim.function,
                                                      gr = gradient.function, x = x,
-                                                     hessian = hessian.calculate,
+                                                     hessian = hessian.calculate, method = method,
                                                      ... ), silent = TRUE ) )
         } else if ( method == "nmk" ){
             aux <- dfoptim::nmk( par = res.optim$par, fn = likelihood, x = x, MODIFIED = TRUE,
