@@ -5,8 +5,8 @@
 \title{Performing a fit to the GEV function.}
 \usage{
 fit.gev(x, initial = NULL, rerun = TRUE, optim.function = likelihood,
-  gradient.function = likelihood.gradient, error.estimation = c("MLE", "MC",
-  "none"), method = c("Nelder-Mead", "BFGS", "CG", "SANN", "nmk"),
+  gradient.function = likelihood.gradient, error.estimation = c("none",
+  "MLE", "MC"), method = c("Nelder-Mead", "BFGS", "CG", "SANN", "nmk"),
   monte.carlo.sample.size = 1000, return.period = 100, ...)
 }
 \arguments{
@@ -42,7 +42,7 @@ Output of the optim function with class == c( "list", "climex.fit.gev" )
  \item{ return.level = Estimate of the return levels at the provided return periods }
  \item{ se = Standard error of the GEV parameters and the return levels }
  \item{ x = Original time series }
- \item{ updates = Only present when choosing the method 'nmk'. A data.frame
+ \item{ updates = A data.frame either the first and last step ( !'nmk' )
         containing all the optimization steps visited during the call. }
 }
 }
