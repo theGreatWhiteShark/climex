@@ -925,10 +925,8 @@ climex.server <- function( input, output, session ){
                                  method = "BFGS", error.estimation = "none" ),
                 "SANN" = fit.gev( x.kept, initial = x.initial,
                                  method = "SANN", error.estimation = "none" ),
-                "dfoptim::nmk" = {
-                },
-                "dfoptim::hjk" = {
-                },
+                "dfoptim::nmk" = fit.gev( x.kept, initial = x.initial,
+                                         method = "nmk", error.estimation = "none" ),
                 "ismev::gev.fit" = {
                     aux <- ismev::gev.fit( x.kept, muinit = x.initial[ 1 ],
                                           siginit = x.initial[ 2 ],
@@ -1671,7 +1669,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                                         selected = "Anomalies" ),
                             selectInput( "selectOptimization", "Fitting routine",
                                         choices = c( "Nelder-Mead", "CG", "BFGS", "SANN",
-                                                    "dfoptim::nmk", "dfoptim::hjk",
+                                                    "dfoptim::nmk",
                                                     "ismev::gev.fit", "extRemes::fevd" ),
                                         selected = c( "Nelder-Mead" ) ) ) ),
                     fluidRow(
