@@ -26,7 +26,7 @@
 ##'  \item{ return.level = Estimate of the return levels at the provided return periods }
 ##'  \item{ se = Standard error of the GEV parameters and the return levels }
 ##'  \item{ x = Original time series }
-##'  \item{ updates = Only present when choosing the method 'nmk'. A data.frame
+##'  \item{ updates = A data.frame either the first and last step ( !'nmk' )
 ##'         containing all the optimization steps visited during the call. }
 ##' }
 ##' @author Philipp Mueller
