@@ -763,10 +763,6 @@ climex.server <- function( input, output, session ){
         x.fit.gev <- gev.fitting()
         if ( is.null( x.fit.gev ) )
             return( NULL )
-        if ( input$selectOptimization == "ismev::gev.fit" ){
-            ## blame the extRemes package
-            x.fit.gev <- gev.fit( x.kept, method = "Nelder-Mead" )
-        }
         x.period <- c( 2, 5, 10, 20, 50, 80, 100, 120, 200, 250, 300, 500, 800 )
         if ( input$radioGevStatistics == "Blocks" ){
             if ( is.null( input$buttonMinMax ) ){
@@ -926,26 +922,7 @@ climex.server <- function( input, output, session ){
                 "SANN" = fit.gev( x.kept, initial = x.initial,
                                  method = "SANN", error.estimation = "none" ),
                 "dfoptim::nmk" = fit.gev( x.kept, initial = x.initial,
-                                         method = "nmk", error.estimation = "none" ),
-                "ismev::gev.fit" = {
-                    aux <- ismev::gev.fit( x.kept, muinit = x.initial[ 1 ],
-                                          siginit = x.initial[ 2 ],
-                                          shinit = x.initial[ 3 ], show = FALSE )
-                    aux$value <- aux$nllh
-                    aux$par <- aux$mle
-                    aux$x <- x.kept
-                    ## very very dirty. but the extRemes package seems to be written to prevent
-                    ## nice interactions with its functions
-                    aux$hessian <- fit.gev(
-                        x.kept, method = "Nelder-Mead",
-                        initial = as.numeric( aux$par ) )$hessian
-                    aux },
-                "extRemes::fevd" = extRemes::fevd( x.kept,
-                                                  initial = list(
-                                                      location = x.initial[ 1 ],
-                                                      scale = x.initial[ 2 ],
-                                                      shape = x.initial[ 3 ] )
-                                                  )$results ) ) 
+                                         method = "nmk", error.estimation = "none" ) ) ) 
             class( x.fit.gev ) <- c( "list", "climex.fit.gev" )
         } else {
             ## Fits of GPD parameters to blocked data set
@@ -1657,8 +1634,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                                         selected = "Anomalies" ),
                             selectInput( "selectOptimization", "Fitting routine",
                                         choices = c( "Nelder-Mead", "CG", "BFGS", "SANN",
-                                                    "dfoptim::nmk",
-                                                    "ismev::gev.fit", "extRemes::fevd" ),
+                                                    "dfoptim::nmk" ),
                                         selected = c( "Nelder-Mead" ) ) ) ),
                     fluidRow(
                         box( title = h2( "Results" ), width = 3,
