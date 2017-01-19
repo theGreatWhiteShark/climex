@@ -114,47 +114,61 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
             climex::fit.gev( x = time.series, initial = as.numeric( par ),
                             error.estimation = "none",
                             method = optimization.method )$updates } ) )
-    ## Choose the range in which the optimization is plotted
-    step.max <- max( Reduce( rbind, trajectories )$step )
-    step.begin <- round( optimization.steps[ 1 ]* step.max )
-    if ( step.begin < ( nrow( starting.points ) + 1 ) )
-        step.begin <- nrow( starting.points + 1 )
-    step.end <- round( optimization.steps[ 2 ]* step.max )
-    ## Extract the segments according to the provided optimization.steps
-    list.segments <- lapply( trajectories, function( x ) {
-        return( data.frame( location.start = x$location[ step.begin : ( step.end - 1 ) ],
-                           location.end = x$location[ ( step.begin + 1 ) : step.end ],
-                           scale.start = x$scale[ step.begin : ( step.end - 1 ) ],
-                           scale.end = x$scale[ ( step.begin + 1 ) : step.end ],
-                           shape.start = x$shape[ step.begin : ( step.end - 1 ) ],
-                           shape.end = x$shape[ ( step.begin + 1 ) : step.end ],
-                           step = x$step[ step.begin : ( step.end - 1 ) ] ) ) } )
-    ## Plotting the trajectory by adding new layers to the plot
-    segments.plot <- data.frame(
-        path = Reduce( rbind, list.segments ),
-        id = factor( Reduce( c, lapply( seq( 1, nrow( starting.points ) ), function( x )
-            rep( x, nrow( list.segments[[ x ]] ) ) ) ) ) )
-    ## it is not really useful to see individual trajectories disappearing. So the NA in segments.plot
-    ## will be replaced by the last finite value.
-    for ( ii in as.numeric( unique( segments.plot$id ) ) ){
-        if ( any( Reduce( c, lapply( segments.plot[ segments.plot$id == ii, ], is.na ) ) ) ){
-            segments.values <- segments.plot[ segments.plot$id == ii, ]
-            ## the following variable contains the content of the last row without any NA
-            segments.last.values <- as.numeric( segments.plot[
-                segments.plot$path.step == ( max( segments.plot$path.step[ segments.plot$id == ii ],
-                                                 na.rm = TRUE ) - 1 ) & segments.plot$id == ii &
-                                           !is.na( segments.plot$path.step ), ] )
-            ## filling all NA
-            for ( rr in 1 : nrow( segments.values ) ){
-                if ( any( is.na( segments.values[ rr, ] ) ) )
-                    segments.values[ rr, ] <- segments.last.values
+    ## Now there are two options: either there are the whole trajectories containing
+    ## all the updates of the optimization (optimization.method = 'nmk' ) or just the
+    ## beginning and end point in the parameter space. In the former case there has to
+    ## be an animation. In the later one just a single image for each plane in the 3D
+    ## parameter space.
+    if ( optimization.method == "nmk" ){
+        ## Choose the range in which the optimization is plotted
+        step.max <- max( Reduce( rbind, trajectories )$step )
+        step.begin <- round( optimization.steps[ 1 ]* step.max )
+        if ( step.begin < ( nrow( starting.points ) + 1 ) )
+            step.begin <- nrow( starting.points + 1 )
+        step.end <- round( optimization.steps[ 2 ]* step.max )
+        ## Extract the segments according to the provided optimization.steps
+        list.segments <- lapply( trajectories, function( x ) {
+            return( data.frame( location.start = x$location[ step.begin : ( step.end - 1 ) ],
+                               location.end = x$location[ ( step.begin + 1 ) : step.end ],
+                               scale.start = x$scale[ step.begin : ( step.end - 1 ) ],
+                               scale.end = x$scale[ ( step.begin + 1 ) : step.end ],
+                               shape.start = x$shape[ step.begin : ( step.end - 1 ) ],
+                               shape.end = x$shape[ ( step.begin + 1 ) : step.end ],
+                               step = x$step[ step.begin : ( step.end - 1 ) ] ) ) } )
+        ## Plotting the trajectory by adding new layers to the plot
+        segments.plot <- data.frame(
+            path = Reduce( rbind, list.segments ),
+            id = factor( Reduce( c, lapply( seq( 1, nrow( starting.points ) ), function( x )
+                rep( x, nrow( list.segments[[ x ]] ) ) ) ) ) )
+        ## it is not really useful to see individual trajectories disappearing. So the NA in segments.plot
+        ## will be replaced by the last finite value.
+        for ( ii in as.numeric( unique( segments.plot$id ) ) ){
+            if ( any( Reduce( c, lapply( segments.plot[ segments.plot$id == ii, ], is.na ) ) ) ){
+                segments.values <- segments.plot[ segments.plot$id == ii, ]
+                ## the following variable contains the content of the last row without any NA
+                segments.last.values <- as.numeric( segments.plot[
+                    segments.plot$path.step == ( max( segments.plot$path.step[ segments.plot$id == ii ],
+                                                     na.rm = TRUE ) - 1 ) & segments.plot$id == ii &
+                                               !is.na( segments.plot$path.step ), ] )
+                ## filling all NA
+                for ( rr in 1 : nrow( segments.values ) ){
+                    if ( any( is.na( segments.values[ rr, ] ) ) )
+                        segments.values[ rr, ] <- segments.last.values
+                }
+                ## but for the step number this not really makes any sense
+                segments.values$path.step <- seq( min( segments.values$path.step ),
+                                                 nrow( segments.values) - 1 +
+                                                 min( segments.values$path.step ) )
+                segments.plot[ segments.plot$id == ii, ] <- segments.values
             }
-            ## but for the step number this not really makes any sense
-            segments.values$path.step <- seq( min( segments.values$path.step ),
-                                             nrow( segments.values) - 1 +
-                                             min( segments.values$path.step ) )
-            segments.plot[ segments.plot$id == ii, ] <- segments.values
         }
+    } else {
+        ## just a arrow for each optimization route
+        segments.plot <- Reduce( rbind, lapply( trajectories, function( x )
+            data.frame( location.start = x$location[ 1 ], location.end = x$location[ 2 ],
+                       scale.start = x$scale[ 1 ], scale.end = x$scale[ 2 ],
+                       shape.start = x$shape[ 1 ], shape.end = x$shape[ 2 ] ) ) )
+        segments.plot$id <- factor( seq( 1, length( trajectories ) ) )
     }
     ## New approach: just displaying specific number of points every time with a opacity
     ## increasing with the time that pasted.
@@ -183,7 +197,7 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
     ## plane.name gives an extension to the .png files identifying the 2D section of the likelihood
     ## space. col1 and col2 specify which of the dimensions should be taken. 1 = location,
     ## 2 = scale, 3 = shape
-    plot.trajectories <- function( segments, gg.plane, plane.name, col1, col2, x.lim, y.lim,
+    plot.trajectories.nmk <- function( segments, gg.plane, plane.name, col1, col2, x.lim, y.lim,
                                   plot.legend = 0 ){
         ## just plot number.plot.points a time and increase the alpha value for points further in
         ## the past
@@ -193,7 +207,8 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
         ## The first trajectory belongs to the true starting points of the optimization and
         ## should have a distinct color
         color.points <- c( colors$path.true,
-                          grDevices::colorRampPalette( colors = c( colors$path.low, colors$path.high ) )(
+                          grDevices::colorRampPalette(
+                              colors = c( colors$path.low, colors$path.high ) )(
             nrow( starting.points ) - 1 ) )
         ## plotting of the individual png files containing the likelihood plane and a segment
         ## of the trajectory. Those files are going to be concatenated to the animation
@@ -251,13 +266,71 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
         }
         invisible()
     }
+    ## plane.name gives an extension to the .png files identifying the 2D section of the likelihood
+    ## space. col1 and col2 specify which of the dimensions should be taken. 1 = location,
+    ## 2 = scale, 3 = shape
+    plot.trajectories.single <- function( segments, gg.plane, plane.name, col1, col2, x.lim, y.lim,
+                                  plot.legend = 0 ){
+        ## The first trajectory belongs to the true starting points of the optimization and
+        ## should have a distinct color
+        color.points <- c( colors$path.true,
+                          grDevices::colorRampPalette(
+                              colors = c( colors$path.low, colors$path.high ) )(
+                                  nrow( starting.points ) - 1 ) )
+        ## if the legend should be printed as well the height value is increased by 15%
+        ## to keep the symmetry while containing the additional legend
+        if ( plot.legend > 0 ){
+            height.plot <- height* 1.14
+        } else
+            height.plot <- height
+        grDevices::png( filename = paste0( image.folder, "/plane_", plane.name, ".png" ),
+                       width = width, height = height.plot )
+        ## here I assume that the entries in segment are ordered according to their id
+        gg.plot <- gg.plane +
+            geom_segment(
+                data = segments,
+                aes_string( x = names( segments )[ col1* 2 - 1 ],
+                           xend = names( segments )[ col1* 2 ], 
+                           y = names( segments )[ col2* 2 - 1 ],
+                           yend = names( segments )[ col2* 2 ], colour = "id" ),
+                arrow = arrow( length = unit( 0.3, "cm" ) ) ) +
+            ## for better highlighting of the positions
+            geom_point( data = segments, shape = 1, size = 3,
+                       aes_string( x = names( segments )[ col1* 2 - 1 ],
+                                  y = names( segments )[ col2* 2 - 1 ], colour = "id" ) ) +
+            xlim( x.lim ) + ylim( y.lim ) +
+            scale_colour_manual( values = color.points ) +
+            theme( legend.box = "vertical", legend.box.just = "bottom" ) +
+            guides( fill = guide_legend( title = "Likelihood",
+                                        title.position = "top" ) )
+        ## depending on the position there is a different legend shown or none (where the
+        ## navigation tool resides)
+        if ( plot.legend == 0 ){
+            gg.plot <- gg.plot + theme( legend.position = "none" )
+        } else if ( plot.legend == 1 ){
+            gg.plot <- gg.plot + guides( fill = FALSE )
+        } else if ( plot.legend == 2 )
+            gg.plot <- gg.plot + guides( colour = FALSE )
+        print( gg.plot )
+        grDevices::dev.off()
+        invisible()
+    }
     ## actual plotting
-    plot.trajectories( segments.plot, plot.plane( plane.loc.sc, 1, 2 ), "loc.sc", 1, 2,
-                      x.lim = location.lim, y.lim = scale.lim, plot.legend = 1 )
-    plot.trajectories( segments.plot, plot.plane( plane.loc.sh, 1, 3 ), "loc.sh", 1, 3,
-                      x.lim = location.lim, y.lim = shape.lim, plot.legend = 0 )
-    plot.trajectories( segments.plot, plot.plane( plane.sc.sh, 2, 3 ), "sc.sh", 2, 3,
-                      x.lim = scale.lim, y.lim = shape.lim, plot.legend = 2 )
+    if ( optimization.method == "nmk" ){
+        plot.trajectories.nmk( segments.plot, plot.plane( plane.loc.sc, 1, 2 ), "loc.sc", 1, 2,
+                              x.lim = location.lim, y.lim = scale.lim, plot.legend = 1 )
+        plot.trajectories.nmk( segments.plot, plot.plane( plane.loc.sh, 1, 3 ), "loc.sh", 1, 3,
+                              x.lim = location.lim, y.lim = shape.lim, plot.legend = 0 )
+        plot.trajectories.nmk( segments.plot, plot.plane( plane.sc.sh, 2, 3 ), "sc.sh", 2, 3,
+                              x.lim = scale.lim, y.lim = shape.lim, plot.legend = 2 )
+    } else {
+        plot.trajectories.single( segments.plot, plot.plane( plane.loc.sc, 1, 2 ), "loc.sc", 1, 2,
+                                 x.lim = location.lim, y.lim = scale.lim, plot.legend = 1 )
+        plot.trajectories.single( segments.plot, plot.plane( plane.loc.sh, 1, 3 ), "loc.sh", 1, 3,
+                                 x.lim = location.lim, y.lim = shape.lim, plot.legend = 0 )
+        plot.trajectories.single( segments.plot, plot.plane( plane.sc.sh, 2, 3 ), "sc.sh", 2, 3,
+                                 x.lim = scale.lim, y.lim = shape.lim, plot.legend = 2 )
+    }
 }
 
 ##' @title Help function filling the JavaScript template which produces the likelihood animation.
