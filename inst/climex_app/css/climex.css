@@ -205,7 +205,7 @@ table.table-bordered.dataTable {
     margin-left: 3% !important;
 }
 #boxHeuristic > .box > .box-body > .form-group > .checkbox > label > span {
-    text-weight: bold !important;
+    font-weight: bold !important;
 }
 #tableInitialDescription {
     /* paragraph with the description of the numerical input */
