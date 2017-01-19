@@ -7,7 +7,7 @@
 ##' @param rerun The optimization will be started again using the results of the first optimization run. If the "Nelder-Mead" algorithm is used for optimization (as it is here) this can be useful to escape local minima. When choosing simulated annealing as method the rerun will be skipped. Provide a different number of runs directly to the GenSA function via ... instead. Default = TRUE
 ##' @param optim.function Function which is going to be optimized. Default: \code{\link{likelihood}}
 ##' @param gradient.function If NULL a finite difference method is invoked. Default: \code{\link{likelihood.gradient}}
-##' @param error.estimation Method for calculating the standard errors of the fitted results. Using the option "MLE" the errors of the GEV parameters will be calculated as the square roots of the diagonal elements of the inverse of the hessian matrix calculated with the MLE of the GEV parameters. The standard error of the return level is calculated using the Delta method and the MLE of the GEV parameters. Alternative one can use Monte Carlo simulations with "MC" for which 1000 samples of the same size as x will be drawn from a GEV distribution constituted by the obtained MLE of the GEV parameters of x. The standard error is then calculated via the square of the variance of all fitted GEV parameters and calculated return levels. Sometimes the inversion of the hessian fails (since the are some NaN in the hessian) (which is also the reason why the ismev package occasionally does not work). In such cases the Monte Carlo method is used. Option "none" just skips the calculation of the error. Default = "MLE".
+##' @param error.estimation Method for calculating the standard errors of the fitted results. Using the option "MLE" the errors of the GEV parameters will be calculated as the square roots of the diagonal elements of the inverse of the hessian matrix calculated with the MLE of the GEV parameters. The standard error of the return level is calculated using the Delta method and the MLE of the GEV parameters. Alternative one can use Monte Carlo simulations with "MC" for which 1000 samples of the same size as x will be drawn from a GEV distribution constituted by the obtained MLE of the GEV parameters of x. The standard error is then calculated via the square of the variance of all fitted GEV parameters and calculated return levels. Sometimes the inversion of the hessian fails (since the are some NaN in the hessian) (which is also the reason why the ismev package occasionally does not work). In such cases the Monte Carlo method is used. Option "none" just skips the calculation of the error. Default = "none".
 ##' @param method Through the argument 'method' (which is passed to the optim function) the optimization algorithm is chosen. The default one is the "Nelder-Mead".
 ##' @param monte.carlo.sample.size Number of samples used to obtain the Monte Carlo estimate of the standard error of the fitting. Default = 1000
 ##' @param return.period Quantiles at which the return level is going to be evaluated. Class "numeric". Default = 100.
@@ -37,7 +37,7 @@
 fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihood,
                     gradient.function = likelihood.gradient,
                     error.estimation = c( "MLE", "MC", "none" ),
-                    method = c( "Nelder-Mead", "BFGS", "CG", "SANN" ),
+                    method = c( "Nelder-Mead", "BFGS", "CG", "SANN", "nmk", "hjk" ),
                     monte.carlo.sample.size = 1000, return.period = 100, ... ){
     ## Since there are some problems with the simulated annealing algorithm I intersect the
     ## method argument and switch to another package if necessary
@@ -48,39 +48,73 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
     if ( is.null( initial ) )
         initial <- likelihood.initials( x )
     if ( is.null( error.estimation ) )
-        error.estimation <- "MLE"
+        error.estimation <- "none"
     error.estimation <- match.arg( error.estimation )
+    ## if the error.estimation is not required, do not calculate the hessian
+    if ( error.estimation == "none" ){
+        hessian.calculate <- FALSE
+    } else
+        hessian.calculate <- TRUE
     ## Optimization
-    if ( error.estimation != "none" ){
-        if ( method != "SANN" ){
+    if ( method %in% c( "Nelder-Mead", "BFGS", "CG" ) ){
+        suppressWarnings(
+            res.optim <- stats::optim( initial, optim.function, gr = gradient.function, x = x,
+                                      hessian = hessian.calculate, ... ) )
+    } else if ( method == "SANN" ){
+        ## Since this implementation didn't yielded nice results I switch to another package
+        aux <- GenSA::GenSA( as.numeric( initial ), optim.function, lower = c( -Inf, 0, -Inf ),
+                            upper = c( Inf, Inf, Inf ), x = x, ... )
+        ## return a NaN when not optimizing instead of the initial parameters
+        if ( sum( aux$par %in% initial ) > 1 ){
+            ## more than one parameter value remained unchanged
+            aux$value <- NaN
+        }
+        res.optim <- list( par = aux$par, value = aux$value, counts = aux$counts,
+                          hessian = if ( hessian.calculate ){
+                                        numDeriv::hessian( optim.function, x = aux$par, x.in = x )
+                                    } else NULL,
+                          convergence = 0, message = NULL )
+    } else if ( method == "nmk" ){
+        ## The benefit of the nmk method is that its code base is written in R. So
+        ## I could easily modify it and display the progress of the optimization.
+        ## In principle I would recommend using the default optim procedures.
+        aux <- dfoptim::nmk( par = initial, fn = likelihood, x = x, MODIFIED = TRUE,
+                            WARNINGS = FALSE )
+        res.optim <- list( par = aux$par, value = aux$value, counts = aux$feval,
+                          convergence = 0, message = NULL, updates = aux$x.updates,
+                          hessian = if ( hessian.calculate ){
+                                        numDeriv::hessian( optim.function, x = aux$par, x.in = x )
+                                    } else NULL )
+        res.optim$counts[ 2 ] <- NA
+        names( res.optim$counts ) <- c( "function", "gradient" )   
+    }
+    if ( rerun && method != "SANN" ){
+        ## Rerunning the optimization for the simulated annealing makes no sense.
+        ## Just increase the number of iterations for this method.
+        if ( method %in% c( "Nelder-Mead", "BFGS", "CG" ) ){
             suppressWarnings(
-                res.optim <- stats::optim( initial, optim.function, gr = gradient.function, x = x,
-                                          hessian = TRUE, ... ) )
-        } else {
-            ## Since this implementation didn't yielded nice results I switch to another package
-            aux <- GenSA::GenSA( as.numeric( initial ), optim.function, lower = c( -Inf, 0, -Inf ),
-                                upper = c( Inf, Inf, Inf ), x = x, ... )
-            ## return a NaN when not optimizing instead of the initial parameters
-            if ( sum( aux$par %in% initial ) > 1 ){
-                ## more than one parameter value remained unchanged
-                aux$value <- NaN
-            }
-            res.optim <- list( par = aux$par, value = aux$value, counts = aux$counts,
-                              hessian = numDeriv::hessian( optim.function, x = aux$par, x.in = x ),
-                              convergence = 0, message = NULL )
+                res.optim.rerun <- try( stats::optim( par = res.optim$par, fn = optim.function,
+                                                     gr = gradient.function, x = x,
+                                                     hessian = hessian.calculate,
+                                                     ... ), silent = TRUE ) )
+        } else if ( method == "nmk" ){
+            aux <- dfoptim::nmk( par = res.optim$par, fn = likelihood, x = x, MODIFIED = TRUE,
+                                WARNINGS = FALSE )
+            res.optim.rerun <- list( par = aux$par, value = aux$value, counts = aux$feval,
+                                    convergence = 0, message = NULL, updates = aux$x.updates,
+                                    hessian = if ( hessian.calculate ){
+                                                  numDeriv::hessian( optim.function, x = aux$par,
+                                                                    x.in = x )
+                                        } else NULL )
+            res.optim$counts[ 2 ] <- NA
+            names( res.optim$counts ) <- c( "function", "gradient" )
         }
-        if ( rerun ){
-            if ( method != "SANN" ){
-                suppressWarnings(
-                    res.optim.rerun <- try( stats::optim( par = res.optim$par, fn = optim.function,
-                                                         gr = gradient.function, x = x, hessian = TRUE,
-                                                         ... ), silent = TRUE ) )
-                if ( class( res.optim.rerun ) == "try-error" ){
-                    warning( "Rerun failed. Be sure to use the Nelder-Mead method of optimization." )
-                } else
-                    res.optim <- res.optim.rerun
-            }
-        }
+        if ( class( res.optim.rerun ) == "try-error" ){
+            warning( "Rerun failed. Be sure to use the Nelder-Mead method of optimization." )
+        } else
+            res.optim <- res.optim.rerun
+    }
+    if ( error.estimation != "none" ){
         error.covariance <- try( solve( res.optim$hessian ) )
         if ( class( error.covariance ) == "try-error" || error.estimation == "MC" ||
              any( is.nan( res.optim$hessian ) ) ){
@@ -102,9 +136,11 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
                                      sqrt( stats::var( Reduce( rbind, samples.fit )[ , 2 ] ) ),
                                      sqrt( stats::var( Reduce( rbind, samples.fit )[ , 3 ] ) ) )
                 for ( rr in 1 : length( return.period ) )
-                    errors <- cbind( errors, sqrt( stats::var(
-                                                 Reduce( c, lapply( samples.fit, function( z )
-                        return.level( z, return.period = return.period[ rr ] ) ) ) ) ) )
+                    errors <- cbind( errors,
+                                    sqrt( stats::var(
+                                        Reduce( c, lapply( samples.fit, function( z )
+                                            return.level( z,
+                                                         return.period = return.period[ rr ] ) ) ) ) ) )
             }
             names( errors ) <- c( "location", "scale", "shape", paste0( return.period, ".rlevel" ) )
         } else {
@@ -126,36 +162,6 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
             names( errors ) <- c( "location", "scale", "shape", paste0( return.period, ".rlevel" ) )
         }
         res.optim$se <- errors
-    } else {
-         if ( method != "SANN" ){
-            suppressWarnings(
-                res.optim <- stats::optim( initial, optim.function, gr = gradient.function, x = x,
-                                          hessian = TRUE, ... ) )
-            if ( rerun ){
-                suppressWarnings( 
-                    res.optim.rerun <- try( stats::optim( par = res.optim$par, fn = optim.function,
-                                                         gr = gradient.function, x = x, hessian = TRUE,
-                                                         ... ), silent = TRUE ) )
-                if ( class( res.optim.rerun ) == "try-error" ){
-                    warning( "Rerun failed. Be sure to use the Nelder-Mead method of optimization." )
-                } else
-                    res.optim <- res.optim.rerun
-            }
-         } else {
-            ## Since this implementation didn't yielded nice results I switch to another package
-            aux <- GenSA::GenSA( as.numeric( initial ), optim.function, lower = c( -Inf, 0, -Inf ),
-                                upper = c( Inf, Inf, Inf ), x.in = x, ... )
-            ## return a NaN when not optimizing instead of the initial parameters
-            if ( sum( aux$par %in% initial ) > 1 ){
-                ## more than one parameter value remained unchanged
-                aux$value <- NaN
-            }
-            res.optim <- list( par = aux$par, value = aux$value, counts = aux$counts,
-                              hessian = numDeriv::hessian( optim.function, x = aux$par, x.in = x ),
-                              convergence = 0, message = NULL )
-        }
-        
-        res.optim$se <- NULL
     }
     ## Naming of the resulting fit parameter (necessary for a correct conversion with as.fevd)
     names( res.optim$par ) <- c( "location", "scale", "shape" )
