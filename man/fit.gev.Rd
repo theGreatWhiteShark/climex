@@ -6,7 +6,7 @@
 \usage{
 fit.gev(x, initial = NULL, rerun = TRUE, optim.function = likelihood,
   gradient.function = likelihood.gradient, error.estimation = c("MLE", "MC",
-  "none"), method = c("Nelder-Mead", "BFGS", "CG", "SANN"),
+  "none"), method = c("Nelder-Mead", "BFGS", "CG", "SANN", "nmk", "hjk"),
   monte.carlo.sample.size = 1000, return.period = 100, ...)
 }
 \arguments{
@@ -20,7 +20,7 @@ fit.gev(x, initial = NULL, rerun = TRUE, optim.function = likelihood,
 
 \item{gradient.function}{If NULL a finite difference method is invoked. Default: \code{\link{likelihood.gradient}}}
 
-\item{error.estimation}{Method for calculating the standard errors of the fitted results. Using the option "MLE" the errors of the GEV parameters will be calculated as the square roots of the diagonal elements of the inverse of the hessian matrix calculated with the MLE of the GEV parameters. The standard error of the return level is calculated using the Delta method and the MLE of the GEV parameters. Alternative one can use Monte Carlo simulations with "MC" for which 1000 samples of the same size as x will be drawn from a GEV distribution constituted by the obtained MLE of the GEV parameters of x. The standard error is then calculated via the square of the variance of all fitted GEV parameters and calculated return levels. Sometimes the inversion of the hessian fails (since the are some NaN in the hessian) (which is also the reason why the ismev package occasionally does not work). In such cases the Monte Carlo method is used. Option "none" just skips the calculation of the error. Default = "MLE".}
+\item{error.estimation}{Method for calculating the standard errors of the fitted results. Using the option "MLE" the errors of the GEV parameters will be calculated as the square roots of the diagonal elements of the inverse of the hessian matrix calculated with the MLE of the GEV parameters. The standard error of the return level is calculated using the Delta method and the MLE of the GEV parameters. Alternative one can use Monte Carlo simulations with "MC" for which 1000 samples of the same size as x will be drawn from a GEV distribution constituted by the obtained MLE of the GEV parameters of x. The standard error is then calculated via the square of the variance of all fitted GEV parameters and calculated return levels. Sometimes the inversion of the hessian fails (since the are some NaN in the hessian) (which is also the reason why the ismev package occasionally does not work). In such cases the Monte Carlo method is used. Option "none" just skips the calculation of the error. Default = "none".}
 
 \item{method}{Through the argument 'method' (which is passed to the optim function) the optimization algorithm is chosen. The default one is the "Nelder-Mead".}
 
@@ -42,10 +42,12 @@ Output of the optim function with class == c( "list", "climex.fit.gev" )
  \item{ return.level = Estimate of the return levels at the provided return periods }
  \item{ se = Standard error of the GEV parameters and the return levels }
  \item{ x = Original time series }
+ \item{ updates = Only present when choosing the option 'nmk' and 'hjk'. A data.frame
+        containing all the optimization steps visited during the call. }
 }
 }
 \details{
-Custom fitting of the GEV function including the estimation of the initial conditions. Per default the optimization is run twice to prevent getting trapped in local minima of the negative log-likelihood function. The output is of optim style. But the errors of the fitting are also provided as well as the estimates and the errors of some specified return levels. I had some problems with the optim implementation of the simulated annealing implementation. The optimization just kept its value and nothing happened. That's why I switched to the \code{\link{GenSA}} package.
+Custom fitting of the GEV function including the estimation of the initial conditions. Per default the optimization is run twice to prevent getting trapped in local minima of the negative log-likelihood function. The output is of optim style. But the errors of the fitting are also provided as well as the estimates and the errors of some specified return levels. I had some problems with the optim implementation of the simulated annealing implementation. The optimization just kept its value and nothing happened. That's why I switched to the \code{\link{GenSA}} package. More for convenience and due to its use in the animation of the climex shiny app I also introduced a slightly modified version of the dfoptim package's 'nmk' and 'hjk' function. But I do not recommend using them since they produce slightly worse results and seem to be numerical more unstable.
 }
 \examples{
 potsdam.anomalies <- anomalies( temp.potsdam )
