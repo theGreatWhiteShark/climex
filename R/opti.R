@@ -122,6 +122,15 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
         } else
             res.optim <- res.optim.rerun
     }
+    ## if no updates element is available add the start and end parameter pair.
+    ## This is just a poor approximation of the optimization route but I can
+    ## do at this moment (without rewriting and linking the whole internal
+    ## calls of optim )
+    if ( is.null( res.optim$updates ) )
+        res.optim$updates <- data.frame( location = c( initial[ 1 ], res.optim$par[ 1 ] ),
+                                        scale = c( initial[ 2 ], res.optim$par[ 2 ] ),
+                                        shape = c( initial[ 3 ], res.optim$par[ 3 ] ),
+                                        step = c( 1, res.optim$counts[ 1 ] ) )
     if ( error.estimation != "none" ){
         error.covariance <- try( solve( res.optim$hessian ) )
         if ( class( error.covariance ) == "try-error" || error.estimation == "MC" ||
