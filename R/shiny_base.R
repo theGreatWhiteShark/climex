@@ -1154,19 +1154,6 @@ climex.server <- function( input, output, session ){
                     round( x.fit.gev$par[ 3 ] + 1, 1 ),
                     c( round( x.fit.gev$par[ 3 ], 1 ) - .3,
                       round( x.fit.gev$par[ 3 ], 1 ) + .3  ) ) } )
-    mle.parameter.likelihood <- reactive( {
-        x.block <- data.blocking()[[ 1 ]]
-        if ( is.null( x.block ) ){
-            ## if the initialization has not finished yet just wait a
-            ## little longer
-            return( NULL )
-        }
-        x.initials <- initial.parameters()
-        if ( input$selectOptimizationProcedureLikelihood == "dfoptim::nmk" ){
-            suppressWarnings( par.mle <- try( dfoptim::nmk( par = x.initials, x = x.block )$par ) )
-            if ( class( par.mle ) == "try-error" )
-                par.mle <- fit.gev( x.block )$par
-            return( par.mle )  } } )
     ## To enable the user to input her/his own custom initialization points for the optimization
     ## it needs two things: three numerical inputs chosing the climex::likelihood.initials as
     ## default and a reactive vector gluing all together
@@ -1221,7 +1208,8 @@ climex.server <- function( input, output, session ){
         }
         x.initial <- initial.parameters()
         input$tableDrawPoints
-        par.init <- mle.parameter.likelihood()
+        x.fit.gev <- gev.fitting()
+        par.init <- x.fit.gev$par
         if ( is.null( input$sliderNumberInitialPoints ) || is.null( input$sliderLocationLim ) ||
                  is.null( input$sliderScaleLim ) || is.null( input$sliderShapeLim ) ){
             return( c( NaN, NaN, NaN ) )
@@ -1272,7 +1260,8 @@ climex.server <- function( input, output, session ){
             ## little longer
             return( NULL )
         }
-        x.mle.par <- mle.parameter.likelihood()
+        x.fit.gev <- gev.fitting()
+        x.mle.par <- x.fit.gev$par
         x.initial <- initial.parameters()
         x.suggested <- likelihood.initials( x.block )
         x.df <- data.frame( parameter = c( "fitting results", "suggested initials" ),
@@ -1314,11 +1303,10 @@ climex.server <- function( input, output, session ){
             } } )
         isolate( initial.parameters <- initial.parameters.likelihood() )
         isolate( {
-            if ( input$selectOptimizationProcedureLikelihood == "dfoptim::nmk" ){
+            if ( input$selectOptimization == "dfoptim::nmk" ){
                 optimization.function <- dfoptim::nmk
-            } else if ( input$selectOptimizationProcedureLikelihood == "dfoptim::nmk"){
+            } else 
                 optimization.function <- dfoptim::nmk
-            }
             ## I use the plot "plotPlaceholder" to determine the width of the current box and adjust
             ## the pixel width of the png pictures
             session.width <- session$clientData$output_plotPlaceholder_width
@@ -1709,10 +1697,6 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                                 uiOutput( "inputInitialLocation" ),
                                 uiOutput( "inputInitialScale" ), uiOutput( "inputInitialShape" ),
                                 id = "initialTable" ),
-                            selectInput( "selectOptimizationProcedureLikelihood",
-                                        "Optimization procedure",
-                                        choices = c( "dfoptim::nmk" ),
-                                        selected = "dfoptim::nmk" ),
                             sliderInput( "sliderNumberInitialPoints",
                                         "Number of initial points", 1, 20, 5 ),
                             uiOutput( "menuSliderLocationLim" ),
