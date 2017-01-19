@@ -42,6 +42,8 @@ color.table <- function( x.html.table, css.colours, style = "table-condensed tab
 ##' to modify since they link a lot of different libraries and I do not want to
 ##' make an R fork just to get the animation going. Default = 'nmk'.
 ##' @param optimization.steps Vector containing two numbers from 0 to 1 specifying the start and the end point of the optimization. Since the number of steps is unknown beforehand it will be chosen relativley to the total number of steps. Default = c( 0, 1 ).
+##' @param optimization.rerun Flag deciding if to rerun the optimization at the
+##' parameters determined by the first run. Default = TRUE.
 ##' @param width of both the images and the form with the playback options in pixel.
 ##' @param height of both the images and the form with the playback options in pixel.
 ##' @param colors List of colors used to generate the plots.
@@ -57,7 +59,8 @@ color.table <- function( x.html.table, css.colours, style = "table-condensed tab
 ##' @author Philipp Mueller 
 plot.animation <- function( time.series, starting.points, location.lim = NULL, scale.lim = NULL,
                            shape.lim = NULL, optimization.method = 'nmk',
-                           optimization.steps = c( .1, .5 ), height = 300, width = 300,
+                           optimization.steps = c( .1, .5 ), optimization.rerun = TRUE,
+                           height = 300, width = 300,
                            colors = list( plane.low = "#eaeafa", plane.high = "#191970",
                                          plane.contour = "white", path.low = "yellow",
                                          path.high = "darkred", path.true = "black" ),
@@ -112,7 +115,7 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
     suppressWarnings(
         trajectories <- apply( starting.points, 1, function( par ){
             climex::fit.gev( x = time.series, initial = as.numeric( par ),
-                            error.estimation = "none",
+                            error.estimation = "none", rerun = optimization.rerun,
                             method = optimization.method )$updates } ) )
     ## Now there are two options: either there are the whole trajectories containing
     ## all the updates of the optimization (optimization.method = 'nmk' ) or just the
@@ -349,6 +352,8 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
 ##' to modify since they link a lot of different libraries and I do not want to
 ##' make an R fork just to get the animation going. Default = 'nmk'.
 ##' @param optimization.steps Since the first updates contain a lot of jumps and the last ones almost no deviations in the GEV parameters the range of the trajectories can be limited.
+##' @param optimization.rerun Flag deciding if to rerun the optimization at the
+##' parameters determined by the first run. Default = TRUE.
 ##' @param width of both the images and the form with the playback options in pixel.
 ##' @param height of both the images and the form with the playback options in pixel.
 ##' @param delay Time for which the individual pictures stay visible during the animation in ms. Default = 300.
@@ -362,7 +367,7 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
 ##' @seealso \code{\link{plot.animation}}
 ##' @author Philipp Mueller 
 animation.wrapper <- function( time.series, starting.points, location.lim, scale.lim, shape.lim,
-                  optimization.method = "nmk", optimization.steps,
+                  optimization.method = "nmk", optimization.steps, optimization.rerun = TRUE,
                   width, height, delay = 300, loopMode = "loop", image.folder, working.folder ){
     ## load the JavaScript template file
     template <- readLines( paste0( system.file( "climex_app", package = "climex" ),

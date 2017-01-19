@@ -913,15 +913,15 @@ climex.server <- function( input, output, session ){
             ## Fits of GEV parameters to blocked data set
             x.fit.gev <- suppressWarnings( switch(
                 input$selectOptimization,
-                "Nelder-Mead" = fit.gev( x.kept, initial = x.initial,
+                "Nelder-Mead" = fit.gev( x.kept, initial = x.initial, rerun = input$checkboxRerun,
                                         method = "Nelder-Mead", error.estimation = "none" ),
-                "CG" = fit.gev( x.kept, initial = x.initial,
+                "CG" = fit.gev( x.kept, initial = x.initial, rerun = input$checkboxRerun,
                                method = "CG", error.estimation = "none" ),
-                "BFGS" = fit.gev( x.kept, initial = x.initial,
+                "BFGS" = fit.gev( x.kept, initial = x.initial, rerun = input$checkboxRerun,
                                  method = "BFGS", error.estimation = "none" ),
-                "SANN" = fit.gev( x.kept, initial = x.initial,
+                "SANN" = fit.gev( x.kept, initial = x.initial, rerun = input$checkboxRerun,
                                  method = "SANN", error.estimation = "none" ),
-                "dfoptim::nmk" = fit.gev( x.kept, initial = x.initial,
+                "dfoptim::nmk" = fit.gev( x.kept, initial = x.initial, rerun = input$checkboxRerun,
                                          method = "nmk", error.estimation = "none" ) ) ) 
             class( x.fit.gev ) <- c( "list", "climex.fit.gev" )
         } else {
@@ -1321,6 +1321,7 @@ climex.server <- function( input, output, session ){
                 shape.lim = isolate( input$sliderShapeLim ),
                 optimization.method = optimization.method,
                 optimization.steps = isolate( input$sliderOptimizationSteps ),
+                optimization.rerun = input$checkboxRerun,
                 width = session.plot.width, height = 300, delay = 300,
                 loopMode = "loop",
                 image.folder = image.folder, working.folder = working.folder )
@@ -1674,6 +1675,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                                 uiOutput( "inputInitialLocation" ),
                                 uiOutput( "inputInitialScale" ), uiOutput( "inputInitialShape" ),
                                 id = "initialTable" ),
+                            checkboxInput( "checkboxRerun", "Rerun the optimization", value = TRUE ),
                             sliderInput( "sliderNumberInitialPoints",
                                         "Number of initial points", 1, 20, 5 ),
                             uiOutput( "menuSliderLocationLim" ),
