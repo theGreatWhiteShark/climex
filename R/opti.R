@@ -38,7 +38,7 @@
 ##' fit.gev( potsdam.blocked )
 fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihood,
                     gradient.function = likelihood.gradient,
-                    error.estimation = c( "MLE", "MC", "none" ),
+                    error.estimation = c( "none", "MLE", "MC" ),
                     method = c( "Nelder-Mead", "BFGS", "CG", "SANN", "nmk" ),
                     monte.carlo.sample.size = 1000, return.period = 100, ... ){
     ## Since there are some problems with the simulated annealing algorithm I intersect the
@@ -108,8 +108,14 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
                                                   numDeriv::hessian( optim.function, x = aux$par,
                                                                     x.in = x )
                                         } else NULL )
-            res.optim$counts[ 2 ] <- NA
-            names( res.optim$counts ) <- c( "function", "gradient" )
+            res.optim.rerun$counts[ 2 ] <- NA
+            ## When rerun the whole path should be present in the updates
+            res.optim.rerun$updates$step <- seq(
+                res.optim$updates$step[ nrow( res.optim$updates ) ],
+                res.optim$updates$step[ nrow( res.optim$updates ) ] +
+                nrow( res.optim.rerun$updates ) - 1 )
+            res.optim.rerun$updates <- rbind( res.optim$updates, res.optim.rerun$updates )
+            names( res.optim.rerun$counts ) <- c( "function", "gradient" )
         }
         if ( class( res.optim.rerun ) == "try-error" ){
             warning( "Rerun failed. Be sure to use the Nelder-Mead method of optimization." )
