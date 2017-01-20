@@ -1250,7 +1250,10 @@ climex.server <- function( input, output, session ){
         options = list( dom = 't',
                        drawCallback = I( "function( settings )
             {document.getElementById( 'tableHeuristicEstimates' ).style.width = '100%';}") ) )
+    ## the two dummies to get the current width of the screen
     output$plotPlaceholder <- renderPlot({
+        ttplot( x.block ) } )
+    output$plotPlaceholderLeaflet <- renderPlot({
         ttplot( x.block ) } )
     output$loadingImage <- renderUI({
         if ( session$clientData$url_hostname != "localhost" &&
@@ -1470,6 +1473,11 @@ climex.server <- function( input, output, session ){
                 ## data.frame. Anyway, the leaflet map can not handle it
                 return( NULL )
             }
+            ## Same trick as in the animation tab: I use a plot of height 0 to obtain
+            ## the current width of the element I want to place the legend next to.
+            ## Unfortunately I do not know of any other trick right now to adjust an
+            ## objects width according to the current screen width (CSS3 magic)
+            isolate( map.width <- session$clientData$output_plotPlaceholderLeaflet_width )
             ## range of the return levels
             color.max <- max( data.return.levels$return.level )
             color.min <- min( data.return.levels$return.level )
@@ -1490,7 +1498,7 @@ climex.server <- function( input, output, session ){
                                             options = layersControlOptions( collapsed = FALSE ) )
             map.leaflet <- addLegend( map.leaflet, pal = palette, values = c( color.min, color.max ),
                                      title = "[years]", layerId = "leafletLegend",
-                                     orientation = "horizontal" )
+                                     orientation = "horizontal", width = map.width )
             return( map.leaflet )
         } } )
     output$tableMap <- renderTable( {
@@ -1600,7 +1608,16 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                     absolutePanel( top = 50, right = 0, id = "leafletBox",
                                   sliderInput( "sliderMap", "Minimal length [years]",
                                               0, 155, value = 65, step = 1 ),
-                                  tableOutput( "tableMap" ) ),
+                                  tableOutput( "tableMap" ),
+                                  ## a plot of height 0? Well, its actually a very nice trick
+                                  ## since I need  a width value for the generated pngs in the
+                                  ## animation in pixel. But I really want to make app to be
+                                  ## rendered nicely on different screen sizes. Via the
+                                  ## session$clientData I can access the width and height of
+                                  ## plots. Thus I can access the width of this specific box via the
+                                  ## plotPlaceholder without seeing it at all.
+                                  plotOutput( "plotPlaceholderLeaflet", height = 0,
+                                             width = '100%' ) ),
                     ## lift it a little but upwards so one can still see the card licensing
                     absolutePanel( bottom = 32, right = 0, id = "leafletMarkerBox",
                                   sliderInput( "sliderMapReturnLevel", "Return level [years]",
