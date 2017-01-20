@@ -276,6 +276,7 @@ table.table-bordered.dataTable {
     padding: 8px;
     border-radius: 9px;
     width: 350px !important;
+    right: 15px !important;
 }
 #leafletBox .form-group {
     margin-bottom: 0px !important;
@@ -312,7 +313,9 @@ table.table-bordered.dataTable {
     color: #191970 !important;
     position: absolute;
     right: 0px !important;
-    top: 240px !important;
+    top: 75px !important;
+    margin-right: 0px !important;
+    border-radius: 9px !important;
 }
 #buttonDrawMarkers {
     font-weight: 100 !important;
