@@ -4,24 +4,32 @@ body {
 .main-header .logo   {
     color: #222D32 !important;
     background-color: #FF8C00 !important;
-    font-weight: bold;
-    font-size: 24px;
+    font-weight: bold; !important;
+    font-size: 24px; !important;
+}
+#climexLink {
+    color: #222D32 !important;
+    font-weight: bold; !important;
+    font-size: 24px; !important;
 }
 .main-header > .navbar, .sidebar-toggle, dropdown-toggle, .main-header > .navbar, .navbar-nav > .tasks-menu > .dropdown-menu, .navbar-nav > .tasks-menu > .dropdown-menu > li.header, .main-header h3 {
     background-color: #222D32 !important;
     color: #FFFFFF !important;
     border-bottom: #222D32 !important;
 }
+.skin-blue .sidebar-menu > li.active > a, .skin-blue .sidebar-menu > li:hover > a {
+    border-left-color: #FF8C00 !important;
+}
 .alert-warning, .label-warning {
     colour: #FF8C00 !important;
     background-color: #FF8C00 !important;
 }
-
 h3 small {
     color: #FFFFFF;
 }
 .box-body label {
-    color: #191970;
+    color: #191970; !important;
+    font-size: 115%; !important;
 }
 .main-sidebar .selectize-control, .main-sidebar .selectize-input.full, .main-sidebar .selectize-dropdown {
     color: #FFFFFF !important;
@@ -48,33 +56,41 @@ h3 small {
     color: #191970 !important;
     background-color: #FF8C00 !important;
 }
-.content h2 {
-    color: #191970;
+/* increase the size of the boxes titles (including the one for the navbox)*/
+.box-header h2, .nav-tabs-custom > .nav-tabs > li.header {
+    color: #191970; !important;
+    font-weight: bold; !important;
+    font-size: 150%; !important;
+}
+/* I want the colorful part of the slider to have the same color as the bars in the histogram */
+.irs-bar, .irs-bar-edge {
+    background-color: #191970 !important;
+    border-bottom-color: #2525a7 !important;
+    border-top-color: #2525a7 !important;
+    border-left-color: #2525a7 !important;
+    border-right-color: #2525a7 !important;
 }
 .box.box-primary {
     border-top-color: #191970 !important;
-    box-shadow: 0 1px 1px #191970 !important;
+    box-shadow: 0 2px 2px #191970 !important;
 }
 .bg-orange {
     background-color: #FF8C00 !important;
     color: #191970 !important;
-    box-shadow: 0 1px 1px #191970 !important;
+    box-shadow: 0 2px 2px #191970 !important;
 }
 .nav-tabs-custom {
-    box-shadow: 0 1px 1px #191970 !important;
+    box-shadow: 0 2px 2px #191970 !important;
 }
 .irs-line {
     border: 1px solid #AAAAAA !important;
     border-top: 1px solid #AAAAAA !important;
 }
-.irs.bar {
-    border-top: 1px solid #191970 !important;
-    border-bottom: 1px solid #191970 !important;
-    background: #191970 !important;
-}
 .irs-min, .irs-max, .irs-grid-text {
     color: #191970 !important;
     background: transparent !important;
+    font-size: 12px !important;
+    line-height: 12px !important;
 }
 .irs-from, .irs-to, .irs-single, .irs-grid-pol, .irs-grid-pol.small {
     background: #191970 !important;
@@ -86,7 +102,7 @@ h3 small {
 .box-body input[type="radio"] {
     background: #FF8C00 !important;
 }
-.box-body .selectize-input::after, .box-body .selectize-control.single  {
+.box-body .selectize-input::after, .box-body .selectize-control.single {
     border-color: #191970 transparent transparent !important;
 }
 .box-body .selectize-input {
@@ -119,8 +135,11 @@ dygraph-axis-label {
     border-color: #191970 !important;
     background-color: #FF8C00 !important;
 }
-.table-striped > tbody > tr:nth-of-type(2n+1) {
-    background-color: #FF8C00 !important;
+thead > tr {
+    background-color: #FF8C00;
+}
+#DataTables_Table_9 {
+    border-color: #FF8C00 !important;
 }
 .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
     border-top: 1px solid #191970 !important;
@@ -135,6 +154,251 @@ tfoot {
 .bg-orange .table > tbody > tr > th {
     border-top: 1px solid #FFFFFF !important;
 }
-.bg-oragne .table > tbody > tr > ts {
+.bg-orange .table > tbody > tr > ts {
     border-bottom: 1px solid #FFFFFF !important;
+}
+/* make the popup table transparent as well */
+#tableMap, #tableMap > table > thead > tr {
+     background-color: transparent !important;
+}
+/* disabling the bullet for the box length slider*/
+#sliderGevStatistics {
+    list-style-type: none;
+}
+/* coloring of the two likelihood dataTables */
+/* don't fill the odd rows of the columns orange anymore */
+#tableInitialPoints > tbody > tr:nth-of-type(n) {
+    background-color: #FFFFFF !important;
+}
+#tableHeuristicEstimates .even, #tableHeuristicEstimates .odd {
+    background-color: #FF8C00 !important;
+}
+table.table-bordered.dataTable {
+    border-collapse: collapse !important;
+}
+#inputInitialLocation, #inputInitialScale, #inputInitialShape {
+    /* children container for the individual numerical input */
+    margin-left: 3%;
+    width: 19% ;
+    text-align: center;
+    float: left;
+    position: relative;
+    display: inline;
+    margin-top: -4%;
+}
+#inputInitialLocation {
+    /* in order to align the numerical inputs with the content of the table */
+    margin-left: 13% !important;
+    width: 22%;
+}
+#inputInitialScale {
+    width: 15.8%;
+}
+#inputInitialShape {
+    width: 19%;
+}
+#inputInitialScale > .form-control {
+    /* to perfectly align it with the table */
+    padding: 5% 28% !important;
+}
+#inputInitialShape{
+    margin-left: 3% !important;
+}
+#boxHeuristic > .box > .box-body > .form-group > .checkbox > label > span {
+    font-weight: bold !important;
+}
+#tableInitialDescription {
+    /* paragraph with the description of the numerical input */
+    text-align: center;
+    float: left;
+    display: inline;
+    padding: 1% 1.5%;
+}
+#initialLocation, #initialScale, #initialShape {
+    /* disables the arrows in the right part of the input in firefox */
+    -moz-appearance: textfield;
+}
+.form-control {
+    /* adjust the numerical input forms to the rest of the webapp */
+    color: #191970 !important;
+    background-color: #FFA333 !important;
+    border: 1px solid #191970 !important;
+    border-radius: 3px !important;
+    font-size: 100% !important;
+}
+/* I don't want the boxes to become so small the tables are not rendered in a nice way anymore. */
+.box-solid {
+    min-width: 400px !important;
+}
+/* fitting the animations in one row of the likelihood box */
+.animationClimex {
+    display: inline;
+    width: 33.3% !important;
+    float: left;
+    position: relative;
+}
+/* customize the appearance of the scianimator control panel */
+.scianimator .controls, .scianimator .control {
+    border: 0px solid !important;
+    margin: 0 0 0 14% !important;
+    font-size: 100% !important;
+    border-radius: 7px !important; /*display navigator point as real circles*/
+}
+.scianimator a {
+    color: #191970 !important;
+}
+.scianimator {
+    /* else it won't fill the whole box width */
+    display: block !important;
+}
+.scianimator .box a.control.navigator, .scianimator .box a.control.navigator:hover {
+    background: #191970 !important;
+    box-shadow: 2px 2px 2px 2px #FFA333 inset, 1px 1px 1px 1px #191970 !important;
+}
+.scianimator .box a.control.navigator.current, .scianimator .box a.control.navigator.currrent:hover {
+    background: #FF8C00 !important;
+    box-shadow: 2px 2px 2px 2px #191970 inset, 1px 1px 1px 1px #191970 !important;
+}
+/* a gif image is going to be displayed while the pictures for the animation are generated */
+/* since it is displayed in the sidebar, always center it */
+/* TODO: not visible on narrow screens */
+#loadingGif {
+    width: 0%;
+    visibility: hidden;
+    position: relative !important;
+}
+/**/
+/* boxes and elements in the leaflet map */
+/**/
+#leafletBox, #leafletMarkerBox {
+    background-color: #FF8C00DD !important;
+    padding: 8px;
+    border-radius: 9px;
+    width: 350px !important;
+    right: 15px !important;
+}
+#leafletBox .form-group {
+    margin-bottom: 0px !important;
+}
+.leaflet-control-layers {
+    background-color: #FF8C00DD !important;
+    width: 320px !important;
+    /* here I assume the size of #leafletMarkerBox not to change + 10px margin + 17px license */
+    bottom: 170.85px !important;
+    position: absolute !important;
+    right: 0px !important;
+    margin-right: 0px !important;
+    margin-bottom: 0px !important;
+    border-radius: 9px !important;
+}
+/* make the input sliders fill the whole box */
+.shiny-input-container:not(.shiny-input-container-inline) {
+    width: 100% !important;
+}
+.leaflet-control-layers label {
+    display: inline-block !important;
+    font-family: 'Source Sans Pro','Helvetica Neue',Helvetica,Arial,sans-serif;
+    font-weight: 100 !important;
+    font: inherit !important;
+    font-size: 120% !important;
+    color: #191970 !important;
+    margin: 0 25% 0 0 !important;
+    text-align: center !important;
+    position: relative !important;
+    left: 0;
+}
+.leaflet-top .legend {
+    background: #ff8c00dd !important;
+    color: #191970 !important;
+    position: absolute;
+    right: 0px !important;
+    top: 75px !important;
+    margin-right: 0px !important;
+    border-radius: 9px !important;
+}
+#buttonDrawMarkers {
+    font-weight: 100 !important;
+    font-size: 100% !important;
+    /* center the button within the box */
+    position: relative !important;
+    left: 25% !important;
+}
+
+@media screen and (max-width: 1400px){
+    /* design for my Aspire S3 */
+    #boxPlotFit {
+	width: 60% !important;
+    }
+    #boxGevStatistics {
+	width: 40% !important;
+	padding-left: 0px !important;
+    }
+    #boxGevResults{
+	width: 40% !important;
+    }
+    #boxTimeSeries {
+	width: 60% !important;
+	padding-left: 0px !important;
+    }
+    #boxStartingPoints {
+	width: 60% !important;
+	padding-left: 0px !important;
+    }
+    #boxHeuristic {
+	width: 40% !important;
+	padding: 0px !important;
+    }
+    /* the input in the tableHeuristic is not aligned anymore */
+    #tableInitialDescription {
+	width: 30% !important;
+	left: 0px !important;
+    }
+    #inputInitialLocation {
+	margin-left: 4% !important;
+    }
+    .scianimator .controls, .scianimator .control {
+	margin: 0 0 0 10% !important;
+    }
+}
+
+@media screen and (max-width: 1080px){
+    /* assigning individual classes to the box objects in shiny won't do any good, since the
+       class definition only enters an inner box and not the parent */
+    #boxHeuristic, #boxStartingPoints, #boxGevResults, #boxTimeSeries, #boxGevStatistics, #boxPlotFit {
+	display: block !important;
+	width: 100% !important;
+    }
+    /* display the animation plots in one column if the display is getting go narrow */
+    .animationClimex {
+	display: block;
+	width: 100% !important;
+    }
+    /* adjusting the size of the boxes on the leaflet map */
+    #leafletBox, #leafletMarkerBox {
+	width: 250px !important;
+    }
+    .leaflet-control-layers {
+	width: 250px !important;
+    }
+    #buttonDrawMarkers {
+	left: 0% !important;
+    }
+}
+
+@media screen and (max-width: 720px){
+    /* Due to reordering and a fixed height the slider and the 
+       table in the leaflet map are partly covered */
+    #leafletBox {
+	top: 100px !important;
+    }
+    /* adjusting the size of the boxes on the leaflet map */
+    #leafletBox, #leafletMarkerBox {
+	width: 200px !important;
+    }
+    .leaflet-control-layers {
+	width: 200px !important;
+    }
+    #buttonDrawMarkers {
+	left: 0% !important;
+    }    
 }

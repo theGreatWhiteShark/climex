@@ -266,7 +266,6 @@ table.table-bordered.dataTable {
     width: 0%;
     visibility: hidden;
     position: relative !important;
-    left: 25% !important;
 }
 /**/
 /* boxes and elements in the leaflet map */
