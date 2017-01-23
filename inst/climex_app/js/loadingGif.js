@@ -2,12 +2,12 @@
     /* if the animation is started, show the Gif */
     $('#buttonDrawAnimation').bind( 'click', function( event ){
 	$( '#loadingGif' ).css( 'visibility', 'visible' );
-	$( '#loadingGif' ).css( 'width', '50%' );
+	$( '#loadingGif' ).css( 'width', '100%' );
     });
     /* if the animation is started, show the Gif */
     $('#buttonDrawMarkers').bind( 'click', function( event ){
 	$( '#loadingGif' ).css( 'visibility', 'visible' );
-	$( '#loadingGif' ).css( 'width', '50%' );
+	$( '#loadingGif' ).css( 'width', '100%' );
     });
     /* since the shiny server should be idle after sending the pictures hide it*/
     $(document).on( 'shiny:idle', function( event ){
