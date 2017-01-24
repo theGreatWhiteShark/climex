@@ -177,6 +177,16 @@ return.level <- function( x, return.period = 100, error.estimation = c( "none", 
         errors <- errors[ , -1 ]
         names( errors ) <- paste0( return.period, ".rlevel" )
     }
+    
+                    m <- return.period* mean( apply.yearly( x, function( y ) length( y ) ) )
+                    scale <- parameter.estimate[ 1 ]
+                    shape <- parameter.estimate[ 2 ]
+                    dz <- c( scale* m^shape* zeta^{ shape - 1 },
+                            shape^{ -1 }* ( ( m* zeta )^shape - 1 ),
+                            -scale* shape^{ -2 }* ( ( m* zeta )^ shape - 1 ) +
+                                          scale* shape^{ -1 }* ( m* zeta )^shape* log( m* zeta ) )
+    errors <- cbind( errors, dz %*% error.covariance %*% dz )
+    
     return( list( return.levels = return.levels, errors = errors ) )
 }
 
@@ -207,6 +217,152 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
     return( x.threshold )
 }
 
+
+## rlevd <- function (period, loc = 0, scale = 1, shape = 0, threshold = 0, 
+##     type = c("GEV", "GP", "PP", "Gumbel", "Frechet", "Weibull", 
+##         "Exponential", "Beta", "Pareto"), npy = 365.25, rate = 0.01) 
+## {
+##     if (any(period <= 1)) 
+##         stop("rlevd: invalid period argument.  Must be greater than 1.")
+##     type <- match.arg(type)
+##     type <- tolower(type)
+##     if (missing(loc)) 
+##         loc <- 0
+##     else if (is.null(loc)) 
+##         loc <- 0
+##     if (is.element(type, c("gumbel", "weibull", "frechet"))) {
+##         if (type == "gumbel" && shape != 0) {
+##             warning("rlevd: shape is not zero, but type is Gumbel.  Re-setting shape parameter to zero.")
+##             shape <- 0
+##             type <- "gev"
+##         }
+##         else if (type == "gumbel") 
+##             type <- "gev"
+##         else if (type == "frechet" && shape <= 0) {
+##             if (shape == 0) {
+##                 warning("rlevd: shape is zero, but type is Frechet!  Re-setting type to Gumbel.")
+##                 shape <- 0
+##             }
+##             else {
+##                 warning("rlevd: type is Frechet, but shape < 0.  Negating shape to force it to be Frechet.")
+##                 shape <- -shape
+##             }
+##             type <- "gev"
+##         }
+##         else if (type == "frechet") 
+##             type <- "gev"
+##         else if (type == "weibull" && shape >= 0) {
+##             if (shape == 0) {
+##                 warning("rlevd: shape is zero, but type is Weibull!  Re-setting type to Gumbel.")
+##                 shape <- 0
+##             }
+##             else {
+##                 warning("rlevd: type is Weibull, but shape > 0.  Negating shape to force it to be Weibull.")
+##                 shape <- -shape
+##             }
+##             type <- "gev"
+##         }
+##         else if (type == "weibull") 
+##             type <- "gev"
+##     }
+##     if (is.element(type, c("beta", "pareto", "exponential"))) {
+##         if (type == "exponential" && shape != 0) {
+##             warning("rlevd: shape is not zero, but type is Exponential.  Re-setting shape parameter to zero.")
+##             shape <- 0
+##             type <- "gp"
+##         }
+##         else if (type == "exponential") 
+##             type <- "gp"
+##         else if (type == "beta" && shape >= 0) {
+##             if (shape == 0) {
+##                 warning("rlevd: shape is zero, but type is Beta!  Re-setting type to Exponential.")
+##                 shape <- 0
+##             }
+##             else {
+##                 warning("rlevd: type is Beta, but shape > 0.  Negating shape to force it to be Beta.")
+##                 shape <- -shape
+##             }
+##             type <- "gp"
+##         }
+##         else if (type == "beta") 
+##             type <- "gp"
+##         else if (type == "pareto" && shape <= 0) {
+##             if (shape == 0) {
+##                 warning("rlevd: shape is zero, but type is Pareto!  Re-setting type to Exponential.")
+##                 shape <- 0
+##             }
+##             else {
+##                 warning("rlevd: type is Pareto, but shape < 0.  Negating shape to force it to be Pareto.")
+##                 shape <- -shape
+##             }
+##             type <- "gp"
+##         }
+##         else if (type == "pareto") 
+##             type <- "gp"
+##     }
+##     if (is.element(type, c("gev", "pp"))) {
+##         p <- 1 - 1/period
+##         res <- qevd(p = p, loc = loc, scale = scale, shape = shape, 
+##             type = "GEV")
+##     }
+##     else if (type == "gp") {
+##         m <- period * npy * rate
+##         if (shape == 0) 
+##             res <- threshold + scale * log(m)
+##         else res <- threshold + (scale/shape) * (m^shape - 1)
+##     }
+##     names(res) <- as.character(period)
+##     return(res)
+## }
+
+##' @title Calculates the quantile of either the GEV or the GPD distribution
+##' @details Port from the extRemes package to (again) get rid of the 'threshold' argument to be able to have an separate 'threshold()' function outside of the fitting function. 
+##'
+##' @param p (Numeric) probability vector.
+##' @param location Of the GEV distribution. Default = NULL.
+##' @param scale Of the GEV/GP distribution. Default = NULL.
+##' @param shape Of the GEV/GP distribution. Default = NULL.
+##' @param threshold Used in the GP distribution. This parameter is optional but should be provided in order to create a representation of the fitted data exceedance. Default = NULL.
+##' @param type Determines if to use the GEV or GP distribution. Default = "gev".
+##' @param lower.tail Whether to sample the probabilities P[X <= x] or P[X > x]. Default = TRUE (first case).
+##' @param silent Whether to display warnings or not. Default = FALSE.    
+##'
+##' @return Numerical vector of the same length as input argument p.
+##' @author Philipp Mueller 
+qevd <- function ( p, location = NULL, scale = NULL, shape = NULL, threshold = NULL,
+                  type = c( "gev", "gpd" ), lower.tail = TRUE, silent = FALSE ){
+    if ( missing( type ) )
+        type <- "gev"
+    type <- match.arg( type )
+    if ( type == "gev" ){
+        if ( is.null( location ) ||
+             is.null( scale ) || is.null( shape ) )
+            stop( "Please supply 'location', 'scale' and 'shape'!" )
+    } else {
+        if ( is.null( scale ) || is.null( shape ) )
+            stop( "Please supply 'scale' and 'shape'!" )
+        if ( is.null( threshold ) ){
+            if ( !silent )
+                warning( "No 'threshold' supplied! This needs to be added to the generated time series in order to resemble the original data points!" )
+            location <- 0
+        } else
+            location <- threshold
+    }
+    if ( scale <= 0 ) 
+        stop( "qevd: invalid scale argument.  Must be > 0." )
+    if ( min( p, na.rm = TRUE ) <= 0 || max( p, na.rm = TRUE ) >= 1 ) 
+        stop( "qevd: invalid p argument.  Must have 0 < p < 1." )
+    if ( !lower.tail )
+        p <- 1 - p
+    if ( type == "gev" ) {
+        q <- location + scale * ( ( -log( p ) )^( -shape ) - 1 )/ shape
+    }
+    else {
+        q <- location + scale * ( p^( -shape ) - 1 )/ shape
+    }
+    return( q )
+}
+
 ##' @title Drawing random numbers from the GEV or GP distribution
 ##' @details This function was originally part of the extRemes package. But since one had to provide the threshold I couldn't use it insight the fit.gpd function. In contrast to the original implementation this function only features constant location, scale and shape parameters. If you want to do time dependent analysis of extreme events please refer to the original package.
 ##'
@@ -216,6 +372,7 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
 ##' @param shape Of the GEV/GP distribution. Default = NULL.
 ##' @param threshold Used in the GP distribution. This parameter is optional but should be provided in order to create a representation of the fitted data exceedance. Default = NULL.
 ##' @param type Determines if to use the GEV or GP distribution. Default = "gev".
+##' @param silent Whether to display warnings or not. Default = FALSE.    
 ##'
 ##' @return Numerical vector of length n drawn from the corresponding distribution. 
 ##' @author Philipp Mueller 
