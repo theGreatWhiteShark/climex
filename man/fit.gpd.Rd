@@ -51,7 +51,7 @@ Custom fitting of the generalized Pareto distribution (GPD) function including t
 }
 \examples{
 potsdam.anomalies <- anomalies( temp.potsdam )
-potsdam.extremes <- decluster( potsdam.anomalies, threshold = 10 )
+potsdam.extremes <- threshold( potsdam.anomalies, threshold = 10, decluster = TRUE )
 fit.gpd( potsdam.extremes )
 }
 \author{
