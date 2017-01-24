@@ -136,6 +136,7 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
 ##' @param monte.carlo.sample.size Number of samples used to obtain the Monte Carlo estimate of the standard error of the fitting. Default = 1000.
 ##' @param threshold Optional threshold for the GPD model. If present it will be added to the return level to produce a value which fits to underlying time series. Default = NULL.
 ##' @param total.length Total number of observations in the time series the exceedance were obtained from. This argument is needed to calculate the standard error of the return level via the delta method of the MLE in the GPD model. Default = NULL.
+##' @param original.time.series Necessary to transform the return level for numerical input and the GPD model from m-th observation return level to annual return level. If omitted the return level will be per observation. Default = NULL.
 ##'
 ##' @return If error.estimation == "none" a numerical vector containing the estimates of the return levels will be returned. Else a list containing the estimates and their standard errors will be returned.
 ##' @export
@@ -144,7 +145,7 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
 ##' return.level( fit.results, return.period = c( 10, 50, 100 ), error.estimation = "MLE" )
 return.level <- function( x, return.period = 100, error.estimation = c( "none", "MC", "MLE" ),
                          model = c( "gev", "gpd" ),monte.carlo.sample.size = 1000,
-                         threshold = NULL, total.length = NULL ){
+                         threshold = NULL, total.length = NULL, original.time.series = NULL ){
     if ( any( class( x ) == "climex.fit.gev" ) ){
         model <- "gev"
         return.levels <- Reduce( c, lapply( return.period, function( y )
@@ -156,7 +157,7 @@ return.level <- function( x, return.period = 100, error.estimation = c( "none", 
         ## exceedance per year. This way the unit of the provided return level
         ## and its error are  not 'per observation' but 'per year'.
         ## In this step we harness the power of the 'xts' package
-        m <- return.period* mean( apply.yearly( x, function( y ) length( y ) ) )
+        m <- return.period* mean( apply.yearly( x$x, function( y ) length( y ) ) )
         return.levels <- Reduce( c, lapply( m, function( y )
             as.numeric( climex:::rlevd( y, scale = x$par[ 1 ], shape = x$par[ 2 ],
                                        model = "gpd", threshold = x$threshold,
@@ -175,15 +176,21 @@ return.level <- function( x, return.period = 100, error.estimation = c( "none", 
         return.levels <- Reduce( c, lapply( return.period, function( y )
             as.numeric( climex:::rlevd( y, x[ 1 ], x[ 2 ], x[ 3 ], model = "gev" ) ) ) )
         } else {
-        ## m-observation return level = return.period* the mean number of
-        ## exceedance per year. This way the unit of the provided return level
-        ## and its error are  not 'per observation' but 'per year'.
-        ## In this step we harness the power of the 'xts' package
-        m <- return.period* mean( apply.yearly( x, function( y ) length( y ) ) )
-        return.levels <- Reduce( c, lapply( m, function( y )
-            as.numeric( climex:::rlevd( y, scale = x[ 1 ], shape = x[ 2 ],
-                                       model = "gpd", threshold = threshold,
-                                       silent = TRUE ) ) ) )
+            ## m-observation return level = return.period* the mean number of
+            ## exceedance per year. This way the unit of the provided return level
+            ## and its error are  not 'per observation' but 'per year'.
+            ## In this step we harness the power of the 'xts' package
+            if ( !is.null( original.time.series ) ){
+                m <- return.period* mean( apply.yearly( original.time.series,
+                                                       function( y ) length( y ) ) )
+            } else {
+                warning( "return.level: Since the original time series was not supplied the return level will be not per once every x year but once every x observation" )
+                m <- return.period
+            }
+            return.levels <- Reduce( c, lapply( m, function( y )
+                as.numeric( climex:::rlevd( y, scale = x[ 1 ], shape = x[ 2 ],
+                                           model = "gpd", threshold = threshold,
+                                           silent = TRUE ) ) ) )
         }
     } else
         stop( "return.level is not implemented for this class of input values!" )
@@ -196,7 +203,7 @@ return.level <- function( x, return.period = 100, error.estimation = c( "none", 
         if ( is.null( total.length ) && model == "gpd" ){
             warning( "The error estimation of the return level of the GP distribution does need the total length 'total.length' of the time series the exceedance are extracted from! Please supply it or use the Monte Carlo approach!" )
             return( list( return.levels = return.levels,
-                         errors = rep( NaN, length( m ) ) ) )
+                         errors = rep( NaN, length( return.period ) ) ) )
         }
         if ( !any( names( x ) == "hessian" ) ){
             ## If the hessian wasn't calculated yet, do it now!
@@ -277,7 +284,7 @@ return.level <- function( x, return.period = 100, error.estimation = c( "none", 
 ##'
 ##' @return Numerical vector of the same length as 'period'.
 ##' @author Philipp Mueller 
-rlevd <- function (period, location = NULL, scale = NULL, shape = NULL, threshold = NULL, 
+rlevd <- function ( period, location = NULL, scale = NULL, shape = NULL, threshold = NULL, 
                    model = c( "gev", "gpd" ), silent = FALSE ){
     if ( missing( model ) )
         model <- "gev"
@@ -305,7 +312,7 @@ rlevd <- function (period, location = NULL, scale = NULL, shape = NULL, threshol
             model = "gev", lower.tail = TRUE, silent = silent )
     }
     else {
-        res <- threshold + (scale/shape) * (m^shape - 1)
+        res <- location + ( scale/ shape ) * ( period^shape - 1 )
     }
     names( res ) <- as.character( period )
     return( res )
