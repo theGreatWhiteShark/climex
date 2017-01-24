@@ -412,6 +412,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
                      threshold = threshold, total.length = total.length ) ) )
     names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
     res.optim$x <- x
+    res.optim$threshold <- threshold
     return( res.optim )
 }
 
