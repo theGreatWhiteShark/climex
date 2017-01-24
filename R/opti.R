@@ -203,10 +203,11 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
 ##' @param rerun The optimization will be started again using the results of the first optimization run. If the "Nelder-Mead" algorithm is used for optimization (as it is here) this can be useful to escape local minima. When choosing simulated annealing as method the rerun will be skipped. Provide a different number of runs directly to the GenSA function via ... instead. Default = TRUE
 ##' @param optim.function Function which is going to be optimized. Default: \code{\link{likelihood}}
 ##' @param gradient.function If NULL a finite difference method is invoked. I'm not really sure why but I obtained more consistent results using the finite difference method instead of the derived formula of the GPD likelihood gradient. To use the later one provide \code{\link{likelihood.gradient}}. Default = NULL.
-##' @param error.estimation Method for calculating the standard errors of the fitted results. Using the option "MLE" the errors of the GPD parameters will be calculated as the square roots of the diagonal elements of the inverse of the hessian matrix calculated with the MLE of the GPD parameters. The standard error of the return level is calculated using the Delta method and the MLE of the GEV parameters. Alternative one can use Monte Carlo simulations with "MC" for which 1000 samples of the same size as x will be drawn from a GPD constituted by the obtained MLE of the GPD parameters of x. The standard error is then calculated via the square of the variance of all fitted GPD parameters and calculated return levels. Sometimes the inversion of the hessian fails (since the are some NaN in the hessian) (which is also the reason why the ismev package occasionally does not work). In such cases the Monte Carlo method is used. Option "none" just skips the calculation of the error. Default = "none".
+##' @param error.estimation Method for calculating the standard errors of the fitted results. Using the option "MLE" the errors of the GPD parameters will be calculated as the square roots of the diagonal elements of the inverse of the hessian matrix calculated with the MLE of the GPD parameters. The standard error of the return level is calculated using the Delta method and the MLE of the GPD parameters. Alternative one can use Monte Carlo simulations with "MC" for which 1000 samples of the same size as x will be drawn from a GPD constituted by the obtained MLE of the GPD parameters of x. The standard error is then calculated via the square of the variance of all fitted GPD parameters and calculated return levels. Sometimes the inversion of the hessian fails (since the are some NaN in the hessian) (which is also the reason why the ismev package occasionally does not work). In such cases the Monte Carlo method is used. Option "none" just skips the calculation of the error. Default = "none".
 ##' @param method Through the argument 'method' (which is passed to the optim function) the optimization algorithm is chosen. The default one is the "Nelder-Mead".
 ##' @param monte.carlo.sample.size Number of samples used to obtain the Monte Carlo estimate of the standard error of the fitting. Default = 1000
 ##' @param return.period Quantiles at which the return level is going to be evaluated. Class "numeric". Default = 100.
+##' @param total.length Total number of observations in the time series the exceedance were obtained from. This argument is needed to calculate the standard error of the return level via the delta method of the MLE. Default = NULL.
 ##' @param ... Additional arguments for the optim() or GenSA::GenSA() function. Depending on the chosen method.
 ##' 
 ##' @family optimization
@@ -236,7 +237,8 @@ fit.gpd <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
                     gradient.function = NULL,
                     error.estimation = c( "none", "MLE", "MC" ),
                     method = c( "Nelder-Mead", "BFGS", "CG", "SANN", "nmk" ),
-                    monte.carlo.sample.size = 1000, return.period = 100, ... ){
+                    monte.carlo.sample.size = 1000, return.period = 100,
+                    total.length = NULL, ... ){
     if ( missing( method ) )
         method <- "Nelder-Mead"
     method <- match.arg( method )    
@@ -340,46 +342,57 @@ fit.gpd <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
              any( is.nan( res.optim$hessian ) ) ){
             parameter.estimate <- res.optim$par
             number.of.samples <- 1000
-            ## Draw a number of samples and fit the GEV parameters for all of them
+            ## Draw a number of samples and fit the GPD parameters for all of them
             samples.list <- lapply( 1 : number.of.samples, function( y )
-                extRemes::revd( length( x ), parameter.estimate[ 1 ], parameter.estimate[ 2 ],
-                               parameter.estimate[ 3 ], type = "GEV" ) )
+                climex:::revd( length( x ), scale = parameter.estimate[ 1 ],
+                              shape = parameter.estimate[ 2 ], type = "gpd" ) )
             ## If e.g. via the BFGS method way to big shape parameter are estimated the guessing of the initial parameters for the optimization won't work anymore since the sampled values are way to big (e.g. 1E144)
             suppressWarnings( 
                 samples.fit <- try( lapply( samples.list, function( y )
                     stats::optim( likelihood.initials( y ), optim.function, x = y,
-                                 method = "Nelder-Mead" )$par ) ) )
+                                 method = "Nelder-Mead", model = "gpd", ... )$par ) ) )
             if ( class( samples.fit ) == "try-error" ){
-                errors <- c( NaN, NaN, NaN, NaN )
+                errors <- c( NaN, NaN, NaN )
             } else {
                 errors <- data.frame( sqrt( stats::var( Reduce( rbind, samples.fit )[ , 1 ] ) ),
-                                     sqrt( stats::var( Reduce( rbind, samples.fit )[ , 2 ] ) ),
-                                     sqrt( stats::var( Reduce( rbind, samples.fit )[ , 3 ] ) ) )
+                                     sqrt( stats::var( Reduce( rbind, samples.fit )[ , 2 ] ) ) )
                 for ( rr in 1 : length( return.period ) )
                     errors <- cbind( errors,
                                     sqrt( stats::var(
                                         Reduce( c, lapply( samples.fit, function( z )
                                             return.level( z,
-                                                         return.period = return.period[ rr ] ) ) ) ) ) )
+                                                         return.period = return.period[ rr ] )
+                                            ) ) ) ) )
             }
-            names( errors ) <- c( "location", "scale", "shape", paste0( return.period, ".rlevel" ) )
+            names( errors ) <- c( "scale", "shape", paste0( return.period, ".rlevel" ) )
         } else {
             ## Calculating the errors using the MLE
-            errors.aux <- sqrt( diag( error.covariance ) ) # GEV parameters
-            errors <- data.frame( errors.aux[ 1 ], errors.aux[ 2 ], errors.aux[ 3 ] )
+            errors.aux <- sqrt( diag( error.covariance ) ) # GPD parameters
+            errors <- data.frame( errors.aux[ 1 ], errors.aux[ 2 ] )
             ## Delta method for the return level
             parameter.estimate <- res.optim$par
-            ## Formula according to Stuart Coles p. 56
-            for ( rr in 1 : length( return.period ) ){
-                yp <- -log( 1 - 1/return.period[ rr ] )
-                scale <- parameter.estimate[ 2 ]
-                shape <- parameter.estimate[ 3 ]
-                dz <- c( 1, -shape^{ -1 }* ( 1 - yp^{ -shape } ),
-                        scale* shape^{ -2 }* ( 1 - yp^{ -shape } ) -
-                                     scale* shape^{ -1 }* yp^{ -shape }* log( yp ) )
-                errors <- cbind( errors, dz %*% error.covariance %*% dz )
+            ## Formula according to Stuart Coles p. 82
+            if ( is.null( total.length ) ){
+                warning( "The error estimation of the return level of the GP distribution does need the total length 'total.length' of the time series the exceedance are extracted from! Please supply it or use the Monte Carlo approach!" )
+                errors <- cbind( errors, rep( NaN, length( return.period ) ) )
+            } else {
+                for ( rr in 1 : length( return.period ) ){
+                    zeta <- length( x )/ total.length # probability of an exceedance
+                    ## m-observation return level = return.period* the mean number of
+                    ## exceedance per year. This way the unit of the provided return level
+                    ## and its error are  not 'per observation' but 'per year'.
+                    ## In this step we harness the power of the 'xts' package
+                    m <- return.period* mean( apply.yearly( x, function( y ) length( y ) ) )
+                    scale <- parameter.estimate[ 1 ]
+                    shape <- parameter.estimate[ 2 ]
+                    dz <- c( scale* m^shape* zeta^{ shape - 1 },
+                            shape^{ -1 }* ( ( m* zeta )^shape - 1 ),
+                            -scale* shape^{ -2 }* ( ( m* zeta )^ shape - 1 ) +
+                                          scale* shape^{ -1 }* ( m* zeta )^shape* log( m* zeta ) )
+                    errors <- cbind( errors, dz %*% error.covariance %*% dz )
+                }
             }
-            names( errors ) <- c( "location", "scale", "shape", paste0( return.period, ".rlevel" ) )
+            names( errors ) <- c( "scale", "shape", paste0( return.period, ".rlevel" ) )
         }
         res.optim$se <- errors
     }

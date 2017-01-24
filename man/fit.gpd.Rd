@@ -7,7 +7,8 @@
 fit.gpd(x, initial = NULL, rerun = TRUE, optim.function = likelihood,
   gradient.function = NULL, error.estimation = c("none", "MLE", "MC"),
   method = c("Nelder-Mead", "BFGS", "CG", "SANN", "nmk"),
-  monte.carlo.sample.size = 1000, return.period = 100, ...)
+  monte.carlo.sample.size = 1000, return.period = 100,
+  total.length = NULL, ...)
 }
 \arguments{
 \item{x}{Blocked time series to which the GPD distribution should be fitted.}
@@ -20,13 +21,15 @@ fit.gpd(x, initial = NULL, rerun = TRUE, optim.function = likelihood,
 
 \item{gradient.function}{If NULL a finite difference method is invoked. I'm not really sure why but I obtained more consistent results using the finite difference method instead of the derived formula of the GPD likelihood gradient. To use the later one provide \code{\link{likelihood.gradient}}. Default = NULL.}
 
-\item{error.estimation}{Method for calculating the standard errors of the fitted results. Using the option "MLE" the errors of the GPD parameters will be calculated as the square roots of the diagonal elements of the inverse of the hessian matrix calculated with the MLE of the GPD parameters. The standard error of the return level is calculated using the Delta method and the MLE of the GEV parameters. Alternative one can use Monte Carlo simulations with "MC" for which 1000 samples of the same size as x will be drawn from a GPD constituted by the obtained MLE of the GPD parameters of x. The standard error is then calculated via the square of the variance of all fitted GPD parameters and calculated return levels. Sometimes the inversion of the hessian fails (since the are some NaN in the hessian) (which is also the reason why the ismev package occasionally does not work). In such cases the Monte Carlo method is used. Option "none" just skips the calculation of the error. Default = "none".}
+\item{error.estimation}{Method for calculating the standard errors of the fitted results. Using the option "MLE" the errors of the GPD parameters will be calculated as the square roots of the diagonal elements of the inverse of the hessian matrix calculated with the MLE of the GPD parameters. The standard error of the return level is calculated using the Delta method and the MLE of the GPD parameters. Alternative one can use Monte Carlo simulations with "MC" for which 1000 samples of the same size as x will be drawn from a GPD constituted by the obtained MLE of the GPD parameters of x. The standard error is then calculated via the square of the variance of all fitted GPD parameters and calculated return levels. Sometimes the inversion of the hessian fails (since the are some NaN in the hessian) (which is also the reason why the ismev package occasionally does not work). In such cases the Monte Carlo method is used. Option "none" just skips the calculation of the error. Default = "none".}
 
 \item{method}{Through the argument 'method' (which is passed to the optim function) the optimization algorithm is chosen. The default one is the "Nelder-Mead".}
 
 \item{monte.carlo.sample.size}{Number of samples used to obtain the Monte Carlo estimate of the standard error of the fitting. Default = 1000}
 
 \item{return.period}{Quantiles at which the return level is going to be evaluated. Class "numeric". Default = 100.}
+
+\item{total.length}{Total number of observations in the time series the exceedance were obtained from. This argument is needed to calculate the standard error of the return level via the delta method of the MLE. Default = NULL.}
 
 \item{...}{Additional arguments for the optim() or GenSA::GenSA() function. Depending on the chosen method.}
 }
