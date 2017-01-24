@@ -229,7 +229,7 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
 ##' @import xts
 ##' @examples
 ##' potsdam.anomalies <- anomalies( temp.potsdam )
-##' potsdam.extremes <- decluster( potsdam.anomalies, threshold = 10 )
+##' potsdam.extremes <- threshold( potsdam.anomalies, threshold = 10, decluster = TRUE )
 ##' fit.gpd( potsdam.extremes )
 fit.gpd <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihood,
                     gradient.function = likelihood.gradient,
