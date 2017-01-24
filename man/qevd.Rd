@@ -5,7 +5,7 @@
 \title{Calculates the quantile of either the GEV or the GPD distribution}
 \usage{
 qevd(p, location = NULL, scale = NULL, shape = NULL, threshold = NULL,
-  type = c("gev", "gpd"), lower.tail = TRUE, silent = FALSE)
+  model = c("gev", "gpd"), lower.tail = TRUE, silent = FALSE)
 }
 \arguments{
 \item{p}{(Numeric) probability vector.}
@@ -18,7 +18,7 @@ qevd(p, location = NULL, scale = NULL, shape = NULL, threshold = NULL,
 
 \item{threshold}{Used in the GP distribution. This parameter is optional but should be provided in order to create a representation of the fitted data exceedance. Default = NULL.}
 
-\item{type}{Determines if to use the GEV or GP distribution. Default = "gev".}
+\item{model}{Determines if to use the GEV or GP distribution. Default = "gev".}
 
 \item{lower.tail}{Whether to sample the probabilities P[X <= x] or P[X > x]. Default = TRUE (first case).}
 

@@ -5,7 +5,7 @@
 \title{Internal function to calculate the return level of GEV or GP distribution.}
 \usage{
 rlevd(period, location = NULL, scale = NULL, shape = NULL,
-  threshold = NULL, type = c("gev", "gpd"), silent = FALSE)
+  threshold = NULL, model = c("gev", "gpd"), silent = FALSE)
 }
 \arguments{
 \item{period}{Return period in years.}
@@ -18,7 +18,7 @@ rlevd(period, location = NULL, scale = NULL, shape = NULL,
 
 \item{threshold}{Used in the GP distribution. This parameter is optional but should be provided in order to create a representation of the fitted data exceedance. Default = NULL.}
 
-\item{type}{Determines if to use the GEV or GP distribution. Default = "gev".}
+\item{model}{Determines if to use the GEV or GP distribution. Default = "gev".}
 
 \item{silent}{Whether to display warnings or not. Default = FALSE.}
 }

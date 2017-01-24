@@ -5,7 +5,7 @@
 \title{Drawing random numbers from the GEV or GP distribution}
 \usage{
 revd(n, location = NULL, scale = NULL, shape = NULL, threshold = NULL,
-  type = c("gev", "gpd"), silent = FALSE)
+  model = c("gev", "gpd"), silent = FALSE)
 }
 \arguments{
 \item{n}{Number of samples to draw}
@@ -18,7 +18,7 @@ revd(n, location = NULL, scale = NULL, shape = NULL, threshold = NULL,
 
 \item{threshold}{Used in the GP distribution. This parameter is optional but should be provided in order to create a representation of the fitted data exceedance. Default = NULL.}
 
-\item{type}{Determines if to use the GEV or GP distribution. Default = "gev".}
+\item{model}{Determines if to use the GEV or GP distribution. Default = "gev".}
 
 \item{silent}{Whether to display warnings or not. Default = FALSE.}
 }
