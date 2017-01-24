@@ -37,6 +37,7 @@ Imports:
     RCurl,
     RColorBrewer,
     deseasonalize,
+    Lmoments,
     moments,
     leaflet,
     GenSA,
