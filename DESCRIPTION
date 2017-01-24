@@ -30,7 +30,6 @@ Imports:
     parallel,
     shiny,
     htmltools,
-    animation,
     latex2exp,
     shinydashboard,
     shinytoastr,

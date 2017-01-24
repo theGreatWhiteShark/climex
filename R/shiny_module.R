@@ -53,8 +53,6 @@ color.table <- function( x.html.table, css.colours, style = "table-condensed tab
 ##'
 ##' @import ggplot2
 ##' @import shiny
-##' @importFrom animation ani.options
-##' @importFrom animation saveHTML
 ##' @return Opens a HTML widget showing the animation of the optimization routine.
 ##' @author Philipp Mueller 
 plot.animation <- function( time.series, starting.points, location.lim = NULL, scale.lim = NULL,
