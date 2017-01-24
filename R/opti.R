@@ -391,20 +391,24 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
                     ## and its error are  not 'per observation' but 'per year'.
                     ## In this step we harness the power of the 'xts' package
                     m <- return.period* mean( apply.yearly( x, function( y ) length( y ) ) )
+                    ## In addition the uncertainty of zeta has to be part of the error
+                    ## covariance matrix
+                    error.covariance.2 <- matrix( 0, 3, 3 )
+                    error.covariance.2[ 1 , 1 ] <- zeta*( 1 - zeta )/ total.length
+                    error.covariance.2[ 2 : 3, 2 : 3 ] <- error.covariance
                     scale <- parameter.estimate[ 1 ]
                     shape <- parameter.estimate[ 2 ]
                     dz <- c( scale* m^shape* zeta^{ shape - 1 },
                             shape^{ -1 }* ( ( m* zeta )^shape - 1 ),
                             -scale* shape^{ -2 }* ( ( m* zeta )^ shape - 1 ) +
                                           scale* shape^{ -1 }* ( m* zeta )^shape* log( m* zeta ) )
-                    errors <- cbind( errors, dz %*% error.covariance %*% dz )
+                    errors <- cbind( errors, dz %*% error.covariance.2 %*% dz )
                 }
             }
             names( errors ) <- c( "scale", "shape", paste0( return.period, ".rlevel" ) )
         }
         res.optim$se <- errors
     }
-    ## Naming of the resulting fit parameter (necessary for a correct conversion with as.fevd)
     names( res.optim$par ) <- c( "scale", "shape" )
     ## introducing a new data type for handling fits done with climex
     class( res.optim ) <- c( "list", "climex.fit.gpd" )
