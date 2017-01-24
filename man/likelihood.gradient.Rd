@@ -22,7 +22,7 @@ Philipp Mueller
 }
 \seealso{
 Other optimization: \code{\link{fit.gev}},
-  \code{\link{likelihood.initials}},
+  \code{\link{fit.gpd}}, \code{\link{likelihood.initials}},
   \code{\link{likelihood}}
 }
 
