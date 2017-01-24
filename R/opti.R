@@ -287,46 +287,66 @@ fit.gpd <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
     return( res )
 }
 
-##' @title Calculated the negative log likelihood of the GEV function.
+##' @title Calculated the negative log likelihood of the GEV or GPD function.
 ##'
 ##' @details This function is only meant to work with constant parameters and no covariats. x.in is not called "x" anymore since the call grad( func = likelihood, x = parameters, ... ) wouldn't be possible.
 ##'
-##' @param parameters Vector containing the location, scale and shape parameter. If NULL the \code{\link{likelihood.initials}} is used. Default = NULL
+##' @param parameters Vector containing the location, scale and shape parameter for the GEV or the scale and shape parameter for the GPD. If NULL the \code{\link{likelihood.initials}} is used. Default = NULL
 ##' @param x.in Time series.
-##' @param verbose Display debugging information.
+##' @param model Determining whether to calculate the initial parameters of the GEV or GPD function. Default = "gev"
 ##' 
 ##' @family optimization
 ##'
 ##' @export
-##' @return Numerical value of the negative log likelihood
+##' @return Numerical value of the negative log likelihood.
 ##' @author Philipp Mueller
-likelihood <- function( parameters = NULL, x.in, verbose = FALSE ){
+likelihood <- function( parameters = NULL, x.in, model = c( "gev", "gpd" ) ){
+    if ( missing( model ) )
+        model <- "gev"
+    model <- match.arg( model )
     if ( is.null( parameters ) ){
-        initials <- likelihood.initials( x.in )
-        scale <- initials[ 2 ]
-        location <- initials[ 1 ]
-        shape <- initials[ 3 ]
+        initials <- likelihood.initials( x.in, model = model )
+        if ( model == "gev" ){
+            scale <- initials[ 2 ]
+            location <- initials[ 1 ]
+            shape <- initials[ 3 ]
+        } else {
+            scale <- initials[ 1 ]
+            shape <- initials[ 2 ]
+        }
     } else {
-        ## extracting parameters (for the sake of convenience)
-        parameters <- as.numeric( parameters )
-        location <- parameters[ 1 ]
-        scale <- parameters[ 2 ]
-        shape <- parameters[ 3 ]
+        if ( model == "gev" ){
+            ## extracting parameters (for the sake of convenience)
+            parameters <- as.numeric( parameters )
+            location <- parameters[ 1 ]
+            scale <- parameters[ 2 ]
+            shape <- parameters[ 3 ]
+        } else {
+            scale <- parameters[ 1 ]
+            shape <- parameters[ 2 ]
+        }
     }
     ## reparametrization
-    gamma <- shape/ scale
     alpha <- 1/ shape + 1
-    y <- x.in - location
+    gamma <- shape/ scale
+    if ( model == "gev" ){
+        y <- x.in - location
+    } else
+        y <- x.in
+    z <- 1 + y* gamma
 
-    negloglikelihood <- numeric( 1 )
-    suppressWarnings( {
-        z <- 1 + y* gamma
-        negloglikelihood <- length( x.in )* log( scale ) + alpha* sum( log( z ) ) +
-            sum( z^{ -1/ shape } )
-        names( negloglikelihood ) <- NULL
-    } )
-    if ( verbose )
-        print( paste( "The negloglikelihood is", negloglikelihood, "\n" ) )    
+    if ( model == "gev" ){
+        suppressWarnings( {
+            negloglikelihood <- length( x.in )* log( scale ) + alpha* sum( log( z ) ) +
+                sum( z^{ -1/ shape } )
+        } )
+    } else {
+        suppressWarnings( {
+            negloglikelihood <- length( x.in )* log( scale ) +
+                alpha* sum( log( z ) )
+        } )
+    }
+    names( negloglikelihood ) <- NULL
     return( negloglikelihood )
 }
 
