@@ -200,6 +200,7 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
 ##'
 ##' @param x Blocked time series to which the GPD distribution should be fitted.
 ##' @param initial Initial values for the GPD parameters. Has to be provided as 2x1 vector. If NULL the parameters are estimated with the function \code{\link{likelihood.initials}}. Default = NULL
+##' @param threshold Optional threshold for the GPD model. If present it will be added to the return level to produce a value which fits to underlying time series. Default = NULL.
 ##' @param rerun The optimization will be started again using the results of the first optimization run. If the "Nelder-Mead" algorithm is used for optimization (as it is here) this can be useful to escape local minima. When choosing simulated annealing as method the rerun will be skipped. Provide a different number of runs directly to the GenSA function via ... instead. Default = TRUE
 ##' @param optim.function Function which is going to be optimized. Default: \code{\link{likelihood}}
 ##' @param gradient.function If NULL a finite difference method is invoked. I'm not really sure why but I obtained more consistent results using the finite difference method instead of the derived formula of the GPD likelihood gradient. To use the later one provide \code{\link{likelihood.gradient}}. Default = NULL.
@@ -233,8 +234,8 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
 ##' potsdam.anomalies <- anomalies( temp.potsdam )
 ##' potsdam.extremes <- threshold( potsdam.anomalies, threshold = 10, decluster = TRUE )
 ##' fit.gpd( potsdam.extremes )
-fit.gpd <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihood,
-                    gradient.function = NULL,
+fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
+                    optim.function = likelihood, gradient.function = NULL,                    
                     error.estimation = c( "none", "MLE", "MC" ),
                     method = c( "Nelder-Mead", "BFGS", "CG", "SANN", "nmk" ),
                     monte.carlo.sample.size = 1000, return.period = 100,
@@ -361,7 +362,11 @@ fit.gpd <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
                                     sqrt( stats::var(
                                         Reduce( c, lapply( samples.fit, function( z )
                                             return.level( z,
-                                                         return.period = return.period[ rr ] )
+                                                         return.period = return.period[ rr ],
+                                                         error.estimation = "none",
+                                                         model = "gpd",
+                                                         threshold = threshold,
+                                                         total.length = total.length )
                                             ) ) ) ) )
             }
             names( errors ) <- c( "scale", "shape", paste0( return.period, ".rlevel" ) )
@@ -402,9 +407,10 @@ fit.gpd <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
     class( res.optim ) <- c( "list", "climex.fit.gpd" )
 
     ## adding the return levels
-    ## res.optim$return.level <- Reduce( c, lapply( return.period,
-    ##                                             function( y ) return.level( res.optim, y ) ) )
-    ## names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
+    res.optim$return.level <- Reduce( c, lapply( return.period, function( y )
+        return.level( res.optim, y, error.estimation = "none", model = "gpd",
+                     threshold = threshold, total.length = total.length ) ) )
+    names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
     res.optim$x <- x
     return( res.optim )
 }

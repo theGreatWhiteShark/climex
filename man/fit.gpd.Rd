@@ -4,16 +4,18 @@
 \alias{fit.gpd}
 \title{Performing a fit to the GPD function.}
 \usage{
-fit.gpd(x, initial = NULL, rerun = TRUE, optim.function = likelihood,
-  gradient.function = NULL, error.estimation = c("none", "MLE", "MC"),
-  method = c("Nelder-Mead", "BFGS", "CG", "SANN", "nmk"),
-  monte.carlo.sample.size = 1000, return.period = 100,
-  total.length = NULL, ...)
+fit.gpd(x, initial = NULL, threshold = NULL, rerun = TRUE,
+  optim.function = likelihood, gradient.function = NULL,
+  error.estimation = c("none", "MLE", "MC"), method = c("Nelder-Mead",
+  "BFGS", "CG", "SANN", "nmk"), monte.carlo.sample.size = 1000,
+  return.period = 100, total.length = NULL, ...)
 }
 \arguments{
 \item{x}{Blocked time series to which the GPD distribution should be fitted.}
 
 \item{initial}{Initial values for the GPD parameters. Has to be provided as 2x1 vector. If NULL the parameters are estimated with the function \code{\link{likelihood.initials}}. Default = NULL}
+
+\item{threshold}{Optional threshold for the GPD model. If present it will be added to the return level to produce a value which fits to underlying time series. Default = NULL.}
 
 \item{rerun}{The optimization will be started again using the results of the first optimization run. If the "Nelder-Mead" algorithm is used for optimization (as it is here) this can be useful to escape local minima. When choosing simulated annealing as method the rerun will be skipped. Provide a different number of runs directly to the GenSA function via ... instead. Default = TRUE}
 
