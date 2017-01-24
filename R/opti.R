@@ -139,8 +139,9 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
             number.of.samples <- 1000
             ## Draw a number of samples and fit the GEV parameters for all of them
             samples.list <- lapply( 1 : number.of.samples, function( y )
-                extRemes::revd( length( x ), parameter.estimate[ 1 ], parameter.estimate[ 2 ],
-                               parameter.estimate[ 3 ], type = "GEV" ) )
+                climex:::revd( length( x ), location = parameter.estimate[ 1 ],
+                              scale = parameter.estimate[ 2 ],
+                              shape = parameter.estimate[ 3 ], type = "gev" ) )
             ## If e.g. via the BFGS method way to big shape parameter are estimated the guessing of the initial parameters for the optimization won't work anymore since the sampled values are way to big (e.g. 1E144)
             suppressWarnings( 
                 samples.fit <- try( lapply( samples.list, function( y )
@@ -330,6 +331,58 @@ fit.gpd <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
         res.optim$updates <- data.frame( scale = c( initial[ 2 ], res.optim$par[ 2 ] ),
                                         shape = c( initial[ 3 ], res.optim$par[ 3 ] ),
                                         step = c( 1, res.optim$counts[ 1 ] ) )
+    ##
+    ## Error estimation
+    ##
+    if ( error.estimation != "none" ){
+        error.covariance <- try( solve( res.optim$hessian ) )
+        if ( class( error.covariance ) == "try-error" || error.estimation == "MC" ||
+             any( is.nan( res.optim$hessian ) ) ){
+            parameter.estimate <- res.optim$par
+            number.of.samples <- 1000
+            ## Draw a number of samples and fit the GEV parameters for all of them
+            samples.list <- lapply( 1 : number.of.samples, function( y )
+                extRemes::revd( length( x ), parameter.estimate[ 1 ], parameter.estimate[ 2 ],
+                               parameter.estimate[ 3 ], type = "GEV" ) )
+            ## If e.g. via the BFGS method way to big shape parameter are estimated the guessing of the initial parameters for the optimization won't work anymore since the sampled values are way to big (e.g. 1E144)
+            suppressWarnings( 
+                samples.fit <- try( lapply( samples.list, function( y )
+                    stats::optim( likelihood.initials( y ), optim.function, x = y,
+                                 method = "Nelder-Mead" )$par ) ) )
+            if ( class( samples.fit ) == "try-error" ){
+                errors <- c( NaN, NaN, NaN, NaN )
+            } else {
+                errors <- data.frame( sqrt( stats::var( Reduce( rbind, samples.fit )[ , 1 ] ) ),
+                                     sqrt( stats::var( Reduce( rbind, samples.fit )[ , 2 ] ) ),
+                                     sqrt( stats::var( Reduce( rbind, samples.fit )[ , 3 ] ) ) )
+                for ( rr in 1 : length( return.period ) )
+                    errors <- cbind( errors,
+                                    sqrt( stats::var(
+                                        Reduce( c, lapply( samples.fit, function( z )
+                                            return.level( z,
+                                                         return.period = return.period[ rr ] ) ) ) ) ) )
+            }
+            names( errors ) <- c( "location", "scale", "shape", paste0( return.period, ".rlevel" ) )
+        } else {
+            ## Calculating the errors using the MLE
+            errors.aux <- sqrt( diag( error.covariance ) ) # GEV parameters
+            errors <- data.frame( errors.aux[ 1 ], errors.aux[ 2 ], errors.aux[ 3 ] )
+            ## Delta method for the return level
+            parameter.estimate <- res.optim$par
+            ## Formula according to Stuart Coles p. 56
+            for ( rr in 1 : length( return.period ) ){
+                yp <- -log( 1 - 1/return.period[ rr ] )
+                scale <- parameter.estimate[ 2 ]
+                shape <- parameter.estimate[ 3 ]
+                dz <- c( 1, -shape^{ -1 }* ( 1 - yp^{ -shape } ),
+                        scale* shape^{ -2 }* ( 1 - yp^{ -shape } ) -
+                                     scale* shape^{ -1 }* yp^{ -shape }* log( yp ) )
+                errors <- cbind( errors, dz %*% error.covariance %*% dz )
+            }
+            names( errors ) <- c( "location", "scale", "shape", paste0( return.period, ".rlevel" ) )
+        }
+        res.optim$se <- errors
+    }
     ## Naming of the resulting fit parameter (necessary for a correct conversion with as.fevd)
     names( res.optim$par ) <- c( "scale", "shape" )
     ## introducing a new data type for handling fits done with climex
