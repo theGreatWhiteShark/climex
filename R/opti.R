@@ -141,7 +141,7 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
             samples.list <- lapply( 1 : number.of.samples, function( y )
                 climex:::revd( length( x ), location = parameter.estimate[ 1 ],
                               scale = parameter.estimate[ 2 ],
-                              shape = parameter.estimate[ 3 ], type = "gev" ) )
+                              shape = parameter.estimate[ 3 ], model = "gev" ) )
             ## If e.g. via the BFGS method way to big shape parameter are estimated the guessing of the initial parameters for the optimization won't work anymore since the sampled values are way to big (e.g. 1E144)
             suppressWarnings( 
                 samples.fit <- try( lapply( samples.list, function( y )
@@ -346,7 +346,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
             ## Draw a number of samples and fit the GPD parameters for all of them
             samples.list <- lapply( 1 : number.of.samples, function( y )
                 climex:::revd( length( x ), scale = parameter.estimate[ 1 ],
-                              shape = parameter.estimate[ 2 ], type = "gpd" ) )
+                              shape = parameter.estimate[ 2 ], model = "gpd" ) )
             ## If e.g. via the BFGS method way to big shape parameter are estimated the guessing of the initial parameters for the optimization won't work anymore since the sampled values are way to big (e.g. 1E144)
             suppressWarnings( 
                 samples.fit <- try( lapply( samples.list, function( y )
