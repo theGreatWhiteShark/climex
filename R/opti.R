@@ -188,7 +188,7 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
 
     ## adding the return levels
     res.optim$return.level <- Reduce( c, lapply( return.period,
-                                                function( y ) return.level( res.optim, y ) ) )
+                                                function( y ) climex::return.level( res.optim, y ) ) )
     names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
     res.optim$x <- x
     return( res.optim )
@@ -349,11 +349,13 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
             ## Draw a number of samples and fit the GPD parameters for all of them
             samples.list <- lapply( 1 : number.of.samples, function( y )
                 climex:::revd( length( x ), scale = parameter.estimate[ 1 ],
-                              shape = parameter.estimate[ 2 ], model = "gpd" ) )
+                              shape = parameter.estimate[ 2 ], model = "gpd",
+                              silent = TRUE ) )
             ## If e.g. via the BFGS method way to big shape parameter are estimated the guessing of the initial parameters for the optimization won't work anymore since the sampled values are way to big (e.g. 1E144)
             suppressWarnings( 
                 samples.fit <- try( lapply( samples.list, function( y )
-                    stats::optim( likelihood.initials( y ), optim.function, x = y,
+                    stats::optim( likelihood.initials( y, model = "gpd" ),
+                                 optim.function, x = y,
                                  method = "Nelder-Mead", model = "gpd", ... )$par ) ) )
             if ( class( samples.fit ) == "try-error" ){
                 errors <- c( NaN, NaN, NaN )
@@ -361,15 +363,15 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
                 errors <- data.frame( sqrt( stats::var( Reduce( rbind, samples.fit )[ , 1 ] ) ),
                                      sqrt( stats::var( Reduce( rbind, samples.fit )[ , 2 ] ) ) )
                 for ( rr in 1 : length( return.period ) )
-                    errors <- cbind( errors,
-                                    sqrt( stats::var(
-                                        Reduce( c, lapply( samples.fit, function( z )
-                                            return.level( z,
-                                                         return.period = return.period[ rr ],
-                                                         error.estimation = "none",
-                                                         model = "gpd",
-                                                         threshold = threshold,
-                                                         total.length = total.length )
+                    errors <- cbind(
+                        errors,
+                        sqrt( stats::var(
+                            Reduce( c, lapply( samples.fit, function( z )
+                                return.level( z, return.period = return.period[ rr ],
+                                             error.estimation = "none", model = "gpd",
+                                             threshold = threshold,
+                                             total.length = total.length,
+                                             original.time.series = x )
                                             ) ) ) ) )
             }
             names( errors ) <- c( "scale", "shape", paste0( return.period, ".rlevel" ) )
@@ -415,7 +417,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
 
     ## adding the return levels
     res.optim$return.level <- Reduce( c, lapply( return.period, function( y )
-        return.level( res.optim, y, error.estimation = "none", model = "gpd",
+        climex::return.level( res.optim, y, error.estimation = "none", model = "gpd",
                      threshold = threshold, total.length = total.length ) ) )
     names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
     return( res.optim )
