@@ -254,11 +254,12 @@ fit.gpd <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
     if ( method %in% c( "Nelder-Mead", "BFGS", "CG" ) ){
         suppressWarnings(
             res.optim <- stats::optim( initial, optim.function, gr = gradient.function, x = x,
-                                      hessian = hessian.calculate, method = method, ... ) )
+                                      hessian = hessian.calculate, method = method,
+                                      model = "gpd", ... ) )
     } else if ( method == "SANN" ){
         ## Since this implementation didn't yielded nice results I switch to another package
         aux <- GenSA::GenSA( as.numeric( initial ), optim.function, lower = c( -Inf, 0, -Inf ),
-                            upper = c( Inf, Inf, Inf ), x = x, ... )
+                            upper = c( Inf, Inf, Inf ), x = x, model = "gpd", ... )
         ## return a NaN when not optimizing instead of the initial parameters
         if ( sum( aux$par %in% initial ) > 1 ){
             ## more than one parameter value remained unchanged
@@ -266,7 +267,8 @@ fit.gpd <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
         }
         res.optim <- list( par = aux$par, value = aux$value, counts = aux$counts,
                           hessian = if ( hessian.calculate ){
-                                        numDeriv::hessian( optim.function, x = aux$par, x.in = x )
+                                        numDeriv::hessian( optim.function, x = aux$par, x.in = x,
+                                                          model = "gpd", ... )
                                     } else NULL,
                           convergence = 0, message = NULL )
     } else if ( method == "nmk" ){
@@ -274,15 +276,27 @@ fit.gpd <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
         ## I could easily modify it and display the progress of the optimization.
         ## In principle I would recommend using the default optim procedures.
         aux <- dfoptim::nmk( par = initial, fn = likelihood, x = x, MODIFIED = TRUE,
-                            WARNINGS = FALSE )
+                            WARNINGS = FALSE, model = "gpd", ... )
         res.optim <- list( par = aux$par, value = aux$value, counts = aux$feval,
                           convergence = 0, message = NULL, updates = aux$x.updates,
                           hessian = if ( hessian.calculate ){
-                                        numDeriv::hessian( optim.function, x = aux$par, x.in = x )
+                                        numDeriv::hessian( optim.function, x = aux$par, x.in = x,
+                                                          model = "gpd", ... )
                                     } else NULL )
         res.optim$counts[ 2 ] <- NA
         names( res.optim$counts ) <- c( "function", "gradient" )   
     }
+    ## Naming of the resulting fit parameter (necessary for a correct conversion with as.fevd)
+    names( res.optim$par ) <- c( "location", "scale", "shape" )
+    ## introducing a new data type for handling fits done with climex
+    class( res.optim ) <- c( "list", "climex.fit.gev" )
+
+    ## adding the return levels
+    res.optim$return.level <- Reduce( c, lapply( return.period,
+                                                function( y ) return.level( res.optim, y ) ) )
+    names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
+    res.optim$x <- x
+    return( res.optim )
     res <- NULL
     return( res )
 }
@@ -350,42 +364,53 @@ likelihood <- function( parameters = NULL, x.in, model = c( "gev", "gpd" ) ){
     return( negloglikelihood )
 }
 
-##' @title Calculates the gradient of the negative log likelihood of the GEV function.
+##' @title Calculates the gradient of the negative log likelihood of the GEV or GPD function.
 ##'
-##' @details Like \code{\{link{likelihood}} the quantity min.shape switches between the evaluation according to a Gumbel or a Frechet or Weibull like function. In the case of the Gumbel like type the gradient of the shape parameter is set to zero.  
+##' @details 
 ##'
-##' @param parameters Vector containing the location, scale and shape parameter.
-##' @param x.in Time series.
+##' @param parameters Vector containing the location, scale and shape parameter for the GEV model or the scale and shape parameter for the GPD one.
+##' @param x.in Time series or numerical vector containing the extreme events.
+##' @param model Determining whether to calculate the initial parameters of the GEV or GPD function. Default = "gev".
 ##' 
 ##' @family optimization
 ##'
-##' @return Numerical vector containing the derivative of the negative log likelihood in (location, scale, shape) direction.
+##' @return Numerical vector containing the derivative of the negative log likelihood in (location, scale, shape for GEV) or (scale, shape for GPD) direction.
 ##' @author Philipp Mueller
-likelihood.gradient <- function( parameters, x.in ){
-    ## extracting parameters (for the sake of convenience)
-    if ( class( parameters ) == "list" )
-        parameters <- as.numeric( parameters )
-    location <- parameters[ 1 ]
-    scale <- parameters[ 2 ]
-    if ( length( parameters ) == 3 ){
+likelihood.gradient <- function( parameters, x.in, model = c( "gev", "gpd" ) ){
+    if ( missing( model ) )
+        model <- "gev"
+    model <- match.arg( model )
+    if ( model == "gev" ){
+        location <- parameters[ 1 ]
+        scale <- parameters[ 2 ]
         shape <- parameters[ 3 ]
-    } else
-        shape <- 0
+    } else {
+        scale <- parameters[ 1 ]
+        shape <- parameters[ 2 ]
+    }
 
     ## reparametrization
     gamma <- shape/ scale
     alpha <- 1/ shape + 1
-    y <- x.in - location
-
-    gradient <- numeric( 3 )
-
-    ## Weibull or Frechet
+    if ( model == "gev" ){
+        y <- x.in - location
+    } else
+        y <- x.in
     z <- 1 + y* gamma
-    gradient[ 1 ] <- sum( z^{-alpha}/ scale ) - sum( alpha* gamma/ z )
-    gradient[ 2 ] <- length( x.in )/ scale - sum( alpha* shape* y/ ( scale^2 * z ) ) +
-        sum( z^{ - alpha }*y/ scale^2 )
-    gradient[ 3 ] <- sum( alpha* y/ ( scale* z ) ) - sum( log( z )/ shape^ 2 ) +
-        sum( z^{ -1/ shape }* log( z )/ shape^ 2 - y/ ( scale* shape* z^alpha ) )
+
+    ## Calculating the gradient
+    if ( model == "gev" ){
+        gradient <- numeric( 3 )
+        gradient[ 1 ] <- sum( z^{-alpha}/ scale ) - sum( alpha* gamma/ z )
+        gradient[ 2 ] <- length( x.in )/ scale - sum( alpha* shape* y/ ( scale^2 * z ) ) +
+            sum( z^{ - alpha }*y/ scale^2 )
+        gradient[ 3 ] <- sum( alpha* y/ ( scale* z ) ) - sum( log( z )/ shape^ 2 ) +
+            sum( z^{ -1/ shape }* log( z )/ shape^ 2 - y/ ( scale* shape* z^alpha ) )
+    } else {
+        gradient <- numeric( 2 )
+        gradient[ 1 ] <- -length( x.in )/scale + alpha* shape* sum( x.in/ ( z* scale^2) )
+        gradient[ 2 ] <- 1/ shape^2* sum( log( z ) ) - alpha/ scale* sum( x.in/ z )
+    }            
     return( gradient )
 }
 
