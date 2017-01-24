@@ -517,8 +517,9 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
 
         ## Approximation using the method of moments
         sc.init <- sqrt( var( x ) )
+        sh.init <- .1
         if ( type == "mom" )
-            return( c( sc.init, .1 ) )
+            return( c( sc.init, sh.init ) )
 
         ## Instead of taking just a default shape parameter, pick a bunch of them
         ## and query for the one resulting in the lowest negative log-likelihood
@@ -531,7 +532,7 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
         initials <- list( initial.gum1, initial.gum2, initial.gum3, 
                          initial.lmom, initial.default1, initial.default2 )
         suppressWarnings( initials.likelihood <- lapply( initials, likelihood,
-                                                        x.in = x, method = "gpd" ) )
+                                                        x.in = x, model = "gpd" ) )
 
     }
     if ( !all( is.nan( as.numeric( initials.likelihood ) ) ) ){
