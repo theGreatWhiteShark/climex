@@ -179,3 +179,30 @@ return.level <- function( x, return.period = 100, error.estimation = c( "none", 
     }
     return( list( return.levels = return.levels, errors = errors ) )
 }
+
+##' @title Extracts all data above a certain threshold
+##' @details Due to the UNIX principle (make each program do one thing well) I decided to provide this extra function instead of incorporating it into the fitting function. After extracting all data above the threshold it is going to be subtracted from the data. In addition all exceedance can be declustered. This step is highly recommended since the extreme value theory is only valid for data without correlations and short-range correlations (which are present in most measured data) can be filtered out using this procedure. 
+##'
+##' @param x Time series or numerical vector.
+##' @param threshold Value which has to be exceeded.
+##' @param decluster Flag indicating whether of not to decluster the obtained exceedance. Default = TRUE.
+##' @param na.rm Flag indicating whether to remove all NA values from the time series (removed points in clusters). For important steps like calculating the Lmoments of the time series there must not be any NA left. Default = TRUE.
+##'
+##' @export
+##' @return Declustered time series of the same format as the input.
+##' @author Philipp Mueller 
+threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
+    if ( missing( x ) )
+        stop( "Please provide a time series to apply the threshold to!" )
+    if ( missing( threshold ) )
+        stop( "Please provide a threshold to be applied to the time series!" )
+    ## declustering of the data
+    if ( decluster ){
+        x.threshold <- climex::decluster( x, threshold ) - threshold
+    } else
+        x.threshold <- x[ x > threshold ] - threshold
+    ## removing the NA
+    if ( na.rm )
+        x.threshold <- na.omit( x.threshold )        
+    return( x.threshold )
+}
