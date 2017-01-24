@@ -201,7 +201,7 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
 ##' @param initial Initial values for the GPD parameters. Has to be provided as 2x1 vector. If NULL the parameters are estimated with the function \code{\link{likelihood.initials}}. Default = NULL
 ##' @param rerun The optimization will be started again using the results of the first optimization run. If the "Nelder-Mead" algorithm is used for optimization (as it is here) this can be useful to escape local minima. When choosing simulated annealing as method the rerun will be skipped. Provide a different number of runs directly to the GenSA function via ... instead. Default = TRUE
 ##' @param optim.function Function which is going to be optimized. Default: \code{\link{likelihood}}
-##' @param gradient.function If NULL a finite difference method is invoked. Default: \code{\link{likelihood.gradient}}
+##' @param gradient.function If NULL a finite difference method is invoked. I'm not really sure why but I obtained more consistent results using the finite difference method instead of the derived formula of the GPD likelihood gradient. To use the later one provide \code{\link{likelihood.gradient}}. Default = NULL.
 ##' @param error.estimation Method for calculating the standard errors of the fitted results. Using the option "MLE" the errors of the GPD parameters will be calculated as the square roots of the diagonal elements of the inverse of the hessian matrix calculated with the MLE of the GPD parameters. The standard error of the return level is calculated using the Delta method and the MLE of the GEV parameters. Alternative one can use Monte Carlo simulations with "MC" for which 1000 samples of the same size as x will be drawn from a GPD constituted by the obtained MLE of the GPD parameters of x. The standard error is then calculated via the square of the variance of all fitted GPD parameters and calculated return levels. Sometimes the inversion of the hessian fails (since the are some NaN in the hessian) (which is also the reason why the ismev package occasionally does not work). In such cases the Monte Carlo method is used. Option "none" just skips the calculation of the error. Default = "none".
 ##' @param method Through the argument 'method' (which is passed to the optim function) the optimization algorithm is chosen. The default one is the "Nelder-Mead".
 ##' @param monte.carlo.sample.size Number of samples used to obtain the Monte Carlo estimate of the standard error of the fitting. Default = 1000
@@ -232,7 +232,7 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
 ##' potsdam.extremes <- threshold( potsdam.anomalies, threshold = 10, decluster = TRUE )
 ##' fit.gpd( potsdam.extremes )
 fit.gpd <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihood,
-                    gradient.function = likelihood.gradient,
+                    gradient.function = NULL,
                     error.estimation = c( "none", "MLE", "MC" ),
                     method = c( "Nelder-Mead", "BFGS", "CG", "SANN", "nmk" ),
                     monte.carlo.sample.size = 1000, return.period = 100, ... ){
@@ -241,7 +241,7 @@ fit.gpd <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
     method <- match.arg( method )    
     ## Default values if no initial parameters are supplied
     if ( is.null( initial ) )
-        initial <- likelihood.initials( x )
+        initial <- likelihood.initials( x, model = "gpd" )
     if ( is.null( error.estimation ) )
         error.estimation <- "none"
     error.estimation <- match.arg( error.estimation )
@@ -258,8 +258,8 @@ fit.gpd <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
                                       model = "gpd", ... ) )
     } else if ( method == "SANN" ){
         ## Since this implementation didn't yielded nice results I switch to another package
-        aux <- GenSA::GenSA( as.numeric( initial ), optim.function, lower = c( -Inf, 0, -Inf ),
-                            upper = c( Inf, Inf, Inf ), x = x, model = "gpd", ... )
+        aux <- GenSA::GenSA( as.numeric( initial ), optim.function, lower = c( 0, -Inf ),
+                            upper = c( Inf, Inf ), x = x, model = "gpd", ... )
         ## return a NaN when not optimizing instead of the initial parameters
         if ( sum( aux$par %in% initial ) > 1 ){
             ## more than one parameter value remained unchanged
@@ -287,18 +287,16 @@ fit.gpd <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
         names( res.optim$counts ) <- c( "function", "gradient" )   
     }
     ## Naming of the resulting fit parameter (necessary for a correct conversion with as.fevd)
-    names( res.optim$par ) <- c( "location", "scale", "shape" )
+    names( res.optim$par ) <- c( "scale", "shape" )
     ## introducing a new data type for handling fits done with climex
-    class( res.optim ) <- c( "list", "climex.fit.gev" )
+    class( res.optim ) <- c( "list", "climex.fit.gpd" )
 
     ## adding the return levels
-    res.optim$return.level <- Reduce( c, lapply( return.period,
-                                                function( y ) return.level( res.optim, y ) ) )
-    names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
+    ## res.optim$return.level <- Reduce( c, lapply( return.period,
+    ##                                             function( y ) return.level( res.optim, y ) ) )
+    ## names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
     res.optim$x <- x
     return( res.optim )
-    res <- NULL
-    return( res )
 }
 
 ##' @title Calculated the negative log likelihood of the GEV or GPD function.
