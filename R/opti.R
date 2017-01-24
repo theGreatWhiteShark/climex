@@ -323,6 +323,9 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
         } else
             res.optim <- res.optim.rerun
     }
+    ## adding the time series and threshold to the result
+    res.optim$x <- x
+    res.optim$threshold <- threshold
     ##
     ## Regarding the animation in the climex web app
     ##
@@ -331,8 +334,8 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
     ## do at this moment (without rewriting and linking the whole internal
     ## calls of optim )
     if ( is.null( res.optim$updates ) )
-        res.optim$updates <- data.frame( scale = c( initial[ 2 ], res.optim$par[ 2 ] ),
-                                        shape = c( initial[ 3 ], res.optim$par[ 3 ] ),
+        res.optim$updates <- data.frame( scale = c( initial[ 1 ], res.optim$par[ 1 ] ),
+                                        shape = c( initial[ 2 ], res.optim$par[ 2 ] ),
                                         step = c( 1, res.optim$counts[ 1 ] ) )
     ##
     ## Error estimation
@@ -411,8 +414,6 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
         return.level( res.optim, y, error.estimation = "none", model = "gpd",
                      threshold = threshold, total.length = total.length ) ) )
     names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
-    res.optim$x <- x
-    res.optim$threshold <- threshold
     return( res.optim )
 }
 
