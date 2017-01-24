@@ -58,7 +58,8 @@ fit.gev( potsdam.blocked )
 Philipp Mueller
 }
 \seealso{
-Other optimization: \code{\link{likelihood.gradient}},
+Other optimization: \code{\link{fit.gpd}},
+  \code{\link{likelihood.gradient}},
   \code{\link{likelihood.initials}},
   \code{\link{likelihood}}
 }
