@@ -229,12 +229,60 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
 ##' @import xts
 ##' @examples
 ##' potsdam.anomalies <- anomalies( temp.potsdam )
-##' fit.gpd( potsdam.anomalies )
+##' potsdam.extremes <- decluster( potsdam.anomalies, threshold = 10 )
+##' fit.gpd( potsdam.extremes )
 fit.gpd <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihood,
                     gradient.function = likelihood.gradient,
                     error.estimation = c( "none", "MLE", "MC" ),
                     method = c( "Nelder-Mead", "BFGS", "CG", "SANN", "nmk" ),
                     monte.carlo.sample.size = 1000, return.period = 100, ... ){
+    if ( missing( method ) )
+        method <- "Nelder-Mead"
+    method <- match.arg( method )    
+    ## Default values if no initial parameters are supplied
+    if ( is.null( initial ) )
+        initial <- likelihood.initials( x )
+    if ( is.null( error.estimation ) )
+        error.estimation <- "none"
+    error.estimation <- match.arg( error.estimation )
+    ## if the error.estimation is not required, do not calculate the hessian
+    if ( error.estimation == "none" ){
+        hessian.calculate <- FALSE
+    } else
+        hessian.calculate <- TRUE
+    ## Optimization
+    if ( method %in% c( "Nelder-Mead", "BFGS", "CG" ) ){
+        suppressWarnings(
+            res.optim <- stats::optim( initial, optim.function, gr = gradient.function, x = x,
+                                      hessian = hessian.calculate, method = method, ... ) )
+    } else if ( method == "SANN" ){
+        ## Since this implementation didn't yielded nice results I switch to another package
+        aux <- GenSA::GenSA( as.numeric( initial ), optim.function, lower = c( -Inf, 0, -Inf ),
+                            upper = c( Inf, Inf, Inf ), x = x, ... )
+        ## return a NaN when not optimizing instead of the initial parameters
+        if ( sum( aux$par %in% initial ) > 1 ){
+            ## more than one parameter value remained unchanged
+            aux$value <- NaN
+        }
+        res.optim <- list( par = aux$par, value = aux$value, counts = aux$counts,
+                          hessian = if ( hessian.calculate ){
+                                        numDeriv::hessian( optim.function, x = aux$par, x.in = x )
+                                    } else NULL,
+                          convergence = 0, message = NULL )
+    } else if ( method == "nmk" ){
+        ## The benefit of the nmk method is that its code base is written in R. So
+        ## I could easily modify it and display the progress of the optimization.
+        ## In principle I would recommend using the default optim procedures.
+        aux <- dfoptim::nmk( par = initial, fn = likelihood, x = x, MODIFIED = TRUE,
+                            WARNINGS = FALSE )
+        res.optim <- list( par = aux$par, value = aux$value, counts = aux$feval,
+                          convergence = 0, message = NULL, updates = aux$x.updates,
+                          hessian = if ( hessian.calculate ){
+                                        numDeriv::hessian( optim.function, x = aux$par, x.in = x )
+                                    } else NULL )
+        res.optim$counts[ 2 ] <- NA
+        names( res.optim$counts ) <- c( "function", "gradient" )   
+    }
     res <- NULL
     return( res )
 }
@@ -321,91 +369,129 @@ likelihood.gradient <- function( parameters, x.in ){
     return( gradient )
 }
 
-##' @title Estimates the initial GEV parameters of a time series.
+##' @title Estimates the initial GEV or GPD parameters of a time series.
 ##'
 ##' @details Two main methods are used for the estimation: the L-moments method of Hosking & Wallis implemented in the extRemes::initializer.lmoments() function and an estimation using the first two moments of the Gumbel distribution. For the later one a modification was added: By looking at skewness of the distribution and with respect to some heuristic thresholds a shape parameter between -.4 and .2 is assigned. Warning: both methods do not work for samples with diverging (or pretty big) mean or variance. For this reason the restrict argument is included. If the estimates are bigger than the corresponding restrict.thresholds, they will be replaced by this specific value.
 ##'
 ##' @param x Time series/numeric.
+##' @param model Determining whether to calculate the initial parameters of the GEV or GPD function. Default = "gev"
 ##' @param type Which method should be used to calculate the initial parameters. "best" combines all methods and return the result with the least likelihood. "mom" - method of moments returns an approximation according to the first two moments of the Gumbel distribution. "lmom" - returns an estimate according to the Lmoments method. Default = "best"
-##' @param modified If TRUE my changes in the heuristics will be applied. Like using the skewness etc. Default = FALSE
-##' @param restrict If TRUE the estimates will be minimum of the two different approximations and restrict.thresholds. This should prevent artifacts due to diverging means and variances. Default = FALSE
-##' @param restrict.thresholds Maximal value for each of the estimates. Default = c( 50, 50, 5 )
+##' @param modified Determines if the skewness is getting used to determine the initial shape parameter. Default = TRUE.
 ##'
 ##' @family optimization
 ##'
 ##' @export
-##' @return Numerical vector containing the c( location, scale, shape ) estimate.
+##' @return Numerical vector containing the c( location, scale, shape ) estimates for method = "gev" or the c( scale, shape ) estimates for method = "gpd".
 ##' @author Philipp Mueller
-likelihood.initials <- function( x, type = c( "best", "mom", "lmom" ), modified = TRUE, restrict = FALSE, restrict.thresholds = c( 1000, 500, 3 ) ){
+likelihood.initials <- function( x, model = c( "gev", "gpd" ),
+                                type = c( "best", "mom", "lmom" ), modified = TRUE ){
+    if ( missing( model ) )
+        model <- "gev"
+    model <- match.arg( model )
     if ( missing( type ) )
         type <- "best"
     type <- match.arg( type )
-    ## Method of moments
-    sc.init <- sqrt( 6* stats::var( x ) )/ pi
-    loc.init <- mean( x ) - 0.57722* sc.init
-    if ( modified ){
-        x.skewness <- moments::skewness( x )
-        ## When, for some reason, the time series consists of just a sequence of one unique number the calculation of the skewness returns NaN and the function throws an error
-        if ( is.na( x.skewness ) )
-            x.skewness <- 0
-        if ( x.skewness >= .7 && x.skewness <= 1.6 ){
-            sh.init <- 0.001
-        } else if( x.skewness < .7 ){
-            sh.init <- -.1
-            if ( x.skewness < .1 ){
-                sh.init <- -.2775
-                if ( x.skewness < -.2 ){
-                sh.init <- -.4
-                if ( x.skewness < -1 )
-                    sh.init <- -1.5 # Some arbitrary high value. Didn't checked it.
+    if ( model == "gev" ){
+        ## Method of moments
+        sc.init <- sqrt( 6* stats::var( x ) )/ pi
+        loc.init <- mean( x ) - 0.57722* sc.init
+        if ( modified ){
+            x.skewness <- moments::skewness( x )
+            ## When, for some reason, the time series consists of just a sequence of
+            ## one unique number the calculation of the skewness returns NaN and the
+            ## function throws an error
+            if ( is.na( x.skewness ) )
+                x.skewness <- 0
+            if ( x.skewness >= .7 && x.skewness <= 1.6 ){
+                sh.init <- 0.001
+            } else if( x.skewness < .7 ){
+                sh.init <- -.1
+                if ( x.skewness < .1 ){
+                    sh.init <- -.2775
+                    if ( x.skewness < -.2 ){
+                        sh.init <- -.4
+                        if ( x.skewness < -1 )
+                            sh.init <- -1.5 # Some arbitrary high value. Didn't checked it.
+                    }
                 }
+            } else if ( x.skewness > 1.4 ){
+                sh.init <- .2
+                if ( x.skewness > 3.4 )
+                    sh.init <- 1.5 # Some arbitrary high value. Didn't checked it.
             }
-        } else if ( x.skewness > 1.4 ){
-            sh.init <- .2
-            if ( x.skewness > 3.4 )
-                sh.init <- 1.5 # Some arbitrary high value. Didn't checked it.
+        } else
+            sh.init <- 0.00001
+        if ( type == "mom" )
+            return( c( loc.init, sc.init, sh.init ) )    
+        ## Approximationg using the Lmoments method of Hosking, Wallis and Wood (1985).
+        ## Therefore I will use the interior of the extRemes:::initializer.lmoments function
+        lambda <- try( Lmoments::Lmoments( x ),
+                            silent = TRUE )
+        if ( class( lambda ) == "try-error" ){
+            initial.lmom <- c( Inf, Inf, Inf )
+        } else {
+            tau3 <- lambda[ 3 ]/ lambda[ 2 ]
+            co <- 2/ ( 3 + tau3 ) - log( 2 )/ log( 3 )
+            kappa <- 7.8590* co + 2.9554* co^2
+            g <- gamma( 1 + kappa )
+            sigma <- ( lambda[ 2 ]* kappa )/( ( 1 - 2^( -kappa ) )* g )
+            mu <- lambda[ 1 ] - ( sigma/ kappa )*( 1 - g )
+            xi <- -kappa
+            initial.lmom <- c( mu, sigma, xi )
         }
-    } else
-        sh.init <- 0.00001
-    if ( type == "mom" )
-        return( c( loc.init, sc.init, sh.init ) )    
-    ## Approximationg using the Lmoments method of Hosking, Wallis and Wood (1985)
-    initial.lmom <- try( as.numeric( extRemes::initializer.lmoments( x, "gev" ) ), silent = TRUE )
-    if ( class( initial.lmom ) == "try-error" )
-        initial.lmom <- c( Inf, Inf, Inf )
-    if ( type == "lmom" )
-        return( c( initial.lmom ) )
+        if ( type == "lmom" )
+            return( initial.lmom )
 
-    ## When the initial parameters are too big due to a diverging mean or variance, some heuristics are used for approximation
-    if ( restrict ){
-        loc.restrict <- stats::median( x )
-        ## Approximation using the mode of the PDF for the location parameter and using the formula for the median of the Gumbel distribution.
-        sc.restrict <- abs( ( stats::median( x ) - mode( x ) )/ log( log( 2 ) ) )
-        sh.restrict <- sh.init # using my skewness approach
-        if ( sc.init > restrict.thresholds[ 2 ] )
-            sc.init <- sc.restrict
-        if ( abs( loc.init ) > restrict.thresholds[ 1 ] )
-            loc.init <- loc.restrict
-        if ( abs( initial.lmom[ 1 ] ) > restrict.thresholds[ 1 ] )
-            initial.lmom[ 1 ] <- loc.restrict
-        if ( initial.lmom[ 2 ] > restrict.thresholds[ 2 ] )
-            initial.lmom[ 2 ] <- sc.restrict
-        if ( abs( initial.lmom[ 3 ] ) > restrict.thresholds[ 3 ] )
-            initial.lmom[ 3 ] <- sh.restrict
+        initial.gum1 <- c( loc.init, sc.init, sh.init )   
+        initial.gum2 <- c( loc.init, sc.init, sh.init + stats::rnorm( 1, sd = 0.5 ) ) 
+        initial.gum3 <- c( loc.init, sc.init, sh.init + stats::rnorm( 1, sd = 0.5 ) ) 
+        initial.default1 <- c( loc.init, sc.init, 0.1 )
+        initial.default2 <- c( loc.init, sc.init, 1E-8 )
+        
+        initials <- list( initial.gum1, initial.gum2, initial.gum3, 
+                         initial.lmom, initial.default1, initial.default2 )
+        suppressWarnings( initials.likelihood <- lapply( initials, likelihood, x.in = x ) )
+    } else {
+        ## Approximationg using the Lmoments method
+        ## Since I decided to not calculate the threshold inside the fitting (or even
+        ## inside this function - for the sake of the Linux principle) I will use the
+        ## interior of the extRemes:::initializer.lmoments function
+	lambda <- try( Lmoments::Lmoments( x ), silent = TRUE )
+        
+        if ( class( lambda ) == "try-error" ){
+            initial.lmom <- c( Inf, Inf, Inf )
+        } else {
+            tau2 <- lambda[ 2 ]/ lambda[ 1 ]
+            sigma <- lambda[ 1 ]*( 1/tau2 - 1 )
+            kappa <- 1/tau2 - 2
+            xi <- -kappa
+            initial.lmom <- c( sigma, xi )
+	}
+        if ( type == "lmom" )
+            return( initial.lmom )
+
+        ## Approximation using the method of moments
+        sc.init <- sqrt( var( x ) )
+        if ( type == "mom" )
+            return( c( sc.init, .1 ) )
+
+        ## Instead of taking just a default shape parameter, pick a bunch of them
+        ## and query for the one resulting in the lowest negative log-likelihood
+        initial.gum1 <- c( sc.init, sh.init )   
+        initial.gum2 <- c( sc.init, sh.init + stats::rnorm( 1, sd = 0.5 ) ) 
+        initial.gum3 <- c( sc.init, sh.init + stats::rnorm( 1, sd = 0.5 ) ) 
+        initial.default1 <- c( sc.init, 0.1 )
+        initial.default2 <- c( sc.init, 1E-8 )
+        
+        initials <- list( initial.gum1, initial.gum2, initial.gum3, 
+                         initial.lmom, initial.default1, initial.default2 )
+        suppressWarnings( initials.likelihood <- lapply( initials, likelihood,
+                                                        x.in = x, method = "gpd" ) )
+
     }
-
-    initial.gum1 <- c( loc.init, sc.init, sh.init )   
-    initial.gum2 <- c( loc.init, sc.init, sh.init + stats::rnorm( 1, sd = 0.5 ) ) 
-    initial.gum3 <- c( loc.init, sc.init, sh.init + stats::rnorm( 1, sd = 0.5 ) ) 
-    initial.default1 <- c( loc.init, sc.init, 0.1 )
-    initial.default2 <- c( loc.init, sc.init, 1E-8 )
-    
-    initials <- list( initial.gum1, initial.gum2, initial.gum3, 
-                     initial.lmom, initial.default1, initial.default2 )
-    suppressWarnings( initials.likelihood <- lapply( initials, likelihood, x.in = x ) )
-    
     if ( !all( is.nan( as.numeric( initials.likelihood ) ) ) ){
-        ## Returning the set of initial parameters which is yielding the lowest negative log-likelihood
+        ## Returning the set of initial parameters which is yielding the
+        ## lowest negative log-likelihood
         return( initials[[ which.min( initials.likelihood ) ]] )
     } else
         ## Well, what to do now?
