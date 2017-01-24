@@ -286,6 +286,50 @@ fit.gpd <- function( x, initial = NULL, rerun = TRUE, optim.function = likelihoo
         res.optim$counts[ 2 ] <- NA
         names( res.optim$counts ) <- c( "function", "gradient" )   
     }
+    
+    if ( rerun && method != "SANN" ){
+        ## Rerunning the optimization for the simulated annealing makes no sense.
+        ## Just increase the number of iterations for this method.
+        if ( method %in% c( "Nelder-Mead", "BFGS", "CG" ) ){
+            suppressWarnings(
+                res.optim.rerun <- try( stats::optim( par = res.optim$par, fn = optim.function,
+                                                     gr = gradient.function, x = x,
+                                                     hessian = hessian.calculate, method = method,
+                                                     model = "gpd", ... ), silent = TRUE ) )
+        } else if ( method == "nmk" ){
+            aux <- dfoptim::nmk( par = res.optim$par, fn = likelihood, x = x, MODIFIED = TRUE,
+                                WARNINGS = FALSE, model = "gpd", ... )
+            res.optim.rerun <- list( par = aux$par, value = aux$value, counts = aux$feval,
+                                    convergence = 0, message = NULL, updates = aux$x.updates,
+                                    hessian = if ( hessian.calculate ){
+                                                  numDeriv::hessian( optim.function, x = aux$par,
+                                                                    x.in = x )
+                                        } else NULL, model = "gpd", ... )
+            res.optim.rerun$counts[ 2 ] <- NA
+            ## When rerun the whole path should be present in the updates
+            res.optim.rerun$updates$step <- seq(
+                res.optim$updates$step[ nrow( res.optim$updates ) ],
+                res.optim$updates$step[ nrow( res.optim$updates ) ] +
+                nrow( res.optim.rerun$updates ) - 1 )
+            res.optim.rerun$updates <- rbind( res.optim$updates, res.optim.rerun$updates )
+            names( res.optim.rerun$counts ) <- c( "function", "gradient" )
+        }
+        if ( class( res.optim.rerun ) == "try-error" ){
+            warning( "Rerun failed. Be sure to use the Nelder-Mead method of optimization." )
+        } else
+            res.optim <- res.optim.rerun
+    }
+    ##
+    ## Regarding the animation in the climex web app
+    ##
+    ## if no updates element is available add the start and end parameter pair.
+    ## This is just a poor approximation of the optimization route but I can
+    ## do at this moment (without rewriting and linking the whole internal
+    ## calls of optim )
+    if ( is.null( res.optim$updates ) )
+        res.optim$updates <- data.frame( scale = c( initial[ 2 ], res.optim$par[ 2 ] ),
+                                        shape = c( initial[ 3 ], res.optim$par[ 3 ] ),
+                                        step = c( 1, res.optim$counts[ 1 ] ) )
     ## Naming of the resulting fit parameter (necessary for a correct conversion with as.fevd)
     names( res.optim$par ) <- c( "scale", "shape" )
     ## introducing a new data type for handling fits done with climex
