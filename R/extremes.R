@@ -97,6 +97,34 @@ decluster <- function( x, threshold ){
     x.result[ which.x.over.threshold ] <- x.over.threshold
 }
 
+##' @title Extracts all data above a certain threshold
+##' @details Due to the UNIX principle (make each program do one thing well) I decided to provide this extra function instead of incorporating it into the fitting function. After extracting all data above the threshold it is going to be subtracted from the data. In addition all exceedance can be declustered. This step is highly recommended since the extreme value theory is only valid for data without correlations and short-range correlations (which are present in most measured data) can be filtered out using this procedure. 
+##'
+##' @param x Time series or numerical vector.
+##' @param threshold Value which has to be exceeded.
+##' @param decluster Flag indicating whether of not to decluster the obtained exceedance. Default = TRUE.
+##' @param na.rm Flag indicating whether to remove all NA values from the time series (removed points in clusters). For important steps like calculating the Lmoments of the time series there must not be any NA left. Default = TRUE.
+##'
+##' @export
+##' @return Declustered time series of the same format as the input.
+##' @author Philipp Mueller 
+threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
+    if ( missing( x ) )
+        stop( "Please provide a time series to apply the threshold to!" )
+    if ( missing( threshold ) )
+        stop( "Please provide a threshold to be applied to the time series!" )
+    ## declustering of the data
+    if ( decluster ){
+        x.threshold <- climex::decluster( x, threshold ) - threshold
+    } else
+        x.threshold <- x[ x > threshold ] - threshold
+    ## removing the NA
+    if ( na.rm )
+        x.threshold <- na.omit( x.threshold )        
+    return( x.threshold )
+}
+
+
 ##' @title Calculation of the return levels.
 ##'
 ##' @details Uses the extRemes::rlevd function at its core but also can handle multiple versions of the parameter input (as numeric, or direct outputs of various fitting procedures), is capable of calculating numerous return levels at once and also calculates the errors of the return levels. For the errors the ML fit is using the option hessian=TRUE (if not done already) or uses a Monte Carlo based approach. If no fitting object is provided, no errors will be calculated. The calculation of the error only works for objects fitted by fit.gev and not for ones fitted by foreign packages. Since it is also able of calculating the return levels for the output of the *extRemes::fevd()* function I decided to mask the original function from this package.
@@ -104,7 +132,8 @@ decluster <- function( x, threshold ){
 ##' @param x Parameter input. Class numeric, climex.fit.gev, fit.gev (ismev) or fevd (extRemes)
 ##' @param return.period Numeric vector of the return periods the return levels should be calculated at. Default = 100.
 ##' @param error.estimation Method of calculating the standard errors of the return levels. Using option "MLE" it is calculated using the Delta method and the MLE of the GEV parameters. Alternative one can use Monte Carlo simulations with "MC" for which monte.carlo.sample.size samples of the same size as x will be drawn from a GEV distribution constituted by the obtained MLE of the GEV parameters of x. The standard error is then calculated via the square of the variance of the calculated return levels. Sometimes the inversion of the hessian fails (since the are some NaN in the hessian) (which is also the reason why the ismev package occasionally does not work). Option "none" just skips the calculation of the error and return just a numeric value of the estimate. To avoid broken dependencies  with existing code this option will be default. Default = "none".
-##' @param monte.carlo.sample.size Number of samples used to obtain the Monte Carlo estimate of the standard error of the fitting. Default = 1000
+##' @param monte.carlo.sample.size Number of samples used to obtain the Monte Carlo estimate of the standard error of the fitting. Default = 1000.
+##' @param total.length Total number of observations in the time series the exceedance were obtained from. This argument is needed to calculate the standard error of the return level via the delta method of the MLE. Default = NULL.
 ##'
 ##' @return If error.estimation == "none" a numerical vector containing the estimates of the return levels will be returned. Else a list containing the estimates and their standard errors will be returned.
 ##' @export
@@ -112,7 +141,7 @@ decluster <- function( x, threshold ){
 ##' fit.results <- fit.gev( block( anomalies( temp.potsdam ) ) )
 ##' return.level( fit.results, return.period = c( 10, 50, 100 ), error.estimation = "MLE" )
 return.level <- function( x, return.period = 100, error.estimation = c( "none", "MC", "MLE" ),
-                  monte.carlo.sample.size = 1000 ){
+                  monte.carlo.sample.size = 1000, total.length = NULL ){
     if ( any( class( x ) == "climex.fit.gev" ) ){
         return.levels <- Reduce( c, lapply( return.period, function( y )
             as.numeric( extRemes::rlevd( y, x$par[ 1 ], x$par[ 2 ], x$par[ 3 ] ) ) ) )
@@ -190,130 +219,52 @@ return.level <- function( x, return.period = 100, error.estimation = c( "none", 
     return( list( return.levels = return.levels, errors = errors ) )
 }
 
-##' @title Extracts all data above a certain threshold
-##' @details Due to the UNIX principle (make each program do one thing well) I decided to provide this extra function instead of incorporating it into the fitting function. After extracting all data above the threshold it is going to be subtracted from the data. In addition all exceedance can be declustered. This step is highly recommended since the extreme value theory is only valid for data without correlations and short-range correlations (which are present in most measured data) can be filtered out using this procedure. 
+##' @title Internal function to calculate the return level of GEV or GP distribution.
+##' @details Port from the extRemes package to ensure compatibility and to make the threshold argument obligatory. This is just for internal usage. Please use the \link{\code{return.level}} function instead!
 ##'
-##' @param x Time series or numerical vector.
-##' @param threshold Value which has to be exceeded.
-##' @param decluster Flag indicating whether of not to decluster the obtained exceedance. Default = TRUE.
-##' @param na.rm Flag indicating whether to remove all NA values from the time series (removed points in clusters). For important steps like calculating the Lmoments of the time series there must not be any NA left. Default = TRUE.
+##' @param period Return period in years.
+##' @param location Of the GEV distribution. Default = NULL.
+##' @param scale Of the GEV/GP distribution. Default = NULL.
+##' @param shape Of the GEV/GP distribution. Default = NULL.
+##' @param threshold Used in the GP distribution. This parameter is optional but should be provided in order to create a representation of the fitted data exceedance. Default = NULL.
+##' @param type Determines if to use the GEV or GP distribution. Default = "gev".
+##' @param silent Whether to display warnings or not. Default = FALSE.  
 ##'
-##' @export
-##' @return Declustered time series of the same format as the input.
+##' @return Numerical vector of the same length as 'period'.
 ##' @author Philipp Mueller 
-threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
-    if ( missing( x ) )
-        stop( "Please provide a time series to apply the threshold to!" )
-    if ( missing( threshold ) )
-        stop( "Please provide a threshold to be applied to the time series!" )
-    ## declustering of the data
-    if ( decluster ){
-        x.threshold <- climex::decluster( x, threshold ) - threshold
-    } else
-        x.threshold <- x[ x > threshold ] - threshold
-    ## removing the NA
-    if ( na.rm )
-        x.threshold <- na.omit( x.threshold )        
-    return( x.threshold )
+rlevd <- function (period, location = NULL, scale = NULL, shape = NULL, threshold = NULL, 
+                   type = c( "gev", "gpd" ), silent = FALSE ){
+    if ( missing( type ) )
+        type <- "gev"
+    type <- match.arg( type )
+    if ( type == "gev" ){
+        if ( is.null( location ) ||
+             is.null( scale ) || is.null( shape ) )
+            stop( "Please supply 'location', 'scale' and 'shape'!" )
+    } else {
+        if ( is.null( scale ) || is.null( shape ) )
+            stop( "Please supply 'scale' and 'shape'!" )
+        if ( is.null( threshold ) ){
+            if ( !silent )
+                warning( "No 'threshold' supplied! This needs to be added to the generated time series in order to resemble the original data points!" )
+            location <- 0
+        } else
+            location <- threshold
+    }
+    if ( any( period <= 1 ) ) 
+        stop( "rlevd: invalid period argument.  Must be greater than 1." )
+    
+    if ( type == "gev" ) {
+        p <- 1 - 1/ period
+        res <- climex:::qevd( p = p, location = location, scale = scale, shape = shape, 
+            type = "gev", lower.tail = TRUE, silent = silent )
+    }
+    else {
+        res <- threshold + (scale/shape) * (m^shape - 1)
+    }
+    names( res ) <- as.character( period )
+    return( res )
 }
-
-
-## rlevd <- function (period, loc = 0, scale = 1, shape = 0, threshold = 0, 
-##     type = c("GEV", "GP", "PP", "Gumbel", "Frechet", "Weibull", 
-##         "Exponential", "Beta", "Pareto"), npy = 365.25, rate = 0.01) 
-## {
-##     if (any(period <= 1)) 
-##         stop("rlevd: invalid period argument.  Must be greater than 1.")
-##     type <- match.arg(type)
-##     type <- tolower(type)
-##     if (missing(loc)) 
-##         loc <- 0
-##     else if (is.null(loc)) 
-##         loc <- 0
-##     if (is.element(type, c("gumbel", "weibull", "frechet"))) {
-##         if (type == "gumbel" && shape != 0) {
-##             warning("rlevd: shape is not zero, but type is Gumbel.  Re-setting shape parameter to zero.")
-##             shape <- 0
-##             type <- "gev"
-##         }
-##         else if (type == "gumbel") 
-##             type <- "gev"
-##         else if (type == "frechet" && shape <= 0) {
-##             if (shape == 0) {
-##                 warning("rlevd: shape is zero, but type is Frechet!  Re-setting type to Gumbel.")
-##                 shape <- 0
-##             }
-##             else {
-##                 warning("rlevd: type is Frechet, but shape < 0.  Negating shape to force it to be Frechet.")
-##                 shape <- -shape
-##             }
-##             type <- "gev"
-##         }
-##         else if (type == "frechet") 
-##             type <- "gev"
-##         else if (type == "weibull" && shape >= 0) {
-##             if (shape == 0) {
-##                 warning("rlevd: shape is zero, but type is Weibull!  Re-setting type to Gumbel.")
-##                 shape <- 0
-##             }
-##             else {
-##                 warning("rlevd: type is Weibull, but shape > 0.  Negating shape to force it to be Weibull.")
-##                 shape <- -shape
-##             }
-##             type <- "gev"
-##         }
-##         else if (type == "weibull") 
-##             type <- "gev"
-##     }
-##     if (is.element(type, c("beta", "pareto", "exponential"))) {
-##         if (type == "exponential" && shape != 0) {
-##             warning("rlevd: shape is not zero, but type is Exponential.  Re-setting shape parameter to zero.")
-##             shape <- 0
-##             type <- "gp"
-##         }
-##         else if (type == "exponential") 
-##             type <- "gp"
-##         else if (type == "beta" && shape >= 0) {
-##             if (shape == 0) {
-##                 warning("rlevd: shape is zero, but type is Beta!  Re-setting type to Exponential.")
-##                 shape <- 0
-##             }
-##             else {
-##                 warning("rlevd: type is Beta, but shape > 0.  Negating shape to force it to be Beta.")
-##                 shape <- -shape
-##             }
-##             type <- "gp"
-##         }
-##         else if (type == "beta") 
-##             type <- "gp"
-##         else if (type == "pareto" && shape <= 0) {
-##             if (shape == 0) {
-##                 warning("rlevd: shape is zero, but type is Pareto!  Re-setting type to Exponential.")
-##                 shape <- 0
-##             }
-##             else {
-##                 warning("rlevd: type is Pareto, but shape < 0.  Negating shape to force it to be Pareto.")
-##                 shape <- -shape
-##             }
-##             type <- "gp"
-##         }
-##         else if (type == "pareto") 
-##             type <- "gp"
-##     }
-##     if (is.element(type, c("gev", "pp"))) {
-##         p <- 1 - 1/period
-##         res <- qevd(p = p, loc = loc, scale = scale, shape = shape, 
-##             type = "GEV")
-##     }
-##     else if (type == "gp") {
-##         m <- period * npy * rate
-##         if (shape == 0) 
-##             res <- threshold + scale * log(m)
-##         else res <- threshold + (scale/shape) * (m^shape - 1)
-##     }
-##     names(res) <- as.character(period)
-##     return(res)
-## }
 
 ##' @title Calculates the quantile of either the GEV or the GPD distribution
 ##' @details Port from the extRemes package to (again) get rid of the 'threshold' argument to be able to have an separate 'threshold()' function outside of the fitting function. 
