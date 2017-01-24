@@ -206,3 +206,42 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
         x.threshold <- na.omit( x.threshold )        
     return( x.threshold )
 }
+
+##' @title Drawing random numbers from the GEV or GP distribution
+##' @details This function was originally part of the extRemes package. But since one had to provide the threshold I couldn't use it insight the fit.gpd function. In contrast to the original implementation this function only features constant location, scale and shape parameters. If you want to do time dependent analysis of extreme events please refer to the original package.
+##'
+##' @param n Number of samples to draw
+##' @param location Of the GEV distribution. Default = NULL.
+##' @param scale Of the GEV/GP distribution. Default = NULL.
+##' @param shape Of the GEV/GP distribution. Default = NULL.
+##' @param threshold Used in the GP distribution. This parameter is optional but should be provided in order to create a representation of the fitted data exceedance. Default = NULL.
+##' @param type Determines if to use the GEV or GP distribution. Default = "gev".
+##'
+##' @return Numerical vector of length n drawn from the corresponding distribution. 
+##' @author Philipp Mueller 
+revd <- function ( n, location = NULL, scale = NULL, shape = NULL, threshold = NULL,
+                  type = c( "gev",  "gpd" ), silent = FALSE ){
+    if ( missing( type ) )
+        type <- "gev"
+    type <- match.arg( type )
+    if ( type == "gev" ){
+        if ( is.null( location ) ||
+             is.null( scale ) || is.null( shape ) )
+            stop( "Please supply 'location', 'scale' and 'shape'!" )
+        z <- rexp( n )
+    } else {
+        if ( is.null( scale ) || is.null( shape ) )
+            stop( "Please supply 'scale' and 'shape'!" )
+        if ( is.null( threshold ) ){
+            if ( !silent )
+                warning( "No 'threshold' supplied! This needs to be added to the generated time series in order to resemble the original data points!" )
+            location <- 0
+        } else
+            location <- threshold
+        z <- runif( n )
+    }
+    ## allocating memory
+    result <- numeric( n ) + NA
+    result <- location + scale * ( z^( -shape ) - 1 )/ shape
+    return( result )
+}
