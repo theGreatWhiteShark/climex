@@ -19,6 +19,8 @@ revd(n, location = NULL, scale = NULL, shape = NULL, threshold = NULL,
 \item{threshold}{Used in the GP distribution. This parameter is optional but should be provided in order to create a representation of the fitted data exceedance. Default = NULL.}
 
 \item{type}{Determines if to use the GEV or GP distribution. Default = "gev".}
+
+\item{silent}{Whether to display warnings or not. Default = FALSE.}
 }
 \value{
 Numerical vector of length n drawn from the corresponding distribution.
