@@ -1441,7 +1441,7 @@ climex.server <- function( input, output, session ){
     output$leafletMap <- renderLeaflet( {
         leaflet() %>% fitBounds( 5, 46, 13, 55 ) %>%
             addTiles( "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-                     attribution = '<code> Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a> </code>' ) } )
+                     attribution = '<code> Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>) </code>' ) } )
     ## Depending on the number of minimal years and the selected data source markers
     ## will be placed at the geo-coordinates of the individual stations. 
     observe( {
