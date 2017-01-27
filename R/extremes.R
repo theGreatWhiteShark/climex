@@ -309,7 +309,6 @@ rlevd <- function ( period, location = NULL, scale = NULL, shape = NULL, thresho
     
     if ( model == "gev" ) {
         p <- 1 - 1/ period
-        browser()
         res <- climex:::qevd( p = p, location = location, scale = scale, shape = shape, 
             model = "gev", lower.tail = TRUE, silent = silent )
     }
