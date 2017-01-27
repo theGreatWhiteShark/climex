@@ -33,8 +33,8 @@ climex <- function( x.input = NULL ){
             if ( all( Reduce( c, lapply( x.input, function ( y )
                 any( class( x ) == "xts" ) ) ) ) || (
                     length( x.input ) == 2 &&
-                                        "list" %in% Reduce( c, lapply( x.input, class ) ) &&
-                                                        "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) ) {
+                    "list" %in% Reduce( c, lapply( x.input, class ) ) &&
+                    "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) ) {
                 x.input <<- x.input
             } else {
                 x.input <<- NULL
@@ -184,7 +184,8 @@ climex.server <- function( input, output, session ){
             return( NULL )
         if ( input$selectDataBase == "artificial data" ){
             sliderInput( "sliderArtificialDataShape", "shape", -1.5, 1.5, -0.25, round = -2 )
-        } else if ( input$selectDataBase == "input" && ( session$clientData$url_hostname == "localhost" ||                                                                  session$clientData$url_hostname == "127.0.0.1"  )){
+        } else if ( input$selectDataBase == "input" && (
+            session$clientData$url_hostname == "localhost" ||                                                                  session$clientData$url_hostname == "127.0.0.1"  ) ){
             ## due to security concerns only allow the file selection on
             ## localhost
             fileInput( "fileInputSelection", "Choose a .RData file" )
@@ -247,8 +248,8 @@ climex.server <- function( input, output, session ){
             } else if ( class( file.input ) == "list" ){
                 if ( all( class( x.input ) == "xts" ) || (
                     length( x.input ) == 2 &&
-                                        "list" %in% Reduce( c, lapply( x.input, class ) ) &&
-                                                        "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) ){
+                    "list" %in% Reduce( c, lapply( x.input, class ) ) &&
+                    "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) ){
                     x.input <<- file.input
                     return( x.input )
                 }
@@ -270,11 +271,45 @@ climex.server <- function( input, output, session ){
             ## The length of the artificial time series is determined by
             ## the number of years chosen via the input$sliderMap slider
             ## in the leaflet tab
-            x.xts <- xts( extRemes::revd( input$sliderMap,
-                                         loc = input$sliderArtificialDataLocation,
-                                         scale = input$sliderArtificialDataScale,
-                                         shape = input$sliderArtificialDataShape, type = "GEV" ),
-                         order.by = index( stations.temp.max[[ 64 ]] ) )
+            ## Using the Potsdam time series from Germany as reference
+            data( temp.potsdam, package = "climex" )
+            p.l <- length( temp.potsdam )
+            ## Length of the time series
+            if ( is.null( input$sliderMap ) ){
+                x.length <- length( unique( lubridate::year( temp.potsdam ) ) )
+            } else {
+                x.length <- input$sliderMap
+            }
+            ## Whether to use GEV or GPD data
+            if ( is.null( input$radioGevStatistics ) ){
+                model <- "gev"
+            } else {
+                if ( input$radioGevStatistics == "Block" ){
+                    model <- "gev"
+                } else {
+                    model <- "gpd"
+                }
+            }
+            if ( model == "gev" ){
+                x.xts <- xts( climex:::revd( n = x.length,
+                                            location = input$sliderArtificialDataLocation,
+                                            scale = input$sliderArtificialDataScale,
+                                            shape = input$sliderArtificialDataShape,
+                                            model = "gev" ),
+                             order.by = index( temp.potsdam )[ ( p.l - x.length + 1 ) : p.l ] )
+            } else {
+                if ( is.null( input$sliderThresholdGev ) ){
+                    threshold <- .8* max( temp.potsdam )
+                } else {
+                    threshold <- input$sliderThresholdGev
+                }
+                x.xts <- xts( climex:::revd( n = x.length,
+                                            scale = input$sliderArtificialDataScale,
+                                            shape = input$sliderArtificialDataShape,
+                                            threshold = threshold, silent = TRUE,
+                                            model = "gpd" ),
+                             order.by = index( temp.potsdam )[ ( p.l - x.length + 1 ) : p.l ] )
+            }
         } else {
             ## In all other cases the possible choices are contained in
             ## the data.selected object and are agnostic of the data base
@@ -353,13 +388,16 @@ climex.server <- function( input, output, session ){
             ## "input$buttonMinMax" are still use full and decide if the values above
             ## or below the threshold are going to be extracted
             if ( is.null( input$sliderThresholdGev ) ){
-                x.block <- x.xts[ x.xts >= max( x.xts )* .8 ]
+                threshold <- max( x.xts )* .8
             } else
-                x.block <- x.xts[ x.xts >= input$sliderThresholdGev ]
+                threshold <- input$sliderThresholdGev
             if ( !is.null( input$checkBoxDecluster ) ){
-                if ( input$checkBoxDecluster )
-                    x.block <- declustering( x.block, input$sliderThresholdGev )
-            }
+                checkDecluster <- FALSE
+            } else
+                checkDecluster <- input$checkBoxDecluster
+            x.block <- climex::threshold( x.block, threshold = threshold,
+                                         decluster = input$sliderThresholdGev,
+                                         na.rm = TRUE )
             return( x.block )
         }
     }
@@ -415,36 +453,6 @@ climex.server <- function( input, output, session ){
             return( NULL )
         }
         reactive.values$keep.rows <- rep( TRUE, length( x.block ) ) } )
-############################# declustering of the ts ###############################
-    ## Inspired by extRemes::decluster.intervals and based on Ferro, C. A. T. and Segers, J.
-    ## (2003). Inference for clusters of extreme values. _Journal of the Royal Statistical
-    ## Society B_, *65*, 545-556.
-    declustering <- function( x, threshold ){
-        ## Caution: x is the full time series and not the blocked one!
-        x.extremal.index <- extRemes::extremalindex( x, threshold, na.action = stats::na.omit )
-        ifelse( x.extremal.index[ 1 ] >= 1, cluster.size <- 0, cluster.size <-
-                                                                   x.extremal.index[ 3 ] )
-        ## cluster.size is the number of indices a two points have to be away from each
-        ## other to belong to different indices
-        n <- length( x )
-        which.x.over.threshold <- x > threshold
-        which.x.over.threshold <- stats::na.omit( which.x.over.threshold )
-        x.over.threshold <- x[ which.x.over.threshold ]
-        n.over.threshold <- sum( which.x.over.threshold ) # amount of points over threshold
-        index.x.over.threshold <- ( 1 : n )[
-            stats::na.omit( which.x.over.threshold ) ] # index of those points in the ts 'x'
-        which.cluster <- rep( 1, n.over.threshold )
-        x.result <- x
-        ## number of indices the threshold exceedences are apart from each other
-        x.distances <- diff( index.x.over.threshold ) 
-        ## which point belongs to which cluster
-        which.cluster[ 2 : n.over.threshold ] <- 1 + cumsum( x.distances > cluster.size ) 
-        x.cluster <- split( x.over.threshold, which.cluster )
-        x.cluster.max <- as.numeric( lapply( x.cluster, max ) )
-        ## Only the maxima of the clusters survive
-        x.over.threshold[ -which( x.over.threshold %in% x.cluster.max ) ] <- NA
-        x.result[ which.x.over.threshold ] <- x.over.threshold
-    }
 ####################################################################################
     
 ####################################################################################
@@ -904,14 +912,19 @@ climex.server <- function( input, output, session ){
 ####################################################################################
     ## Since I will fit a couple of times with the chosen fitting parameters/algorithms
     ## I will hard code it and just call it at the required points 
-    fit.interactive <- function( x.kept, x.initial = likelihood.initials( x.kept ) ){
+    fit.interactive <- function( x.kept, x.initial = NULL ){
         ## wait for the initialization
         if ( is.null( input$radioGevStatistics ) || is.null( input$selectOptimization ) )
             return( NULL )
+        if ( is.null( x.initial ) ){
+            if ( input$( input$radioGevStatistics == "Blocks" ) ){
+                x.initial <- likelihood.initials( x.kept, model = "gev" )
+            } else 
+                x.initial <- likelihood.initials( x.kept, model = "gpd" )
         ##! Drop-down menu to decide which fitting routine should be used
         if ( input$radioGevStatistics == "Blocks" ){
             ## Fits of GEV parameters to blocked data set
-            x.fit.gev <- suppressWarnings( switch(
+            x.fit.evd <- suppressWarnings( switch(
                 input$selectOptimization,
                 "Nelder-Mead" = fit.gev( x.kept, initial = x.initial, rerun = input$checkboxRerun,
                                         method = "Nelder-Mead", error.estimation = "none" ),
@@ -923,26 +936,36 @@ climex.server <- function( input, output, session ){
                                  method = "SANN", error.estimation = "none" ),
                 "dfoptim::nmk" = fit.gev( x.kept, initial = x.initial, rerun = input$checkboxRerun,
                                          method = "nmk", error.estimation = "none" ) ) ) 
-            class( x.fit.gev ) <- c( "list", "climex.fit.gev" )
+            class( x.fit.evd ) <- c( "list", "climex.fit.gev" )
         } else {
             ## Fits of GPD parameters to blocked data set
-            if ( is.null( input$sliderThresholdGev ) ){
-                threshold <- max( x.kept )* .8
-            } else
-                threshold <- input$sliderThresholdGev
             suppressWarnings(
-                x.fit.gev <- ismev::gpd.fit( x.kept, threshold,
+            x.fit.evd <- suppressWarnings( switch(
+                input$selectOptimization,
+                "Nelder-Mead" = fit.gev( x.kept, initial = x.initial, rerun = input$checkboxRerun,
+                                        method = "Nelder-Mead", error.estimation = "none" ),
+                "CG" = fit.gev( x.kept, initial = x.initial, rerun = input$checkboxRerun,
+                               method = "CG", error.estimation = "none" ),
+                "BFGS" = fit.gev( x.kept, initial = x.initial, rerun = input$checkboxRerun,
+                                 method = "BFGS", error.estimation = "none" ),
+                "SANN" = fit.gev( x.kept, initial = x.initial, rerun = input$checkboxRerun,
+                                 method = "SANN", error.estimation = "none" ),
+                "dfoptim::nmk" = fit.gev( x.kept, initial = x.initial, rerun = input$checkboxRerun,
+                                         method = "nmk", error.estimation = "none" ) ) ) 
+            class( x.fit.evd ) <- c( "list", "climex.fit.evd" )
+                x.fit.evd <- ismev::gpd.fit( x.kept, threshold,
                                             show = FALSE,
                                             method =
                                                 input$selectionOptimization ) )
+            }
             ## For comparability.
-            x.fit.gev$par <- x.fit.gev$mle
-            names( x.fit.gev$par ) <- c( "scale", "shape" )
-            x.fit.gev$convergence <- x.fit.gev$conv
-            x.fit.gev$value <- x.fit.gev$nllh
-            x.fit.gev$x <- x.kept
+            x.fit.evd$par <- x.fit.evd$mle
+            names( x.fit.evd$par ) <- c( "scale", "shape" )
+            x.fit.evd$convergence <- x.fit.evd$conv
+            x.fit.evd$value <- x.fit.evd$nllh
+            x.fit.evd$x <- x.kept
         }
-        return( x.fit.gev )
+        return( x.fit.evd )
     }
     ## Fitting of the time series selected via a click on the map or the select form in the sidebar
     ## For this time series it is possible to exclude individual points via clicking on them in the
