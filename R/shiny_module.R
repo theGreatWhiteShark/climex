@@ -44,8 +44,9 @@ color.table <- function( x.html.table, css.colours, style = "table-condensed tab
 ##' @param optimization.steps Vector containing two numbers from 0 to 1 specifying the start and the end point of the optimization. Since the number of steps is unknown beforehand it will be chosen relativley to the total number of steps. Default = c( 0, 1 ).
 ##' @param optimization.rerun Flag deciding if to rerun the optimization at the
 ##' parameters determined by the first run. Default = TRUE.
-##' @param width of both the images and the form with the playback options in pixel.
 ##' @param height of both the images and the form with the playback options in pixel.
+##' @param width of both the images and the form with the playback options in pixel.
+##' @param model Whether to calculate the likelihood for the GEV or GP distribution. Default = "gev".
 ##' @param colors List of colors used to generate the plots.
 ##' @param image.folder where the generated pictures should be saved.
 ##'
@@ -58,7 +59,7 @@ color.table <- function( x.html.table, css.colours, style = "table-condensed tab
 plot.animation <- function( time.series, starting.points, location.lim = NULL, scale.lim = NULL,
                            shape.lim = NULL, optimization.method = 'nmk',
                            optimization.steps = c( .1, .5 ), optimization.rerun = TRUE,
-                           height = 300, width = 300,
+                           height = 300, width = 300, model = c( "gev", "gpd" ),
                            colors = list( plane.low = "#eaeafa", plane.high = "#191970",
                                          plane.contour = "white", path.low = "yellow",
                                          path.high = "darkred", path.true = "black" ),
@@ -352,8 +353,9 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
 ##' @param optimization.steps Since the first updates contain a lot of jumps and the last ones almost no deviations in the GEV parameters the range of the trajectories can be limited.
 ##' @param optimization.rerun Flag deciding if to rerun the optimization at the
 ##' parameters determined by the first run. Default = TRUE.
-##' @param width of both the images and the form with the playback options in pixel.
 ##' @param height of both the images and the form with the playback options in pixel.
+##' @param width of both the images and the form with the playback options in pixel.
+##' @param model Whether to calculate the likelihood for the GEV or GP distribution. Default = "gev".
 ##' @param delay Time for which the individual pictures stay visible during the animation in ms. Default = 300.
 ##' @param loopMode Scianimator parameter declaring what will happen after a full run through all the images. Default = "loop".
 ##' @param image.folder where the generated pictures should be saved.
@@ -364,9 +366,11 @@ plot.animation <- function( time.series, starting.points, location.lim = NULL, s
 ##' @return An invisible copy of the generated JavaScript file.
 ##' @seealso \code{\link{plot.animation}}
 ##' @author Philipp Mueller 
-animation.wrapper <- function( time.series, starting.points, location.lim, scale.lim, shape.lim,
-                  optimization.method = "nmk", optimization.steps, optimization.rerun = TRUE,
-                  width, height, delay = 300, loopMode = "loop", image.folder, working.folder ){
+animation.wrapper <- function( time.series, starting.points, location.lim,
+                              scale.lim, shape.lim, optimization.method = "nmk",
+                              optimization.steps, optimization.rerun = TRUE,
+                              height, width, model = c( "gev", "gpd" ), delay = 300,
+                              loopMode = "loop", image.folder, working.folder ){
     ## load the JavaScript template file
     template <- readLines( paste0( system.file( "climex_app", package = "climex" ),
                                   "/js/template2.js" ) )
@@ -377,8 +381,9 @@ animation.wrapper <- function( time.series, starting.points, location.lim, scale
     ## create the images
     climex:::plot.animation( time.series, starting.points, location.lim,
                             scale.lim, shape.lim, optimization.method,
-                            optimization.steps, height,
-                            width = width, image.folder = image.folder )
+                            optimization.steps, height = height,
+                            width = width, model = model,
+                            image.folder = image.folder )
     ## get the image names including the folder name and write them in the JavaScript template
     files.all <- Reduce( c, lapply( list.files( image.folder ), function( x )
         paste0( image.folder, "/", x ) ) )
