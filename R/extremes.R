@@ -18,7 +18,7 @@
 block <- function( input.bulk, block.number = round( length( input.bulk )/ 50 ),
                       block.length = NULL, block.mode = c( "max", "min" ),
                   separation.mode = c( "years", "none" ) ){
-    if ( class( input.bulk ) != c( "xts", "zoo" ) )
+    if ( !all( class( input.bulk ) == c( "xts", "zoo" ) ) )
         stop( "The block function works to input of class 'xts' only!" )
     ## Initializing. The 'block.length' is the most important parameter
     if ( !missing( block.length ) || !missing( block.number ) ){
@@ -137,8 +137,9 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
 ##' @param model Determining whether to calculate the initial parameters of the GEV or GPD function. Default = "gev".
 ##' @param monte.carlo.sample.size Number of samples used to obtain the Monte Carlo estimate of the standard error of the fitting. Default = 1000.
 ##' @param threshold Optional threshold for the GPD model. If present it will be added to the return level to produce a value which fits to underlying time series. Default = NULL.
-##' @param total.length Total number of observations in the time series the exceedance were obtained from. This argument is needed to calculate the standard error of the return level via the delta method of the MLE in the GPD model. Default = NULL.
-##' @param original.time.series Necessary to transform the return level for numerical input and the GPD model from m-th observation return level to annual return level. If omitted the return level will be per observation. Default = NULL.
+##' @param total.length Total number of observations in the time series the exceedance were obtained from (before! applying the threshold). This argument is needed to calculate the standard error of the return level via the delta method of the MLE in the GPD model. Default = NULL.
+##' @param original.time.series Time series used with \code{link{fit.gpd}} on which already a threshold (the one supplied here as well) was applied. Necessary to transform the return level for numerical input and the GPD model from m-th observation return level to annual return level. If omitted the return level will be per observation. Default = NULL.
+##' @param silent Throws an warning whenever the "gpd" model is used and the original.time.series is not supplied. Since this can be annoying one can also disable it. Default = FALSE.
 ##'
 ##' @return If error.estimation == "none" a numerical vector containing the estimates of the return levels will be returned. Else a list containing the estimates and their standard errors will be returned.
 ##' @export
@@ -146,8 +147,9 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
 ##' fit.results <- fit.gev( block( anomalies( temp.potsdam ) ) )
 ##' return.level( fit.results, return.period = c( 10, 50, 100 ), error.estimation = "MLE" )
 return.level <- function( x, return.period = 100, error.estimation = c( "none", "MC", "MLE" ),
-                         model = c( "gev", "gpd" ),monte.carlo.sample.size = 1000,
-                         threshold = NULL, total.length = NULL, original.time.series = NULL ){
+                         model = c( "gev", "gpd" ), monte.carlo.sample.size = 1000,
+                         threshold = NULL, total.length = NULL, original.time.series = NULL,
+                         silent = FALSE ){
     if ( any( class( x ) == "climex.fit.gev" ) ){
         model <- "gev"
         return.levels <- Reduce( c, lapply( return.period, function( y )
@@ -160,11 +162,15 @@ return.level <- function( x, return.period = 100, error.estimation = c( "none", 
         ## and its error are  not 'per observation' but 'per year'.
         ## In this step we harness the power of the 'xts' package
         m <- return.period* mean( apply.yearly( x$x, function( y ) length( y ) ) )
+        ## When a threshold is supplied, the one in the fitted object will be
+        ## overwritten
+        if ( !is.null( threshold ) )
+            x$threshold <- threshold
         return.levels <- Reduce( c, lapply( m, function( y )
             as.numeric( climex:::rlevd( y, scale = x$par[ 1 ], shape = x$par[ 2 ],
                                        model = "gpd", threshold = x$threshold,
                                        silent = TRUE ) ) ) )
-    } else if ( class( x ) == "numeric" ){
+    } else if ( any( class( x ) == "numeric" ) ){
         ## Neither a object from fit.gev nor from fit.gpd but a numerical vector
         ## containing the GEV/GPD parameters was supplied
         ## Which of those two distribution should ti be?
@@ -186,7 +192,8 @@ return.level <- function( x, return.period = 100, error.estimation = c( "none", 
                 m <- return.period* mean( apply.yearly( original.time.series,
                                                        function( y ) length( y ) ) )
             } else {
-                warning( "return.level: Since the original time series was not supplied the return level will be not per once every x year but once every x observation" )
+                if ( !silent )
+                    warning( "return.level: Since the original time series was not supplied the return level will be not per once every x year but once every x observation" )
                 m <- return.period
             }
             return.levels <- Reduce( c, lapply( m, function( y )
@@ -201,16 +208,37 @@ return.level <- function( x, return.period = 100, error.estimation = c( "none", 
     ##
     if ( error.estimation == "none" || class( x ) == "numeric" ){
         return( return.levels )
-    } else if ( error.estimation == "MLE" && !any( is.nan( x$hessian ) ) ){
+    } else if ( error.estimation == "MLE" ){
         if ( is.null( total.length ) && model == "gpd" ){
             warning( "The error estimation of the return level of the GP distribution does need the total length 'total.length' of the time series the exceedance are extracted from! Please supply it or use the Monte Carlo approach!" )
             return( list( return.levels = return.levels,
                          errors = rep( NaN, length( return.period ) ) ) )
         }
         if ( !any( names( x ) == "hessian" ) ){
-            ## If the hessian wasn't calculated yet, do it now!
+            ## fit again and let stats::optim calculate the hessian. It's way
+            ## more save this way
+            if ( model == "gev" ){
+                x$hessian <- fit.gev( x$x, initial = x$par,
+                                     error.estimation = "MLE" )$hessian
+            } else {
+                if ( is.null( threshold ) )
+                    threshold <- x$threshold
+                x$hessian <- fit.gpd( x$x, initial = x$par,
+                                     threshold = threshold,
+                                     error.estimation = "MLE",
+                                     total.length = total.length )$hessian
+            }
+        }
+        if ( any( is.nan( x$hessian ) ) ){
+            ## If there are NaN in the hessian, the return levels
+            ## can not be calculated. So try the numDeriv instead.
             x$hessian <- numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
                                            model = model )
+        }
+        if ( any( is.nan( x$hessian ) ) ){
+            ## If there are still NaN, let it be.
+            warning( "return level: NaN in the hessian. Error estimates can not be calculated via the maximum likelihood estimates" )
+            return( c( NaN, NaN, NaN ) )
         }
         ## Calculating the errors using the MLE
         error.covariance <- solve( x$hessian )
@@ -239,10 +267,11 @@ return.level <- function( x, return.period = 100, error.estimation = c( "none", 
                 error.covariance.2[ 2 : 3, 2 : 3 ] <- error.covariance
                 scale <- parameter.estimate[ 1 ]
                 shape <- parameter.estimate[ 2 ]
-                dz <- c( scale* m^shape* zeta^{ shape - 1 },
-                        shape^{ -1 }* ( ( m* zeta )^shape - 1 ),
-                        -scale* shape^{ -2 }* ( ( m* zeta )^ shape - 1 ) +
-                                      scale* shape^{ -1 }* ( m* zeta )^shape* log( m* zeta ) )
+                dz <- c( scale* m[ rr ]^shape* zeta^{ shape - 1 },
+                        shape^{ -1 }* ( ( m[ rr ]* zeta )^shape - 1 ),
+                        -scale* shape^{ -2 }* ( ( m[ rr ]* zeta )^ shape - 1 ) +
+                                      scale* shape^{ -1 }* (
+                                          m[ rr ]* zeta )^shape* log( m[ rr ]* zeta ) )
                 errors <- cbind( errors, dz %*% error.covariance.2 %*% dz )
             }
         }
@@ -255,20 +284,21 @@ return.level <- function( x, return.period = 100, error.estimation = c( "none", 
         if ( model == "gev" ){
             samples.list <- lapply( 1 : monte.carlo.sample.size, function( y )
                 climex:::revd( length( x$x ), parameter.estimate[ 1 ], parameter.estimate[ 2 ],
-                              parameter.estimate[ 3 ], model = "GEV" ) )
+                              parameter.estimate[ 3 ], model = "gev" ) )
         } else 
             samples.list <- lapply( 1 : monte.carlo.sample.size, function( y )
                 climex:::revd( length( x$x ), scale = parameter.estimate[ 1 ],
                               shape = parameter.estimate[ 2 ], silent = TRUE,
-                              threshold = threshold, model = "GEV" ) )
+                              threshold = threshold, model = "gpd" ) )
         samples.fit <- lapply( samples.list, function( y )
-            stats::optim( likelihood.initials( y ), likelihood, x = y,
+            stats::optim( likelihood.initials( y, model = model ), likelihood, x = y,
                   method = "Nelder-Mead", model = model )$par )
         errors <- data.frame( a = 0 )
         for ( rr in 1 : length( return.period ) )
             errors <- cbind( errors, sqrt( stats::var( Reduce( c, lapply( samples.fit, function( z )
-                return.level( z, return.period = return.period[ rr ] ) ) ) ) ) )
-        errors <- errors[ , -1 ]
+                climex::return.level( z, return.period = m[ rr ],
+                             error.estimation = "none", silent = TRUE ) ) ) ) ) )
+        errors <- errors[ , -1 ]   
         names( errors ) <- paste0( return.period, ".rlevel" )
     }
     return( list( return.levels = return.levels, errors = errors ) )
