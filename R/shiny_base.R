@@ -893,10 +893,11 @@ climex.server <- function( input, output, session ){
         if ( is.null( input$radioEvdStatistics ) || is.null( input$selectOptimization ) )
             return( NULL )
         if ( is.null( x.initial ) ){
-            if ( input$( input$radioEvdStatistics == "GEV" ) ){
+            if ( input$radioEvdStatistics == "GEV" ) {
                 x.initial <- climex::likelihood.initials( x.kept, model = "gev" )
             } else 
                 x.initial <- climex::likelihood.initials( x.kept, model = "gpd" )
+        }
         ##! Drop-down menu to decide which fitting routine should be used
         if ( input$radioEvdStatistics == "GEV" ){
             ## Fits of GEV parameters to blocked data set
@@ -939,19 +940,8 @@ climex.server <- function( input, output, session ){
                 "dfoptim::nmk" = fit.gpd( x.kept, initial = x.initial,
                                          threshold = threshold,
                                          rerun = input$checkboxRerun,
-                                         method = "nmk", error.estimation = "none" ) ) ) 
+                                         method = "nmk", error.estimation = "none" ) ) ) )
             class( x.fit.evd ) <- c( "list", "climex.fit.gpd" )
-                x.fit.evd <- ismev::gpd.fit( x.kept, threshold,
-                                            show = FALSE,
-                                            method =
-                                                input$selectionOptimization ) )
-            }
-            ## For comparability.
-            x.fit.evd$par <- x.fit.evd$mle
-            names( x.fit.evd$par ) <- c( "scale", "shape" )
-            x.fit.evd$convergence <- x.fit.evd$conv
-            x.fit.evd$value <- x.fit.evd$nllh
-            x.fit.evd$x <- x.kept
         }
         return( x.fit.evd )
     }
