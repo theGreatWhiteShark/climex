@@ -294,9 +294,14 @@ return.level <- function( x, return.period = 100, error.estimation = c( "none", 
             stats::optim( likelihood.initials( y, model = model ), likelihood, x = y,
                   method = "Nelder-Mead", model = model )$par )
         errors <- data.frame( a = 0 )
+        if ( model == "gev" ){
+            r.period <- return.period
+        } else {
+            r.period <- m
+        }
         for ( rr in 1 : length( return.period ) )
             errors <- cbind( errors, sqrt( stats::var( Reduce( c, lapply( samples.fit, function( z )
-                climex::return.level( z, return.period = m[ rr ],
+                climex::return.level( z, return.period = r.period[ rr ],
                              error.estimation = "none", silent = TRUE ) ) ) ) ) )
         errors <- errors[ , -1 ]   
         names( errors ) <- paste0( return.period, ".rlevel" )
