@@ -6,7 +6,8 @@
 \usage{
 return.level(x, return.period = 100, error.estimation = c("none", "MC",
   "MLE"), model = c("gev", "gpd"), monte.carlo.sample.size = 1000,
-  threshold = NULL, total.length = NULL, original.time.series = NULL)
+  threshold = NULL, total.length = NULL, original.time.series = NULL,
+  silent = FALSE)
 }
 \arguments{
 \item{x}{Parameter input. Class numeric, climex.fit.gev or climex.fit.gpd.}
@@ -21,9 +22,11 @@ return.level(x, return.period = 100, error.estimation = c("none", "MC",
 
 \item{threshold}{Optional threshold for the GPD model. If present it will be added to the return level to produce a value which fits to underlying time series. Default = NULL.}
 
-\item{total.length}{Total number of observations in the time series the exceedance were obtained from. This argument is needed to calculate the standard error of the return level via the delta method of the MLE in the GPD model. Default = NULL.}
+\item{total.length}{Total number of observations in the time series the exceedance were obtained from (before! applying the threshold). This argument is needed to calculate the standard error of the return level via the delta method of the MLE in the GPD model. Default = NULL.}
 
-\item{original.time.series}{Necessary to transform the return level for numerical input and the GPD model from m-th observation return level to annual return level. If omitted the return level will be per observation. Default = NULL.}
+\item{original.time.series}{Time series used with \code{link{fit.gpd}} on which already a threshold (the one supplied here as well) was applied. Necessary to transform the return level for numerical input and the GPD model from m-th observation return level to annual return level. If omitted the return level will be per observation. Default = NULL.}
+
+\item{silent}{Throws an warning whenever the "gpd" model is used and the original.time.series is not supplied. Since this can be annoying one can also disable it. Default = FALSE.}
 }
 \value{
 If error.estimation == "none" a numerical vector containing the estimates of the return levels will be returned. Else a list containing the estimates and their standard errors will be returned.
