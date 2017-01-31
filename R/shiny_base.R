@@ -296,6 +296,9 @@ climex.server <- function( input, output, session ){
                     x.xts <- data.selected[[ 1 ]][[ which( names( data.selected[[ 1 ]] ) == input$selectDataSource ) ]]
             }
         }
+        if ( any( is.nan( x.xts ) ) )
+            shinytoasto::toastr_warning(
+                "The current time series contains missing values. Please be sure to check 'Remove incomplete years' in the sidebar to avoid wrong results!" )
         return( cleaning.interactive( x.xts ) )
     } )
     cleaning.interactive <- function( x.xts ){
@@ -885,9 +888,9 @@ climex.server <- function( input, output, session ){
                 x.xts - as.numeric( x.decomposed$seasonal ) },
             "stl" = {
                 shinytoastr::toastr_warning(
-                    "WARNING: only the seasonal component and not the trend was removed and a s window of 30 was used" )
+                    "WARNING: only the seasonal component and not the trend was removed since window of 30 days were used" )
                 x.decomposed <- stats::stl( stats::ts( as.numeric( x.xts ),
-                                        frequency = 365.25 ), 30 )
+                                        frequency = 365.25 ), 30, na.action = na.omit )
                 x.xts - as.numeric( x.decomposed$time.series[ , 1 ] ) }, 
             "deseasonalize::ds" = {
                 x.aux <- deseasonalize::ds( x.xts )$z
@@ -1643,7 +1646,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                                     height = 550, background = "orange",
                                     id = "boxGevStatistics",
                             radioButtons( "radioGevStatistics", label = NULL, inline = TRUE,
-                                         choices = c( "Blocks", "Threshold" ), selected = "Blocks" ),
+                                         choices = c( "Blocks" ), selected = "Blocks" ),
                             menuItemOutput( "sliderGevStatistics" ),
                             radioButtons( "buttonMinMax", "Type of extreme", inline = TRUE,
                                          choices = c( "Max", "Min" ), selected = "Max" ),
