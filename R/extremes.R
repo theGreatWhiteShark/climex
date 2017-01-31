@@ -17,7 +17,9 @@
 ##' block( temp.potsdam )
 block <- function( input.bulk, block.number = round( length( input.bulk )/ 50 ),
                       block.length = NULL, block.mode = c( "max", "min" ),
-                      separation.mode = c( "years", "none" ) ){
+                  separation.mode = c( "years", "none" ) ){
+    if ( class( input.bulk ) != c( "xts", "zoo" ) )
+        stop( "The block function works to input of class 'xts' only!" )
     ## Initializing. The 'block.length' is the most important parameter
     if ( !missing( block.length ) || !missing( block.number ) ){
         separation.mode <- "none"
