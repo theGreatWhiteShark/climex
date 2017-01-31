@@ -6,8 +6,8 @@
 \usage{
 animation.wrapper(time.series, starting.points, location.lim, scale.lim,
   shape.lim, optimization.method = "nmk", optimization.steps,
-  optimization.rerun = TRUE, width, height, delay = 300,
-  loopMode = "loop", image.folder, working.folder)
+  optimization.rerun = TRUE, height, width, model = c("gev", "gpd"),
+  delay = 300, loopMode = "loop", image.folder, working.folder)
 }
 \arguments{
 \item{time.series}{Blocked data for which the GEV fit is performed}
@@ -33,9 +33,11 @@ make an R fork just to get the animation going. Default = 'nmk'.}
 \item{optimization.rerun}{Flag deciding if to rerun the optimization at the
 parameters determined by the first run. Default = TRUE.}
 
+\item{height}{of both the images and the form with the playback options in pixel.}
+
 \item{width}{of both the images and the form with the playback options in pixel.}
 
-\item{height}{of both the images and the form with the playback options in pixel.}
+\item{model}{Whether to calculate the likelihood for the GEV or GP distribution. Default = "gev".}
 
 \item{delay}{Time for which the individual pictures stay visible during the animation in ms. Default = 300.}
 
