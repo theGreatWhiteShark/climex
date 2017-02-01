@@ -442,6 +442,15 @@ likelihood <- function( parameters = NULL, x.in, model = c( "gev", "gpd" ) ){
     if ( missing( model ) )
         model <- "gev"
     model <- match.arg( model )
+    if ( all( class( parameters ) != "numeric" ) )
+        stop( "likelihood: please provide the parameters as a numerical vector!" )
+    ## Getting rid of names
+    parameters <- as.numeric( parameters )
+    ## Verify input
+    if ( model == "gev" && length( parameters ) != 3 )
+        stop( "likelihood: to calculate the likelihood of the GEV function please provide the following parameters: c( location, scale, shape )" )
+    if ( model == "gpd" && length( parameters ) != 2 )
+        stop( "likelihood: to calculate the likelihood of the GP function please provide the following parameters: c( scale, shape )" )
     if ( is.null( parameters ) ){
         initials <- likelihood.initials( x.in, model = model )
         if ( model == "gev" ){
@@ -504,6 +513,15 @@ likelihood.gradient <- function( parameters, x.in, model = c( "gev", "gpd" ) ){
     if ( missing( model ) )
         model <- "gev"
     model <- match.arg( model )
+    if ( all( class( parameters ) != "numeric" ) )
+        stop( "likelihood.gradient: please provide the parameters as a numerical vector!" )
+    ## Getting rid of names
+    parameters <- as.numeric( parameters )
+    ## Verify input
+    if ( model == "gev" && length( parameters ) != 3 )
+        stop( "likelihood.gradient: to calculate the likelihood of the GEV function please provide the following parameters: c( location, scale, shape )" )
+    if ( model == "gpd" && length( parameters ) != 2 )
+        stop( "likelihood.gradient: to calculate the likelihood of the GP function please provide the following parameters: c( scale, shape )" )
     if ( model == "gev" ){
         location <- parameters[ 1 ]
         scale <- parameters[ 2 ]
@@ -544,7 +562,7 @@ likelihood.gradient <- function( parameters, x.in, model = c( "gev", "gpd" ) ){
 ##'
 ##' @param x Time series/numeric.
 ##' @param model Determining whether to calculate the initial parameters of the GEV or GPD function. Default = "gev"
-##' @param type Which method should be used to calculate the initial parameters. "best" combines all methods and return the result with the least likelihood. "mom" - method of moments returns an approximation according to the first two moments of the Gumbel distribution. "lmom" - returns an estimate according to the Lmoments method. Default = "best"
+##' @param type Which method should be used to calculate the initial parameters. "best" combines all methods, in addition samples 100 different shape values around the one determined by type 'mom' and returns the result with the least likelihood. "mom" - method of moments returns an approximation according to the first two moments of the Gumbel distribution. "lmom" - returns an estimate according to the Lmoments method. Default = "best"
 ##' @param modified Determines if the skewness is getting used to determine the initial shape parameter. Default = TRUE.
 ##'
 ##' @family optimization
@@ -616,10 +634,13 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
         initial.gum3 <- c( loc.init, sc.init, sh.init + stats::rnorm( 1, sd = 0.5 ) ) 
         initial.default1 <- c( loc.init, sc.init, 0.1 )
         initial.default2 <- c( loc.init, sc.init, 1E-8 )
-        
-        initials <- list( initial.gum1, initial.gum2, initial.gum3, 
-                         initial.lmom, initial.default1, initial.default2 )
-        suppressWarnings( initials.likelihood <- lapply( initials, likelihood, x.in = x ) )
+        ## Instead of taking just a default shape parameter, pick a bunch of them
+        ## and query for the one resulting in the lowest negative log-likelihood
+        sh.init.vector <- c( sh.init + stats::rnorm( 100, sd = .5 ), .1, 1e-8, sh.init )
+        suppressWarnings( initials.likelihood <- lapply(
+                              sh.init.vector, function( ss )
+                                  climex::likelihood( c( loc.init, sc.init, ss ),
+                                                     x.in = x, model = "gev" ) ) )
     } else {
         ## Approximationg using the Lmoments method
         ## Since I decided to not calculate the threshold inside the fitting (or even
@@ -647,22 +668,20 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
 
         ## Instead of taking just a default shape parameter, pick a bunch of them
         ## and query for the one resulting in the lowest negative log-likelihood
-        initial.gum1 <- c( sc.init, sh.init )   
-        initial.gum2 <- c( sc.init, sh.init + stats::rnorm( 1, sd = 0.5 ) ) 
-        initial.gum3 <- c( sc.init, sh.init + stats::rnorm( 1, sd = 0.5 ) ) 
-        initial.default1 <- c( sc.init, 0.1 )
-        initial.default2 <- c( sc.init, 1E-8 )
-        
-        initials <- list( initial.gum1, initial.gum2, initial.gum3, 
-                         initial.lmom, initial.default1, initial.default2 )
-        suppressWarnings( initials.likelihood <- lapply( initials, likelihood,
-                                                        x.in = x, model = "gpd" ) )
+        sh.init.vector <- c( sh.init + stats::rnorm( 100, sd = .5 ), .1, 1e-8, sh.init )
+        suppressWarnings( initials.likelihood <- lapply(
+                              sh.init.vector, function( ss )
+                                  climex::likelihood( c( sc.init, ss ), x.in = x, model = "gpd" ) ) )
 
     }
     if ( !all( is.nan( as.numeric( initials.likelihood ) ) ) ){
         ## Returning the set of initial parameters which is yielding the
         ## lowest negative log-likelihood
-        return( initials[[ which.min( initials.likelihood ) ]] )
+        ## the second value will tend to fluctuate a lot!
+        if ( model == "gev" ){
+            return( c( loc.init, sc.init, sh.init.vector[[ which.min( initials.likelihood ) ]] ) )
+        } else
+            return( c( sc.init, sh.init.vector[[ which.min( initials.likelihood ) ]] ) )
     } else
         ## Well, what to do now?
         stop( "The GEV likelihood couldn't be evaluated at all of the suggested initials parameter positions" )
