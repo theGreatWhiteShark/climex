@@ -637,9 +637,14 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
         ## Instead of taking just a default shape parameter, pick a bunch of them
         ## and query for the one resulting in the lowest negative log-likelihood
         sh.init.vector <- c( sh.init + stats::rnorm( 100, sd = .5 ), .1, 1e-8, sh.init )
-        suppressWarnings( initials.likelihood <- lapply(
-                              sh.init.vector, function( ss )
-                                  climex::likelihood( c( loc.init, sc.init, ss ),
+        parameter.vector <- rbind(
+            data.frame( location = rep( loc.init, length( sh.init.vector ) ),
+                       scale = rep( sc.init, length( sh.init.vector ) ),
+                       shape = sh.init.vector ),
+            initial.lmom )
+        suppressWarnings( initials.likelihood <- apply(
+                              parameter.vector, 1, function( ss )
+                                  climex::likelihood( c( ss[ 1 ], ss[ 2 ], ss[ 3 ] ),
                                                      x.in = x, model = "gev" ) ) )
     } else {
         ## Approximationg using the Lmoments method
@@ -669,19 +674,21 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
         ## Instead of taking just a default shape parameter, pick a bunch of them
         ## and query for the one resulting in the lowest negative log-likelihood
         sh.init.vector <- c( sh.init + stats::rnorm( 100, sd = .5 ), .1, 1e-8, sh.init )
-        suppressWarnings( initials.likelihood <- lapply(
-                              sh.init.vector, function( ss )
-                                  climex::likelihood( c( sc.init, ss ), x.in = x, model = "gpd" ) ) )
+        parameter.vector <- rbind(
+            data.frame( scale = rep( sc.init, length( sh.init.vector ) ),
+                       shape = sh.init.vector ),
+            initial.lmom )
+        suppressWarnings( initials.likelihood <- apply(
+                              parameter.vector, 1, function( ss )
+                                  climex::likelihood( c( ss[ 1 ], ss[ 2 ] ),
+                                                     x.in = x, model = "gpd" ) ) )
 
     }
     if ( !all( is.nan( as.numeric( initials.likelihood ) ) ) ){
         ## Returning the set of initial parameters which is yielding the
         ## lowest negative log-likelihood
         ## the second value will tend to fluctuate a lot!
-        if ( model == "gev" ){
-            return( c( loc.init, sc.init, sh.init.vector[[ which.min( initials.likelihood ) ]] ) )
-        } else
-            return( c( sc.init, sh.init.vector[[ which.min( initials.likelihood ) ]] ) )
+        return( as.numeric( parameter.vector[ which.min( initials.likelihood ), ] ) )
     } else
         ## Well, what to do now?
         stop( "The GEV likelihood couldn't be evaluated at all of the suggested initials parameter positions" )
