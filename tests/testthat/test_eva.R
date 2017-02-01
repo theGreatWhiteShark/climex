@@ -3,7 +3,7 @@ context( "Tools used in the extreme value analysis" )
 x.block <- climex::block( climex::anomalies( temp.potsdam ) )
 x.thresh <- climex::threshold( temp.potsdam, threshold = 29 )
 x.block.fit <- fit.gev( x.block )
-x.thresh.fit <- fit.gpd( x.thresh, threshold = 29 )
+x.thresh.fit <- fit.gpd( x.thresh, threshold = 29, total.length = length( temp.potsdam ) )
 
 test_that( "block's block length argument works", {
     expect_equal( length( climex::block( temp.potsdam ) ), 124 )
@@ -48,7 +48,7 @@ test_that( "threshold does the thresholding right", {
                                          decluster = FALSE ) ), 12.6 )
 })
 
-test_that( "return.level fit results and GEV/GP parameters as input", {
+test_that( "return.level fit results and GEV/GP parameters as input pisse", {
     expect_error( climex::return.level( temp.potsdam ) )
     expect_error( climex::return.level( as.numeric( temp.potsdam ) ) )
     expect_equal( climex::return.level( x.block.fit ), 15.55642, tolerance = 1E-6 )
@@ -56,9 +56,9 @@ test_that( "return.level fit results and GEV/GP parameters as input", {
     expect_equal( climex::return.level( x.thresh.fit$par, model = "gpd",
                                        threshold = 29,
                                        original.time.series = x.thresh ),
-                 38.05577, tolerance = 1E-6 )
+                 38.05465, tolerance = 1E-4 )
     expect_equal( climex::return.level( x.thresh.fit, model = "gpd" ),
-                 38.05577, tolerance = 1E-6 )
+                 38.05465, tolerance = 1E-4 )
 })
 test_that( "return.level can take return periods of different length and value", {
     expect_equal( climex::return.level( x.block.fit, return.period = 100 ),
@@ -87,12 +87,13 @@ test_that( "return.level get the error estimation right for MLE", {
         climex::return.level( x.thresh.fit, return.period = c( 42, 637 ),
                              error.estimation = "MLE", threshold = 29,
                              total.length = length( temp.potsdam ) )$errors ),
-                 c( 2.3862503, 0.5761993 ), tolerance = 1E-6 )
+                 c( 2.387257, 0.5762497 ), tolerance = 1E-3 )
 })
 test_that( "return.level get the error estimation right for MC", { 
     expect_equal( as.numeric(
         climex::return.level( x.block.fit, return.period = c( 10, 100, 332 ),
-                             error.estimation = "MC" )$errors ),
+                             error.estimation = "MC",
+                             monte.carlo.sample.size = 100 )$errors ),
                  c( .2, .3, .4 ), tolerance = .15 )
     expect_equal( as.numeric(
         climex::return.level( x.thresh.fit, return.period = 42,
