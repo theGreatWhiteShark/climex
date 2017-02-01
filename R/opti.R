@@ -326,6 +326,9 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
     ## adding the time series and threshold to the result
     res.optim$x <- x
     res.optim$threshold <- threshold
+    ## For an adequate calculation of the return level
+    if ( is.null( total.length ) )
+        warning( "The estimation of the return level of the GP distribution does need the total length 'total.length' of the time series the exceedance are extracted from! Please supply it or use the Monte Carlo approach!" ) 
     ##
     ## Regarding the animation in the climex web app
     ##
@@ -383,7 +386,6 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
             parameter.estimate <- res.optim$par
             ## Formula according to Stuart Coles p. 82
             if ( is.null( total.length ) ){
-                warning( "The error estimation of the return level of the GP distribution does need the total length 'total.length' of the time series the exceedance are extracted from! Please supply it or use the Monte Carlo approach!" )
                 errors <- cbind( errors, rep( NaN, length( return.period ) ) )
             } else {
                 for ( rr in 1 : length( return.period ) ){
