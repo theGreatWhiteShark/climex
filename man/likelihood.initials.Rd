@@ -12,7 +12,7 @@ likelihood.initials(x, model = c("gev", "gpd"), type = c("best", "mom",
 
 \item{model}{Determining whether to calculate the initial parameters of the GEV or GPD function. Default = "gev"}
 
-\item{type}{Which method should be used to calculate the initial parameters. "best" combines all methods and return the result with the least likelihood. "mom" - method of moments returns an approximation according to the first two moments of the Gumbel distribution. "lmom" - returns an estimate according to the Lmoments method. Default = "best"}
+\item{type}{Which method should be used to calculate the initial parameters. "best" combines all methods, in addition samples 100 different shape values around the one determined by type 'mom' and returns the result with the least likelihood. "mom" - method of moments returns an approximation according to the first two moments of the Gumbel distribution. "lmom" - returns an estimate according to the Lmoments method. Default = "best"}
 
 \item{modified}{Determines if the skewness is getting used to determine the initial shape parameter. Default = TRUE.}
 }
