@@ -15,7 +15,7 @@ ttplot(data.input, main = "Time series", ylab = NULL, x.df = NULL)
 Nothing. The multiplot function is run in the last step.
 }
 \details{
-Plots all objects of class xts and ts in the same format but is also capable of handling lists of those objects and returning their plots using the \code{\link{multiplot}} function. With the main argument a title can be provided.
+Plots all objects of class xts. With the main argument a title can be provided.
 }
 \author{
 Philipp Mueller
