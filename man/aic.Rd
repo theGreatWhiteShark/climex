@@ -2,12 +2,12 @@
 % Please edit documentation in R/ts.R
 \name{aic}
 \alias{aic}
-\title{Calculates the Akaike information criterion of a fit.gev or climex.fit.gev object.}
+\title{Calculates the Akaike information criterion of a climex.fit.gev or climex.fit.gpd object.}
 \usage{
 aic(x)
 }
 \arguments{
-\item{x}{Optim()like fit of a time series.}
+\item{x}{Optim() like fit of a time series.}
 }
 \value{
 Numeric value

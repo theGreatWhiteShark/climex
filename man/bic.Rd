@@ -2,12 +2,12 @@
 % Please edit documentation in R/ts.R
 \name{bic}
 \alias{bic}
-\title{Calculates the Bayesian information criterion of a climex.fit.gev object.}
+\title{Calculates the Bayesian information criterion of a climex.fit.gev or climex.fit.gpd object.}
 \usage{
 bic(x)
 }
 \arguments{
-\item{x}{Object of class climex.fit.gev. When ensuring the presence of all additional list elements an output of optim() can also be used.}
+\item{x}{Object of class climex.fit.gev or climex.fit.gpd. When ensuring the presence of all additional list elements an output of optim() can also be used.}
 }
 \value{
 Numeric value
