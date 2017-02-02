@@ -73,7 +73,7 @@ multiplot <- function( tt.title = main, main = NULL, ..., plotlist = NULL, cols 
 
 ##' @title Plotting a xts time series with ggplot2 in a convenient format.
 ##'
-##' @details Plots all objects of class xts and ts in the same format but is also capable of handling lists of those objects and returning their plots using the \code{\link{multiplot}} function. With the main argument a title can be provided.
+##' @details Plots all objects of class xts. With the main argument a title can be provided.
 ##'
 ##' @param data.input Time series which should be visualized.
 ##' @param ... Additional parameters for the multiplot function.
@@ -85,6 +85,8 @@ multiplot <- function( tt.title = main, main = NULL, ..., plotlist = NULL, cols 
 ##' @return Nothing. The multiplot function is run in the last step.
 ##' @author Philipp Mueller
 ttplot <- function( data.input, main = "Time series", ylab = NULL, x.df = NULL ){
+    if ( !is.xts( data.input ) )
+        stop( "Please supply an object of class 'xts'!" )
     if ( is.null( ylab ) )
         ylab <- names( data.input )
     if ( is.null( ylab ) )
