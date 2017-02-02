@@ -1,7 +1,7 @@
-##' @title  Calculates the Akaike information criterion of a fit.gev or climex.fit.gev object.
+##' @title  Calculates the Akaike information criterion of a climex.fit.gev or climex.fit.gpd object.
 ##' @details The climex.fit.gev object is of identical structure as the output of the optim() function.
 ##' 
-##' @param x Optim()like fit of a time series.
+##' @param x Optim() like fit of a time series.
 ##'
 ##' @seealso \code{\link{bic}}
 ##' @family ts
@@ -9,19 +9,15 @@
 ##' @return Numeric value
 ##' @author Philipp Mueller
 aic <- function( x ){
-    if ( ( any( class( x ) != "gev.fit" ) && any( class( x ) != "gpd.fit" ) ) &&
-         !any( class( x ) == "climex.fit.gev" ) )
-        stop( "Wrong format provided in aic. The returned object of the GEV/GPD fit using the climex or ismev package is required!" )
-    if ( any( class( x ) == "climex.fit.gev" ) ){
-        2* x$value + 2* length( x$par )
-    } else
-        2* x$nllh + 2* length( x$mle )
+    if ( !any( class( x ) == "climex.fit.gev" ) && !any( class( x ) == "climex.fit.gpd" ) )
+        stop( "Wrong format provided in aic. Please supply an object returned by either fit.gev or fit.gpd!" )
+    2* x$value + 2* length( x$par )
 }
 
-##' @title Calculates the Bayesian information criterion of a climex.fit.gev object.
+##' @title Calculates the Bayesian information criterion of a climex.fit.gev or climex.fit.gpd object.
 ##' @details The climex.fit.gev object is of identical structure as the output of the optim() function.
 ##'
-##' @param x Object of class climex.fit.gev. When ensuring the presence of all additional list elements an output of optim() can also be used.
+##' @param x Object of class climex.fit.gev or climex.fit.gpd. When ensuring the presence of all additional list elements an output of optim() can also be used.
 ##'
 ##' @seealso \code{\link{aic}}
 ##' @family ts
@@ -29,12 +25,9 @@ aic <- function( x ){
 ##' @return Numeric value
 ##' @author Philipp Mueller
 bic <- function( x ){
-    if ( ( any( class( x ) != "gev.fit" ) && any( class( x ) != "gpd.fit" ) ) && !any( class( x ) == "climex.fit.gev" ) )
-        stop( "Wrong format provided in bic. The returned object of the GEV/GPD fit using the climex or ismev package is required!" )
-    if ( any( class( x ) == "climex.fit.gev" ) ){
-        2* x$value + length( x$par )* log( length( x$x ) )
-    } else
-        2* x$nllh + length( x$mle )* log( length( x$data ) )
+    if ( !any( class( x ) == "climex.fit.gev" ) && !any( class( x ) == "climex.fit.gpd" ) )
+        stop( "Wrong format provided in bic. Please supply an object returned by either fit.gev or fit.gpd!" )
+    2* x$value + length( x$par )* log( length( x$x ) )
 }
 
 ##' @title Removes all years which contain either a NA or -999 or are incomplete.
