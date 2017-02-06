@@ -689,23 +689,28 @@ climex.server <- function( input, output, session ){
         if ( is.null( x.fit.evd ) )
             return( NULL )
         if ( input$radioEvdStatistics == "GEV" ){
-            sampled <- sort( climex:::revd( n = length( x.kept ),
-                                           location = x.fit.evd$par[ 1 ],
-                                           scale = x.fit.evd$par[ 2 ], silent = TRUE,
-                                           shape = x.fit.evd$par[ 3 ], model = "gev" ) )
+            sampled <- sort( climex:::revd(
+                n = length( x.kept ),
+                location = x.fit.evd$par[ 1 ],
+                scale = x.fit.evd$par[ 2 ], silent = TRUE,
+                shape = x.fit.evd$par[ 3 ], model = "gev" ) )
             if ( !is.null( input$buttonMinMax ) ){
                 if ( input$buttonMinMax == "Min" )
                     sampled <- -1* sampled
             }
         } else {
-            sampled <- sort( climex:::revd( n = length( x.kept ),
-                                           scale = x.fit.evd$par[ 1 ], silent = TRUE,
-                                           shape = x.fit.evd$par[ 2 ], model = "gpd",
-                                           threshold = input$sliderThreshold ) )
+            sampled <- sort( climex:::revd(
+                n = length( x.kept ),
+                scale = x.fit.evd$par[ 1 ], silent = TRUE,
+                shape = x.fit.evd$par[ 2 ], model = "gpd",
+                threshold = input$sliderThreshold ) )
         }
-        if ( !is.null( input$buttonMinMax ) && input$buttonMinMax == "Min" &&
+        if ( !is.null( input$buttonMinMax ) &&
+                  input$buttonMinMax == "Min" &&
              input$radioEvdStatistics == "GEV" ){
             empirical <- -1* sort( as.numeric( -x.kept ) )
+        } else {
+            empirical <- sort( as.numeric( x.kept ) )
         }
         length.e <- length( empirical )
         length.s <- length( sampled )
@@ -1127,7 +1132,7 @@ climex.server <- function( input, output, session ){
             ## little longer
             return( NULL )
         }
-        if ( inpu$radioEvdStatistics == "GEV" ){
+        if ( input$radioEvdStatistics == "GEV" ){
             x.fit.evd.scale <- x.fit.evd$par[ 2 ]
         } else {
             x.fit.evd.scale <- x.fit.evd$par[ 1 ]
@@ -1147,7 +1152,7 @@ climex.server <- function( input, output, session ){
             ## little longer
             return( NULL )
         }
-        if ( inpu$radioEvdStatistics == "GEV" ){
+        if ( input$radioEvdStatistics == "GEV" ){
             x.fit.evd.shape <- x.fit.evd$par[ 3 ]
         } else {
             x.fit.evd.shape <- x.fit.evd$par[ 2 ]
@@ -1167,7 +1172,7 @@ climex.server <- function( input, output, session ){
             ## little longer
             return( NULL )
         }
-        if ( inpu$radioEvdStatistics == "GEV" ){
+        if ( input$radioEvdStatistics == "GEV" ){
             model <- "gev"
         } else {
             model <- "gpd"
@@ -1181,7 +1186,7 @@ climex.server <- function( input, output, session ){
             ## little longer
             return( NULL )
         }
-        if ( inpu$radioEvdStatistics == "GEV" ){
+        if ( input$radioEvdStatistics == "GEV" ){
             model <- "gev"
         } else {
             model <- "gpd"
@@ -1195,7 +1200,7 @@ climex.server <- function( input, output, session ){
             ## little longer
             return( NULL )
         }
-        if ( inpu$radioEvdStatistics == "GEV" ){
+        if ( input$radioEvdStatistics == "GEV" ){
             model <- "gev"
         } else {
             model <- "gpd"
@@ -1213,7 +1218,7 @@ climex.server <- function( input, output, session ){
                 ## little longer
                 return( NULL )
             }
-            if ( inpu$radioEvdStatistics == "GEV" ){
+            if ( input$radioEvdStatistics == "GEV" ){
                 model <- "gev"
             } else {
                 model <- "gpd"
