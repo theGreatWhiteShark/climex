@@ -193,7 +193,11 @@ climex.server <- function( input, output, session ){
             return( NULL ) } )
     output$sliderGevStatistics <- renderMenu( {
         x.xts <- data.selection()
-        x.deseasonalized <- deseasonalize.interactive( x.xts )
+        isolate( {
+            ## I do not want the blocklength to be reset when changing
+            ## the deseasonalization method.
+            x.deseasonalized <- deseasonalize.interactive( x.xts )
+        } )
         if ( is.null( x.deseasonalized ) ){
             ## if the initialization has not finished yet just wait a
             ## little longer
