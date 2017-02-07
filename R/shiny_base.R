@@ -742,13 +742,13 @@ climex.server <- function( input, output, session ){
                                 threshold = threshold ),
           empirical = sort( as.numeric( x.kept ) ) )
     }
-    plot.fit <- stats::lm( model ~ empirical, plot.data )[[ 1 ]]
+    plot.fit <- stats::lm( empirical ~ model, plot.data )[[ 1 ]]
     gg.qq1 <- ggplot() +
       geom_point( data = plot.data, aes( x = model, y = empirical ),
                  colour = colour.ts,
                  shape = 1, size = 2, alpha = 0.8 ) +
       geom_abline( intercept = plot.fit[ 1 ],
-                  slope = -plot.fit[ 2 ], colour = colour.ts,
+                  slope = plot.fit[ 2 ], colour = colour.ts,
                   linetype = 2 ) +
       geom_abline( intercept = 0, slope = 1,
                   colour = colour.extremes ) +
@@ -757,11 +757,6 @@ climex.server <- function( input, output, session ){
                                        colour = colour.ts ),
             axis.text = element_text( size = 12,
                                      colour = colour.ts ) )
-    if ( !is.null( input$buttonMinMax ) ){
-      if ( input$buttonMinMax == "Min" &&
-           input$radioEvdStatistics == "GEV")
-        gg.qq1 <- gg.qq1 + scale_y_reverse() + scale_x_reverse()
-    }
     return( gg.qq1 ) } )
   output$plotFitQQ2 <- renderPlot( {
     ## Quantile-quantile plot for fit statistics with samples
@@ -849,16 +844,11 @@ climex.server <- function( input, output, session ){
                   slope = plot.fit[ 2 ], colour = colour.ts,
                   linetype = 2 ) + theme_bw() +
       geom_abline( intercept = 0, slope = 1,
-                  colour = colour.extremes )+
+                  colour = colour.extremes ) +
       theme( axis.title = element_text( size = 15,
                                        colour = colour.ts ),
             axis.text = element_text( size = 12,
                                      colour = colour.ts ) )
-    if ( !is.null( input$buttonMinMax ) ){
-      if ( input$buttonMinMax == "Min" &&
-           input$radioEvdStatistics == "GEV" )
-        gg.qq2 <- gg.qq2 + scale_y_reverse() + scale_x_reverse()
-    }
     return( gg.qq2 )        
   } )
   output$plotFitReturnLevel <- renderPlot( {
