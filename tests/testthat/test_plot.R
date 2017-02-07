@@ -24,4 +24,7 @@ test_that( "plot.climex.fit.gev works on the result of fit.gev", {
   expect_true( is.ggplot( plot( x.block.fit ) ) )
 })
 
+test_that( "plot.climex.fit.gpd works on the result of fit.gpd", {
+  expect_true( is.ggplot( plot( x.thresh.fit ) ) )
+})
 sink()
