@@ -210,11 +210,16 @@ climex.server <- function( input, output, session ){
       return( NULL ) } )
   output$sliderGevStatistics <- renderMenu( {
     x.xts <- data.selection()
-    isolate( {
-      ## I do not want the blocklength to be reset when changing
-      ## the deseasonalization method.
+    if ( !is.null( input$radioEvdStatistics ) &&
+         input$radioEvdStatistics == "GEV" ){
+      isolate( {
+        ## I do not want the blocklength to be reset when changing
+        ## the deseasonalization method.
+        x.deseasonalized <- deseasonalize.interactive( x.xts )
+      } )
+    } else {
       x.deseasonalized <- deseasonalize.interactive( x.xts )
-    } )
+    }
     if ( is.null( x.deseasonalized ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -572,6 +577,10 @@ climex.server <- function( input, output, session ){
       ## little longer
       return( NULL )
     }
+    if ( input$radioEvdStatistics == "GP" &&
+         !is.null( input$sliderThreshold ) ){
+      x.block <- x.block + input$sliderThreshold
+    }
     x.kept <- x.block[ reactive.values$keep.rows ]
     x.excluded <- x.block[ !reactive.values$keep.rows ]
     plot.kept <- data.frame( date = index( x.kept ),
@@ -787,7 +796,8 @@ climex.server <- function( input, output, session ){
     return( gg.qq2 )        
   } )
   output$plotFitReturnLevel <- renderPlot( {
-    x.block <- data.blocking()[[ 1 ]]
+    x.data <- data.blocking()
+    x.block <- x.data[[ 1 ]]
     if ( is.null( x.block ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -843,12 +853,14 @@ climex.server <- function( input, output, session ){
         climex::return.level( fit.aux, return.period = x.period,
                              error.estimation = "MC",
                              threshold = fit.aux$threshold,
+                             total.length = length( x.data[[ 3 ]] ),
                              model = model )
     } else {           
       x.confidence.intervals.aux <-
         climex::return.level( fit.aux, return.period = x.period,
                              error.estimation = "MLE",
                              threshold = fit.aux$threshold,
+                             total.length = length( x.data[[ 3 ]] ),
                              model = model )
     }
     if ( input$buttonMinMax == "Min" &&
@@ -1185,12 +1197,17 @@ climex.server <- function( input, output, session ){
       threshold <- input$sliderThreshold
     }
     ## calculate the return level and append it to the data.selected[[ 2 ]] data.frame
-    data.selected[[ 2 ]]$return.level <-
-      Reduce( c, lapply( data.blocked, function( x )
-        climex::return.level( fit.interactive( x ),
+    return.level.vector <- rep( NaN, length( data.blocked ) )
+    for ( rr in 1 : length( data.blocked ) ){
+      return.level.vector[ rr ] <-
+        climex::return.level( fit.interactive( data.blocked[[ rr ]] ),
                              return.period = return.level.year,
                              model = model, error.estimation = "none",
-                             threshold = threshold ) ) )
+                             total.length = length(
+                                 data.selected[[ 1 ]][[ rr ]] ),
+                             threshold = threshold )
+      }
+    data.selected[[ 2 ]]$return.level <- return.level.vector
     return( data.selected[[ 2 ]] )
   } ) 
 ########################################################################
@@ -1211,7 +1228,8 @@ climex.server <- function( input, output, session ){
     x.fit.evd <- evd.fitting( )
     if ( is.null( x.fit.evd ) )
       return( NULL )
-      x.block <- data.blocking( )[[ 1 ]]
+      x.data <- data.blocking()
+      x.block <- x.data[[ 1 ]]
       if ( is.null( x.block ) ){
         ## if the initialization has not finished yet just wait a
         ## little longer
@@ -1222,18 +1240,20 @@ climex.server <- function( input, output, session ){
                      x.fit.evd$par[ 3 ],
                      x.fit.evd$value, climex:::aic( x.fit.evd ),
                      climex:::bic( x.fit.evd ),
-                     climex:::return.level( x.fit.evd$par,
-                                           error.estimation = "none",
-                                           model = "gev" ) )
+                     climex::return.level( x.fit.evd$par,
+                                          error.estimation = "none",
+                                          model = "gev" ) )
       } else {
         current <- c( 0, x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
                      x.fit.evd$value, climex:::aic( x.fit.evd ),
                      climex:::bic( x.fit.evd ),
-                     climex:::return.level( x.fit.evd,
-                                           error.estimation = "none",
-                                           model = "gpd",
-                                           threshold =
-                                             input$sliderThreshold ) )
+                     climex::return.level(
+                                 x.fit.evd,
+                                 error.estimation = "none",
+                                 model = "gpd",
+                                 threshold =
+                                   input$sliderThreshold,
+                                 total.length = x.data[[ 1 ]] ) )
       }
       ## negating the return level to get the correct results for
       ## the minium
@@ -1928,6 +1948,7 @@ climex.server <- function( input, output, session ){
                  lng = ~lng, lat = ~lat )
     ## calculate the GEV fit and various return levels
     x.fit.gev <- evd.fitting()
+    x.data <- data.blocking()
     if ( is.null( x.fit.gev ) )
       return( NULL )
     if ( input$radioEvdStatistics == "GEV" ){
@@ -1937,11 +1958,13 @@ climex.server <- function( input, output, session ){
     }
     if ( input$buttonMinMax == "Max" ||
          input$radioEvdStatistics == "GP" ){
-      x.return.level <- climex:::return.level(
-                                     x.fit.gev,
-                                     return.period = c( 100, 50, 20 ),
-                                     model = model,
-                                     error.estimation = "none" )
+      x.return.level <- climex::return.level(
+                                    x.fit.gev,
+                                    return.period = c( 100, 50, 20 ),
+                                    model = model,
+                                    error.estimation = "none",
+                                    threshold = x.fit.gev$threshold,
+                                    total.length = x.data[[ 1 ]] )
     } else
       x.return.level <- ( -1 )* climex:::return.level(
                                              x.fit.gev,
