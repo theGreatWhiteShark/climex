@@ -251,7 +251,7 @@ climex.server <- function( input, output, session ){
                       "Remove incomplete years", FALSE )
       } else
         checkboxInput( "checkBoxDecluster",
-                      "Declustering of the data", FALSE )
+                      "Declustering of the data", TRUE )
     } else
       checkboxInput( "checkBoxIncompleteYears",
                     "Remove incomplete years", FALSE )
