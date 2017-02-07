@@ -255,22 +255,35 @@ return Rcpp::wrap( L );')
 
 ##' @title Plots the GEV function fitted using \code{\link{fit.gev}}
 ##'
-##' @details Uses ggplot2
+##' @details Uses ggplot2. Since I will also use it
+##' in the shiny app, where I want to adjust the number
+##' of displayed bins, there is a second argument present.
 ##'
 ##' @param x Fitted GEV object.
+##' @param bin.factor Multiplying the length of x
+##' by this factor, results in the number of bins
+##' used in this plot. Default = NULL
 ##'
 ##' @export
 ##' @import ggplot2
 ##' @return ggplot2 object.
-plot.climex.fit.gev <- function( x ){
+plot.climex.fit.gev <- function( x, bin.factor = NULL  ){
   x.data <- x$x
-  x.lim <- c( max( x.data, na.rm = TRUE ), min( x.data, na.rm = TRUE ) )
+  if ( is.null( bin.factor ) ){
+    bin.factor <- ( ( ( length( x.data ) - 1 )*100/
+                      length( x.data ) )  %/% 5 )* 0.025
+  }
+  bin.width <- ( ( max( x.data ) - min( x.data ) )/
+                 ( bin.factor * length( x.data ) ) )* 1.1
+  x.lim <- c( max( x.data, na.rm = TRUE ),
+             min( x.data, na.rm = TRUE ) )
   threshold.pdf.plot <- 5E-4
   plot.gev.range <- seq( x$par[ 1 ] - x$par[ 2 ]* 10,
                         x$par[ 1 ] + x$par[ 2 ]* 10, 0.01 )
   plot.gev.data <- data.frame(
       x.plot = plot.gev.range,
-      y.plot = ismev::gev.dens( x$par, plot.gev.range ) )
+      y.plot = climex:::gev.density( x$par,
+                                    plot.gev.range ) )
   plot.gev.lim <- c( plot.gev.data[[ 1 ]][
       which.min( abs( plot.gev.data[[ 2 ]][
           1 : which.max( plot.gev.data[[ 2 ]] ) ] -
@@ -284,12 +297,18 @@ plot.climex.fit.gev <- function( x ){
     plot.gev.lim[ 1 ] <- x.lim[ 1 ] - abs( x.lim[ 1 ] )* 0.05 
   if ( plot.gev.lim[ 2 ] < x.lim[ 2 ] )
     plot.gev.lim[ 2 ] <- x.lim[ 2 ] + abs( x.lim[ 2 ] )* 0.05
+      plot.lim <- c( min( plot.gev.lim[ 1 ],
+                         min( x.data ) - bin.width ),
+                    max( plot.gev.lim[ 2 ],
+                        max( x.data) + bin.width ) )
   
-  ggplot() + geom_histogram( data = data.frame( x = x.data ),
-                            colour = grDevices::rgb( .098, .098, .44 ),
-                            alpha = 1,
-                            aes( x = x, y = ..density..,
-                                fill = "#7171EC" ) ) +
+  ggplot() + geom_histogram(
+                 data = data.frame( x = x.data ),
+                 colour = grDevices::rgb( .098, .098, .44 ),
+                 alpha = 1,
+                 bins = bin.factor* length( x.data ),           
+                 aes( x = x, y = ..density..,
+                     fill = "#7171EC" ) ) +
   geom_polygon( data = plot.gev.data, alpha = 0.7,
                colour = grDevices::rgb( .098, .098, .44 ),
                aes( x = x.plot, y = y.plot,
@@ -298,6 +317,66 @@ plot.climex.fit.gev <- function( x ){
                                   grDevices::rgb( 1, .55, 0 ) ),
                       labels = c( "Histogram", "Fitted GEV"  ) ) +
     theme_bw() + xlim( plot.gev.lim ) + ylab( "Density" ) +
+    theme( legend.title = element_blank() )
+  return( last_plot() )
+}
+
+##' @title Plots the GEV function fitted using \code{\link{fit.gev}}
+##'
+##' @details Uses ggplot2. Since I will also use it
+##' in the shiny app, where I want to adjust the number
+##' of displayed bins, there is a second argument present.
+##'
+##' @param x Fitted GEV object.
+##' @param bin.factor Multiplying the length of x
+##' by this factor, results in the number of bins
+##' used in this plot. Default = NULL
+##'
+##' @export
+##' @import ggplot2
+##' @return ggplot2 object.
+plot.climex.fit.gpd <- function( x, bin.factor = NULL ){
+  if ( is.null( x$threshold ) ){
+    stop( "Please provide a threshold argument to fit.gpd() in order to plot the result" )
+  }
+  x.data <- x$x + x$threshold
+  if ( is.null( bin.factor ) ){
+    bin.factor <- ( ( ( length( x.data ) - 1 )*100/
+                      length( x.data ) )  %/% 5 )* 0.025
+  }
+  bin.width <- ( ( max( x.data ) - min( x.data ) )/
+                 ( bin.factor * length( x.data ) ) )* 1.1
+  x.lim <- c( max( x.data, na.rm = TRUE ),
+             min( x.data, na.rm = TRUE ) )
+  threshold.pdf.plot <- 5E-4
+  plot.range <- seq( x.lim[ 2 ], x.lim[ 1 ]* 1.1, 0.01 )
+  plot.data <- data.frame(
+      x = plot.range,
+      y = climex:::gpd.density( x$par, x$threshold,
+                               plot.range ) )
+  plot.data <- plot.data[ !is.na( plot.data[[ 2 ]] ), ]
+      plot.data[ nrow( plot.data ) + 1, ] <- c(
+          plot.data[[ 1 ]][ 1 ],
+          plot.data[[ 2 ]][ nrow( plot.data ) ] )
+  plot.lim <- c( min( min( plot.range ),
+                     min( x.data ) - bin.width ),
+                max( max( plot.range ),
+                    max( x.data ) + bin.width ) )  
+  ggplot() + geom_histogram(
+                 data = data.frame( x = x.data ),
+                 colour = grDevices::rgb( .098, .098, .44 ),
+                 alpha = 1,
+                 bins = bin.factor* length( x.data ),
+                 aes( x = x.data, y = ..density..,
+                     fill = "#7171EC" ) ) +
+  geom_polygon( data = plot.data, alpha = 0.7,
+               colour = grDevices::rgb( .098, .098, .44 ),
+               aes( x = x, y = y,
+                   fill = grDevices::rgb( 1, .55, 0 ) ) ) +            
+    scale_fill_manual( values = c( "#7171EC",
+                                  grDevices::rgb( 1, .55, 0 ) ),
+                      labels = c( "Histogram", "Fitted GP"  ) ) +
+    theme_bw() + xlim( plot.lim ) + ylab( "Density" ) +
     theme( legend.title = element_blank() )
   return( last_plot() )
 }
