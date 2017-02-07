@@ -253,13 +253,13 @@ climex.server <- function( input, output, session ){
     if ( !is.null( input$radioEvdStatistics ) ) {
       if ( input$radioEvdStatistics == "GEV" ){
         checkboxInput( "checkBoxIncompleteYears",
-                      "Remove incomplete years", FALSE )
+                      "Remove incomplete years", TRUE )
       } else
         checkboxInput( "checkBoxDecluster",
                       "Declustering of the data", TRUE )
     } else
       checkboxInput( "checkBoxIncompleteYears",
-                    "Remove incomplete years", FALSE )
+                    "Remove incomplete years", TRUE )
   } )
 ########################################################################
   
@@ -412,6 +412,10 @@ climex.server <- function( input, output, session ){
         return( NULL )
     }
     x.deseasonalized <- deseasonalize.interactive( x.xts )
+    if ( input$radioEvdStatistics == "GP" &&
+         max( x.deseasonalized ) < input$sliderThreshold ){
+      return( NULL )
+    }
     x.block <- blocking.interactive( x.deseasonalized )
     return( list( blocked.data = x.block,
                  deseasonalized.data = x.deseasonalized,
@@ -936,7 +940,10 @@ climex.server <- function( input, output, session ){
   ## stations in the leaflet plot, it will become a separate function
   deseasonalize.interactive <- function( x.xts ){
     ## Dropdown for deseasonalization method
-    if ( is.null( x.xts ) ){
+    if ( is.null( x.xts ) ||
+         is.null( input$selectDeseasonalize ) ||
+         is.null( input$selectDataBase )
+        ){
       ## if the initialization has not finished yet just wait a
       ## little longer
       return( NULL )
@@ -947,12 +954,8 @@ climex.server <- function( input, output, session ){
         ## deseasonalization
         return( x.xts ) }
     }
-    ## if not all elements are initialized yet, define some defaults
-    select.deseasonalize <- ifelse( is.null(
-        input$selectDeseasonalize ), "Anomalies",
-        input$selectDeseasonalize )
     x.deseasonalized <- switch(
-        select.deseasonalize,
+        input$selectDeseasonalize,
         "Anomalies" = anomalies( x.xts ),
         "decompose" = {
           ## Remove all NaN or decompose will not work.
@@ -961,67 +964,76 @@ climex.server <- function( input, output, session ){
           ## years.
           if ( any( is.na( x.xts ) ) ){
             x.no.nan <- na.omit( x.xts )
-          } else
+          } else {
             x.no.nan <- x.xts
-            x.decomposed <-
-              stats::decompose(
-                         stats::ts( as.numeric( x.no.nan ),
-                                   frequency = 365.25 ) ) 
-                                   if ( any( is.nan( x.xts ) ) ){
-                                     ## Adjusting the length of the
-                                     ## results by adding the NaN
-                                     ## again
-                                     x.aux <- rep( NaN,
-                                                  length( x.xts ) )
-                                     x.aux[ which( x.xts %in%
-                                                   x.no.nan ) ] <-
-                                       as.numeric(
-                                           x.decomposed$seasonal )
-                                   } else
-                                     x.aux <- as.numeric(
-                                         x.decomposed$seasonal )
-                                     x.xts - x.aux },
+          }
+          x.decomposed <-
+            stats::decompose(
+                       stats::ts( as.numeric( x.no.nan ),
+                                 frequency = 365.25 ) )
+          if ( any( is.nan( x.xts ) ) ){
+            ## Adjusting the length of the results by adding the NaN
+            ## again
+            x.aux <- rep( NaN, length( x.xts ) )
+            x.aux[ which( x.xts %in% x.no.nan ) ] <-
+              as.numeric( x.decomposed$seasonal )
+          } else {
+            x.aux <- as.numeric( x.decomposed$seasonal )
+          }
+          x.xts - x.aux
+        },
         "stl" = {
           ## Remove all NaN or stl will not work. But anyway.
           ## Just removing the values won't make it run correctly.
           ## But the user is warned to remove the years.
           if ( any( is.nan( x.xts ) ) ){
             x.no.nan <- na.omit( x.xts )
-          } else
+          } else {
             x.no.nan <- x.xts
-            x.decomposed <- stats::stl(
-                                       stats::ts( as.numeric( x.no.nan ),
-                                                 frequency = 365.25 ),
-                                       30 )
-            if ( any( is.nan( x.xts ) ) ){
-              ## Adjusting the length of the results by adding
-              ## the NaN again
-              x.aux <- rep( NaN, length( x.xts ) )
-              x.aux[ which( x.xts %in% x.no.nan ) ] <- as.numeric(
-                  x.decomposed$time.series[ , 1 ] )
-            } else
-              x.aux <- as.numeric( x.decomposed$time.series[ , 1 ] )
-              x.xts - x.aux }, 
+          }
+          x.decomposed <- stats::stl(
+                                     stats::ts( as.numeric( x.no.nan ),
+                                               frequency = 365.25 ),
+                                     30 )
+          if ( any( is.nan( x.xts ) ) ){
+            ## Adjusting the length of the results by adding
+            ## the NaN again
+            x.aux <- rep( NaN, length( x.xts ) )
+            x.aux[ which( x.xts %in% x.no.nan ) ] <- as.numeric(
+                x.decomposed$time.series[ , 1 ] )
+          } else
+            x.aux <- as.numeric( x.decomposed$time.series[ , 1 ] )
+            x.xts - x.aux }, 
         "deseasonalize::ds" = {
           ## Remove all NaN or stl will not work. But anyway.
           ## Just removing the values won't make it run correctly.
           ## But the user is warned to remove the years.
           if ( any( is.nan( x.xts ) ) ){
             x.no.nan <- na.omit( x.xts )
-          } else
+          } else {
             x.no.nan <- x.xts
-            x.ds <- deseasonalize::ds( x.no.nan )$z
-            if ( any( is.nan( x.xts ) ) ){
-              ## Adjusting the length of the results by adding
-              ## the NaN again
-              x.aux <- rep( NaN, length( x.xts ) )
-              x.aux[ which( x.xts %in% x.no.nan ) ] <-
-                as.numeric( x.ds )
-            } else
-              x.aux <- as.numeric( x.ds )
-              xts( x.aux, order.by = index( x.xts ) ) 
+          }
+          x.ds <- deseasonalize::ds( x.no.nan )$z
+          if ( any( is.nan( x.xts ) ) ){
+            ## Adjusting the length of the results by adding
+            ## the NaN again
+            x.aux <- rep( NaN, length( x.xts ) )
+            x.aux[ which( x.xts %in% x.no.nan ) ] <-
+              as.numeric( x.ds )
+          } else {
+            x.aux <- as.numeric( x.ds )
+          }
+          xts( x.aux, order.by = index( x.xts ) ) 
         },
         "none" = x.xts )
+    if ( is.na( max( x.deseasonalized ) ) ){
+      ## I don't wanna any NaN in my time series. I some cases the
+      ## deseasonalization methods themselved produces these. It's a
+      ## dirty solution, but just omit them and inform the user
+      x.deseasonalized <- na.omit( x.deseasonalized )
+      shinytoastr::toastr_error(
+                       "NaNs produced during the deseasonalization." )
+    }
     return( x.deseasonalized ) }
 ########################################################################
   
