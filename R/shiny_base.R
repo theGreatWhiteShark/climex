@@ -1068,6 +1068,11 @@ climex.server <- function( input, output, session ){
          is.null( input$selectOptimization ) ||
          is.null( input$buttonMinMax ) )
       return( NULL )
+    if ( input$radioEvdStatistics == "GEV" ){
+      model <- "gev"
+    } else {
+      model <- "gpd"
+    }
     ## When considering the minima instead of the maxima x*(-1)
     ## will be fitted and the location parameter will be multiplied
     ## by -1 afterwards
@@ -1080,18 +1085,29 @@ climex.server <- function( input, output, session ){
     ## Check whether the supplied initial parameter combination can
     ## still be evaluated. This might fail, e.g. when changing between
     ## time series or minimal und maximal extremes.
-    if ( is.nan( climex::likelihood( x.initial, x.kept ) ) ){
+    if ( is.nan( climex::likelihood( x.initial, x.kept,
+                                    model = model ) ) ){
       shinytoastr::toastr_warning(
                        "Initial parameters can not be evaluated. They have been reseted during the fitting procedure!" )
       x.initial <- NULL
-    }
+    } 
     if ( is.null( x.initial ) ){
-      if ( input$radioEvdStatistics == "GEV" ) {
         x.initial <- climex::likelihood.initials( x.kept,
-                                                 model = "gev" )
-      } else 
-        x.initial <- climex::likelihood.initials( x.kept,
-                                                 model = "gpd" )
+                                                 model = model )
+    } else {
+      ## While changing the EVD statistics from "GEV" to "GP" the initial
+      ## parameter combination has to be reset. This is nevertheless a
+      ## little bit problematic since both evd.fitting() and
+      ## initial.parameters() are labeled dirty during this procedure. So
+      ## one can not really control which is evaluted first. But since the
+      ## reseting of initial.parameters() would result in the default
+      ## setting, we are save to use it in here too.
+      if ( input$radioEvdStatistics == "GEV" &&
+           length( x.initial ) != 3 )
+        x.initial <- NULL
+      if ( input$radioEvdStatistics == "GP" &&
+           length( x.initial ) != 2 )
+        x.initial <- NULL
     }
     if ( input$radioEvdStatistics == "GEV" ){
       ## Fits of GEV parameters to blocked data set
