@@ -611,7 +611,6 @@ climex.server <- function( input, output, session ){
       x.fit.evd$par[ 1 ] <- x.fit.evd$par[ 1 ]* -1
       shinytoastr::toastr_info( "Since the minimal extremes are chosen the GEV distribution \n will be fitted to the negated time series" )
     }
-    
     x.lim <- c( max( x.kept ), min( x.kept ) )
     ## the amount of bins is changing whenever a single event
     ## is toggled. This is distracting only if a certain amount
@@ -665,18 +664,17 @@ climex.server <- function( input, output, session ){
       plot.data <- data.frame( model = model, empirical = empirical )
     } else {
       ## input$radioEvdStatistics == "GP"
-      if ( is.null( input$sliderThreshold ) ){
-        threshold <- max( x.kept )* .8
-      } else 
-        threshold <- input$sliderThreshold
+      threshold <- input$sliderThreshold
       plot.data <- data.frame(
-          model = climex:::qevd( p = stats::ppoints(
-                                                length( x.kept ), 0 ),
-                                scale = x.fit.evd$par[ 1 ], 
-                                shape = x.fit.evd$par[ 2 ],
-                                model = "gpd", silent = TRUE,
-                                threshold = threshold ),
-          empirical = sort( as.numeric( x.kept ) ) )
+          model = sort(
+              climex:::qevd( p = stats::ppoints(
+                                            length( x.kept ), 0 ),
+                            scale = x.fit.evd$par[ 1 ], 
+                            shape = x.fit.evd$par[ 2 ],
+                            model = "gpd", silent = TRUE,
+                            threshold = threshold ) ),
+          empirical = sort( as.numeric( x.kept ) ) +
+            threshold )
     }
     plot.fit <- stats::lm( empirical ~ model, plot.data )[[ 1 ]]
     gg.qq1 <- ggplot() +
@@ -719,20 +717,21 @@ climex.server <- function( input, output, session ){
                         location = x.fit.evd$par[ 1 ],
                         scale = x.fit.evd$par[ 2 ], silent = TRUE,
                         shape = x.fit.evd$par[ 3 ], model = "gev" ) )
+      if ( !is.null( input$buttonMinMax ) &&
+           input$buttonMinMax == "Min" ){
+        sampled <- -1* sampled
+        empirical <- -1* sort( as.numeric( x.kept ) )
+      } else {
+        empirical <- sort( as.numeric( x.kept ) )
+      }
     } else {
       sampled <- sort(
           climex:::revd( n = length( x.kept ),
                         scale = x.fit.evd$par[ 1 ], silent = TRUE,
                         shape = x.fit.evd$par[ 2 ], model = "gpd",
-                          threshold = input$sliderThreshold ) )
-    }
-    if ( !is.null( input$buttonMinMax ) &&
-           input$buttonMinMax == "Min" &&
-          input$radioEvdStatistics == "GEV" ){
-      sampled <- -1* sampled
-      empirical <- -1* sort( as.numeric( x.kept ) )
-    } else {
-      empirical <- sort( as.numeric( x.kept ) )
+                        threshold = input$sliderThreshold ) )
+      empirical <- sort( as.numeric( x.kept ) +
+                         input$sliderThreshold )
     }
     length.e <- length( empirical )
     length.s <- length( sampled )
@@ -830,6 +829,11 @@ climex.server <- function( input, output, session ){
                            error.estimation = "none" )
       }
     }
+    if ( input$radioEvdStatistics == "GEV" ){
+      model <- "gev"
+    } else {
+      model <- "gpd"
+    }
     if ( input$selectOptimization == "SANN" ||
          input$selectOptimization == "dfoptim::nmk" ){
       ## When performing simulated annealing the hessian was not
@@ -837,11 +841,15 @@ climex.server <- function( input, output, session ){
       ## will just be calculated via the Monte Carlo approach
       x.confidence.intervals.aux <-
         climex::return.level( fit.aux, return.period = x.period,
-                             error.estimation = "MC" )
+                             error.estimation = "MC",
+                             threshold = fit.aux$threshold,
+                             model = model )
     } else {           
       x.confidence.intervals.aux <-
         climex::return.level( fit.aux, return.period = x.period,
-                             error.estimation = "MLE" )
+                             error.estimation = "MLE",
+                             threshold = fit.aux$threshold,
+                             model = model )
     }
     if ( input$buttonMinMax == "Min" &&
          input$radioEvdStatistics == "GEV" ){
@@ -854,16 +862,23 @@ climex.server <- function( input, output, session ){
         level = x.confidence.intervals.aux$return.levels,
         ci.high = x.confidence.intervals.aux$return.levels +
           as.numeric( x.confidence.intervals.aux$errors ) )
-    if ( input$buttonMinMax == "Min" &&
-         input$radioEvdStatistics == "GEV" ){
-      plot.data <- data.frame(
-          x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
-          y = -1* sort( as.numeric( x.kept* -1 ) ) )
+    if ( input$radioEvdStatistics == "GEV" ){
+      if ( input$buttonMinMax == "Min" ){
+        plot.data <- data.frame(
+            x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
+            y = -1* sort( as.numeric( x.kept* -1 ) ) )
+      } else {
+        plot.data <- data.frame(
+            x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
+            y = sort( as.numeric( x.kept ) ) )
+      } 
     } else {
-      plot.data <- data.frame(
+      ## GP
+      plot.data <-  data.frame(
           x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
-          y = sort( as.numeric( x.kept ) ) )
-    }        
+          y = sort( as.numeric( x.kept +
+                                input$sliderThreshold ) ) )
+    }
     plot.y.limits <- c( plot.data$y[ which.min(
                                       abs( plot.data$x - 1 ) ) ],
                        max( x.confidence.intervals[ , 3 ] ) )
