@@ -474,3 +474,52 @@ revd <- function ( n, location = NULL, scale = NULL, shape = NULL,
   result <- location + scale * ( z^( -shape ) - 1 )/ shape
   return( result )
 }
+
+##' @title Port of the ismev::gev.dens function
+##' @details It might not to be called by the user, but I can
+##' certainly write some lines about it. This function takes
+##' the fitted parameters of a GEV distribution and calculates
+##' its density at specified sites z.
+##'
+##' @param parameters Fitted GEV parameters c( location, scale,
+##' shape )
+##' @param z Numerical vector of sites where to evaluate the
+##' density of the GEV distribution.
+##'
+##' @return Numerical vector of same length as z.
+##' @author Philipp Mueller
+gev.density <- function ( parameters, z ){
+  if ( class( parameters ) != "numeric" ||
+       length( parameters ) != 3 )
+    stop( "gev.density: Please provide a numerical vector of the form c( location, scale, shape )")
+  location <- parameters[ 1 ]
+  scale <- parameters[ 2 ]
+  shape <- parameters[ 3 ]
+  ( exp( -( 1 + ( shape* ( z - location ) )/
+            scale )^( -1/ shape ) )*
+    ( 1 + ( shape* ( z - location ) ) /
+      scale )^( -1/ shape - 1) )/scale
+}
+
+##' @title Port of the ismev::gpd.dens function
+##' @details It might not to be called by the user, but I can
+##' certainly write some lines about it. This function takes
+##' the fitted parameters of a GP distribution and calculates
+##' its density at specified sites z.
+##'
+##' @param parameters Fitted GP parameters c( scale, shape )
+##' @param threshold Threshold used to fit the GP distribution.
+##' @param z Numerical vector of sites where to evaluate the
+##' density of the GP distribution.
+##'
+##' @return Numerical vector of same length as z.
+##' @author Philipp Mueller 
+gpd.density <- function( parameters, threshold, z ) {
+  if ( class( parameters ) != "numeric" ||
+       length( parameters ) != 2 )
+    stop( "gpd.density: Please provide a numerical vector of the form c( scale, shape )")
+  scale <- parameters[ 1 ]
+  shape <- parameters[ 2 ]
+  ( 1 + ( shape* ( z - threshold ) )
+    / scale )^( -1/shape - 1 )/ scale
+}
