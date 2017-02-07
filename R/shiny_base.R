@@ -392,10 +392,19 @@ climex.server <- function( input, output, session ){
     ## considered. Import data set, cut it to the desired interval,
     ## deseasonalize and block it
     x.xts <- data.selection()
-    if ( is.null( x.xts ) ){
+    if ( is.null( x.xts ) ||
+         is.null( input$radioEvdStatistics ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
       return( NULL )
+    }
+    if ( input$radioEvdStatistics == "GEV" ){
+      if ( is.null( input$sliderBoxLength ) )
+        return( NULL )
+    } else {
+      if ( is.null( input$sliderThreshold ) ||
+          is.null( input$checkBoxDecluster ) )
+        return( NULL )
     }
     x.deseasonalized <- deseasonalize.interactive( x.xts )
     x.block <- blocking.interactive( x.deseasonalized )
@@ -406,9 +415,8 @@ climex.server <- function( input, output, session ){
   ## values
   blocking.interactive <- function( x.xts ){
     ## Toggle if maxima of minima are going to be used
-    if ( is.null( input$buttonMinMax ) ){
-      block.mode <- "max"
-    } else if ( input$buttonMinMax == "Max" ){
+    if ( is.null( input$buttonMinMax ) ||
+         input$buttonMinMax == "Max" ){
       block.mode <- "max"
     } else
       block.mode <- "min"
@@ -419,13 +427,6 @@ climex.server <- function( input, output, session ){
       x.block <- block( x.xts, separation.mode = "years",
                        block.mode = block.mode )
     } else if ( input$radioEvdStatistics == "GEV" ){
-      ## Box size as dynamic input parameter
-      if ( is.null( input$sliderBoxLength ) ||
-           input$sliderBoxLength == 366 ||
-           input$sliderBoxLength == 365 ){
-        x.block <- block( x.xts, separation.mode = "years",
-                         block.mode = block.mode )
-      } else
         x.block <- block( x.xts, block.length = input$sliderBoxLength,
                          block.mode = block.mode )
     } else if ( input$radioEvdStatistics == "GP" ){
@@ -434,16 +435,9 @@ climex.server <- function( input, output, session ){
       ## "block.mode" and the corresponding "input$buttonMinMax"
       ## are still use full and decide if the values above or below
       ## the threshold are going to be extracted
-      if ( is.null( input$sliderThreshold ) ){
-        threshold <- max( x.xts )* .8
-      } else
-        threshold <- input$sliderThreshold
-      if ( !is.null( input$checkBoxDecluster ) ){
-        checkDecluster <- FALSE
-      } else
-        checkDecluster <- input$checkBoxDecluster
-      x.block <- climex::threshold( x.block, threshold = threshold,
-                                   decluster = input$sliderThreshold,
+      x.block <- climex::threshold( x.xts,
+                                   threshold = input$sliderThreshold,
+                                   decluster = input$checkBoxDecluster,
                                    na.rm = TRUE )
       return( x.block )
     }
