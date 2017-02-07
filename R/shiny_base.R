@@ -602,14 +602,16 @@ climex.server <- function( input, output, session ){
     }
     x.kept <- x.block[ reactive.values$keep.rows ]
     x.fit.evd <- evd.fitting( )
-    if ( is.null( x.fit.evd ) )
-      return( NULL )       
+    if ( is.null( x.fit.evd ) ){
+      return( NULL )
+    }
     if ( input$buttonMinMax == "Min" &&
          input$radioEvdStatistics == "GEV" ){
       x.kept <- x.kept* ( -1 )
       x.fit.evd$par[ 1 ] <- x.fit.evd$par[ 1 ]* -1
       shinytoastr::toastr_info( "Since the minimal extremes are chosen the GEV distribution \n will be fitted to the negated time series" )
     }
+    
     x.lim <- c( max( x.kept ), min( x.kept ) )
     ## the amount of bins is changing whenever a single event
     ## is toggled. This is distracting only if a certain amount
@@ -619,74 +621,14 @@ climex.server <- function( input, output, session ){
     ## with the length of x.kept yields the number of blocks.
     gg1.bins <- ( ( ( length( x.kept ) - 1 )*100/
                     length( x.block ) )  %/% 5 )* 0.025
-    ## for later usage: bins are at least this wide
-    gg1.bin.width <- ( ( max( x.kept ) - min( x.kept ) )/
-                       ( gg1.bins * length( x.kept ) ) )* 1.1
-    if ( input$radioEvdStatistics == "GEV" ){
-      ## GEV
-      ## determining the limits of the PDF plot
-      threshold.pdf.plot <- 5E-4
-      plot.range <- seq( x.fit.evd$par[ 1 ] - x.fit.evd$par[ 2 ]* 10,
-                        x.fit.evd$par[ 1 ] + x.fit.evd$par[ 2 ]* 10,
-                        0.01 )
-      plot.data <- data.frame( x = plot.range,
-                              y = ismev::gev.dens( x.fit.evd$par,
-                                                  plot.range ) )
-      plot.lim <- c(
-          plot.data[[ 1 ]][ which.min(
-                       abs( plot.data[[ 2 ]][
-                           1 : which.max( plot.data[[ 2 ]] ) ] -
-                           threshold.pdf.plot ) ) ],
-          plot.data[[ 1 ]][ which.min( abs( plot.data[[ 2 ]][
-                       which.max( plot.data[[ 2 ]] ) :
-                       length( plot.data[[ 2 ]] ) ] -
-                       threshold.pdf.plot ) ) +
-                       which.max( plot.data[[ 2 ]] ) - 1 ] )
-      if ( plot.lim[ 1 ] > x.lim[ 1 ] )
-        plot.lim[ 1 ] <- x.lim[ 1 ] - abs( x.lim[ 1 ] )* 0.05 
-      if ( plot.lim[ 2 ] < x.lim[ 2 ] )
-        plot.lim[ 2 ] <- x.lim[ 2 ] + abs( x.lim[ 2 ] )* 0.05 
-      plot.lim <- c( min( plot.lim[ 1 ],
-                         min( x.kept ) - gg1.bin.width ),
-                    max( plot.lim[ 2 ],
-                        max( x.kept ) + gg1.bin.width ) )
-    } else {
-      ## Generalized Pareto
-      plot.range <- seq( x.lim[ 2 ], x.lim[ 1 ]* 1.1, 0.01 )
-      plot.data <- data.frame( x = plot.range,
-                              y = ismev::gpd.dens( x.fit.evd$par,
-                                                  threshold,
-                                                  plot.range ) )
-      plot.data <- plot.data[ !is.na( plot.data[[ 2 ]] ), ]
-      plot.data[ nrow( plot.data ) + 1, ] <- c(
-          plot.data[[ 1 ]][ 1 ],
-          plot.data[[ 2 ]][ nrow( plot.data ) ] )
-      plot.lim <- c( min( min( plot.range ),
-                         min( x.kept ) - gg1.bin.width ),
-                    max( max( plot.range ),
-                        max( x.kept ) + gg1.bin.width ) )
-    }
-    ## splitting the plot.data$y in half and determining which
-    ## index is closest to threshold
     x.label <- function.get.y.label( input )
-    gg1 <- ggplot() +
-      geom_histogram( data = x.kept, colour = colour.ts, alpha = 1,
-                     aes( x = as.numeric( x.kept ), y = ..density..,
-                         fill = colour.ts.light ), na.rm = TRUE,
-                     bins = gg1.bins* length( x.kept ) ) +
-      geom_polygon( data = plot.data, alpha = 0.7, colour = colour.ts,
-                   aes( x = x, y = y, fill = colour.extremes ) ) +
-      scale_fill_manual( values = c( colour.ts.light,
-                                    colour.extremes ),
-                        labels = c( "Histogram data",
-                                   "Fitted distribution"  ) ) +
-      theme_bw() + xlab( x.label ) + xlim( plot.lim ) +
+    plot( x.fit.evd, bin.factor = gg1.bins ) +
+      xlab( x.label ) +
       theme( legend.position = "none" ) +
       theme( axis.title = element_text( size = 17,
                                        colour = colour.ts ),
             axis.text = element_text( size = 13,
                                      colour = colour.ts ) )
-    return( gg1 )
   } )
   output$plotFitQQ <- renderPlot( {
     ## Quantile-quantile plot for fit statistics
