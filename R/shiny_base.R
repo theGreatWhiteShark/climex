@@ -1889,7 +1889,6 @@ climex.server <- function( input, output, session ){
                                             collapsed = FALSE ) )
         map.leaflet <- addLegend( map.leaflet, pal = palette,
                                  values = c( color.min, color.max ),
-                                 title = "[years]",
                                  layerId = "leafletLegend",
                                  orientation = "horizontal",
                                  width = map.width )
