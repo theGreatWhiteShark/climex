@@ -231,7 +231,7 @@ climex.server <- function( input, output, session ){
     } else {
       if ( is.null( input$buttonMinMax ) ||
            input$buttonMinMax == "Max" ){
-        sliderInput( "sliderThreshold", "GP",
+        sliderInput( "sliderThreshold", "Threshold:",
                     round( min( x.deseasonalized, na.rm = TRUE ) ),
                     round( max( x.deseasonalized, na.rm = TRUE ) ),
                     round( 0.8* max( x.deseasonalized, na.rm = TRUE ) ) )
@@ -1174,54 +1174,6 @@ climex.server <- function( input, output, session ){
     x.kept <- x.block[ reactive.values$keep.rows ]
     return( fit.interactive( x.kept, x.initial ) )
   } )
-  ## the purpose of this function is to supply a data.frame
-  ## containing the 50/100/500 year return level of all selected
-  ## stations. Lets see how fast it will be. Maybe I will just
-  ## calculate one return level per station.
-  ## This will be calculated on demand (as soon as the user clicks
-  ## the corresponding form)
-  calculate.chosen.return.levels <- reactive( {
-    data.selected <- data.chosen()
-    ## selected return level
-    return.level.year <- input$sliderMapReturnLevel 
-    ## wait for initialization
-    if ( is.null( input$sliderMapReturnLevel ) ||
-         is.null( data.selected ) )
-      return( NULL )
-    ## if no geo-coordinates are provided for the time series,
-    ## don't calculate the return levels
-    if ( any( is.na( c( data.selected[[ 2 ]]$longitude,
-                       data.selected[[ 2 ]]$latitude ) ) ) )
-      return( NULL )
-    ## clean the stations
-    data.cleaned <- lapply( data.selected[[ 1 ]], cleaning.interactive )
-    ## deseasonalize them
-    data.deseasonalized <- lapply( data.cleaned,
-                                  deseasonalize.interactive )
-    ## block them
-    data.blocked <- lapply( data.deseasonalized, blocking.interactive )
-    ## choose whether to calculate the GEV or GP parameters
-    if ( input$radioEvdStatistics == "GEV" ){
-      model <- "gev"
-      threshold <- NULL
-    } else {
-      model <- "gpd"
-      threshold <- input$sliderThreshold
-    }
-    ## calculate the return level and append it to the data.selected[[ 2 ]] data.frame
-    return.level.vector <- rep( NaN, length( data.blocked ) )
-    for ( rr in 1 : length( data.blocked ) ){
-      return.level.vector[ rr ] <-
-        climex::return.level( fit.interactive( data.blocked[[ rr ]] ),
-                             return.period = return.level.year,
-                             model = model, error.estimation = "none",
-                             total.length = length(
-                                 data.selected[[ 1 ]][[ rr ]] ),
-                             threshold = threshold )
-      }
-    data.selected[[ 2 ]]$return.level <- return.level.vector
-    return( data.selected[[ 2 ]] )
-  } ) 
 ########################################################################
   
 ########################################################################
@@ -1762,235 +1714,16 @@ climex.server <- function( input, output, session ){
             div( id = "animationScSh", class = "animationClimex" ) ) )
       } ) } )
 ########################################################################
-  
-########################################################################
-############### Leaflet module (world map)  ############################
-########################################################################
-  ## This module provides an interactive map to display the
-  ## locations of the individual stations. The user can choose
-  ## individual stations by clicking at them. In addition a dialog
-  ## will pop up telling the stations name, the length of the
-  ## time series and the 20, 50 and 100 year return level calculated
-  ## with the setting in the basic map without station positions        
-  ## select only those stations in Germany with a certain minimum
-  ## number of years
-  ##
-  ## This functions extracts all stations containing more than a
-  ## specified number of years of data
-  data.chosen <- reactive( {
-    if ( is.null( input$selectDataBase ) || is.null( input$sliderMap ) )
-      return( NULL )
-    ## the generation of the artificial data is handled in the
-    ## data.selection reactive function
-    if ( input$selectDataBase == "DWD" ){
-      if ( is.null( input$selectDataType ) )
-        return( NULL )
-      selection.list <- switch( input$selectDataType,
-                               "Daily max. temp." = stations.temp.max,
-                               "Daily min. temp." = stations.temp.min,
-                               "Daily precipitation" = stations.prec )
-      ## to also cope the possibility of importing such position data
-      positions.all <- station.positions
-    } else if ( input$selectDataBase == "input" ){
-      file.loading()
-      if ( any( class( x.input ) == "xts" ) ){
-        ## to assure compatibility
-        aux <- list( x.input,
-                    data.frame( longitude = NA, latitude = NA,
-                               altitude = NA, name = "1" ) )
-        names( aux[[ 1 ]] ) <- c( "1" )
-        ## adding a dummy name which is going to be displayed in
-        ## the sidebar
-        return( aux )
-      } else {
-        ## two cases are accepted here: a list containing stations xts
-        ## time series of contain such a list and a data.frame
-        ## specifying the stations positions
-        if ( class( x.input ) == "list" &&
-             class( x.input[[ 1 ]] ) == "list" ){
-          selection.list <- x.input[[ 1 ]]
-          ## I will assume the second element of this list is a
-          ## data.frame containing the coordinated, height and name of
-          ## the individual stations
-          positions.all <- x.input[[ 2 ]]
-        } else {
-          ## Just an ordinary list of xts elements
-          selection.list <- x.input
-          ##  dummy names
-          if ( is.null( names( selection.list ) ) )
-            names( selection.list ) <- as.character(
-                seq( 1, length( selection.list ) ) ) 
-          ## create a dummy
-          positions.all <- data.frame(
-              longitude = rep( NA, length( selection.list ) ),
-              latitude = rep( NA, length( selection.list ) ),
-              altitude = rep( NA, length( selection.list ) ),
-              name = names( selection.list ) )
-        }
-      }
-    }
-    ## select time series with sufficient length 
-    selection <- Reduce( c, lapply( selection.list, function( x )
-      length( unique( lubridate::year( x ) ) ) ) ) >= input$sliderMap
-    stations.selected <- selection.list[ selection ]
-    positions.selected <- positions.all[ selection,  ]
-    ## first element contains a list of all selected stations
-    ## second element contains a data.frame with the longitude,
-    ## latitude, altitude and name of each selected station
-    return( list( stations.selected, positions.selected ) )
-  } )
-  ## create custom markers.
-  ## This is essentially the same marker but with different colors.
-  ## The selected one should be colored red and all the others blue. 
-  blue.icon <-  makeIcon(
-      iconUrl = paste0( system.file( "climex_app", package = "climex" ),
-                       "/www/marker-icon.png" ),
-      iconWidth = 25, iconHeight = 41, iconAnchorX = 12.5,
-      iconAnchorY = 41,
-      shadowUrl = paste0( system.file( "climex_app",
-                                      package = "climex" ),
-                         "/www/marker-shadow.png" ), shadowWidth = 41,
-      shadowHeight = 41, shadowAnchorX = 12.5, shadowAnchorY = 41 )
-  red.icon <-  makeIcon(
-      iconUrl = paste0( system.file( "climex_app", package = "climex" ),
-                       "/www/select-marker.png" ),
-      iconWidth = 25, iconHeight = 41, iconAnchorX = 12.5,
-      iconAnchorY = 41,
-      shadowUrl = paste0( system.file( "climex_app",
-                                      package = "climex" ),
-                         "/www/marker-shadow.png" ), shadowWidth = 41,
-      shadowHeight = 41, shadowAnchorX = 12.5, shadowAnchorY = 41 )
-  ## Create the underlying map containing the Openstreetmap tile.
-  ## This is the fundamental layer and all the markers will be
-  ## added on top of it.
-  output$leafletMap <- renderLeaflet( {
-    leaflet() %>% fitBounds( 5, 46, 13, 55 ) %>%
-      addTiles( "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-               attribution = '<code> Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a> </code>' ) } )
-  ## Depending on the number of minimal years and the selected data
-  ## source markers will be placed at the geo-coordinates of the
-  ## individual stations. 
-  observe( {
-    data.selected <- data.chosen()
-    if ( !is.null( data.selected ) ){
-      if ( any( is.na( c( data.selected[[ 2 ]]$longitude,
-                         data.selected[[ 2 ]]$latitude ) ) ) ){
-        ## I am dealing with either a placeholder or a compromised
-        ## data.frame. Anyway, the leaflet map can not handle it
-        return( NULL )
-      }
-      leafletProxy( "leafletMap" ) %>%
-        clearGroup( "stations" ) %>%
-        addMarkers( data = data.selected[[ 2 ]], group = "stations",
-                   lng = ~longitude,
-                   icon = blue.icon, lat = ~latitude,
-                   options = popupOptions( closeButton = FALSE ) )
-    } } )
-  observe( {
-    ## the calculation of all the return levels of the stations
-    ## just takes too long. I put it in a different observe object
-    ## and the only way to start the calculation will be using a
-    ## button
-    if ( is.null( input$buttonDrawMarkers ) ||
-         input$buttonDrawMarkers < 1 )
-      return( NULL )
-      isolate( data.return.levels <- calculate.chosen.return.levels() )
-      if ( !is.null( data.return.levels ) ){
-        if ( any( is.na( c( data.return.levels$longitude,
-                           data.return.levels$latitude ) ) ) ){
-          ## I am dealing with either a placeholder or a compromised
-          ## data.frame. Anyway, the leaflet map can not handle it
-          return( NULL )
-        }
-        ## Same trick as in the animation tab: I use a plot of height
-        ## 0 to obtain the current width of the element I want to
-        ## place the legend next to. Unfortunately I do not know of
-        ## any other trick right now to adjust an objects width
-        ## according to the current screen width (CSS3 magic)
-        isolate(
-            map.width <-
-              session$clientData$output_plotPlaceholderLeaflet_width )
-        ## range of the return levels
-        color.max <- max( data.return.levels$return.level )
-        color.min <- min( data.return.levels$return.level )
-        ## create a palette for the return levels of the individual
-        ## circles
-        palette <- colorNumeric( c( "navy", "skyblue", "limegreen",
-                                   "yellow", "darkorange",
-                                   "firebrick4" ),
-                                c( color.min, color.max ) )
-        map.leaflet <- leafletProxy( "leafletMap" )
-        map.leaflet <- clearGroup( map.leaflet, "returns" )
-        map.leaflet <- addCircleMarkers(
-            map.leaflet, data = data.return.levels,
-            group = "returns", lng = ~longitude,
-            color = ~palette( return.level ), lat = ~latitude,
-            options = popupOptions( closeButton = FALSE ),
-            fillOpacity = .8 )
-        ## layer control to turn the return level layer on and off
-        map.leaflet <- addLayersControl( map.leaflet,
-                                        baseGroups = c( "stations",
-                                                       "returns" ),
-                                        position = "bottomright",
-                                        options = layersControlOptions(
-                                            collapsed = FALSE ) )
-        map.leaflet <- addLegend( map.leaflet, pal = palette,
-                                 values = c( color.min, color.max ),
-                                 layerId = "leafletLegend",
-                                 orientation = "horizontal",
-                                 width = map.width )
-        return( map.leaflet )
-      } } )
-  output$tableMap <- renderTable( {
-    data.selected <- data.chosen()
-    if ( is.null( data.selected ) ||
-         is.null( input$leafletMap_marker_click) )
-      return( NULL )
-    map.click <- input$leafletMap_marker_click
-    station.name <- as.character(
-        data.selected[[ 2 ]]$name[ which(
-                                 data.selected[[ 2 ]]$latitude %in%
-                                 map.click$lat &
-                                 data.selected[[ 2 ]]$longitude %in%
-                                 map.click$lng ) ] )
-    leafletProxy( "leafletMap" ) %>%
-      clearGroup( group = "selected" )
-    leafletProxy( "leafletMap" ) %>%
-      addMarkers( data = map.click, group = "selected", icon = red.icon,
-                 lng = ~lng, lat = ~lat )
-    ## calculate the GEV fit and various return levels
-    x.fit.gev <- evd.fitting()
-    x.data <- data.blocking()
-    if ( is.null( x.fit.gev ) )
-      return( NULL )
-    if ( input$radioEvdStatistics == "GEV" ){
-      model <- "gev"
-    } else {
-      model <- "gpd"
-    }
-    if ( input$buttonMinMax == "Max" ||
-         input$radioEvdStatistics == "GP" ){
-      x.return.level <- climex::return.level(
-                                    x.fit.gev,
-                                    return.period = c( 100, 50, 20 ),
-                                    model = model,
-                                    error.estimation = "none",
-                                    threshold = x.fit.gev$threshold,
-                                    total.length = x.data[[ 1 ]] )
-    } else
-      x.return.level <- ( -1 )* climex:::return.level(
-                                             x.fit.gev,
-                                             return.period = c( 100,
-                                                               50, 20 ),
-                                             model = model,
-                                             error.estimation = "none" )
-    x.df <- data.frame( names = c( "100y return level",
-                                  "50y return level",
-                                  "20y return level" ),
-                       x.return.level, row.names = NULL )
-    colnames( x.df ) <- c( station.name, "" )
-    x.df
-  }, rownames = FALSE, digits = 3, width = 220 )
+  callModule( climex:::leafletClimex, "test",
+             reactive( input$selectDataBase ),
+             reactive( input$sliderMap ),
+             reactive( input$selectDataType ),
+             file.loading, x.input, reactive( input$buttonMinMax ),
+             reactive( input$radioEvdStatistic ), data.blocking,
+             evd.fitting, reactive( input$leafletMap_marker_click ),
+             session$clientData$output_plotPlaceholderLeaflet_width,
+             reactive( input$sliderThreshold ), fit.interactive,
+             reactive( input$buttonDrawMarkers ) )
 }
 
 ##' @title The user interface for the \code{\link{climex}} function.
@@ -2071,33 +1804,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
           tabName = "tabMap",
           tags$style( type = "text/css",
                      "#leafletMap {height: calc(100vh - 80px) !important;}" ),
-          leafletOutput( "leafletMap", width = "100%", height = 1000 ),
-          ## 50px is the thickness of the top navigation bar
-          absolutePanel( top = 50, right = 0, id = "leafletBox",
-                        sliderInput( "sliderMap",
-                                    "Minimal length [years]",
-                                    0, 155, value = 65, step = 1 ),
-                        tableOutput( "tableMap" ),
-                        ## a plot of height 0? Well, its actually a
-                        ## very nice trick since I need  a width value
-                        ## for the generated pngs in the animation in
-                        ## pixel. But I really want to make app to be
-                        ## rendered nicely on different screen sizes.
-                        ## Via the session$clientData I can access the
-                        ## width and height of plots. Thus I can access
-                        ## the width of this specific box via the
-                        ## plotPlaceholder without seeing it at all.
-                        plotOutput( "plotPlaceholderLeaflet", height = 0,
-                                   width = '100%' ) ),
-          ## lift it a little but upwards so one can still see the
-          ## card licensing
-          absolutePanel( bottom = 32, right = 0,
-                        id = "leafletMarkerBox",
-                        sliderInput( "sliderMapReturnLevel",
-                                    "Return level [years]",
-                                    30, 1000, value = 100 ),
-                        actionButton( "buttonDrawMarkers",
-                                     "Calculate return levels" ) ) ),
+         climex:::leafletClimexUI( "test" ) ),
         tabItem(
           tabName = "tabGeneral",
           ## In order guarantee the correct behavior of the rendering
