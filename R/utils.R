@@ -10,28 +10,29 @@
 ##' @import lubridate
 ##' @author Philipp Mueller
 convert.date <- function( input.data, origin = "1970-01-01" ){
-    UseMethod( "convert.date" )
+  UseMethod( "convert.date" )
 }
 convert.date.character <- function( input.data, origin = 1970-01-01 ){
-    return( as.Date( input.data, format = "%Y%m%d" ) )
+  return( as.Date( input.data, format = "%Y%m%d" ) )
 }
 convert.date.integer <- function( input.data, origin = "1970-01-01" ){
-    if ( !is.integer( input.data ) )
-         stop( "data provided for convert.date.integer has the wrong format. Class 'integer' is required!" )
-    output.data <- as.Date( as.character( input.data[ ] ) , format = "%Y%m%d" )
-    return( output.data )
+  if ( !is.integer( input.data ) )
+    stop( "data provided for convert.date.integer has the wrong format. Class 'integer' is required!" )
+  output.data <- as.Date( as.character( input.data[ ] ),
+                         format = "%Y%m%d" )
+  return( output.data )
 }
 convert.date.numeric <- function( input.data, origin = "1970-01-01" ){
-    if ( !is.numeric( input.data ) )
-         stop( "data provided for convert.date.numeric has the wrong format. Class 'numeric' is required!" )
-    output.data <- as.Date( input.data[ ], origin = origin )
-    return( output.data )
+  if ( !is.numeric( input.data ) )
+    stop( "data provided for convert.date.numeric has the wrong format. Class 'numeric' is required!" )
+  output.data <- as.Date( input.data[ ], origin = origin )
+  return( output.data )
 }
 convert.date.Date <- function( input.data, origin = "1970-01-01"  ){
-    if ( !is.Date( input.data ) )
-         stop( "data provided for convert.date.Date has the wrong format. Class 'Date' is required!" )
-    output.data <- as.numeric( input.data[ ] )
-    return( output.data )
+  if ( !is.Date( input.data ) )
+    stop( "data provided for convert.date.Date has the wrong format. Class 'Date' is required!" )
+  output.data <- as.numeric( input.data[ ] )
+  return( output.data )
 }
 
 ##' @title Converts fits done by \code{\link{optim}} into an object which can be used by the functions of the extRemes package
@@ -43,25 +44,35 @@ convert.date.Date <- function( input.data, origin = "1970-01-01"  ){
 ##'
 ##' @return Of class "fevd"
 ##' @author Philipp Mueller 
-as.fevd <- function( x, fit = stats::optim( x ), call = "fevd(x = x)", data.name = c( "x", "" ),
-                    weights = 1, in.data = FALSE, method = "MLE", type = "GEV", period.basis = "year",
-                    par.models = list( threshold = ~1, location = ~1, scale = ~1,
-                                      log.scale = FALSE, shape = ~1,
-                                      term.names = list( threshold = character( 0 ),
-                                                        location = character( 0 ),
-                                                        scale = character( 0 ),
-                                                        shape = character( 0 ) ) ),
-                    const.loc = TRUE, const.scale = TRUE, const.shape = TRUE, n = length( x ),
-                    na.action = "na.fail", parnames = c( "location", "scale", "shape" ),
-                    results = fit, initial.results = NULL, threshold = NULL, npy = NULL ){
-    output <- list( call = call, data.name = data.name, weights = weights, in.data = in.data,
-                   x = as.numeric( x ), method = method, type = type, period.basis = period.basis,
-                   par.models = par.models, const.loc = const.loc, const.scale = const.scale,
-                   const.shape = const.shape, n = n, na.action = na.action, parnames = parnames,
-                   results = results, initial.results = initial.results, threshold = threshold,
-                   npy = npy )
-    class( output ) <- "fevd"
-    return( output )
+as.fevd <- function( x, fit = stats::optim( x ), call = "fevd(x = x)",
+                    data.name = c( "x", "" ), weights = 1,
+                    in.data = FALSE, method = "MLE", type = "GEV",
+                    period.basis = "year",
+                    par.models = list(
+                        threshold = ~1, location = ~1, scale = ~1,
+                        log.scale = FALSE, shape = ~1,
+                        term.names = list(
+                            threshold = character( 0 ),
+                            location = character( 0 ),
+                            scale = character( 0 ),
+                            shape = character( 0 ) ) ),
+                    const.loc = TRUE, const.scale = TRUE,
+                    const.shape = TRUE, n = length( x ),
+                    na.action = "na.fail",
+                    parnames = c( "location", "scale", "shape" ),
+                    results = fit, initial.results = NULL,
+                    threshold = NULL, npy = NULL ){
+  output <- list(
+      call = call, data.name = data.name, weights = weights,
+      in.data = in.data, x = as.numeric( x ), method = method,
+      type = type, period.basis = period.basis,
+      par.models = par.models, const.loc = const.loc,
+      const.scale = const.scale, const.shape = const.shape, n = n,
+      na.action = na.action, parnames = parnames,
+      results = results, initial.results = initial.results,
+      threshold = threshold, npy = npy )
+  class( output ) <- "fevd"
+  return( output )
 }
 
-                        
+

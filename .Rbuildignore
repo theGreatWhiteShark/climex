@@ -1,0 +1,5 @@
+.gitignore
+^.git$
+NEWS.md
+TODO.md
+^res$

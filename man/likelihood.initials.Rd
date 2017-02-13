@@ -2,24 +2,22 @@
 % Please edit documentation in R/opti.R
 \name{likelihood.initials}
 \alias{likelihood.initials}
-\title{Estimates the initial GEV parameters of a time series.}
+\title{Estimates the initial GEV or GPD parameters of a time series.}
 \usage{
-likelihood.initials(x, type = c("best", "mom", "lmom"), modified = TRUE,
-  restrict = FALSE, restrict.thresholds = c(1000, 500, 3))
+likelihood.initials(x, model = c("gev", "gpd"), type = c("best", "mom",
+  "lmom"), modified = TRUE)
 }
 \arguments{
 \item{x}{Time series/numeric.}
 
-\item{type}{Which method should be used to calculate the initial parameters. "best" combines all methods and return the result with the least likelihood. "mom" - method of moments returns an approximation according to the first two moments of the Gumbel distribution. "lmom" - returns an estimate according to the Lmoments method. Default = "best"}
+\item{model}{Determining whether to calculate the initial parameters of the GEV or GPD function. Default = "gev"}
 
-\item{modified}{If TRUE my changes in the heuristics will be applied. Like using the skewness etc. Default = FALSE}
+\item{type}{Which method should be used to calculate the initial parameters. "best" combines all methods, in addition samples 100 different shape values around the one determined by type 'mom' and returns the result with the least likelihood. "mom" - method of moments returns an approximation according to the first two moments of the Gumbel distribution. "lmom" - returns an estimate according to the Lmoments method. Default = "best"}
 
-\item{restrict}{If TRUE the estimates will be minimum of the two different approximations and restrict.thresholds. This should prevent artifacts due to diverging means and variances. Default = FALSE}
-
-\item{restrict.thresholds}{Maximal value for each of the estimates. Default = c( 50, 50, 5 )}
+\item{modified}{Determines if the skewness is getting used to determine the initial shape parameter. Default = TRUE.}
 }
 \value{
-Numerical vector containing the c( location, scale, shape ) estimate.
+Numerical vector containing the c( location, scale, shape ) estimates for method = "gev" or the c( scale, shape ) estimates for method = "gpd".
 }
 \details{
 Two main methods are used for the estimation: the L-moments method of Hosking & Wallis implemented in the extRemes::initializer.lmoments() function and an estimation using the first two moments of the Gumbel distribution. For the later one a modification was added: By looking at skewness of the distribution and with respect to some heuristic thresholds a shape parameter between -.4 and .2 is assigned. Warning: both methods do not work for samples with diverging (or pretty big) mean or variance. For this reason the restrict argument is included. If the estimates are bigger than the corresponding restrict.thresholds, they will be replaced by this specific value.
@@ -29,7 +27,7 @@ Philipp Mueller
 }
 \seealso{
 Other optimization: \code{\link{fit.gev}},
-  \code{\link{likelihood.gradient}},
+  \code{\link{fit.gpd}}, \code{\link{likelihood.gradient}},
   \code{\link{likelihood}}
 }
 

@@ -30,13 +30,13 @@ Imports:
     parallel,
     shiny,
     htmltools,
-    animation,
     latex2exp,
     shinydashboard,
     shinytoastr,
     RCurl,
     RColorBrewer,
     deseasonalize,
+    Lmoments,
     moments,
     leaflet,
     GenSA,
@@ -51,4 +51,5 @@ VignetteBuilder: knitr
 RoxygenNote: 5.0.1
 Suggests:
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat

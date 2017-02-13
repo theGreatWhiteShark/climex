@@ -7,9 +7,10 @@
 \method{plot}{animation}(time.series, starting.points, location.lim = NULL,
   scale.lim = NULL, shape.lim = NULL, optimization.method = "nmk",
   optimization.steps = c(0.1, 0.5), optimization.rerun = TRUE,
-  height = 300, width = 300, colors = list(plane.low = "#eaeafa",
-  plane.high = "#191970", plane.contour = "white", path.low = "yellow",
-  path.high = "darkred", path.true = "black"), image.folder = "images")
+  height = 300, width = 300, model = c("gev", "gpd"),
+  colors = list(plane.low = "#eaeafa", plane.high = "#191970", plane.contour =
+  "white", path.low = "yellow", path.high = "darkred", path.true = "black"),
+  image.folder = "images")
 }
 \arguments{
 \item{time.series}{Vector of block maxima.}
@@ -38,6 +39,8 @@ parameters determined by the first run. Default = TRUE.}
 \item{height}{of both the images and the form with the playback options in pixel.}
 
 \item{width}{of both the images and the form with the playback options in pixel.}
+
+\item{model}{Whether to calculate the likelihood for the GEV or GP distribution. Default = "gev".}
 
 \item{colors}{List of colors used to generate the plots.}
 

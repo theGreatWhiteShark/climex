@@ -5,22 +5,34 @@
 \title{Calculation of the return levels.}
 \usage{
 return.level(x, return.period = 100, error.estimation = c("none", "MC",
-  "MLE"), monte.carlo.sample.size = 1000)
+  "MLE"), model = c("gev", "gpd"), monte.carlo.sample.size = 1000,
+  threshold = NULL, total.length = NULL, original.time.series = NULL,
+  silent = FALSE)
 }
 \arguments{
-\item{x}{Parameter input. Class numeric, climex.fit.gev, fit.gev (ismev) or fevd (extRemes)}
+\item{x}{Parameter input. Class numeric, climex.fit.gev or climex.fit.gpd.}
 
-\item{return.period}{Numeric vector of the return periods the return levels should be calculated at. Default = 100.}
+\item{return.period}{Numeric vector of the return periods in years. Default = 100.}
 
-\item{error.estimation}{Method of calculating the standard errors of the return levels. Using option "MLE" it is calculated using the Delta method and the MLE of the GEV parameters. Alternative one can use Monte Carlo simulations with "MC" for which monte.carlo.sample.size samples of the same size as x will be drawn from a GEV distribution constituted by the obtained MLE of the GEV parameters of x. The standard error is then calculated via the square of the variance of the calculated return levels. Sometimes the inversion of the hessian fails (since the are some NaN in the hessian) (which is also the reason why the ismev package occasionally does not work). Option "none" just skips the calculation of the error and return just a numeric value of the estimate. To avoid broken dependencies  with existing code this option will be default. Default = "none".}
+\item{error.estimation}{Method of calculating the standard errors of the return levels. Using option "MLE" it is calculated using the Delta method and the MLE of the GEV/GPD parameters. For the GPD type the total length of the original time series has to be provided as well or the MLE error estimation will not be able to work. Alternative one can use Monte Carlo simulations with "MC" for which monte.carlo.sample.size samples of the same size as x will be drawn from a GEV/GP distribution constituted by the obtained MLE of the GEV/GPD parameters of x. The standard error is then calculated via the square of the variance of the calculated return levels. Sometimes the inversion of the hessian fails (since the are some NaN in the hessian) (which is also the reason why the ismev package occasionally does not work). Option "none" just skips the calculation of the error and return just a numeric value of the estimate. To avoid broken dependencies  with existing code this option will be default. Default = "none".}
 
-\item{monte.carlo.sample.size}{Number of samples used to obtain the Monte Carlo estimate of the standard error of the fitting. Default = 1000}
+\item{model}{Determining whether to calculate the initial parameters of the GEV or GPD function. Default = "gev".}
+
+\item{monte.carlo.sample.size}{Number of samples used to obtain the Monte Carlo estimate of the standard error of the fitting. Default = 1000.}
+
+\item{threshold}{Optional threshold for the GPD model. If present it will be added to the return level to produce a value which fits to underlying time series. Default = NULL.}
+
+\item{total.length}{Total number of observations in the time series the exceedance were obtained from (before! applying the threshold). This argument is needed to calculate the standard error of the return level via the delta method of the MLE in the GPD model. Default = NULL.}
+
+\item{original.time.series}{Time series used with \code{link{fit.gpd}} on which already a threshold (the one supplied here as well) was applied. Necessary to transform the return level for numerical input and the GPD model from m-th observation return level to annual return level. If omitted the return level will be per observation. Default = NULL.}
+
+\item{silent}{Throws an warning whenever the "gpd" model is used and the original.time.series is not supplied. Since this can be annoying one can also disable it. Default = FALSE.}
 }
 \value{
 If error.estimation == "none" a numerical vector containing the estimates of the return levels will be returned. Else a list containing the estimates and their standard errors will be returned.
 }
 \details{
-Uses the extRemes::rlevd function at its core but also can handle multiple versions of the parameter input (as numeric, or direct outputs of various fitting procedures), is capable of calculating numerous return levels at once and also calculates the errors of the return levels. For the errors the ML fit is using the option hessian=TRUE (if not done already) or uses a Monte Carlo based approach. If no fitting object is provided, no errors will be calculated. The calculation of the error only works for objects fitted by fit.gev and not for ones fitted by foreign packages. Since it is also able of calculating the return levels for the output of the *extRemes::fevd()* function I decided to mask the original function from this package.
+Uses the climex:::rlevd function at its core (a port from the extRemes package) but also can handle the outputs of the \code{\link{fit.gev}} and \code{\link{fit.gpd}} function, is capable of calculating numerous return levels at once and also calculates the errors of the return levels. For the errors the ML fit is using the option hessian=TRUE (if not done already) or uses a Monte Carlo based approach. If no fitting object is provided, no errors will be calculated.
 }
 \examples{
 fit.results <- fit.gev( block( anomalies( temp.potsdam ) ) )
