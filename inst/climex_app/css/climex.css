@@ -270,20 +270,20 @@ table.table-bordered.dataTable {
 /**/
 /* boxes and elements in the leaflet map */
 /**/
-#leafletBox, #leafletMarkerBox {
+#leaflet-box, #leaflet-markerBox {
     background-color: #FF8C00DD !important;
     padding: 8px;
     border-radius: 9px;
     width: 350px !important;
     right: 15px !important;
 }
-#leafletBox .form-group {
+#leaflet-box .form-group {
     margin-bottom: 0px !important;
 }
 .leaflet-control-layers {
     background-color: #FF8C00DD !important;
     width: 320px !important;
-    /* here I assume the size of #leafletMarkerBox not to change + 10px margin + 17px license */
+    /* here I assume the size of #leaflet-markerBox not to change + 10px margin + 17px license */
     bottom: 170.85px !important;
     position: absolute !important;
     right: 0px !important;
@@ -316,7 +316,7 @@ table.table-bordered.dataTable {
     margin-right: 0px !important;
     border-radius: 9px !important;
 }
-#buttonDrawMarkers {
+#leaflet-buttonDrawMarkers {
     font-weight: 100 !important;
     font-size: 100% !important;
     /* center the button within the box */
@@ -374,13 +374,13 @@ table.table-bordered.dataTable {
 	width: 100% !important;
     }
     /* adjusting the size of the boxes on the leaflet map */
-    #leafletBox, #leafletMarkerBox {
+    #leaflet-box, #leaflet-markerBox {
 	width: 250px !important;
     }
     .leaflet-control-layers {
 	width: 250px !important;
     }
-    #buttonDrawMarkers {
+    #leaflet-buttonDrawMarkers {
 	left: 0% !important;
     }
 }
@@ -388,17 +388,17 @@ table.table-bordered.dataTable {
 @media screen and (max-width: 720px){
     /* Due to reordering and a fixed height the slider and the 
        table in the leaflet map are partly covered */
-    #leafletBox {
+    #leaflet-box {
 	top: 100px !important;
     }
     /* adjusting the size of the boxes on the leaflet map */
-    #leafletBox, #leafletMarkerBox {
+    #leaflet-box, #leaflet-markerBox {
 	width: 200px !important;
     }
     .leaflet-control-layers {
 	width: 200px !important;
     }
-    #buttonDrawMarkers {
+    #leaflet-buttonDrawMarkers {
 	left: 0% !important;
     }    
 }
