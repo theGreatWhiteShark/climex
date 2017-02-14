@@ -145,38 +145,33 @@ climex.server <- function( input, output, session ){
     ## list(stations.selected, position.selected). This already does
     ## the look-up in file.loading(), input$selectDataBase and
     ## input$selectDataType so no need to repeat these steps.
-    data.selected <- data.chosen() 
+    data.selected <- reactive.chosen()
     ## Since this is not a crucial element and the other elements have
     ## a fallback to the Potsdam time series we can just wait until
-    ## input$selectDataBase and input$sliderMap( used in data.chosen )
+    ## input$selectDataBase and input$sliderYears( used in data.chosen )
     ## are initialized 
-    if ( !is.null( input$selectDataBase ) &&
-         !is.null( data.selected ) ){
-      ## use the leaflet map to choose a individual station
-      if ( !is.null( input$leafletMap_marker_click ) ){
-        map.click <- input$leafletMap_marker_click
-        ## picked station
+    if ( is.null( input$selectDataBase ) ||
+         is.null( data.selected ) ){
+      return( NULL )
+    }
+    ## use the leaflet map to choose a individual station
+    if ( !is.null( selected.station() ) ){
+      station.name <- selected.station()
+    } else {
+      ## if not just use the Potsdam station for the DWD data
+      ## or the first station in the list for every other source
+      if ( input$selectDataBase == "DWD" ){
+        station.name <- "Potsdam"
+      } else
         station.name <- as.character(
-            data.selected[[ 2 ]]$name[ which(
-                                     data.selected[[ 2 ]]$latitude
-                                     %in% map.click$lat &
-                                          data.selected[[ 2 ]]$longitude
-                                     %in% map.click$lng ) ] )
-      } else {
-        ## if not just use the Potsdam station for the DWD data
-        ## or the first station in the list for every other source
-        if ( input$selectDataBase == "DWD" ){
-          station.name <- "Potsdam"
-        } else
-          station.name <- as.character(
-              data.selected[[ 2 ]]$name[ 1 ] )
-      }
-      ## export drop-down menu
-      selectInput( "selectDataSource", "Station",
-                  choices = as.character(  data.selected[[ 2 ]]$name ),
-                  selected = as.character( station.name ) )
-    } else
-      NULL } )
+            data.selected[[ 2 ]]$name[ 1 ] )
+    }
+    ## export drop-down menu
+    selectInput( "selectDataSource", "Station",
+                choices = as.character(  data.selected[[ 2 ]]$name ),
+                selected = as.character( station.name ) )
+  
+  } )
   output$menuSelectDataSource2 <- renderMenu( {
     if ( !is.null( input$selectDataBase ) ){
       if ( input$selectDataBase == "DWD" ){
@@ -266,6 +261,12 @@ climex.server <- function( input, output, session ){
 ########################################################################
 #################### Data generation and selection #####################
 ########################################################################
+  ## Creating a reactive value which holds the selected stations.
+  reactive.chosen <- climex:::data.chosen(
+                                  reactive( input$selectDataBase ),
+                                  reactive( input$sliderYears ),
+                                  reactive( input$selectDataType ),
+                                  file.loading, x.input )
   file.loading <- reactive( {
     ## If no file is chosen, don't do anything
     if ( is.null( input$fileInputSelection$datapath ) )
@@ -295,7 +296,7 @@ climex.server <- function( input, output, session ){
   data.selection <- reactive( {
     ## Selecting the data out of a pool of different possibilities
     ## or generate them artificially
-    data.selected <- data.chosen()
+    data.selected <- reactive.chosen()
     if ( is.null( data.selected ) ||
          is.null( input$selectDataSource ) ){
       ## as long as the menus are not initialized yet, just assign
@@ -304,16 +305,16 @@ climex.server <- function( input, output, session ){
       return( NULL )
     } else if( input$selectDataBase == "artificial data" ){
       ## The length of the artificial time series is determined by
-      ## the number of years chosen via the input$sliderMap slider
+      ## the number of years chosen via the input$sliderYears slider
       ## in the leaflet tab
       ## Using the Potsdam time series from Germany as reference
       data( temp.potsdam, package = "climex" )
       p.l <- length( temp.potsdam )
       ## Length of the time series
-      if ( is.null( input$sliderMap ) ){
+      if ( is.null( input$sliderYears ) ){
         x.length <- length( unique( lubridate::year( temp.potsdam ) ) )
       } else {
-        x.length <- input$sliderMap
+        x.length <- input$sliderYears
       }
       ## Whether to use GEV or GPD data
       if ( is.null( input$radioEvdStatistics ) ){
@@ -1714,16 +1715,17 @@ climex.server <- function( input, output, session ){
             div( id = "animationScSh", class = "animationClimex" ) ) )
       } ) } )
 ########################################################################
-  callModule( climex:::leafletClimex, "test",
-             reactive( input$selectDataBase ),
-             reactive( input$sliderMap ),
-             reactive( input$selectDataType ),
-             file.loading, x.input, reactive( input$buttonMinMax ),
-             reactive( input$radioEvdStatistic ), data.blocking,
-             evd.fitting, reactive( input$leafletMap_marker_click ),
-             session$clientData$output_plotPlaceholderLeaflet_width,
-             reactive( input$sliderThreshold ), fit.interactive,
-             reactive( input$buttonDrawMarkers ) )
+  selected.station <- callModule(
+      climex:::leafletClimex, "leaflet", reactive.chosen,
+      reactive( input$buttonMinMax ),
+      reactive( input$radioEvdStatistics ),
+      reactive( input$sliderYears ), data.blocking,
+      evd.fitting,
+      reactive( input$sliderThreshold ), fit.interactive,
+      cleaning.interactive, deseasonalize.interactive,
+      blocking.interactive )
+  
+   ## })
 }
 
 ##' @title The user interface for the \code{\link{climex}} function.
@@ -1803,8 +1805,8 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
         tabItem(
           tabName = "tabMap",
           tags$style( type = "text/css",
-                     "#leafletMap {height: calc(100vh - 80px) !important;}" ),
-         climex:::leafletClimexUI( "test" ) ),
+                     "#leaflet-map {height: calc(100vh - 80px) !important;}" ),
+         climex:::leafletClimexUI( "leaflet" ) ),
         tabItem(
           tabName = "tabGeneral",
           ## In order guarantee the correct behavior of the rendering
