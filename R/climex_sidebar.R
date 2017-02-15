@@ -267,3 +267,53 @@ sidebarLoading <- function( session, selectDataBase,
       return( NULL )
   } )
 }
+
+##' @title Toggling the cleaning of the time series.
+##' @details Provides the shinydashboard::menuItemOutput for \code{\link{
+##' sidebarCleaning}}. See the later one for details.
+##'
+##' @importFrom shinydashboard menuItemOutput
+##'
+##' @family sidebar
+##'
+##' @return menuItemOutput
+##' @author Philipp Mueller 
+sidebarCleaningInput <- function(){
+  menuItemOutput( "sidebarCleaning" )
+}
+
+##' @title Toggling the cleaning of the time series
+##' @details A checkbox input. If toggled and the GEV distribution was
+##' chosen via input$radioEvdStatistics, all incomplete years will be
+##' removed from the time series. If on the other hand the GP
+##' distribution was picked, all cluster will be removed and only their
+##' highest point will remain.
+##' 
+##' @param radioEvdStatistics Character (radio) input determining whether
+##' the GEV or GP distribution shall be fitted to the data. Choices:
+##' c( "GEV", "GP" ), default = "GEV".
+##' 
+##' @import shiny
+##'
+##' @family sidebar
+##'
+##' @return renderMenu
+##' @author Philipp Mueller
+sidebarCleaning <- function( radioEvdStatistics ){
+  renderMenu( {
+    ## When applying the blocking method incomplete years distort
+    ## the time series and have to be excluded. When using the
+    ## threshold method on the other hand clusters are most likely
+    ## to occure due to short range correlations. This has to be
+    ## avoided by using declustering algorithms (which mainly picks
+    ## the maximum of a specific cluster)
+    if ( !is.null( radioEvdStatistics() ) ||
+         radioEvdStatistics() == "GEV" ){
+      checkboxInput( "checkBoxIncompleteYears",
+                    "Remove incomplete years", TRUE )
+    } else {
+      checkboxInput( "checkBoxDecluster",
+                    "Declustering of the data", TRUE )
+    }
+  } )
+}
