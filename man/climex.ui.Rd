@@ -7,7 +7,8 @@
 climex.ui(selected = c("Map", "General", "Likelihood"))
 }
 \arguments{
-\item{selected}{Choose which tab is supposed to be selected when starting the app}
+\item{selected}{Choose which tab is supposed to be selected when
+starting the app}
 }
 \value{
 HTML code of the interface

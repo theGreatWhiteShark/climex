@@ -1,13 +1,26 @@
-##' @title Shiny app combining most of the tools used in extreme value analysis using GEV fitting via maximum likelihood.
+##' @title Shiny app combining most of the tools used in extreme value
+##' analysis using GEV fitting via maximum likelihood.
 ##'
-##' @details It possible to provide a time series of type \pkg{xts} to a list of elements of this type. This app need the its own css file. This function will be exclusively called when the climex app is run on localhost. In order to assure its correct behavior the necessary file/folder structure in the CLIMEX.PATH (global variable which has to be set beforehand; see vignette for details) will be check and if necesary generated. The input time series is accepted in three different formats
+##' @details It possible to provide a time series of type \pkg{xts} to
+##' a list of elements of this type. This app need the its own css file.
+##' This function will be exclusively called when the climex app is run
+##' on localhost. In order to assure its correct behavior the necessary
+##' file/folder structure in the CLIMEX.PATH (global variable which has
+##' to be set beforehand; see vignette for details) will be check and
+##' if necesary generated. The input time series is accepted in three
+##' different formats
 ##' \enumerate{
-##'  \item As a single time series in the formatted using the \pkg{xts} package 
+##'  \item As a single time series in the formatted using the \pkg{xts}
+##' package 
 ##'  \item As a named list of various xts time series 
-##'  \item As a list containing two elements;  a list of xts time series and a data.frame with the columns \emph{longitude}, \emph{latitude}, \emph{altitude}, \emph{name} corresponding to the stations geo-coordinates, height and name 
+##'  \item As a list containing two elements;  a list of xts time
+##' series and a data.frame with the columns \emph{longitude},
+##' \emph{latitude}, \emph{altitude}, \emph{name} corresponding to the
+##' stations geo-coordinates, height and name 
 ##' }
 ##'
-##' @param x.input Time series of one of the formats mentioned in the details section. 
+##' @param x.input Time series of one of the formats mentioned in the
+##' details section. 
 ##'
 ##' @family shiny
 ##'
@@ -97,7 +110,13 @@ climex <- function( x.input = NULL ){
 
 ##' @title Server-side part of the \code{\link{climex}} function.
 ##'
-##' @details Since it grew organically most of the features are defined inside this function. Okay, why did I decided to define the climex.server and the climex.ui function? Since in this way I can provide a local and a server side variant of the code which is maintained in the same place. I do not really like the idea of installing the newest version of the code from Github and than copy/pasting the code in some files somewhere in /srv/shiny-server.
+##' @details Since it grew organically most of the features are defined
+##' inside this function. Okay, why did I decided to define the
+##' climex.server and the climex.ui function? Since in this way I can
+##' provide a local and a server side variant of the code which is
+##' maintained in the same place. I do not really like the idea of
+##' installing the newest version of the code from Github and than
+##' copy/pasting the code in some files somewhere in /srv/shiny-server.
 ##'
 ##' @return Function acting as the shiny server.
 ##' @import shiny
@@ -515,7 +534,7 @@ climex.server <- function( input, output, session ){
   
 ########################################################################
 ############### Plotting of the time series and fit ####################
-######################################################################## 
+########################################################################
   ## Displaying of the original, intermediate and final time series.
   colour.ts <- grDevices::rgb( 0.098, 0.098, 0.44 )
   colour.extremes <- grDevices::rgb( 1, 0.55, 0 )
@@ -1730,7 +1749,8 @@ climex.server <- function( input, output, session ){
 
 ##' @title The user interface for the \code{\link{climex}} function.
 ##'
-##' @param selected Choose which tab is supposed to be selected when starting the app
+##' @param selected Choose which tab is supposed to be selected when
+##' starting the app
 ##'
 ##' @details Contains all the HTML codes.
 ##'
