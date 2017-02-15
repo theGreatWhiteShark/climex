@@ -1,6 +1,22 @@
 ### Contains all modules associated with the leaflet map of the Climex
 ### app.
 
+##' @title Leaflet interfaces to select stations or visualize spacial
+##' information.
+##' @details This function provides the user interface to
+##' \code{\link{leafletClimex}}. It consists of a leafletOutput and two
+##' absolutePanels containing the return level and time series length
+##' sliders as well as the table displaying all the stations information.
+##'
+##' @param id Namespace prefix
+##'
+##' @family leaflet
+##'
+##' @import shiny
+##' @import leaflet
+##'
+##' @return tagList
+##' @author Philipp Mueller 
 leafletClimexUI <- function( id ){
   # Create a namespace function using the provided id
   ns <- NS( id )
@@ -91,6 +107,11 @@ leafletClimexUI <- function( id ){
 ##' function should only be triggered when selectDataBase equals "DWD",
 ##' this input will be a character string describing the selected
 ##' station's name.
+##'
+##' @family leaflet
+##'
+##' @import shiny
+##' @import leaflet
 ##' 
 ##' @return Reactive value holding the selected station.
 ##' @author Philipp Mueller 
@@ -398,6 +419,10 @@ leafletClimex <- function( input, output, session, reactive.chosen,
 ##' the \code{\link{climex}} function. When supplying a different time
 ##' series using file.loading, this variable will be overwritten.
 ##'
+##' @family leaflet
+##'
+##' @import shiny
+##' 
 ##' @return Reactive list containing a list of all selected stations and
 ##' their positions.
 ##' @author Philipp Mueller 
