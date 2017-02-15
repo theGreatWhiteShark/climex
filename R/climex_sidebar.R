@@ -39,7 +39,7 @@ sidebarDataBase <- function(){
 
 ##' @title Sidebar menu selection
 ##' @details Provides the shinydashboard::menuItemOutput for \code{\link{
-##' sidebarDataSource1}}. See the later one for details
+##' sidebarDataSource}}. See the later one for details
 ##'
 ##' @importFrom shinydashboard menuItemOutput
 ##'
@@ -136,4 +136,70 @@ sidebarDataSource <- function( selectDataBase, radioEvdStatistics,
                   selected = as.character( station.name ) )
     }
   } )
+}
+
+##' @title Sidebar menu selection
+##' @details Provides the shinydashboard::menuItemOutput for \code{\link{
+##' sidebarDataType}}. See the later one for details
+##'
+##' @importFrom shinydashboard menuItemOutput
+##'
+##' @family sidebar
+##'
+##' @return menuItemOutput
+##' @author Philipp Mueller 
+sidebarDataTypeInput <- function(){
+  menuItemOutput( "sidebarDataType" )
+}
+
+##' @title Sidebar menu selection
+##' @details Provides the third selection menu in the sidebar.
+##' If input$selectDataBase, provided by \code{\link{sidebarDataBase}},
+##' was set to "artificial data", the menu will be a numerical input
+##' slider to provide the scale parameter for the GEV or shape
+##' parameter for the GP distribution. Else it will be a drop down menu
+##' listing the different types of data available at the chosen station.
+##'
+##' @param selectDataBase Character (select) input to determine the data
+##' source. In the default installation there are three options:
+##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' provided as an argument to the call of the \code{\link{climex}}
+##' function. The second one uses the database of the German weather
+##' service (see \code{link{download.data.dwd}}). The third one allows
+##' the user to produce random numbers distributed according to the GEV
+##' or GP distribution. Determined by menuSelectDataBase.
+##' Default = "DWD".
+##' @param radioEvdStatistics Character (radio) input determining whether
+##' the GEV or GP distribution shall be fitted to the data. Choices:
+##' c( "GEV", "GP" ), default = "GEV".
+##' 
+##' @import shiny
+##'
+##' @family sidebar
+##'
+##' @return renderMenu
+##' @author Philipp Mueller
+sidebarDataType <- function( selectDataBase, radioEvdStatistics ){
+  renderMenu( {
+    if ( !is.null( selectDataBase() ) ){
+      if ( selectDataBase() == "DWD" ){
+        selectInput( "selectDataType", "Measured variable",
+                    choices = c( "Daily max. temp.", "Daily min. temp.",
+                                "Daily precipitation" ),
+                    selected = "Daily max. temp" )
+      } else if ( selectDataBase() == "artificial data" ){
+        if ( is.null( radioEvdStatistics() ) ||
+             radioEvdStatistics() == "GEV" ){
+          sliderInput( "sliderArtificialDataScale", "scale", 0, 4,
+                      0.8, round = -2 )
+        } else {
+          ## For GP distributed data
+          sliderInput( "sliderArtificialDataShape", "shape", -1.5, 1.5,
+                      -.25, round = -2 )
+        }
+      } else if ( selectDataBase() == "input" ){
+        NULL
+      }
+    } else
+      NULL } )
 }

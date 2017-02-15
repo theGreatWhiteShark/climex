@@ -135,29 +135,13 @@ climex.server <- function( input, output, session ){
   ##
 
   output$sidebarDataBase <- climex:::sidebarDataBase()
-  ## Using this drop down menu one can select the specific type of input
-  ## data to use, since the DWD data base provides different
-  ## measurements recorded at the individual stations.
   output$sidebarDataSource <-
-    climex:::sidebarDataSource(
-                 reactive( input$selectDataBase ),
-                 reactive( input$radioEvdStatistics ),
-                 reactive.chosen, selected.station )
-  output$menuSelectDataSource2 <- renderMenu( {
-    if ( !is.null( input$selectDataBase ) ){
-      if ( input$selectDataBase == "DWD" ){
-        selectInput( "selectDataType", "Measured variable",
-                    choices = c( "Daily max. temp.", "Daily min. temp.",
-                                "Daily precipitation" ),
-                    selected = "Daily max. temp" )
-      } else if ( input$selectDataBase == "artificial data" ){
-        sliderInput( "sliderArtificialDataScale", "scale", 0, 4,
-                    0.8, round = -2 )
-      } else if ( input$selectDataBase == "input" ){
-        NULL
-      }
-    } else
-      NULL } )
+    climex:::sidebarDataSource( reactive( input$selectDataBase ),
+                               reactive( input$radioEvdStatistics ),
+                               reactive.chosen, selected.station )
+  output$sidebarDataType <-
+    climex:::sidebarDataType( reactive( input$selectDataBase ),
+                             reactive( input$radioEvdStatistics ) )
   ## Display either the shape slider or the option to load a .RData
   ## file from disk (only on localhost)
   output$menuSelectDataSource3 <- renderMenu( {
@@ -1752,7 +1736,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                                    TRUE, FALSE ) ),
         climex:::sidebarDataBaseInput(),
         climex:::sidebarDataSourceInput(),
-        menuItemOutput( "menuSelectDataSource2" ),
+        climex:::sidebarDataTypeInput(),
         menuItemOutput( "menuSelectDataSource3" ),
         menuItemOutput( "menuDataCleaning" ),
         ## while plotting the images for the animation a gif
