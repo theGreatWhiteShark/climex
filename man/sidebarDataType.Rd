@@ -40,6 +40,8 @@ Other sidebar: \code{\link{sidebarDataBaseInput}},
   \code{\link{sidebarDataBase}},
   \code{\link{sidebarDataSourceInput}},
   \code{\link{sidebarDataSource}},
-  \code{\link{sidebarDataTypeInput}}
+  \code{\link{sidebarDataTypeInput}},
+  \code{\link{sidebarLoadingInput}},
+  \code{\link{sidebarLoading}}
 }
 

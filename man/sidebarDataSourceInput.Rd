@@ -21,6 +21,8 @@ Other sidebar: \code{\link{sidebarDataBaseInput}},
   \code{\link{sidebarDataBase}},
   \code{\link{sidebarDataSource}},
   \code{\link{sidebarDataTypeInput}},
-  \code{\link{sidebarDataType}}
+  \code{\link{sidebarDataType}},
+  \code{\link{sidebarLoadingInput}},
+  \code{\link{sidebarLoading}}
 }
 
