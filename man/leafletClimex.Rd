@@ -8,7 +8,7 @@ information.}
 leafletClimex(input, output, session, reactive.chosen, buttonMinMax,
   radioEvdStatistics, sliderYears, data.blocking, evd.fitting, sliderThreshold,
   fit.interactive, cleaning.interactive, deseasonalize.interactive,
-  blocking.interactive)
+  blocking.interactive, selectDataSource)
 }
 \arguments{
 \item{input}{Namespace input. For more details check out
@@ -62,6 +62,11 @@ from a given time series.}
 blocks of equal lengths and to just extract the maximal values from
 then or to extract all data points above a certain threshold value.
 Which option is chosen depends of the radioEvdStatistic}
+
+\item{selectDataSource}{Menu output in the sidebar. Since this
+function should only be triggered when selectDataBase equals "DWD",
+this input will be a character string describing the selected
+station's name.}
 }
 \value{
 Reactive value holding the selected station.
