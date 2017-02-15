@@ -138,8 +138,8 @@ climex.server <- function( input, output, session ){
   ## Using this drop down menu one can select the specific type of input
   ## data to use, since the DWD data base provides different
   ## measurements recorded at the individual stations.
-  output$sidebarDataSource1 <-
-    climex:::sidebarDataSource1(
+  output$sidebarDataSource <-
+    climex:::sidebarDataSource(
                  reactive( input$selectDataBase ),
                  reactive( input$radioEvdStatistics ),
                  reactive.chosen, selected.station )
@@ -1694,7 +1694,7 @@ climex.server <- function( input, output, session ){
       evd.fitting,
       reactive( input$sliderThreshold ), fit.interactive,
       cleaning.interactive, deseasonalize.interactive,
-      blocking.interactive )
+      blocking.interactive, reactive( input$selectDataSource ) )
   
    ## })
 }
@@ -1751,7 +1751,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                  selected = ifelse( selected == "Likelihood",
                                    TRUE, FALSE ) ),
         climex:::sidebarDataBaseInput(),
-        climex:::sidebarDataSourceInput1(),
+        climex:::sidebarDataSourceInput(),
         menuItemOutput( "menuSelectDataSource2" ),
         menuItemOutput( "menuSelectDataSource3" ),
         menuItemOutput( "menuDataCleaning" ),
