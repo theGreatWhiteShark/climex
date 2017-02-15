@@ -203,3 +203,67 @@ sidebarDataType <- function( selectDataBase, radioEvdStatistics ){
     } else
       NULL } )
 }
+
+##' @title Sidebar menu selection
+##' @details Provides the shinydashboard::menuItemOutput for \code{\link{
+##' sidebarLoading}}. See the later one for details
+##'
+##' @importFrom shinydashboard menuItemOutput
+##'
+##' @family sidebar
+##'
+##' @return menuItemOutput
+##' @author Philipp Mueller 
+sidebarLoadingInput <- function(){
+  menuItemOutput( "sidebarLoading" )
+}
+
+##' @title Sidebar menu selection
+##' @details Provides the fourth selection menu in the sidebar.
+##' If input$selectDataBase, provided by \code{\link{sidebarDataBase}},
+##' was set to "artificial data", the menu will be a numerical input
+##' slider to provide the shape parameter for the GEV or NULL for the GP
+##' distribution. Else it will be a file input for the user to load
+##' additional station data.
+##'
+##' @param session Namespace session. For details check out
+##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html}} 
+##' @param selectDataBase Character (select) input to determine the data
+##' source. In the default installation there are three options:
+##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' provided as an argument to the call of the \code{\link{climex}}
+##' function. The second one uses the database of the German weather
+##' service (see \code{link{download.data.dwd}}). The third one allows
+##' the user to produce random numbers distributed according to the GEV
+##' or GP distribution. Determined by menuSelectDataBase.
+##' Default = "DWD".
+##' @param radioEvdStatistics Character (radio) input determining whether
+##' the GEV or GP distribution shall be fitted to the data. Choices:
+##' c( "GEV", "GP" ), default = "GEV".
+##' 
+##' @import shiny
+##'
+##' @family sidebar
+##'
+##' @return renderMenu
+##' @author Philipp Mueller
+sidebarLoading <- function( session, selectDataBase,
+                           radioEvdStatistics ){
+  renderMenu( {
+    if ( is.null( selectDataBase() ) )
+      return( NULL )
+    if ( selectDataBase() == "artificial data" &&
+         ( is.null( radioEvdStatistics() ) ||
+           radioEvdStatistics() == "GEV" ) ){
+      sliderInput( "sliderArtificialDataShape", "shape", -1.5, 1.5,
+                  -0.25, round = -2 )
+    } else if ( selectDataBase() == "input" && (
+      session$clientData$url_hostname == "localhost" ||
+      session$clientData$url_hostname == "127.0.0.1"  ) ){
+      ## due to security concerns only allow the file selection on
+      ## localhost
+      fileInput( "fileInputSelection", "Choose a .RData file" )
+    } else
+      return( NULL )
+  } )
+}

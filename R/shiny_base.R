@@ -142,22 +142,10 @@ climex.server <- function( input, output, session ){
   output$sidebarDataType <-
     climex:::sidebarDataType( reactive( input$selectDataBase ),
                              reactive( input$radioEvdStatistics ) )
-  ## Display either the shape slider or the option to load a .RData
-  ## file from disk (only on localhost)
-  output$menuSelectDataSource3 <- renderMenu( {
-    if ( is.null( input$selectDataBase ) )
-      return( NULL )
-    if ( input$selectDataBase == "artificial data" ){
-      sliderInput( "sliderArtificialDataShape", "shape", -1.5, 1.5,
-                  -0.25, round = -2 )
-    } else if ( input$selectDataBase == "input" && (
-      session$clientData$url_hostname == "localhost" ||
-      session$clientData$url_hostname == "127.0.0.1"  ) ){
-      ## due to security concerns only allow the file selection on
-      ## localhost
-      fileInput( "fileInputSelection", "Choose a .RData file" )
-    } else
-      return( NULL ) } )
+  output$sidebarLoading <-
+    climex:::sidebarLoading( session, reactive( input$selectDataBase ),
+                            reactive( input$radioEvdStatistics ) )
+  
   output$sliderGevStatistics <- renderMenu( {
     x.xts <- data.selection()
     if ( !is.null( input$radioEvdStatistics ) &&
@@ -1737,7 +1725,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
         climex:::sidebarDataBaseInput(),
         climex:::sidebarDataSourceInput(),
         climex:::sidebarDataTypeInput(),
-        menuItemOutput( "menuSelectDataSource3" ),
+        climex:::sidebarLoadingInput(),
         menuItemOutput( "menuDataCleaning" ),
         ## while plotting the images for the animation a gif
         ## should be shown
