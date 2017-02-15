@@ -138,47 +138,11 @@ climex.server <- function( input, output, session ){
   ## Using this drop down menu one can select the specific type of input
   ## data to use, since the DWD data base provides different
   ## measurements recorded at the individual stations.
-  output$menuSelectDataSource1 <- renderMenu( {
-    ## If artificial data was choosen as the input source, display
-    ## a slider for the location parameter of the parent GEV
-    ## distribution
-    if ( !is.null( input$selectDataBase ) &&
-         input$selectDataBase == "artificial data" ){
-      return( sliderInput( "sliderArtificialDataLocation",
-                          "location", -30, 30, 1, round = 15 ) )
-    }
-    ## just show the stations which amount of years is larger than the
-    ## specified number (slider)
-    ## list(stations.selected, position.selected). This already does
-    ## the look-up in file.loading(), input$selectDataBase and
-    ## input$selectDataType so no need to repeat these steps.
-    data.selected <- reactive.chosen()
-    ## Since this is not a crucial element and the other elements have
-    ## a fallback to the Potsdam time series we can just wait until
-    ## input$selectDataBase and input$sliderYears( used in data.chosen )
-    ## are initialized 
-    if ( is.null( input$selectDataBase ) ||
-         is.null( data.selected ) ){
-      return( NULL )
-    }
-    ## use the leaflet map to choose a individual station
-    if ( !is.null( selected.station() ) ){
-      station.name <- selected.station()
-    } else {
-      ## if not just use the Potsdam station for the DWD data
-      ## or the first station in the list for every other source
-      if ( input$selectDataBase == "DWD" ){
-        station.name <- "Potsdam"
-      } else
-        station.name <- as.character(
-            data.selected[[ 2 ]]$name[ 1 ] )
-    }
-    ## export drop-down menu
-    selectInput( "selectDataSource", "Station",
-                choices = as.character(  data.selected[[ 2 ]]$name ),
-                selected = as.character( station.name ) )
-  
-  } )
+  output$sidebarDataSource1 <-
+    climex:::sidebarDataSource1(
+                 reactive( input$selectDataBase ),
+                 reactive( input$radioEvdStatistics ),
+                 reactive.chosen, selected.station )
   output$menuSelectDataSource2 <- renderMenu( {
     if ( !is.null( input$selectDataBase ) ){
       if ( input$selectDataBase == "DWD" ){
@@ -1787,7 +1751,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                  selected = ifelse( selected == "Likelihood",
                                    TRUE, FALSE ) ),
         climex:::sidebarDataBaseInput(),
-        menuItemOutput( "menuSelectDataSource1" ),
+        climex:::sidebarDataSourceInput1(),
         menuItemOutput( "menuSelectDataSource2" ),
         menuItemOutput( "menuSelectDataSource3" ),
         menuItemOutput( "menuDataCleaning" ),
