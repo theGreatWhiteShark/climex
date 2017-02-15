@@ -11,7 +11,7 @@ menuItemOutput
 }
 \details{
 Provides the shinydashboard::menuItemOutput for \code{\link{
-sidebarDataSource1}}. See the later one for details
+sidebarDataSource}}. See the later one for details
 }
 \author{
 Philipp Mueller
@@ -19,6 +19,8 @@ Philipp Mueller
 \seealso{
 Other sidebar: \code{\link{sidebarDataBaseInput}},
   \code{\link{sidebarDataBase}},
-  \code{\link{sidebarDataSource}}
+  \code{\link{sidebarDataSource}},
+  \code{\link{sidebarDataTypeInput}},
+  \code{\link{sidebarDataType}}
 }
 

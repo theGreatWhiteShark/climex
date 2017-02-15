@@ -19,6 +19,8 @@ Philipp Mueller
 \seealso{
 Other sidebar: \code{\link{sidebarDataBase}},
   \code{\link{sidebarDataSourceInput}},
-  \code{\link{sidebarDataSource}}
+  \code{\link{sidebarDataSource}},
+  \code{\link{sidebarDataTypeInput}},
+  \code{\link{sidebarDataType}}
 }
 

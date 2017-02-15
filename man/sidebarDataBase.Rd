@@ -24,6 +24,8 @@ Philipp Mueller
 \seealso{
 Other sidebar: \code{\link{sidebarDataBaseInput}},
   \code{\link{sidebarDataSourceInput}},
-  \code{\link{sidebarDataSource}}
+  \code{\link{sidebarDataSource}},
+  \code{\link{sidebarDataTypeInput}},
+  \code{\link{sidebarDataType}}
 }
 
