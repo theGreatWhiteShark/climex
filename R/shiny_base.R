@@ -129,22 +129,28 @@ climex.server <- function( input, output, session ){
 ########################################################################
 #################### Customizing the sidebar menu ######################
 ########################################################################
-  ## So everything in my code is always of the style this.is.a.name. So
+  ## Everything in my code is always of the style this.is.a.name. So
   ## why do I use the camel case thisIsAName for the shiny objects?
   ## Well, since CSS file do not support the point separator.
-  ##
-
+  
+  ## Type of database (input, DWD, artificial data)
   output$sidebarDataBase <- climex:::sidebarDataBase()
+  ## Individual station or location (GEV)/scale(GP) for artificial data
   output$sidebarDataSource <-
     climex:::sidebarDataSource( reactive( input$selectDataBase ),
                                reactive( input$radioEvdStatistics ),
                                reactive.chosen, selected.station )
+  ## Measurement type or scale (GEV)/shape(GP) for artificial data
   output$sidebarDataType <-
     climex:::sidebarDataType( reactive( input$selectDataBase ),
                              reactive( input$radioEvdStatistics ) )
+  ## File input prompt for "input" or shape for GEV artificial data
   output$sidebarLoading <-
     climex:::sidebarLoading( session, reactive( input$selectDataBase ),
                             reactive( input$radioEvdStatistics ) )
+  ## Removing incomplete years (GEV) or clusters (GP)
+  output$sidebarCleaning <-
+    climex:::sidebarCleaning( reactive( input$radioEvdStatistics ) )
   
   output$sliderGevStatistics <- renderMenu( {
     x.xts <- data.selection()
@@ -180,24 +186,6 @@ climex.server <- function( input, output, session ){
                     round( 0.8* min( x.deseasonalized, na.rm = TRUE ) ) )
       }
     }
-  } )
-  output$menuDataCleaning <- renderMenu( {
-    ## When applying the blocking method incomplete years distort
-    ## the time series and have to be excluded. When using the
-    ## threshold method on the other hand clusters are most likely
-    ## to occure due to short range correlations. This has to be
-    ## avoided by using declustering algorithms (which mainly picks
-    ## the maximum of a specific cluster)
-    if ( !is.null( input$radioEvdStatistics ) ) {
-      if ( input$radioEvdStatistics == "GEV" ){
-        checkboxInput( "checkBoxIncompleteYears",
-                      "Remove incomplete years", TRUE )
-      } else
-        checkboxInput( "checkBoxDecluster",
-                      "Declustering of the data", TRUE )
-    } else
-      checkboxInput( "checkBoxIncompleteYears",
-                    "Remove incomplete years", TRUE )
   } )
 ########################################################################
   
@@ -1726,7 +1714,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
         climex:::sidebarDataSourceInput(),
         climex:::sidebarDataTypeInput(),
         climex:::sidebarLoadingInput(),
-        menuItemOutput( "menuDataCleaning" ),
+        climex:::sidebarCleaningInput(),
         ## while plotting the images for the animation a gif
         ## should be shown
         div( uiOutput( "loadingScript" ), uiOutput( "loadingImage" ),
