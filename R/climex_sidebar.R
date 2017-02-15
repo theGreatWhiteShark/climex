@@ -47,8 +47,8 @@ sidebarDataBase <- function(){
 ##'
 ##' @return menuItemOutput
 ##' @author Philipp Mueller 
-sidebarDataSourceInput1 <- function(){
-  menuItemOutput( "sidebarDataSource1" )
+sidebarDataSourceInput <- function(){
+  menuItemOutput( "sidebarDataSource" )
 }
 
 ##' @title Sidebar menu selection
@@ -85,7 +85,7 @@ sidebarDataSourceInput1 <- function(){
 ##'
 ##' @return renderMenu
 ##' @author Philipp Mueller 
-sidebarDataSource1 <- function( selectDataBase, radioEvdStatistics,
+sidebarDataSource <- function( selectDataBase, radioEvdStatistics,
                                reactive.chosen, selected.station ){
   renderMenu( {
     ## If artificial data was choosen as the input source, display
