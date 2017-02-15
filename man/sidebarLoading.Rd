@@ -39,7 +39,9 @@ additional station data.
 Philipp Mueller
 }
 \seealso{
-Other sidebar: \code{\link{sidebarDataBaseInput}},
+Other sidebar: \code{\link{sidebarCleaningInput}},
+  \code{\link{sidebarCleaning}},
+  \code{\link{sidebarDataBaseInput}},
   \code{\link{sidebarDataBase}},
   \code{\link{sidebarDataSourceInput}},
   \code{\link{sidebarDataSource}},
