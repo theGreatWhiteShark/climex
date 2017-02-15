@@ -133,20 +133,8 @@ climex.server <- function( input, output, session ){
   ## why do I use the camel case thisIsAName for the shiny objects?
   ## Well, since CSS file do not support the point separator.
   ##
-  ## For now there are three different data sources you can choose:
-  ## the input provided when calling climex::climex() and running it on
-  ## localhost, the station data of the German weather service (DWD) and
-  ## artificial data sampled from a GEV distribution
-  output$menuSelectDataBase <- renderMenu( {
-    if ( !is.null( x.input ) ){
-      selectInput( "selectDataBase", "Data base",
-                  choices = c( "input", "DWD", "artificial data" ),
-                  selected = "input" )
-    } else
-      selectInput( "selectDataBase", "Data base",
-                  choices = c( "input", "DWD", "artificial data" ),
-                  selected = "DWD" )
-  } )
+
+  output$sidebarDataBase <- climex:::sidebarDataBase()
   ## Using this drop down menu one can select the specific type of input
   ## data to use, since the DWD data base provides different
   ## measurements recorded at the individual stations.
@@ -1798,7 +1786,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                  icon = icon( "ok-circle", lib = "glyphicon" ),
                  selected = ifelse( selected == "Likelihood",
                                    TRUE, FALSE ) ),
-        menuItemOutput( "menuSelectDataBase" ),
+        climex:::sidebarDataBaseInput(),
         menuItemOutput( "menuSelectDataSource1" ),
         menuItemOutput( "menuSelectDataSource2" ),
         menuItemOutput( "menuSelectDataSource3" ),
