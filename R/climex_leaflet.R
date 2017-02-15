@@ -87,6 +87,10 @@ leafletClimexUI <- function( id ){
 ##' blocks of equal lengths and to just extract the maximal values from
 ##' then or to extract all data points above a certain threshold value.
 ##' Which option is chosen depends of the radioEvdStatistic
+##' @param selectDataSource Menu output in the sidebar. Since this
+##' function should only be triggered when selectDataBase equals "DWD",
+##' this input will be a character string describing the selected
+##' station's name.
 ##' 
 ##' @return Reactive value holding the selected station.
 ##' @author Philipp Mueller 
@@ -96,7 +100,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                           sliderThreshold, fit.interactive,
                           cleaning.interactive,
                           deseasonalize.interactive,
-                          blocking.interactive
+                          blocking.interactive, selectDataSource
                           ){
   ## create custom markers.
   ## This is essentially the same marker but with different colors.
@@ -176,7 +180,8 @@ leafletClimex <- function( input, output, session, reactive.chosen,
     ## block them
     data.blocked <- lapply( data.deseasonalized, blocking.interactive )
     ## choose whether to calculate the GEV or GP parameters
-    if ( radioEvdStatistics() == "GEV" ){
+    if ( is.null( radioEvdStatistics() ) ||
+         radioEvdStatistics() == "GEV" ){
       model <- "gev"
       threshold <- NULL
     } else {
@@ -255,17 +260,35 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                                  width = map.width )
         return( map.leaflet )
       } } )
+
+  ## This chunk both updates/renders the table containing the summary
+  ## statistics of an individual station and adds a red icon for the
+  ## selected station.
   output$table <- renderTable( {
     data.selected <- reactive.chosen()
+    ## station.name is picked according to the click of the user on the
+    ## leaflet map
     station.name <- selected.station()
     if ( is.null( data.selected ) ||
          is.null( station.name ) )
       return( NULL )
-    leafletProxy( session$ns( "map" ) ) %>%
-      clearGroup( group = "selected" )
-    leafletProxy( session$ns( "map" ) ) %>%
-      addMarkers( data = input$map_marker_click, group = "selected",
-                 icon = red.icon, lng = ~lng, lat = ~lat )
+    if ( !is.null( input$map_marker_click ) ){
+      leafletProxy( session$ns( "map" ) ) %>%
+        clearGroup( group = "selected" )
+      leafletProxy( session$ns( "map" ) ) %>%
+        addMarkers( data = input$map_marker_click, group = "selected",
+                   icon = red.icon, lng = ~lng, lat = ~lat )
+    } else if ( station.name == "Potsdam" ){
+      ## Per default the Potsdam station will be selected. To make sure
+      ## the user is aware of this fact, let's mark it like a clicked one
+      default.station <- data.frame( lng = 13.0622,
+                                    lat = 52.3813,
+                                    altitude = 81,
+                                    name = "Potsdam" )
+      leafletProxy( session$ns( "map" ) ) %>%
+        addMarkers( data = default.station, group = "selected",
+                   icon = red.icon, lng = ~lng, lat = ~lat )
+    }
     ## calculate the GEV fit and various return levels
     x.fit.gev <- evd.fitting()
     x.data <- data.blocking()
@@ -303,16 +326,19 @@ leafletClimex <- function( input, output, session, reactive.chosen,
   ## determine the name of the station the user choose.
   selected.station <- reactive({
     data.selected <- reactive.chosen()
-    if ( is.null( data.selected ) ||
-         is.null( input$map_marker_click ) )
+    if ( is.null( data.selected ) )
       return( NULL )
-    map.click <- input$map_marker_click
-    station.name <- as.character(
-        data.selected[[ 2 ]]$name[ which(
-                                 data.selected[[ 2 ]]$latitude %in%
-                                 map.click$lat &
-                                 data.selected[[ 2 ]]$longitude %in%
-                                 map.click$lng ) ] )
+    if ( !is.null( input$map_marker_click  ) ){
+      map.click <- input$map_marker_click
+      station.name <- as.character(
+          data.selected[[ 2 ]]$name[ which(
+                                   data.selected[[ 2 ]]$latitude %in%
+                                   map.click$lat &
+                                   data.selected[[ 2 ]]$longitude %in%
+                                   map.click$lng ) ] )
+    } else {
+      station.name <- selectDataSource()
+    }
     return( station.name )
   })
   return( selected.station )
