@@ -102,6 +102,10 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                           deseasonalize.interactive,
                           blocking.interactive, selectDataSource
                           ){
+  ## This variable contains the name of the previously selected station.
+  ## It's a little bit ugly since it's global, but right now I'm lacking
+  ## an alternative.
+  station.name.previous <- NULL
   ## create custom markers.
   ## This is essentially the same marker but with different colors.
   ## The selected one should be colored red and all the others blue. 
@@ -270,25 +274,18 @@ leafletClimex <- function( input, output, session, reactive.chosen,
     ## leaflet map
     station.name <- selected.station()
     if ( is.null( data.selected ) ||
-         is.null( station.name ) )
+         is.null( station.name ) || (
+         is.null( input$map_marker_click ) && # dirty flag on changing
+         is.null( selectDataSource() ) ) ) # dirty flag on changing
       return( NULL )
-    if ( !is.null( input$map_marker_click ) ){
-      leafletProxy( session$ns( "map" ) ) %>%
-        clearGroup( group = "selected" )
-      leafletProxy( session$ns( "map" ) ) %>%
-        addMarkers( data = input$map_marker_click, group = "selected",
-                   icon = red.icon, lng = ~lng, lat = ~lat )
-    } else if ( station.name == "Potsdam" ){
-      ## Per default the Potsdam station will be selected. To make sure
-      ## the user is aware of this fact, let's mark it like a clicked one
-      default.station <- data.frame( lng = 13.0622,
-                                    lat = 52.3813,
-                                    altitude = 81,
-                                    name = "Potsdam" )
-      leafletProxy( session$ns( "map" ) ) %>%
-        addMarkers( data = default.station, group = "selected",
-                   icon = red.icon, lng = ~lng, lat = ~lat )
-    }
+    selected.station <- data.selected[[ 2 ]][
+        which( data.selected[[ 2 ]]$name == station.name ), ]
+    leafletProxy( session$ns( "map" ) ) %>%
+      clearGroup( group = "selected" )
+    leafletProxy( session$ns( "map" ) ) %>%
+      addMarkers( data = selected.station, group = "selected",
+                 icon = red.icon, lng = ~longitude,
+                 lat = ~latitude )
     ## calculate the GEV fit and various return levels
     x.fit.gev <- evd.fitting()
     x.data <- data.blocking()
@@ -330,14 +327,41 @@ leafletClimex <- function( input, output, session, reactive.chosen,
       return( NULL )
     if ( !is.null( input$map_marker_click  ) ){
       map.click <- input$map_marker_click
-      station.name <- as.character(
+      station.name.click <- as.character(
           data.selected[[ 2 ]]$name[ which(
                                    data.selected[[ 2 ]]$latitude %in%
                                    map.click$lat &
                                    data.selected[[ 2 ]]$longitude %in%
                                    map.click$lng ) ] )
     } else {
+      station.name.click <- NULL
+    }
+    station.name.sidebar <- selectDataSource()
+    if ( is.null( station.name.click ) ){
       station.name <- selectDataSource()
+      station.name.previous <<- selectDataSource()
+    } else {
+      ## Now there is both a station name provided via click and the
+      ## sidebar. Using station.name.previous to decide which was chosen
+      ## more recently.
+      if ( station.name.sidebar == station.name.previous &&
+           station.name.click == station.name.previous ){
+        ## This one will be visited on every click, since the sidebar
+        ## will be updated according to the clicked marker
+        station.name <- station.name.sidebar
+      } else if ( station.name.sidebar == station.name.previous ){
+        station.name <- station.name.click
+        station.name.previous <<- station.name.click
+      } else if ( station.name.click == station.name.previous ){
+        station.name <- station.name.sidebar
+        station.name.previous <<- station.name.sidebar
+      } else {
+        ## Since station.name.previous is supposed to be set to
+        ## "Potsdam" during initialization and the user can't choose
+        ## something in the sidebar and click on the map at the same
+        ## time, this should not be happening.
+        stop( "None of the station names fit the previous selection" )
+      }
     }
     return( station.name )
   })
