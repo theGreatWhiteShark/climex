@@ -23,7 +23,7 @@ Philipp Mueller
 }
 \seealso{
 Other sidebar: \code{\link{sidebarDataBaseInput}},
-  \code{\link{sidebarDataSource1}},
-  \code{\link{sidebarDataSourceInput1}}
+  \code{\link{sidebarDataSourceInput}},
+  \code{\link{sidebarDataSource}}
 }
 

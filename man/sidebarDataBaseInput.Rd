@@ -18,7 +18,7 @@ Philipp Mueller
 }
 \seealso{
 Other sidebar: \code{\link{sidebarDataBase}},
-  \code{\link{sidebarDataSource1}},
-  \code{\link{sidebarDataSourceInput1}}
+  \code{\link{sidebarDataSourceInput}},
+  \code{\link{sidebarDataSource}}
 }
 
