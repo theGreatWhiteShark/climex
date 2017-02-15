@@ -7,18 +7,18 @@
 sidebarDataBaseInput()
 }
 \value{
-Menu output containing a selection input.
+menuItemOutput
 }
 \details{
-For now there are three different data sources you can
-choose:the input provided when calling climex::climex() on localhost
-or a file loaded via the sidebar, the station data of the German
-weather service (DWD) and artificial data sampled from a GEV
-distribution. Beware: it's not a true module! Using the namespaces
-does not really make sense because it has to be accessed from outside
-of this context.
+Provides the shinydashboard::menuItemOutput for \code{\link{
+sidebarDataBase}}. See the later one for details.
 }
 \author{
 Philipp Mueller
+}
+\seealso{
+Other sidebar: \code{\link{sidebarDataBase}},
+  \code{\link{sidebarDataSource1}},
+  \code{\link{sidebarDataSourceInput1}}
 }
 

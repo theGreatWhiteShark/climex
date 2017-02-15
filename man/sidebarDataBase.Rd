@@ -7,7 +7,7 @@
 sidebarDataBase()
 }
 \value{
-Menu output containing a selection input.
+renderMenu
 }
 \details{
 For now there are three different data sources you can
@@ -20,5 +20,10 @@ of this context.
 }
 \author{
 Philipp Mueller
+}
+\seealso{
+Other sidebar: \code{\link{sidebarDataBaseInput}},
+  \code{\link{sidebarDataSource1}},
+  \code{\link{sidebarDataSourceInput1}}
 }
 
