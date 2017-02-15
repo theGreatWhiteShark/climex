@@ -84,4 +84,8 @@ number of years.
 \author{
 Philipp Mueller
 }
+\seealso{
+Other leaflet: \code{\link{data.chosen}},
+  \code{\link{leafletClimexUI}}
+}
 
