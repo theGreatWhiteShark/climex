@@ -75,7 +75,8 @@ slider in the top right part of the leaflet tab.
 Philipp Mueller
 }
 \seealso{
-Other sidebar: \code{\link{sidebarCleaningInput}},
+Other sidebar: \code{\link{file.loading}},
+  \code{\link{sidebarCleaningInput}},
   \code{\link{sidebarCleaning}},
   \code{\link{sidebarDataBaseInput}},
   \code{\link{sidebarDataBase}},
