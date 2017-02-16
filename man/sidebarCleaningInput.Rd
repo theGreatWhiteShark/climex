@@ -18,6 +18,7 @@ Philipp Mueller
 }
 \seealso{
 Other sidebar: \code{\link{data.selection}},
+  \code{\link{file.loading}},
   \code{\link{sidebarCleaning}},
   \code{\link{sidebarDataBaseInput}},
   \code{\link{sidebarDataBase}},
