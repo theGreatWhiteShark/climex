@@ -151,7 +151,27 @@ climex.server <- function( input, output, session ){
   ## Removing incomplete years (GEV) or clusters (GP)
   output$sidebarCleaning <-
     climex:::sidebarCleaning( reactive( input$radioEvdStatistics ) )
-  
+  ## Reactive value which holds the selected stations chosen either via
+  ## the leaflet map or the sidebar
+  reactive.chosen <- climex:::data.chosen(
+                                  reactive( input$selectDataBase ),
+                                  reactive( input$sliderYears ),
+                                  reactive( input$selectDataType ),
+                                  file.loading, x.input )
+  ## Reactive value selecting a specific time series according to the
+  ## choices in the sidebar/leaflet map
+  reactive.selection <-
+    climex:::data.selection(
+                 reactive.chosen, reactive( input$selectDataSource ),
+                 reactive( input$selectDataBase ),
+                 reactive( input$sliderYears ),
+                 reactive( input$sliderThreshold ),
+                 reactive( input$radioEvdStatistics ),
+                 reactive( input$sliderArtificialDataLocation ),
+                 reactive( input$sliderArtificialDataScale ),
+                 reactive( input$sliderArtificialDataShape ),
+                 cleaning.interactive )
+                                     
 ########################################################################
   
 ########################################################################
@@ -162,14 +182,8 @@ climex.server <- function( input, output, session ){
     climex:::generalExtremeExtraction(
                  reactive( input$radioEvdStatistics ),
                  deseasonalize.interactive,
-                 reactive( input$buttonMinMax ), data.selection )
+                 reactive( input$buttonMinMax ), reactive.selection )
 
-  ## Creating a reactive value which holds the selected stations.
-  reactive.chosen <- climex:::data.chosen(
-                                  reactive( input$selectDataBase ),
-                                  reactive( input$sliderYears ),
-                                  reactive( input$selectDataType ),
-                                  file.loading, x.input )
   file.loading <- reactive( {
     ## If no file is chosen, don't do anything
     if ( is.null( input$fileInputSelection$datapath ) )
@@ -195,90 +209,7 @@ climex.server <- function( input, output, session ){
       }
       shinytoastr::toastr_error( "Sorry but this feature is implemented for the format in which the argument x.input is accepted in climex::climex only! Please do the conversion and formatting in R beforehand and just save a .RData containing a single object" )
       return( NULL )
-  } )       
-  data.selection <- reactive( {
-    ## Selecting the data out of a pool of different possibilities
-    ## or generate them artificially
-    data.selected <- reactive.chosen()
-    if ( is.null( data.selected ) ||
-         is.null( input$selectDataSource ) ){
-      ## as long as the menus are not initialized yet, just assign
-      ## the default time series.
-      ## x.xts <- x.input
-      return( NULL )
-    } else if( input$selectDataBase == "artificial data" ){
-      ## The length of the artificial time series is determined by
-      ## the number of years chosen via the input$sliderYears slider
-      ## in the leaflet tab
-      ## Using the Potsdam time series from Germany as reference
-      data( temp.potsdam, package = "climex" )
-      p.l <- length( temp.potsdam )
-      ## Length of the time series
-      if ( is.null( input$sliderYears ) ){
-        x.length <- length( unique( lubridate::year( temp.potsdam ) ) )
-      } else {
-        x.length <- input$sliderYears
-      }
-      ## Whether to use GEV or GPD data
-      if ( is.null( input$radioEvdStatistics ) ){
-        model <- "gev"
-      } else {
-        if ( input$radioEvdStatistics == "GEV" ){
-          model <- "gev"
-        } else {
-          model <- "gpd"
-        }
-      }
-      if ( model == "gev" ){
-        x.xts <- xts(
-            climex:::revd( n = x.length,
-                          location = input$sliderArtificialDataLocation,
-                          scale = input$sliderArtificialDataScale,
-                          shape = input$sliderArtificialDataShape,
-                          model = "gev" ),
-            order.by = index( temp.potsdam )[
-              ( p.l - x.length + 1 ) : p.l ] )
-      } else {
-        if ( is.null( input$sliderThreshold ) ){
-          threshold <- .8* max( temp.potsdam )
-        } else {
-          threshold <- input$sliderThreshold
-        }
-        x.xts <- xts(
-            climex:::revd( n = x.length,
-                          scale = input$sliderArtificialDataScale,
-                          shape = input$sliderArtificialDataShape,
-                          threshold = threshold, silent = TRUE,
-                          model = "gpd" ),
-            order.by = index( temp.potsdam )[
-              ( p.l - x.length + 1 ) : p.l ] )
-      }
-    } else {
-      ## In all other cases the possible choices are contained in
-      ## the data.selected object and are agnostic of the data base
-      ## /input chosen
-      if ( any( class( data.selected[[ 1 ]] ) == "xts" ) ){
-        x.xts <- data.selected[[ 1 ]]
-      } else {
-        ## There is a bug when switching from one data base into
-        ## another: since the input$selectDataSource needs a
-        ## little bit longer to update it tries to access a value
-        ## in here which is might not present in the newly
-        ## selected one. If this happens, just select the first
-        ## element instead
-        if ( !any(  names( data.selected[[ 1 ]] ) ==
-                    input$selectDataSource ) ){
-          x.xts <- data.selected[[ 1 ]][[ 1 ]]
-          shinytoastr::toastr_info(
-                           "Please check the selected station after changing the data base!" ) 
-        } else
-          x.xts <- data.selected[[ 1 ]][[
-            which( names( data.selected[[ 1 ]] ) ==
-              input$selectDataSource ) ]]
-      }
-    }
-    return( cleaning.interactive( x.xts ) )
-  } )
+  } ) 
   cleaning.interactive <- function( x.xts ){
     ## getting rid of artifacts since they would spoil our results
     ## (the German weather service DWD uses -999 to mark missing
@@ -300,7 +231,7 @@ climex.server <- function( input, output, session ){
     ## the Pareto distribution if threshold exceedance should be
     ## considered. Import data set, cut it to the desired interval,
     ## deseasonalize and block it
-    x.xts <- data.selection()
+    x.xts <- reactive.selection()
     if ( is.null( x.xts ) ||
          is.null( input$radioEvdStatistics ) ){
       ## if the initialization has not finished yet just wait a

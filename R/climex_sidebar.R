@@ -317,3 +317,130 @@ sidebarCleaning <- function( radioEvdStatistics ){
     }
   } )
 }
+
+##' @title Reactive value selecting an individual time series.
+##' @details According to the choice in input$selectDataBase an
+##' artificial time series will be sampled or one from a database will be
+##' selected. For the latter one the reactive value
+##' \code{\link{climex:::data.chosen}} will be constulted. The length of
+##' the generated time series is determined by the input$sliderYears
+##' slider in the top right part of the leaflet tab.
+##'
+##' @param reactive.chosen Reactive value containing a list of the list
+##' of all provided stations and a data.frame containing the meta data.
+##' @param selectDataSource Menu output in the sidebar. Since this
+##' function should only be triggered when selectDataBase equals "DWD",
+##' this input will be a character string describing the selected
+##' station's name.
+##' @param selectDataBase Character (select) input to determine the data
+##' source. In the default installation there are three options:
+##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' provided as an argument to the call of the \code{\link{climex}}
+##' function. The second one uses the database of the German weather
+##' service (see \code{link{download.data.dwd}}). The third one allows
+##' the user to produce random numbers distributed according to the GEV
+##' or GP distribution. Determined by menuSelectDataBase.
+##' Default = "DWD".
+##' @param sliderYears Numerical (slider) input to determine the minimal
+##' length (in years) of the time series to be displayed. Minimal value
+##' is 0 and maximal is 155 (longest one in the DWD database), the
+##' default value is 65 and the step width is 1.
+##' @param sliderThreshold Numerical (slider) input determining the
+##' threshold used within the GP fit and the extraction of the extreme
+##' events. Boundaries: minimal and maximal value of the deseasonalized
+##' time series (rounded). Default: 0.8* the upper end point.
+##' @param radioEvdStatistics Character (radio) input determining whether
+##' the GEV or GP distribution shall be fitted to the data. Choices:
+##' c( "GEV", "GP" ), default = "GEV".
+##' @param sliderArtificialDataLocation Numerical (slider) input
+##' providing the location parameter to generate an artificial time
+##' series. For input$radioEvdStatistics == "GP" or input$selectDataBase
+##' != "artificial data" this argument will be NULL.
+##' @param sliderArtificialDataScale Numerical (slider) input
+##' providing the scale parameter to generate an artificial time
+##' series. For input$selectDataBase
+##' != "artificial data" this argument will be NULL.
+##' @param sliderArtificialDataShape Numerical (slider) input
+##' providing the shape parameter to generate an artificial time
+##' series. For input$selectDataBase
+##' != "artificial data" this argument will be NULL.
+##' @param cleaning.interactive Function used to remove incomplete years
+##' from blocked time series or to remove clusters from data above a
+##' certain threshold.
+##'
+##' @family sidebar
+##'
+##' @import xts
+##'
+##' @return Reactive value containing a 'xts' class time series.
+##' @author Philipp Mueller 
+data.selection <- function( reactive.chosen, selectDataSource,
+                           selectDataBase, sliderYears, sliderThreshold,
+                           radioEvdStatistics,
+                           sliderArtificialDataLocation,
+                           sliderArtificialDataScale,
+                           sliderArtificialDataShape,
+                           cleaning.interactive ){
+  reactive( {
+    ## Selecting the data out of a pool of different possibilities
+    ## or generate them artificially
+    data.selected <- reactive.chosen()
+    if ( is.null( data.selected ) ||
+         is.null( selectDataSource() ) ||
+         is.null( selectDataBase() ) ||
+         is.null( sliderYears() ) ||
+         ( selectDataBase() == "GP" && is.null( sliderThreshold() ) ) ){
+      return( NULL )
+    }
+    if( selectDataBase() == "artificial data" ){
+      ## The length of the artificial time series is determined by
+      ## the number of years chosen via the input$sliderYears slider
+      ## in the leaflet tab
+      ## Using the Potsdam time series from Germany as reference
+      data( temp.potsdam, package = "climex" )
+      p.l <- length( temp.potsdam )
+      ## Length of the time series
+      x.length <- sliderYears()
+      ## Whether to use GEV or GPD data
+      if ( is.null( radioEvdStatistics() ) ||
+          radioEvdStatistics() == "GEV" ){
+        model <- "gev"
+      } else {
+        model <- "gpd"
+      }
+      x.xts <- xts(
+          climex:::revd( n = x.length,
+                        location = sliderArtificialDataLocation(),
+                        scale = sliderArtificialDataScale(),
+                        shape = sliderArtificialDataShape(),
+                        model = model, silent = TRUE,
+                        threshold = sliderThreshold()),
+          order.by = index( temp.potsdam )[
+            ( p.l - x.length + 1 ) : p.l ] )
+    } else {
+      ## In all other cases the possible choices are contained in
+      ## the data.selected object and are agnostic of the data base
+      ## /input chosen
+      if ( any( class( data.selected[[ 1 ]] ) == "xts" ) ){
+        x.xts <- data.selected[[ 1 ]]
+      } else {
+        ## There is a bug when switching from one data base into
+        ## another: since the input$selectDataSource needs a
+        ## little bit longer to update it tries to access a value
+        ## in here which is might not present in the newly
+        ## selected one. If this happens, just select the first
+        ## element instead
+        if ( !any(  names( data.selected[[ 1 ]] ) ==
+                    selectDataSource() ) ){
+          x.xts <- data.selected[[ 1 ]][[ 1 ]]
+          shinytoastr::toastr_info(
+                           "Please check the selected station after changing the data base!" ) 
+        } else
+          x.xts <- data.selected[[ 1 ]][[
+            which( names( data.selected[[ 1 ]] ) ==
+              selectDataSource() ) ]]
+      }
+    }
+    return( cleaning.interactive( x.xts ) )
+  } )
+}
