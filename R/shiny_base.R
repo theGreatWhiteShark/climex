@@ -152,46 +152,18 @@ climex.server <- function( input, output, session ){
   output$sidebarCleaning <-
     climex:::sidebarCleaning( reactive( input$radioEvdStatistics ) )
   
-  output$sliderGevStatistics <- renderMenu( {
-    x.xts <- data.selection()
-    if ( !is.null( input$radioEvdStatistics ) &&
-         input$radioEvdStatistics == "GEV" ){
-      isolate( {
-        ## I do not want the blocklength to be reset when changing
-        ## the deseasonalization method.
-        x.deseasonalized <- deseasonalize.interactive( x.xts )
-      } )
-    } else {
-      x.deseasonalized <- deseasonalize.interactive( x.xts )
-    }
-    if ( is.null( x.deseasonalized ) ){
-      ## if the initialization has not finished yet just wait a
-      ## little longer
-      return( NULL )
-    }
-    if ( input$radioEvdStatistics == "GEV" ){
-      sliderInput( "sliderBoxLength", "Box length in days", 1,
-                  365*3, 365 )
-    } else {
-      if ( is.null( input$buttonMinMax ) ||
-           input$buttonMinMax == "Max" ){
-        sliderInput( "sliderThreshold", "Threshold:",
-                    round( min( x.deseasonalized, na.rm = TRUE ) ),
-                    round( max( x.deseasonalized, na.rm = TRUE ) ),
-                    round( 0.8* max( x.deseasonalized, na.rm = TRUE ) ) )
-      } else {
-        sliderInput( "sliderThreshold", "Threshold:",
-                    round( min( x.deseasonalized, na.rm = TRUE ) ),
-                    round( max( x.deseasonalized, na.rm = TRUE ) ),
-                    round( 0.8* min( x.deseasonalized, na.rm = TRUE ) ) )
-      }
-    }
-  } )
 ########################################################################
   
 ########################################################################
 #################### Data generation and selection #####################
 ########################################################################
+  ## Slider input determining the block length (GEV) or threshold (GP)
+  output$generalExtremeExtraction <-
+    climex:::generalExtremeExtraction(
+                 reactive( input$radioEvdStatistics ),
+                 deseasonalize.interactive,
+                 reactive( input$buttonMinMax ), data.selection )
+
   ## Creating a reactive value which holds the selected stations.
   reactive.chosen <- climex:::data.chosen(
                                   reactive( input$selectDataBase ),
@@ -1761,7 +1733,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                            inline = TRUE,
                            choices = c( "GEV", "GP" ),
                            selected = "GEV" ),
-              menuItemOutput( "sliderGevStatistics" ),
+              climex:::generalExtremeExtractionInput(),
               radioButtons( "buttonMinMax", "Type of extreme",
                            inline = TRUE,
                            choices = c( "Max", "Min" ),
