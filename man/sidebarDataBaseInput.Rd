@@ -17,7 +17,8 @@ sidebarDataBase}}. See the later one for details.
 Philipp Mueller
 }
 \seealso{
-Other sidebar: \code{\link{sidebarCleaningInput}},
+Other sidebar: \code{\link{data.selection}},
+  \code{\link{sidebarCleaningInput}},
   \code{\link{sidebarCleaning}},
   \code{\link{sidebarDataBase}},
   \code{\link{sidebarDataSourceInput}},

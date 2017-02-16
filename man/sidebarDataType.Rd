@@ -36,7 +36,8 @@ listing the different types of data available at the chosen station.
 Philipp Mueller
 }
 \seealso{
-Other sidebar: \code{\link{sidebarCleaningInput}},
+Other sidebar: \code{\link{data.selection}},
+  \code{\link{sidebarCleaningInput}},
   \code{\link{sidebarCleaning}},
   \code{\link{sidebarDataBaseInput}},
   \code{\link{sidebarDataBase}},

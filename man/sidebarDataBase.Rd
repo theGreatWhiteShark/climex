@@ -22,7 +22,8 @@ of this context.
 Philipp Mueller
 }
 \seealso{
-Other sidebar: \code{\link{sidebarCleaningInput}},
+Other sidebar: \code{\link{data.selection}},
+  \code{\link{sidebarCleaningInput}},
   \code{\link{sidebarCleaning}},
   \code{\link{sidebarDataBaseInput}},
   \code{\link{sidebarDataSourceInput}},
