@@ -151,13 +151,16 @@ climex.server <- function( input, output, session ){
   ## Removing incomplete years (GEV) or clusters (GP)
   output$sidebarCleaning <-
     climex:::sidebarCleaning( reactive( input$radioEvdStatistics ) )
+  ## Reactive value listening for file input
+  reactive.loading <- climex:::file.loading(
+                                   reactive( input$fileInputSelection ) )
   ## Reactive value which holds the selected stations chosen either via
   ## the leaflet map or the sidebar
   reactive.chosen <- climex:::data.chosen(
                                   reactive( input$selectDataBase ),
                                   reactive( input$sliderYears ),
                                   reactive( input$selectDataType ),
-                                  file.loading, x.input )
+                                  reactive.loading, x.input )
   ## Reactive value selecting a specific time series according to the
   ## choices in the sidebar/leaflet map
   reactive.selection <-
@@ -184,32 +187,7 @@ climex.server <- function( input, output, session ){
                  deseasonalize.interactive,
                  reactive( input$buttonMinMax ), reactive.selection )
 
-  file.loading <- reactive( {
-    ## If no file is chosen, don't do anything
-    if ( is.null( input$fileInputSelection$datapath ) )
-      return( NULL )
-      ## load selected file
-      load( input$fileInputSelection$datapath,
-           file.load.env <- new.env() )
-      if ( length( ls( file.load.env ) ) == 1 ){
-        ## Just one object is contained in the .RData file
-        file.input <- get( ls( file.load.env ), envir = file.load.env )
-        if ( any( class( file.input ) ) == "xts" ){
-          x.input <<- file.input
-          return( x.input )
-        } else if ( class( file.input ) == "list" ){
-          if ( all( class( x.input ) == "xts" ) || (
-            length( x.input ) == 2 &&
-            "list" %in% Reduce( c, lapply( x.input, class ) ) &&
-            "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) ){
-            x.input <<- file.input
-            return( x.input )
-          }
-        }
-      }
-      shinytoastr::toastr_error( "Sorry but this feature is implemented for the format in which the argument x.input is accepted in climex::climex only! Please do the conversion and formatting in R beforehand and just save a .RData containing a single object" )
-      return( NULL )
-  } ) 
+  
   cleaning.interactive <- function( x.xts ){
     ## getting rid of artifacts since they would spoil our results
     ## (the German weather service DWD uses -999 to mark missing

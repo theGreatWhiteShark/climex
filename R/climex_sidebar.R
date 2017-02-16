@@ -371,6 +371,7 @@ sidebarCleaning <- function( radioEvdStatistics ){
 ##' @family sidebar
 ##'
 ##' @import xts
+##' @import shiny
 ##'
 ##' @return Reactive value containing a 'xts' class time series.
 ##' @author Philipp Mueller 
@@ -442,5 +443,50 @@ data.selection <- function( reactive.chosen, selectDataSource,
       }
     }
     return( cleaning.interactive( x.xts ) )
+  } )
+}
+
+##' @title Reactive value listening for a file input via the sidebar
+##' @details To use this function input$selectDataBase has to be set to
+##' "input".
+##'
+##' @param fileInputSelection File input through a shiny base selection
+##' window.
+##'
+##' @import shiny
+##'
+##' @family sidebar
+##'
+##' @return Reactive value containing either an xts class time series,
+##' a list of those time series or a list of those lists and an
+##' additional data.frame containing meta information about all of the
+##' named stations in those list.
+##' @author Philipp Mueller 
+file.loading <- function( fileInputSelection ){
+  reactive( {
+    ## If no file is chosen, don't do anything
+    if ( is.null( fileInputSelection()$datapath ) )
+      return( NULL )
+      ## load selected file
+      load( fileInputSelection()$datapath,
+           file.load.env <- new.env() )
+      if ( length( ls( file.load.env ) ) == 1 ){
+        ## Just one object is contained in the .RData file
+        file.input <- get( ls( file.load.env ), envir = file.load.env )
+        if ( any( class( file.input ) ) == "xts" ){
+          x.input <- file.input
+          return( x.input )
+        } else if ( class( file.input ) == "list" ){
+          if ( all( class( x.input ) == "xts" ) || (
+            length( x.input ) == 2 &&
+            "list" %in% Reduce( c, lapply( x.input, class ) ) &&
+            "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) ){
+            x.input <- file.input
+            return( x.input )
+          }
+        }
+      }
+      shinytoastr::toastr_error( "Sorry but this feature is implemented for the format in which the argument x.input is accepted in climex::climex only! Please do the conversion and formatting in R beforehand and just save a .RData containing a single object" )
+      return( NULL )
   } )
 }
