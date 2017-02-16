@@ -162,7 +162,7 @@ tfoot {
      background-color: transparent !important;
 }
 /* disabling the bullet for the box length slider*/
-#sliderGevStatistics {
+#generalExtremeExtraction {
     list-style-type: none;
 }
 /* coloring of the two likelihood dataTables */
