@@ -20,6 +20,7 @@ Philipp Mueller
 Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{deseasonalize.interactive}},
   \code{\link{deseasonalizeInput}},
+  \code{\link{extremes.interactive}},
   \code{\link{generalExtremeExtraction}}
 }
 

@@ -26,7 +26,7 @@ vales. Choices: c( "Max", "Min ), default = "Max".}
 
 \item{reactive.selection}{Reactive value contains the xts type time
 series of the individual station/input chosen via the sidebar or the
-leaflet map.}
+leaflet map. \code{\link{data.selection}}}
 
 \item{selectDataBase}{Character (select) input to determine the data
 source. In the default installation there are three options:
@@ -52,6 +52,7 @@ Philipp Mueller
 Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{deseasonalize.interactive}},
   \code{\link{deseasonalizeInput}},
+  \code{\link{extremes.interactive}},
   \code{\link{generalExtremeExtractionInput}}
 }
 

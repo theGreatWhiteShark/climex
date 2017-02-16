@@ -19,6 +19,7 @@ Philipp Mueller
 \seealso{
 Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{deseasonalize.interactive}},
+  \code{\link{extremes.interactive}},
   \code{\link{generalExtremeExtractionInput}},
   \code{\link{generalExtremeExtraction}}
 }
