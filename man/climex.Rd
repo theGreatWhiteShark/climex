@@ -5,11 +5,7 @@
 \title{Shiny app combining most of the tools used in extreme value
 analysis using GEV fitting via maximum likelihood.}
 \usage{
-climex(x.input = NULL)
-}
-\arguments{
-\item{x.input}{Time series of one of the formats mentioned in the
-details section.}
+climex()
 }
 \value{
 starts a shiny app.

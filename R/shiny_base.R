@@ -19,9 +19,6 @@
 ##' stations geo-coordinates, height and name 
 ##' }
 ##'
-##' @param x.input Time series of one of the formats mentioned in the
-##' details section. 
-##'
 ##' @family shiny
 ##'
 ##' @return starts a shiny app.
@@ -30,34 +27,34 @@
 ##' @import leaflet
 ##' @import xts
 ##' @author Philipp Mueller 
-climex <- function( x.input = NULL ){
+climex <- function(){
   source.data( pick.default = TRUE, import = "global" )
-  if ( missing( x.input ) ){
-    ## since we define this amigo global we also have to set it to
-    ## NULL by hand when not providing it to this function
-    x.input <<- NULL
-  }
-  if ( !is.null( x.input ) ){
-    ## checking for the right format of the input series
-    if ( any( class( x.input ) == "xts" ) ){
-      ## global because the other functions have to have access to it
-      x.input <<- x.input
-    } else if ( class( x.input ) == "list" ){
-      if ( all( Reduce( c, lapply( x.input, function ( y )
-        any( class( x ) == "xts" ) ) ) ) || (
-          length( x.input ) == 2 &&
-          "list" %in% Reduce( c, lapply( x.input, class ) ) &&
-          "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) ) {
-        x.input <<- x.input
-      } else {
-        x.input <<- NULL
-        stop( "the input time series has the wrong format!" )
-      }
-    } else {
-      x.input <<- NULL
-      stop( "the input time series has the wrong format!" )
-    }
-  }
+  ## if ( missing( x.input ) ){
+  ##   ## since we define this amigo global we also have to set it to
+  ##   ## NULL by hand when not providing it to this function
+  ##   x.input <<- NULL
+  ## }
+  ## if ( !is.null( x.input ) ){
+  ##   ## checking for the right format of the input series
+  ##   if ( any( class( x.input ) == "xts" ) ){
+  ##     ## global because the other functions have to have access to it
+  ##     x.input <<- x.input
+  ##   } else if ( class( x.input ) == "list" ){
+  ##     if ( all( Reduce( c, lapply( x.input, function ( y )
+  ##       any( class( x ) == "xts" ) ) ) ) || (
+  ##         length( x.input ) == 2 &&
+  ##         "list" %in% Reduce( c, lapply( x.input, class ) ) &&
+  ##         "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) ) {
+  ##       x.input <<- x.input
+  ##     } else {
+  ##       x.input <<- NULL
+  ##       stop( "the input time series has the wrong format!" )
+  ##     }
+  ##   } else {
+  ##     x.input <<- NULL
+  ##     stop( "the input time series has the wrong format!" )
+  ##   }
+  ## }
   if ( !"CLIMEX.PATH" %in% ls( envir = .GlobalEnv ) )
     stop( "Please define a global variable named CLIMEX.PATH (storing of the DWD data and the app interna) (see vignette for details)!" )
   ## will contain the folder in which the images of the animation
@@ -100,10 +97,10 @@ climex <- function( x.input = NULL ){
   ## If one or more time series without any map information are
   ## provided as input arguments, start the app in the "General" tab
   ## right away
-  if ( !is.null( x.input ) && length( x.input ) != 2 ){ 
-    writeLines( "shinyUI( climex.ui( selected = 'General' ) )",
-               con = paste0( CLIMEX.PATH, "app/ui.R" ) )
-  }
+  ## if ( !is.null( x.input ) && length( x.input ) != 2 ){ 
+  ##   writeLines( "shinyUI( climex.ui( selected = 'General' ) )",
+  ##              con = paste0( CLIMEX.PATH, "app/ui.R" ) )
+  ## }
   runApp( paste0( CLIMEX.PATH, "app" ) )
 }
 
@@ -160,7 +157,7 @@ climex.server <- function( input, output, session ){
                                   reactive( input$selectDataBase ),
                                   reactive( input$sliderYears ),
                                   reactive( input$selectDataType ),
-                                  reactive.loading, x.input )
+                                  reactive.loading )
   ## Reactive value selecting a specific time series according to the
   ## choices in the sidebar/leaflet map
   reactive.selection <-

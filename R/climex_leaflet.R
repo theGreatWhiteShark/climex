@@ -412,12 +412,9 @@ leafletClimex <- function( input, output, session, reactive.chosen,
 ##' default import of the DWD data, there are three options:
 ##' c( "Daily max. temp", "Daily min. temp", "Daily precipitation" ).
 ##' Determined by menuSelectDataSource2.
-##' @param file.loading Reactive value allowing the user to load a time
-##' series of class "xts" or "list" with "xts" as their elements into
-##' the climex app.
-##' @param x.input Input time series provided by the user while calling
-##' the \code{\link{climex}} function. When supplying a different time
-##' series using file.loading, this variable will be overwritten.
+##' @param reactive.loading Reactive value allowing the user to load a
+##' time series of class "xts" or "list" with "xts" as their elements
+##' into the climex app. \code{\link{file.loading}}
 ##'
 ##' @family leaflet
 ##'
@@ -427,7 +424,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
 ##' their positions.
 ##' @author Philipp Mueller 
 data.chosen <- function( selectDataBase, sliderYears, selectDataType,
-                        file.loading, x.input ){
+                        file.loading ){
   data <- reactive( {
     if ( is.null( selectDataBase() ) ||
          is.null( sliderYears() ) )
@@ -444,9 +441,8 @@ data.chosen <- function( selectDataBase, sliderYears, selectDataType,
       ## to also cope the possibility of importing such position data
       positions.all <- station.positions
     } else if ( selectDataBase() == "input" ){
-      aux <- file.loading()
+      x.input <- file.loading()
       if ( is.null( aux ) ){
-        shinytoastr::toastr_error( "leafletClimex::data.chosen: no input file choosen in file.loading()!" )
         return( NULL )
       }
       if ( any( class( x.input ) == "xts" ) ){

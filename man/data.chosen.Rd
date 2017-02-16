@@ -5,7 +5,7 @@
 \title{This functions extracts all stations containing more than a
 specified number of years of data}
 \usage{
-data.chosen(selectDataBase, sliderYears, selectDataType, file.loading, x.input)
+data.chosen(selectDataBase, sliderYears, selectDataType, file.loading)
 }
 \arguments{
 \item{selectDataBase}{Character (select) input to determine the data
@@ -29,13 +29,9 @@ default import of the DWD data, there are three options:
 c( "Daily max. temp", "Daily min. temp", "Daily precipitation" ).
 Determined by menuSelectDataSource2.}
 
-\item{file.loading}{Reactive value allowing the user to load a time
-series of class "xts" or "list" with "xts" as their elements into
-the climex app.}
-
-\item{x.input}{Input time series provided by the user while calling
-the \code{\link{climex}} function. When supplying a different time
-series using file.loading, this variable will be overwritten.}
+\item{reactive.loading}{Reactive value allowing the user to load a
+time series of class "xts" or "list" with "xts" as their elements
+into the climex app. \code{\link{file.loading}}}
 }
 \value{
 Reactive list containing a list of all selected stations and
