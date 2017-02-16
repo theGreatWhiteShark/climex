@@ -5,7 +5,7 @@
 \title{This functions extracts all stations containing more than a
 specified number of years of data}
 \usage{
-data.chosen(selectDataBase, sliderYears, selectDataType, file.loading)
+data.chosen(selectDataBase, sliderYears, selectDataType, reactive.loading)
 }
 \arguments{
 \item{selectDataBase}{Character (select) input to determine the data
