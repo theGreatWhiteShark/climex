@@ -34,6 +34,7 @@ Provides a slider input to determine either the block length
 Philipp Mueller
 }
 \seealso{
-Other preprocessing: \code{\link{generalExtremeExtractionInput}}
+Other preprocessing: \code{\link{cleaning.interactive}},
+  \code{\link{generalExtremeExtractionInput}}
 }
 

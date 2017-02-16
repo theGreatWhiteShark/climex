@@ -17,6 +17,7 @@ generalExtremeExtraction}}. See the later one for details.
 Philipp Mueller
 }
 \seealso{
-Other preprocessing: \code{\link{generalExtremeExtraction}}
+Other preprocessing: \code{\link{cleaning.interactive}},
+  \code{\link{generalExtremeExtraction}}
 }
 
