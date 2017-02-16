@@ -96,9 +96,9 @@ leafletClimexUI <- function( id ){
 ##' fit.
 ##' @param cleaning.interactive Function used to remove incomplete years
 ##' from blocked time series or to remove clusters from data above a
-##' certain threshold.
+##' certain threshold. \code{\link{cleaning.interactive}}
 ##' @param deseasonalize.interactive Function used to remove seasonality
-##' from a given time series.
+##' from a given time series. \code{\link{deseasonalize.interactive}}
 ##' @param blocking.interactive Function used to split a time series into
 ##' blocks of equal lengths and to just extract the maximal values from
 ##' then or to extract all data points above a certain threshold value.
@@ -115,6 +115,10 @@ leafletClimexUI <- function( id ){
 ##' whether to remove all clusters in a time series and replace them by
 ##' their maximal value. This box will be only available if
 ##' input$radioEvdStatistics == "GP" and else will be NULL.
+##' @param selectDeseasonalize Character (select) input determining which
+##' deseasonalization method should be used to remove the short-range
+##' correlations from the provided time series.
+##' \code{\link{deseasonalizeInput}}
 ##'
 ##' @family leaflet
 ##'
@@ -130,8 +134,8 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                           cleaning.interactive,
                           deseasonalize.interactive,
                           blocking.interactive, selectDataSource,
-                          checkBoxIncompleteYears, checkBoxDecluster
-                          ){
+                          checkBoxIncompleteYears, checkBoxDecluster,
+                          selectDeseasonalize ){
   ## This variable contains the name of the previously selected station.
   ## It's a little bit ugly since it's global, but right now I'm lacking
   ## an alternative.
@@ -212,7 +216,8 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                            sliderThreshold )
     ## deseasonalize them
     data.deseasonalized <- lapply( data.cleaned,
-                                  deseasonalize.interactive )
+                                  deseasonalize.interactive,
+                                  selectDeseasonalize, selectDataBase )
     ## block them
     data.blocked <- lapply( data.deseasonalized, blocking.interactive )
     ## choose whether to calculate the GEV or GP parameters

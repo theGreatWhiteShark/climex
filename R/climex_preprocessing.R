@@ -23,13 +23,26 @@ generalExtremeExtractionInput <- function(){
 ##' the GEV or GP distribution shall be fitted to the data. Choices:
 ##' c( "GEV", "GP" ), default = "GEV".
 ##' @param deseasonalize.interactive Function used to remove seasonality
-##' from a given time series.
+##' from a given time series. \code{link{deseasonalize.interactive}}
+##' @param selectDeseasonalize Character (select) input determining which
+##' deseasonalization method should be used to remove the short-range
+##' correlations from the provided time series.
+##' \code{\link{deseasonalizeInput}}
 ##' @param buttonMinMax Character (radio) input determining whether
 ##' the GEV/GP distribution shall be fitted to the smallest or biggest
 ##' vales. Choices: c( "Max", "Min ), default = "Max".
 ##' @param reactive.selection Reactive value contains the xts type time
 ##' series of the individual station/input chosen via the sidebar or the
 ##' leaflet map.
+##' @param selectDataBase Character (select) input to determine the data
+##' source. In the default installation there are three options:
+##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' provided as an argument to the call of the \code{\link{climex}}
+##' function. The second one uses the database of the German weather
+##' service (see \code{link{download.data.dwd}}). The third one allows
+##' the user to produce random numbers distributed according to the GEV
+##' or GP distribution. Determined by menuSelectDataBase.
+##' Default = "DWD".
 ##' 
 ##' @import shiny
 ##'
@@ -39,7 +52,9 @@ generalExtremeExtractionInput <- function(){
 ##' @author Philipp Mueller
 generalExtremeExtraction <- function( radioEvdStatistics,
                                      deseasonalize.interactive,
-                                     buttonMinMax, reactive.selection ){
+                                     selectDeseasonalize,
+                                     buttonMinMax, reactive.selection,
+                                     selectDataBase ){
   renderMenu( {
     x.xts <- reactive.selection()
     if ( !is.null( radioEvdStatistics() ) &&
@@ -47,10 +62,12 @@ generalExtremeExtraction <- function( radioEvdStatistics,
       isolate( {
         ## I do not want the blocklength to be reset when changing
         ## the deseasonalization method.
-        x.deseasonalized <- deseasonalize.interactive( x.xts )
+        x.deseasonalized <- deseasonalize.interactive(
+            x.xts, selectDeseasonalize, selectDataBase )
       } )
     } else {
-      x.deseasonalized <- deseasonalize.interactive( x.xts )
+      x.deseasonalized <- deseasonalize.interactive(
+          x.xts, selectDeseasonalize, selectDataBase )
     }
     if ( is.null( x.deseasonalized ) ){
       ## if the initialization has not finished yet just wait a
@@ -120,5 +137,123 @@ cleaning.interactive <- function( x.xts, checkBoxIncompleteYears,
       shinytoastr::toastr_warning(
                        "The current time series contains missing values. Please be sure to check 'Remove incomplete years' in the sidebar to avoid wrong results!" )
     return( x.xts )
-  }  
-      
+}
+
+##' @title Removing the seasonality.
+##' @details Not a real shiny module, since I have to use this select
+##' input outside its namespace.
+##'
+##' @import shiny
+##'
+##' @family preprocessing
+##'
+##' @return selectInput
+##' @author Philipp Mueller 
+deseasonalizeInput <- function(){
+  selectInput( "selectDeseasonalize", "Deseasonalization method",
+              choices = c( "Anomalies", "stl", "decompose",
+                          "deseasonalize::ds", "none" ),
+              selected = "Anomalies" )
+}
+
+##' @title Function for removing the seasonality of a given time series
+##' within the Climex app.
+##'
+##' @param x.xts Time series of class 'xts' which has to be cleaned.
+##' @param selectDeseasonalize Character (select) input determining which
+##' deseasonalization method should be used to remove the short-range
+##' correlations from the provided time series.
+##' \code{\link{deseasonalizeInput}}
+##' @param selectDataBase Character (select) input to determine the data
+##' source. In the default installation there are three options:
+##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' provided as an argument to the call of the \code{\link{climex}}
+##' function. The second one uses the database of the German weather
+##' service (see \code{link{download.data.dwd}}). The third one allows
+##' the user to produce random numbers distributed according to the GEV
+##' or GP distribution. Determined by menuSelectDataBase.
+##' Default = "DWD".
+##'
+##' @family preprocessing
+##'
+##' @return Time series of class 'xts'.
+##' @author Philipp Mueller 
+deseasonalize.interactive <- function( x.xts, selectDeseasonalize,
+                                      selectDataBase ){
+    if ( is.null( x.xts ) || is.null( selectDeseasonalize() ) ||
+         is.null( selectDataBase() ) ){
+      ## if the initialization has not finished yet just wait a little
+      ## longer
+      return( NULL )
+    }
+    if ( selectDataBase() == "artificial data" ){
+      ## For the artificial data there is no need for deseasonalization
+      shinytoastr::toastr_info( "Since there is no seasonality in the artificial time series, the choice of deseasonalization method won't affect them at all." )
+      return( x.xts )
+    }
+    ## Removing all NaN or most algorithms won't work. But anyway. Just
+    ## removing the values won't make then run correctly. But the user
+    ## is warned to remove the incomplete years.
+    if ( any( is.na( x.xts ) ) ){
+      x.no.nan <- na.omit( x.xts )
+    } else {
+      x.no.nan <- x.xts
+    }
+    x.deseasonalized <- switch(
+        selectDeseasonalize(),
+        "Anomalies" = climex::anomalies( x.xts ),
+        "decompose" = {
+          x.decomposed <-
+            stats::decompose(
+                       stats::ts( as.numeric( x.no.nan ),
+                                 frequency = 365.25 ) )
+          if ( any( is.nan( x.xts ) ) ){
+            ## Adjusting the length of the results by adding the NaN
+            ## again
+            x.aux <- rep( NaN, length( x.xts ) )
+            x.aux[ which( x.xts %in% x.no.nan ) ] <-
+              as.numeric( x.decomposed$seasonal )
+          } else {
+            x.aux <- as.numeric( x.decomposed$seasonal )
+          }
+          x.xts - x.aux
+        },
+        "stl" = {
+          x.decomposed <- stats::stl(
+                                     stats::ts( as.numeric( x.no.nan ),
+                                               frequency = 365.25 ),
+                                     30 )
+          if ( any( is.nan( x.xts ) ) ){
+            ## Adjusting the length of the results by adding
+            ## the NaN again
+            x.aux <- rep( NaN, length( x.xts ) )
+            x.aux[ which( x.xts %in% x.no.nan ) ] <- as.numeric(
+                x.decomposed$time.series[ , 1 ] )
+          } else
+            x.aux <- as.numeric( x.decomposed$time.series[ , 1 ] )
+            x.xts - x.aux }, 
+        "deseasonalize::ds" = {
+          x.ds <- deseasonalize::ds( x.no.nan )$z
+          if ( any( is.nan( x.xts ) ) ){
+            ## Adjusting the length of the results by adding
+            ## the NaN again
+            x.aux <- rep( NaN, length( x.xts ) )
+            x.aux[ which( x.xts %in% x.no.nan ) ] <-
+              as.numeric( x.ds )
+          } else {
+            x.aux <- as.numeric( x.ds )
+          }
+          xts( x.aux, order.by = index( x.xts ) ) 
+        },
+        "none" = x.xts )
+    if ( is.na( max( x.deseasonalized ) ) ){
+      ## I don't wanna any NaN in my time series. In some cases the
+      ## deseasonalization methods themselves produce them. It's a
+      ## dirty solution, but just omitting them and informing the user
+      ## will work for now.
+      x.deseasonalized <- na.omit( x.deseasonalized )
+      shinytoastr::toastr_error(
+                       "NaNs produced during the deseasonalization." )
+    }
+    return( x.deseasonalized )
+  }

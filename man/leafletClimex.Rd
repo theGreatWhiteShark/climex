@@ -9,7 +9,7 @@ leafletClimex(input, output, session, reactive.chosen, buttonMinMax,
   radioEvdStatistics, sliderYears, data.blocking, evd.fitting, sliderThreshold,
   fit.interactive, cleaning.interactive, deseasonalize.interactive,
   blocking.interactive, selectDataSource, checkBoxIncompleteYears,
-  checkBoxDecluster)
+  checkBoxDecluster, selectDeseasonalize)
 }
 \arguments{
 \item{input}{Namespace input. For more details check out
@@ -54,10 +54,10 @@ fit.}
 
 \item{cleaning.interactive}{Function used to remove incomplete years
 from blocked time series or to remove clusters from data above a
-certain threshold.}
+certain threshold. \code{\link{cleaning.interactive}}}
 
 \item{deseasonalize.interactive}{Function used to remove seasonality
-from a given time series.}
+from a given time series. \code{\link{deseasonalize.interactive}}}
 
 \item{blocking.interactive}{Function used to split a time series into
 blocks of equal lengths and to just extract the maximal values from
@@ -78,6 +78,11 @@ will be NULL.}
 whether to remove all clusters in a time series and replace them by
 their maximal value. This box will be only available if
 input$radioEvdStatistics == "GP" and else will be NULL.}
+
+\item{selectDeseasonalize}{Character (select) input determining which
+deseasonalization method should be used to remove the short-range
+correlations from the provided time series.
+\code{\link{deseasonalizeInput}}}
 }
 \value{
 Reactive value holding the selected station.

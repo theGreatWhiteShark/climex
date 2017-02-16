@@ -5,7 +5,7 @@
 \title{Extract the extreme events from a given time series.}
 \usage{
 generalExtremeExtraction(radioEvdStatistics, deseasonalize.interactive,
-  buttonMinMax, reactive.selection)
+  selectDeseasonalize, buttonMinMax, reactive.selection, selectDataBase)
 }
 \arguments{
 \item{radioEvdStatistics}{Character (radio) input determining whether
@@ -13,7 +13,12 @@ the GEV or GP distribution shall be fitted to the data. Choices:
 c( "GEV", "GP" ), default = "GEV".}
 
 \item{deseasonalize.interactive}{Function used to remove seasonality
-from a given time series.}
+from a given time series. \code{link{deseasonalize.interactive}}}
+
+\item{selectDeseasonalize}{Character (select) input determining which
+deseasonalization method should be used to remove the short-range
+correlations from the provided time series.
+\code{\link{deseasonalizeInput}}}
 
 \item{buttonMinMax}{Character (radio) input determining whether
 the GEV/GP distribution shall be fitted to the smallest or biggest
@@ -22,6 +27,16 @@ vales. Choices: c( "Max", "Min ), default = "Max".}
 \item{reactive.selection}{Reactive value contains the xts type time
 series of the individual station/input chosen via the sidebar or the
 leaflet map.}
+
+\item{selectDataBase}{Character (select) input to determine the data
+source. In the default installation there are three options:
+c( "input", "DWD", "artificial data" ). The first one uses the data
+provided as an argument to the call of the \code{\link{climex}}
+function. The second one uses the database of the German weather
+service (see \code{link{download.data.dwd}}). The third one allows
+the user to produce random numbers distributed according to the GEV
+or GP distribution. Determined by menuSelectDataBase.
+Default = "DWD".}
 }
 \value{
 renderMenu
@@ -35,6 +50,8 @@ Philipp Mueller
 }
 \seealso{
 Other preprocessing: \code{\link{cleaning.interactive}},
+  \code{\link{deseasonalize.interactive}},
+  \code{\link{deseasonalizeInput}},
   \code{\link{generalExtremeExtractionInput}}
 }
 

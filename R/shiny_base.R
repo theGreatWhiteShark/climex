@@ -181,8 +181,10 @@ climex.server <- function( input, output, session ){
   output$generalExtremeExtraction <-
     climex:::generalExtremeExtraction(
                  reactive( input$radioEvdStatistics ),
-                 deseasonalize.interactive,
-                 reactive( input$buttonMinMax ), reactive.selection )
+                 climex:::deseasonalize.interactive,
+                 reactive( input$selectDeseasonalize ),
+                 reactive( input$buttonMinMax ), reactive.selection,
+                 reactive( input$selectDataBase ) )
 
   
   data.blocking <- reactive( {
@@ -205,7 +207,9 @@ climex.server <- function( input, output, session ){
           is.null( input$checkBoxDecluster ) )
         return( NULL )
     }
-    x.deseasonalized <- deseasonalize.interactive( x.xts )
+    x.deseasonalized <- climex:::deseasonalize.interactive(
+        x.xts, reactive( input$selectDeseasonalize ),
+        reactive( input$selectDataBase ) )
     if ( input$radioEvdStatistics == "GP" &&
          max( x.deseasonalized ) < input$sliderThreshold ){
       return( NULL )
@@ -725,112 +729,7 @@ climex.server <- function( input, output, session ){
     }
     return( gg.rl )  } )
 ########################################################################
-  
-########################################################################
-######################## Deseasonalization of the data #################
-########################################################################
-  ## since the deseasonalization will also be applied to a large
-  ## variety of different
-  ## stations in the leaflet plot, it will become a separate function
-  deseasonalize.interactive <- function( x.xts ){
-    ## Dropdown for deseasonalization method
-    if ( is.null( x.xts ) ||
-         is.null( input$selectDeseasonalize ) ||
-         is.null( input$selectDataBase )
-        ){
-      ## if the initialization has not finished yet just wait a
-      ## little longer
-      return( NULL )
-    }
-    if ( !is.null( input$selectDataBase ) ){
-      if ( input$selectDataBase == "artificial data" ){
-        ## For the artificial data there is no need for
-        ## deseasonalization
-        return( x.xts ) }
-    }
-    x.deseasonalized <- switch(
-        input$selectDeseasonalize,
-        "Anomalies" = anomalies( x.xts ),
-        "decompose" = {
-          ## Remove all NaN or decompose will not work.
-          ## But anyway. Just removing the values won't make it
-          ## run correctly. But the user is warned to remove the
-          ## years.
-          if ( any( is.na( x.xts ) ) ){
-            x.no.nan <- na.omit( x.xts )
-          } else {
-            x.no.nan <- x.xts
-          }
-          x.decomposed <-
-            stats::decompose(
-                       stats::ts( as.numeric( x.no.nan ),
-                                 frequency = 365.25 ) )
-          if ( any( is.nan( x.xts ) ) ){
-            ## Adjusting the length of the results by adding the NaN
-            ## again
-            x.aux <- rep( NaN, length( x.xts ) )
-            x.aux[ which( x.xts %in% x.no.nan ) ] <-
-              as.numeric( x.decomposed$seasonal )
-          } else {
-            x.aux <- as.numeric( x.decomposed$seasonal )
-          }
-          x.xts - x.aux
-        },
-        "stl" = {
-          ## Remove all NaN or stl will not work. But anyway.
-          ## Just removing the values won't make it run correctly.
-          ## But the user is warned to remove the years.
-          if ( any( is.nan( x.xts ) ) ){
-            x.no.nan <- na.omit( x.xts )
-          } else {
-            x.no.nan <- x.xts
-          }
-          x.decomposed <- stats::stl(
-                                     stats::ts( as.numeric( x.no.nan ),
-                                               frequency = 365.25 ),
-                                     30 )
-          if ( any( is.nan( x.xts ) ) ){
-            ## Adjusting the length of the results by adding
-            ## the NaN again
-            x.aux <- rep( NaN, length( x.xts ) )
-            x.aux[ which( x.xts %in% x.no.nan ) ] <- as.numeric(
-                x.decomposed$time.series[ , 1 ] )
-          } else
-            x.aux <- as.numeric( x.decomposed$time.series[ , 1 ] )
-            x.xts - x.aux }, 
-        "deseasonalize::ds" = {
-          ## Remove all NaN or stl will not work. But anyway.
-          ## Just removing the values won't make it run correctly.
-          ## But the user is warned to remove the years.
-          if ( any( is.nan( x.xts ) ) ){
-            x.no.nan <- na.omit( x.xts )
-          } else {
-            x.no.nan <- x.xts
-          }
-          x.ds <- deseasonalize::ds( x.no.nan )$z
-          if ( any( is.nan( x.xts ) ) ){
-            ## Adjusting the length of the results by adding
-            ## the NaN again
-            x.aux <- rep( NaN, length( x.xts ) )
-            x.aux[ which( x.xts %in% x.no.nan ) ] <-
-              as.numeric( x.ds )
-          } else {
-            x.aux <- as.numeric( x.ds )
-          }
-          xts( x.aux, order.by = index( x.xts ) ) 
-        },
-        "none" = x.xts )
-    if ( is.na( max( x.deseasonalized ) ) ){
-      ## I don't wanna any NaN in my time series. I some cases the
-      ## deseasonalization methods themselved produces these. It's a
-      ## dirty solution, but just omit them and inform the user
-      x.deseasonalized <- na.omit( x.deseasonalized )
-      shinytoastr::toastr_error(
-                       "NaNs produced during the deseasonalization." )
-    }
-    return( x.deseasonalized ) }
-########################################################################
-  
+   
 ########################################################################
 ################### Fitting of the GEV distribution ####################
 ########################################################################
@@ -1515,10 +1414,11 @@ climex.server <- function( input, output, session ){
       reactive( input$sliderYears ), data.blocking,
       evd.fitting,
       reactive( input$sliderThreshold ), fit.interactive,
-      cleaning.interactive, deseasonalize.interactive,
+      climex:::cleaning.interactive, climex:::deseasonalize.interactive,
       blocking.interactive, reactive( input$selectDataSource ),
       reactive( input$checkBoxIncompleteYears ),
-      reactive( input$checkBoxDecluster ) )
+      reactive( input$checkBoxDecluster ),
+      reactive( input$selectDeseasonalize ) )
   
    ## })
 }
@@ -1630,12 +1530,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                            inline = TRUE,
                            choices = c( "Max", "Min" ),
                            selected = "Max" ),
-              selectInput( "selectDeseasonalize",
-                          "Deseasonalization method",
-                          choices = c( "Anomalies", "stl",
-                                      "decompose",
-                                      "deseasonalize::ds", "none" ),
-                          selected = "Anomalies" ),
+              climex:::deseasonalizeInput(),
               selectInput( "selectOptimization", "Fitting routine",
                           choices = c( "Nelder-Mead", "CG",
                                       "BFGS", "SANN",
