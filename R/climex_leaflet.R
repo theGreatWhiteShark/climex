@@ -99,10 +99,11 @@ leafletClimexUI <- function( id ){
 ##' certain threshold. \code{\link{cleaning.interactive}}
 ##' @param deseasonalize.interactive Function used to remove seasonality
 ##' from a given time series. \code{\link{deseasonalize.interactive}}
-##' @param blocking.interactive Function used to split a time series into
+##' @param extremes.interactive Function used to split a time series into
 ##' blocks of equal lengths and to just extract the maximal values from
 ##' then or to extract all data points above a certain threshold value.
-##' Which option is chosen depends of the radioEvdStatistic
+##' Which option is chosen depends of the radioEvdStatistic.
+##' \code{\link{extremes.interactive}}
 ##' @param selectDataSource Menu output in the sidebar. Since this
 ##' function should only be triggered when selectDataBase equals "DWD",
 ##' this input will be a character string describing the selected
@@ -119,6 +120,9 @@ leafletClimexUI <- function( id ){
 ##' deseasonalization method should be used to remove the short-range
 ##' correlations from the provided time series.
 ##' \code{\link{deseasonalizeInput}}
+##' @param sliderBlockLength Numerical (slider) input determining the
+##' block length used in the GEV flavor of extreme value theory. On
+##' default it is set to one year.
 ##'
 ##' @family leaflet
 ##'
@@ -133,9 +137,9 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                           sliderThreshold, fit.interactive,
                           cleaning.interactive,
                           deseasonalize.interactive,
-                          blocking.interactive, selectDataSource,
+                          extremes.interactive, selectDataSource,
                           checkBoxIncompleteYears, checkBoxDecluster,
-                          selectDeseasonalize ){
+                          selectDeseasonalize, sliderBlockLength ){
   ## This variable contains the name of the previously selected station.
   ## It's a little bit ugly since it's global, but right now I'm lacking
   ## an alternative.
@@ -219,7 +223,9 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                                   deseasonalize.interactive,
                                   selectDeseasonalize, selectDataBase )
     ## block them
-    data.blocked <- lapply( data.deseasonalized, blocking.interactive )
+    data.blocked <- lapply( data.deseasonalized, extremes.interactive,
+                           radioEvdStatistics, sliderBlockLength,
+                           sliderThreshold, checkBoxDecluster )
     ## choose whether to calculate the GEV or GP parameters
     if ( is.null( radioEvdStatistics() ) ||
          radioEvdStatistics() == "GEV" ){

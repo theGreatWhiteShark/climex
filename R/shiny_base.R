@@ -200,7 +200,7 @@ climex.server <- function( input, output, session ){
       return( NULL )
     }
     if ( input$radioEvdStatistics == "GEV" ){
-      if ( is.null( input$sliderBoxLength ) )
+      if ( is.null( input$sliderBlockLength ) )
         return( NULL )
     } else {
       if ( is.null( input$sliderThreshold ) ||
@@ -214,41 +214,17 @@ climex.server <- function( input, output, session ){
          max( x.deseasonalized ) < input$sliderThreshold ){
       return( NULL )
     }
-    x.block <- blocking.interactive( x.deseasonalized )
+    x.block <- climex:::extremes.interactive(
+                            x.deseasonalized,
+                            reactive( input$buttonMinMax ),
+                            reactive( input$radioEvdStatistics ),
+                            reactive( input$sliderBlockLength ),
+                            reactive( input$sliderThreshold ),
+                            reactive( input$checkBoxDecluster ) )
     return( list( blocked.data = x.block,
                  deseasonalized.data = x.deseasonalized,
                  pure.data = x.xts ) ) } )
-  ## wrapper blocking time series according to the set slider etc.
-  ## values
-  blocking.interactive <- function( x.xts ){
-    ## Toggle if maxima of minima are going to be used
-    if ( is.null( input$buttonMinMax ) ||
-         input$buttonMinMax == "Max" ){
-      block.mode <- "max"
-    } else
-      block.mode <- "min"
-    if ( is.null( input$radioEvdStatistics ) ){
-      ## While initialization input$radioEvdStatistics and
-      ## input$sliderBoxLength are NULL. Therefore this is the
-      ## fallback default x.block
-      x.block <- block( x.xts, separation.mode = "years",
-                       block.mode = block.mode )
-    } else if ( input$radioEvdStatistics == "GEV" ){
-        x.block <- block( x.xts, block.length = input$sliderBoxLength,
-                         block.mode = block.mode )
-    } else if ( input$radioEvdStatistics == "GP" ){
-      ## Due to "historical" reasons the vector containing the
-      ## resulting values will still be called x.block. The
-      ## "block.mode" and the corresponding "input$buttonMinMax"
-      ## are still use full and decide if the values above or below
-      ## the threshold are going to be extracted
-      x.block <- climex::threshold( x.xts,
-                                   threshold = input$sliderThreshold,
-                                   decluster = input$checkBoxDecluster,
-                                   na.rm = TRUE )
-      return( x.block )
-    }
-  }
+  
 ########################################################################
   
 ########################################################################
@@ -1415,10 +1391,11 @@ climex.server <- function( input, output, session ){
       evd.fitting,
       reactive( input$sliderThreshold ), fit.interactive,
       climex:::cleaning.interactive, climex:::deseasonalize.interactive,
-      blocking.interactive, reactive( input$selectDataSource ),
+      climex:::extremes.interactive, reactive( input$selectDataSource ),
       reactive( input$checkBoxIncompleteYears ),
       reactive( input$checkBoxDecluster ),
-      reactive( input$selectDeseasonalize ) )
+      reactive( input$selectDeseasonalize ),
+      reactive( input$sliderBlockLength ) )
   
    ## })
 }

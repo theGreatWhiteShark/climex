@@ -8,8 +8,8 @@ information.}
 leafletClimex(input, output, session, reactive.chosen, buttonMinMax,
   radioEvdStatistics, sliderYears, data.blocking, evd.fitting, sliderThreshold,
   fit.interactive, cleaning.interactive, deseasonalize.interactive,
-  blocking.interactive, selectDataSource, checkBoxIncompleteYears,
-  checkBoxDecluster, selectDeseasonalize)
+  extremes.interactive, selectDataSource, checkBoxIncompleteYears,
+  checkBoxDecluster, selectDeseasonalize, sliderBlockLength)
 }
 \arguments{
 \item{input}{Namespace input. For more details check out
@@ -59,10 +59,11 @@ certain threshold. \code{\link{cleaning.interactive}}}
 \item{deseasonalize.interactive}{Function used to remove seasonality
 from a given time series. \code{\link{deseasonalize.interactive}}}
 
-\item{blocking.interactive}{Function used to split a time series into
+\item{extremes.interactive}{Function used to split a time series into
 blocks of equal lengths and to just extract the maximal values from
 then or to extract all data points above a certain threshold value.
-Which option is chosen depends of the radioEvdStatistic}
+Which option is chosen depends of the radioEvdStatistic.
+\code{\link{extremes.interactive}}}
 
 \item{selectDataSource}{Menu output in the sidebar. Since this
 function should only be triggered when selectDataBase equals "DWD",
@@ -83,6 +84,10 @@ input$radioEvdStatistics == "GP" and else will be NULL.}
 deseasonalization method should be used to remove the short-range
 correlations from the provided time series.
 \code{\link{deseasonalizeInput}}}
+
+\item{sliderBlockLength}{Numerical (slider) input determining the
+block length used in the GEV flavor of extreme value theory. On
+default it is set to one year.}
 }
 \value{
 Reactive value holding the selected station.

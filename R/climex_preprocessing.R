@@ -33,7 +33,7 @@ generalExtremeExtractionInput <- function(){
 ##' vales. Choices: c( "Max", "Min ), default = "Max".
 ##' @param reactive.selection Reactive value contains the xts type time
 ##' series of the individual station/input chosen via the sidebar or the
-##' leaflet map.
+##' leaflet map. \code{\link{data.selection}}
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
 ##' c( "input", "DWD", "artificial data" ). The first one uses the data
@@ -75,7 +75,7 @@ generalExtremeExtraction <- function( radioEvdStatistics,
       return( NULL )
     }
     if ( radioEvdStatistics() == "GEV" ){
-      sliderInput( "sliderBoxLength", "Box length in days", 1,
+      sliderInput( "sliderBlockLength", "Box length in days", 1,
                   365*3, 365 )
     } else {
       if ( is.null( buttonMinMax() ) ||
@@ -256,4 +256,63 @@ deseasonalize.interactive <- function( x.xts, selectDeseasonalize,
                        "NaNs produced during the deseasonalization." )
     }
     return( x.deseasonalized )
+}
+
+##' @title Function to extract the extreme event from a time series.
+##' @details If the input$radioEvdStatistics is set to "GEV" the time
+##' series will be block. If it's on the other hand set to "GP", all
+##' values above a certain threshold will be extracted.
+##' 
+##' @param x.xts Time series of class 'xts' which has to be cleaned.
+##' @param buttonMinMax Character (radio) input determining whether
+##' the GEV/GP distribution shall be fitted to the smallest or biggest
+##' vales. Choices: c( "Max", "Min ), default = "Max".
+##' @param radioEvdStatistics Character (radio) input determining whether
+##' the GEV or GP distribution shall be fitted to the data. Choices:
+##' c( "GEV", "GP" ), default = "GEV".
+##' @param sliderBlockLength Numerical (slider) input determining the
+##' block length used in the GEV flavor of extreme value theory. On
+##' default it is set to one year.
+##' @param sliderThreshold Numerical (slider) input determining the
+##' threshold used within the GP fit and the extraction of the extreme
+##' events. Boundaries: minimal and maximal value of the deseasonalized
+##' time series (rounded). Default: 0.8* the upper end point.
+##' @param checkBoxDecluster Logical (checkbox) input determining
+##' whether to remove all clusters in a time series and replace them by
+##' their maximal value. This box will be only available if
+##' input$radioEvdStatistics == "GP" and else will be NULL.
+##'
+##' @family preprocessing
+##'
+##' @return Time series of class 'xts'.
+##' @author Philipp Mueller 
+extremes.interactive <- function( x.xts, buttonMinMax,
+                                 radioEvdStatistics, sliderBlockLength,
+                                 sliderThreshold, checkBoxDecluster ){
+  ## Toggle if maxima of minima are going to be used
+  if ( is.null( buttonMinMax() ) || buttonMinMax() == "Max" ){
+    block.mode <- "max"
+  } else
+    block.mode <- "min"
+  if ( is.null( radioEvdStatistics() ) ){
+    ## While initialization input$radioEvdStatistics and
+    ## input$sliderBoxLength are NULL. Therefore this is the
+    ## fallback default x.block
+    x.block <- climex::block( x.xts, separation.mode = "years",
+                             block.mode = block.mode )
+  } else if ( radioEvdStatistics() == "GEV" ){
+    x.block <- climex::block( x.xts, block.length = sliderBlockLength(),
+                             block.mode = block.mode )
+  } else if ( radioEvdStatistics() == "GP" ){
+    ## Due to "historical" reasons the vector containing the
+    ## resulting values will still be called x.block. The
+    ## "block.mode" and the corresponding "input$buttonMinMax"
+    ## are still use full and decide if the values above or below
+    ## the threshold are going to be extracted
+    x.block <- climex::threshold( x.xts,
+                                 threshold = sliderThreshold(),
+                                 decluster = checkBoxDecluster(),
+                                 na.rm = TRUE )
+    return( x.block )
   }
+}
