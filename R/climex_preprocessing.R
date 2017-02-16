@@ -76,3 +76,49 @@ generalExtremeExtraction <- function( radioEvdStatistics,
     }
   } )
 }
+
+##' @title Function to get rid of artifacts within the Climex app
+##' @details The app does two things: First it replaces all -999 and NaN
+##' in the time series by NaN (the former is the default indicator in
+##' the data of the German weather service for missing values).
+##' Second it removes all incomplete years (GEV) or cluster (GP) when
+##' the corresponding checkbox is checked.
+##'
+##' @param x.xts Time series of class 'xts' which has to be cleaned.
+##' @param checkBoxIncompleteYears Logical (checkbox) input determining
+##' whether to remove all incomplete years of a time series. This box
+##' will be only available if input$radioEvdStatistics == "GEV" and else
+##' will be NULL.
+##' @param checkBoxDecluster Logical (checkbox) input determining
+##' whether to remove all clusters in a time series and replace them by
+##' their maximal value. This box will be only available if
+##' input$radioEvdStatistics == "GP" and else will be NULL.
+##' @param sliderThreshold Numerical (slider) input determining the
+##' threshold used within the GP fit and the extraction of the extreme
+##' events. Boundaries: minimal and maximal value of the deseasonalized
+##' time series (rounded). Default: 0.8* the upper end point. This one
+##' is only used in declustering the time series.
+##'
+##' @family preprocessing
+##'
+##' @return Time series of class 'xts'.
+##' @author Philipp Mueller 
+cleaning.interactive <- function( x.xts, checkBoxIncompleteYears,
+                                 checkBoxDecluster, sliderThreshold ){
+    x.xts[ which( is.na( x.xts ) ) ] <- NaN
+    x.xts[ which( x.xts == -999 ) ] <- NaN
+    if ( !is.null( checkBoxIncompleteYears() ) &&
+         checkBoxIncompleteYears() ){
+        ## Remove all incomplete years from time series
+      x.xts <- climex::remove.incomplete.years( x.xts )
+    }
+    if ( !is.null( checkBoxDecluster() ) &&
+         checkBoxDecluster() ){
+      x.xts <- climex::decluster( x.xts, sliderThreshold() )
+    }
+    if ( any( is.nan( x.xts ) ) )
+      shinytoastr::toastr_warning(
+                       "The current time series contains missing values. Please be sure to check 'Remove incomplete years' in the sidebar to avoid wrong results!" )
+    return( x.xts )
+  }  
+      

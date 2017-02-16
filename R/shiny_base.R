@@ -124,12 +124,11 @@ climex <- function(){
 ##' @author Philipp Mueller 
 climex.server <- function( input, output, session ){
 ########################################################################
-#################### Customizing the sidebar menu ######################
+######### Customizing the sidebar and launching its reactives ##########
 ########################################################################
   ## Everything in my code is always of the style this.is.a.name. So
   ## why do I use the camel case thisIsAName for the shiny objects?
   ## Well, since CSS file do not support the point separator.
-  
   ## Type of database (input, DWD, artificial data)
   output$sidebarDataBase <- climex:::sidebarDataBase()
   ## Individual station or location (GEV)/scale(GP) for artificial data
@@ -170,12 +169,13 @@ climex.server <- function( input, output, session ){
                  reactive( input$sliderArtificialDataLocation ),
                  reactive( input$sliderArtificialDataScale ),
                  reactive( input$sliderArtificialDataShape ),
-                 cleaning.interactive )
-                                     
+                 cleaning.interactive,
+                 reactive( input$checkBoxIncompleteYears ),
+                 reactive( input$checkBoxDecluster ) )
 ########################################################################
   
 ########################################################################
-#################### Data generation and selection #####################
+########################### Data preprocessing #########################
 ########################################################################
   ## Slider input determining the block length (GEV) or threshold (GP)
   output$generalExtremeExtraction <-
@@ -185,22 +185,6 @@ climex.server <- function( input, output, session ){
                  reactive( input$buttonMinMax ), reactive.selection )
 
   
-  cleaning.interactive <- function( x.xts ){
-    ## getting rid of artifacts since they would spoil our results
-    ## (the German weather service DWD uses -999 to mark missing
-    ## measurements)
-    x.xts[ which( is.na( x.xts ) ) ] <- NaN
-    x.xts[ which( x.xts == -999 ) ] <- NaN
-    if ( !is.null( input$checkBoxIncompleteYears ) ){
-      if ( input$checkBoxIncompleteYears ){
-        ## Remove all incomplete years from time series
-        x.xts <- remove.incomplete.years( x.xts ) }
-    }
-    if ( any( is.nan( x.xts ) ) )
-      shinytoastr::toastr_warning(
-                       "The current time series contains missing values. Please be sure to check 'Remove incomplete years' in the sidebar to avoid wrong results!" )
-    return( x.xts )
-  }
   data.blocking <- reactive( {
     ## Decides if either the GEV distribution with block maxima or
     ## the Pareto distribution if threshold exceedance should be
@@ -1532,7 +1516,9 @@ climex.server <- function( input, output, session ){
       evd.fitting,
       reactive( input$sliderThreshold ), fit.interactive,
       cleaning.interactive, deseasonalize.interactive,
-      blocking.interactive, reactive( input$selectDataSource ) )
+      blocking.interactive, reactive( input$selectDataSource ),
+      reactive( input$checkBoxIncompleteYears ),
+      reactive( input$checkBoxDecluster ) )
   
    ## })
 }

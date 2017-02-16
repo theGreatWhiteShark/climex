@@ -8,7 +8,8 @@ information.}
 leafletClimex(input, output, session, reactive.chosen, buttonMinMax,
   radioEvdStatistics, sliderYears, data.blocking, evd.fitting, sliderThreshold,
   fit.interactive, cleaning.interactive, deseasonalize.interactive,
-  blocking.interactive, selectDataSource)
+  blocking.interactive, selectDataSource, checkBoxIncompleteYears,
+  checkBoxDecluster)
 }
 \arguments{
 \item{input}{Namespace input. For more details check out
@@ -67,6 +68,16 @@ Which option is chosen depends of the radioEvdStatistic}
 function should only be triggered when selectDataBase equals "DWD",
 this input will be a character string describing the selected
 station's name.}
+
+\item{checkBoxIncompleteYears}{Logical (checkbox) input determining
+whether to remove all incomplete years of a time series. This box
+will be only available if input$radioEvdStatistics == "GEV" and else
+will be NULL.}
+
+\item{checkBoxDecluster}{Logical (checkbox) input determining
+whether to remove all clusters in a time series and replace them by
+their maximal value. This box will be only available if
+input$radioEvdStatistics == "GP" and else will be NULL.}
 }
 \value{
 Reactive value holding the selected station.

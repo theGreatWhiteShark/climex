@@ -107,6 +107,14 @@ leafletClimexUI <- function( id ){
 ##' function should only be triggered when selectDataBase equals "DWD",
 ##' this input will be a character string describing the selected
 ##' station's name.
+##' @param checkBoxIncompleteYears Logical (checkbox) input determining
+##' whether to remove all incomplete years of a time series. This box
+##' will be only available if input$radioEvdStatistics == "GEV" and else
+##' will be NULL.
+##' @param checkBoxDecluster Logical (checkbox) input determining
+##' whether to remove all clusters in a time series and replace them by
+##' their maximal value. This box will be only available if
+##' input$radioEvdStatistics == "GP" and else will be NULL.
 ##'
 ##' @family leaflet
 ##'
@@ -121,7 +129,8 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                           sliderThreshold, fit.interactive,
                           cleaning.interactive,
                           deseasonalize.interactive,
-                          blocking.interactive, selectDataSource
+                          blocking.interactive, selectDataSource,
+                          checkBoxIncompleteYears, checkBoxDecluster
                           ){
   ## This variable contains the name of the previously selected station.
   ## It's a little bit ugly since it's global, but right now I'm lacking
@@ -198,7 +207,9 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                        data.selected[[ 2 ]]$latitude ) ) ) )
       return( NULL )
     ## clean the stations
-    data.cleaned <- lapply( data.selected[[ 1 ]], cleaning.interactive )
+    data.cleaned <- lapply( data.selected[[ 1 ]], cleaning.interactive,
+                           checkBoxIncompleteYears, checkBoxDecluster,
+                           sliderThreshold )
     ## deseasonalize them
     data.deseasonalized <- lapply( data.cleaned,
                                   deseasonalize.interactive )
@@ -424,7 +435,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
 ##' their positions.
 ##' @author Philipp Mueller 
 data.chosen <- function( selectDataBase, sliderYears, selectDataType,
-                        file.loading ){
+                        reactive.loading ){
   data <- reactive( {
     if ( is.null( selectDataBase() ) ||
          is.null( sliderYears() ) )
@@ -441,7 +452,7 @@ data.chosen <- function( selectDataBase, sliderYears, selectDataType,
       ## to also cope the possibility of importing such position data
       positions.all <- station.positions
     } else if ( selectDataBase() == "input" ){
-      x.input <- file.loading()
+      x.input <- reactive.loading()
       if ( is.null( aux ) ){
         return( NULL )
       }

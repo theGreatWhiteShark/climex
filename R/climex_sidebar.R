@@ -367,6 +367,14 @@ sidebarCleaning <- function( radioEvdStatistics ){
 ##' @param cleaning.interactive Function used to remove incomplete years
 ##' from blocked time series or to remove clusters from data above a
 ##' certain threshold.
+##' @param checkBoxIncompleteYears Logical (checkbox) input determining
+##' whether to remove all incomplete years of a time series. This box
+##' will be only available if input$radioEvdStatistics == "GEV" and else
+##' will be NULL.
+##' @param checkBoxDecluster Logical (checkbox) input determining
+##' whether to remove all clusters in a time series and replace them by
+##' their maximal value. This box will be only available if
+##' input$radioEvdStatistics == "GP" and else will be NULL.
 ##'
 ##' @family sidebar
 ##'
@@ -381,7 +389,8 @@ data.selection <- function( reactive.chosen, selectDataSource,
                            sliderArtificialDataLocation,
                            sliderArtificialDataScale,
                            sliderArtificialDataShape,
-                           cleaning.interactive ){
+                           cleaning.interactive,
+                           checkBoxIncompleteYears, checkBoxDecluster ){
   reactive( {
     ## Selecting the data out of a pool of different possibilities
     ## or generate them artificially
@@ -442,7 +451,8 @@ data.selection <- function( reactive.chosen, selectDataSource,
               selectDataSource() ) ]]
       }
     }
-    return( cleaning.interactive( x.xts ) )
+    return( cleaning.interactive( x.xts, checkBoxIncompleteYears,
+                                 checkBoxDecluster, sliderThreshold ) )
   } )
 }
 
