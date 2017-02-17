@@ -27,7 +27,7 @@ default value is 65 and the step width is 1.}
 measurements should be used for the selected station. In case of the
 default import of the DWD data, there are three options:
 c( "Daily max. temp", "Daily min. temp", "Daily precipitation" ).
-Determined by menuSelectDataSource2.}
+Determined by menuSelectDataType.}
 
 \item{reactive.loading}{Reactive value allowing the user to load a
 time series of class "xts" or "list" with "xts" as their elements
