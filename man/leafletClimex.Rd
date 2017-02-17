@@ -10,7 +10,7 @@ leafletClimex(input, output, session, reactive.chosen, buttonMinMax,
   sliderThreshold, fit.interactive, cleaning.interactive,
   deseasonalize.interactive, extremes.interactive, selectDataSource,
   checkBoxIncompleteYears, checkBoxDecluster, selectDeseasonalize,
-  sliderBlockLength)
+  sliderBlockLength, selectOptimization, checkBoxRerun)
 }
 \arguments{
 \item{input}{Namespace input. For more details check out
@@ -51,7 +51,7 @@ events. Boundaries: minimal and maximal value of the deseasonalized
 time series (rounded). Default: 0.8* the upper end point.}
 
 \item{fit.interactive}{Function used to perform the actual GEV/GP
-fit.}
+fit. \code{\link{fit.interactive}}}
 
 \item{cleaning.interactive}{Function used to remove incomplete years
 from blocked time series or to remove clusters from data above a

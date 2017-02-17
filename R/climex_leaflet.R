@@ -93,7 +93,7 @@ leafletClimexUI <- function( id ){
 ##' events. Boundaries: minimal and maximal value of the deseasonalized
 ##' time series (rounded). Default: 0.8* the upper end point.
 ##' @param fit.interactive Function used to perform the actual GEV/GP
-##' fit.
+##' fit. \code{\link{fit.interactive}}
 ##' @param cleaning.interactive Function used to remove incomplete years
 ##' from blocked time series or to remove clusters from data above a
 ##' certain threshold. \code{\link{cleaning.interactive}}
@@ -139,7 +139,8 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                           deseasonalize.interactive,
                           extremes.interactive, selectDataSource,
                           checkBoxIncompleteYears, checkBoxDecluster,
-                          selectDeseasonalize, sliderBlockLength ){
+                          selectDeseasonalize, sliderBlockLength,
+                          selectOptimization, checkBoxRerun ){
   ## This variable contains the name of the previously selected station.
   ## It's a little bit ugly since it's global, but right now I'm lacking
   ## an alternative.
@@ -239,7 +240,13 @@ leafletClimex <- function( input, output, session, reactive.chosen,
     return.level.vector <- rep( NaN, length( data.blocked ) )
     for ( rr in 1 : length( data.blocked ) ){
       return.level.vector[ rr ] <-
-        climex::return.level( fit.interactive( data.blocked[[ rr ]] ),
+        climex::return.level( fit.interactive( data.blocked[[ rr ]],
+                                              x.initial = NULL,
+                                              radioEvdStatistics,
+                                              selectOptimization,
+                                              buttonMinMax,
+                                              checkBoxRerun,
+                                              sliderThreshold ),
                              return.period = return.level.year,
                              model = model, error.estimation = "none",
                              total.length = length(
