@@ -175,7 +175,7 @@ climex.server <- function( input, output, session ){
 ########################################################################
   
 ########################################################################
-########################### Data preprocessing #########################
+#################### Data preprocessing and fitting ####################
 ########################################################################
   ## Slider input determining the block length (GEV) or threshold (GP)
   output$generalExtremeExtraction <-
@@ -217,6 +217,8 @@ climex.server <- function( input, output, session ){
                               climex:::function.get.y.label,
                               reactive( input$radioEvdStatistics ),
                               reactive( input$sliderThreshold ) )
+  ## Plotting of the fitted distribution and the corresponding PP, QQ
+  ## and return level goodness-of-fit plots.
   callModule( climex:::generalFitPlot, "fit", reactive.extreme,
              reactive.rows, evd.fitting, reactive( input$buttonMinMax ),
              reactive( input$radioEvdStatistics ),
@@ -1021,11 +1023,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                            choices = c( "Max", "Min" ),
                            selected = "Max" ),
               climex:::deseasonalizeInput(),
-              selectInput( "selectOptimization", "Fitting routine",
-                          choices = c( "Nelder-Mead", "CG",
-                                      "BFGS", "SANN",
-                                      "dfoptim::nmk" ),
-                          selected = c( "Nelder-Mead" ) ) ) ),
+              climex:::generalFittingRoutineInput() ) ),
           fluidRow(
             box( title = h2( "Results" ), width = 3,
               background = "orange", id = "boxGevResults",
