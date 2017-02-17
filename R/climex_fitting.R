@@ -165,7 +165,7 @@ fit.interactive <- function( x.kept, x.initial = NULL,
                                error.estimation = "none" ) ) )
   }
   if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" &&
-         radioEvdStatistics() == "GEV" ){
+       radioEvdStatistics() == "GEV" ){
     x.fit.evd$x <- x.fit.evd$x* ( -1 )
     x.fit.evd$par[ 1 ] <- x.fit.evd$par[ 1 ]* ( -1 )
   }
@@ -173,8 +173,8 @@ fit.interactive <- function( x.kept, x.initial = NULL,
 }
 
 ## Fitting of the time series selected via a click on the map or
-  ## the select form in the sidebar.
-  ## For this time series it is possible to exclude individual points
+## the select form in the sidebar.
+## For this time series it is possible to exclude individual points
 ## via clicking on them in the time series::remaining plot
 ##' @title Reactive value performing the GEV/GP fit.
 ##' @details The fit is performed using the fit.interactive function. Using
@@ -298,4 +298,206 @@ data.initials <- function( initialLocation, initialScale, initialShape,
       }
     }
   } )
+}
+
+##' @title Table to display the results of the GEV/GP fitting procedure.
+##' @details Provides the UI part of \code{\link{generalFitStatistics}}
+##' but is not a proper Shiny module.
+##'
+##' @importFrom shinydashboard box
+##' @import shiny
+##'
+##' @family climex-fitting
+##'
+##' @return box
+##' @author Philipp Mueller 
+generalFitStatisticsTable <- function(){
+  box( title = h2( "Results" ), width = 3,
+      background = "orange", id = "boxGevResults",
+      uiOutput( "generalFitStatistics", colHeaders = "provided" ) )
+}
+
+##' @title Table to display the results of the GEV/GP fitting procedure.
+##' @details Displaying of AIC, nllh, BIC and fitted parameters as well as
+##' the difference to the three last fits! (and highlight positive values
+##' with with green and negative with red). This function will define
+##' some global variables to hold the results of the former fits. This is
+##' necessary in order to mark the progress in green or red.
+##'
+##' @param reactive.fitting Reactive value containing the results of the
+##' fit (\code{\link{fit.gev}} or \code{\link{fit.gpd}} depending on
+##' radioEvdStatistic) to the blocked time series in
+##' reactive.extreme()[[ 1 ]].
+##' @param reactive.extreme Reactive value containing a list of the
+##' extracted extreme events of a time series, the deseasonalized and the
+##' pure version of this very time series. All three elements are provided
+##' as class 'xts'.
+##' @param sliderThreshold Numerical (slider) input determining the
+##' threshold used within the GP fit and the extraction of the extreme
+##' events. Boundaries: minimal and maximal value of the deseasonalized
+##' time series (rounded). Default: 0.8* the upper end point.
+##' @param buttonMinMax Character (radio) input determining whether
+##' the GEV/GP distribution shall be fitted to the smallest or biggest
+##' vales. Choices: c( "Max", "Min ), default = "Max".
+##' @param radioEvdStatistics Character (radio) input determining whether
+##' the GEV or GP distribution shall be fitted to the data. Choices:
+##' c( "GEV", "GP" ), default = "GEV".
+##' @param color.table Function adding color to the table constructed
+##' within generalFitStatistics. It will replace some placeholders by
+##' color tags. \code{\link{color.table}}
+##'
+##' @import shiny
+##'
+##' @family climex-fitting
+##' 
+##' @return renderUI containing a table
+##' @author Philipp Mueller 
+generalFitStatistics <- function( reactive.fitting, reactive.extreme,
+                                 sliderThreshold, buttonMinMax,
+                                 radioEvdStatistics, color.table ){
+  ## Initialization.
+  last.1.aux <- last.1.int <- current.white <- rep( 0,  )
+  renderUI({
+    if ( is.null( reactive.fitting() ) || is.null( reactive.extreme() ) ){
+      return( NULL )
+    }
+    ## Define the colour for increasing or decreasing values
+    ## >0, <0, normal
+    css.colours <- c( "#C53100",
+                     "#0D8F20" )
+    x.fit.evd <- reactive.fitting()
+    x.data <- reactive.extreme()
+    x.extreme <- x.data[[ 1 ]]
+    if ( radioEvdStatistics() == "GEV" ){
+      current <- c( x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
+                   x.fit.evd$par[ 3 ],
+                   x.fit.evd$value, climex:::aic( x.fit.evd ),
+                   climex:::bic( x.fit.evd ),
+                   climex::return.level( x.fit.evd$par,
+                                        error.estimation = "none",
+                                        model = "gev" ) )
+    } else {
+      current <- c( 0, x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
+                   x.fit.evd$value, climex:::aic( x.fit.evd ),
+                   climex:::bic( x.fit.evd ),
+                   climex::return.level(
+                               x.fit.evd, error.estimation = "none",
+                               threshold = sliderThreshold(),
+                               model = "gpd",
+                               total.length = x.data[[ 1 ]] ) )
+    }
+    ## Negating the return level to get the correct results for
+    ## the minimum
+    if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" &&
+         radioEvdStatistics() == "GEV" ){
+        current[ 7 ] <- ( -1 )* current[ 7 ]
+    }
+    ## History of the statistics
+    last.3 <<- last.2
+    last.2 <<- last.1
+    last.1.aux <- current - last.values
+    ## For the fitted parameters any deviation of more than 1
+    ## percent is marked red
+    for ( ll in 1 : length( x.fit.evd$par ) ){
+      if ( all ( last.1.aux == 0 ) ){
+        ## This happens right in the beginning on initialization
+        ## The following prevents the output of coloured zeros
+        last.1.int <- last.1.aux
+        break
+      } else if( abs( last.1.aux[ ll ] - current[ ll ] ) <
+                 0.01* current[ ll ] ){
+        if ( last.1.aux[ ll ] > 0 ){
+          last.1.int[ ll ] <- paste0( 
+              "+", as.character( format(  last.1.aux[ ll ],
+                                        digits = 4 ) ),
+              " ", css.colours[ 1 ] )
+        } else {
+          last.1.int[ ll ] <- paste( 
+              as.character( format(  last.1.aux[ ll ], digits = 4 ) ),
+              css.colours[ 1 ] )
+        }
+      } else {
+        last.1.int[ ll ] <- paste(
+            as.character( format(  last.1.aux[ ll ], digits = 4 ) ),
+            " ", css.colours[ 2 ] )
+      }
+    }
+    ## For the test statistic all changes to lower values are
+    ## marked green
+    for ( ll in ( length( x.fit.evd$par ) + 1 ) :
+             length( last.1.aux ) ){
+      if( last.1.aux[ ll ] > 0 ){
+        last.1.int[ ll ] <- paste0(
+            "+", as.character( format(  last.1.aux[ ll ],
+                                      digits = 4 ) ),
+            " ", css.colours[ 1 ] )
+      } else if ( last.1.aux[ ll ] < 0 ){
+        last.1.int[ ll ] <- paste(
+            as.character( format( last.1.aux[ ll ], digits = 4 ) ),
+            " ", css.colours[ 2 ] )
+      } else {
+        last.1.int[ ll ] <- as.character( format(  last.1.aux[ ll ],
+                                                 digits = 4 ) )
+      }
+    }
+    last.1 <<- last.1.int
+    if ( all( last.values == 0 ) ){
+      ## I don't want to see the statistics during the initialization
+      last.1 <<- rep( 0, length( last.1 ) ) }
+    last.values <<- current
+    x.table <- data.frame( current = current, h_1 = last.1,
+                          h_2 = last.2, h_3 = last.3,
+                          row.names = c( "location", "scale",
+                                        "shape", "nllh", "AIC",
+                                        "BIC", "rlevel" ) )
+    ## Generate a html table with the 'pander' and the 'markdown'
+    ## package
+    x.html.table <- markdown::markdownToHTML(
+                                  text = pander::pandoc.table.return(
+                                                     x.table,
+                                                     style = "rmarkdown",
+                                                     split.tables = Inf ),
+                                  fragment.only = TRUE )
+    x.color.table <- color.table( x.html.table, css.colours )
+  })
+}
+
+##' @title Adds font color to a HTML table.
+##'
+##' @details In each element of the table where the font should be
+##' colored, the corresponding color has to be added via a
+##' paste( as.character( table[ x, y ] ), "#0000FF" ).
+##'
+##' @param x.html.table HTML table.
+##' @param css.colours Character vector containing the colors in hex.
+##' @param style Additional style tags for the output table.
+##'
+##' @family climex-fitting
+##' 
+##' @seealso \code{\link{pander::pandoc.table.return}} and
+##' \code{\link{markdown::markdownToHTML}}
+##'
+##' @return Same format as input.
+##' @author Philipp Mueller 
+color.table <- function( x.html.table, css.colours,
+                        style = "table-condensed table-bordered" ){
+  x.html.table.split <- stringr::str_split( x.html.table, "\n" )[[ 1 ]]
+  ids <- paste0( "\"center\"><font color='", css.colours, "'>" )
+  for ( ii in 1 : length( css.colours ) ){
+    locations <- grep( css.colours[[ ii ]], x.html.table.split )
+    x.html.table.split[ locations ] <- gsub( css.colours[ ii ],
+                                            "</font>",
+                                            x.html.table.split[
+                                                locations ],
+                                            fixed = TRUE ) 
+    x.html.table.split[ locations ] <- gsub( "\"center\">", ids[ ii ],
+                                            x.html.table.split[
+                                                locations ] ) }
+  x.html.table <- paste( x.html.table.split, collapse = "\n" )
+  Encoding( x.html.table ) <- "UTF-8"
+  return( list(
+      htmltools::tags$script( sprintf(
+                          '$( "table" ).addClass( "table %s" );',
+                          style ) ),
+      htmltools::HTML( x.html.table ) ) )
 }

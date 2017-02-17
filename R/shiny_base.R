@@ -247,131 +247,18 @@ climex.server <- function( input, output, session ){
              reactive( input$selectDataBase ), 
              reactive( input$selectDataType ),
              reactive( input$sliderThreshold ),
-             reactive( input$selectOptimization ) )  
-########################################################################
-   
-########################################################################
-################### Fitting of the GEV distribution ####################
-########################################################################
-  
-  
-########################################################################
-  
-########################################################################
-################ table containing fit statistics #######################
-########################################################################
-  ## Displaying of AIC, nllh, BIC and fitted parameters as well as
-  ## the difference to the three last fits! (and highlight positive
-  ## values with with green and negative with red)
-  last.values <- last.1 <- last.1.aux <- last.1.int <- last.2 <-
-    last.3 <- current.white <- rep( 0,  )
-  output$tableStatistics <- renderUI({
-    ## define the colour for increasing or decreasing values
-    ## >0, <0, normal
-    css.colours <- c( "#C53100",
-                     "#0D8F20" )
-    x.fit.evd <- reactive.fitting( )
-    if ( is.null( x.fit.evd ) )
-      return( NULL )
-      x.data <- reactive.extreme()
-      x.block <- x.data[[ 1 ]]
-      if ( is.null( x.block ) ){
-        ## if the initialization has not finished yet just wait a
-        ## little longer
-        return( NULL )
-      }
-      if ( input$radioEvdStatistics == "GEV" ){
-        current <- c( x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
-                     x.fit.evd$par[ 3 ],
-                     x.fit.evd$value, climex:::aic( x.fit.evd ),
-                     climex:::bic( x.fit.evd ),
-                     climex::return.level( x.fit.evd$par,
-                                          error.estimation = "none",
-                                          model = "gev" ) )
-      } else {
-        current <- c( 0, x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
-                     x.fit.evd$value, climex:::aic( x.fit.evd ),
-                     climex:::bic( x.fit.evd ),
-                     climex::return.level(
-                                 x.fit.evd,
-                                 error.estimation = "none",
-                                 model = "gpd",
-                                 threshold =
-                                   input$sliderThreshold,
-                                 total.length = x.data[[ 1 ]] ) )
-      }
-      ## negating the return level to get the correct results for
-      ## the minium
-      if ( !is.null( input$buttonMinMax ) ){
-        if ( input$buttonMinMax == "Min" &&
-             input$radioEvdStatistics == "GEV" )
-          current[ 7 ] <- ( -1 )* current[ 7 ]
-      }
-      ## history of the statistics
-      last.3 <<- last.2
-      last.2 <<- last.1
-      last.1.aux <- current - last.values
-      ## For the fitted parameters any deviation of more than 1
-      ## percent is marked red
-      for ( ll in 1 : length( x.fit.evd$par ) ){
-        if ( all ( last.1.aux == 0 ) ){
-          ## This happens right in the beginning on initialization
-          ## The following prevents the output of coloured zeros
-          last.1.int <- last.1.aux
-          break
-        } else if( abs( last.1.aux[ ll ] - current[ ll ] ) <
-                   0.01* current[ ll ] ){
-          if ( last.1.aux[ ll ] > 0 ){
-            last.1.int[ ll ] <- paste0( 
-                "+", as.character( format(  last.1.aux[ ll ],
-                                          digits = 4 ) ),
-                " ", css.colours[ 1 ] )
-          } else
-            last.1.int[ ll ] <- paste( 
-                as.character( format(  last.1.aux[ ll ], digits = 4 ) ),
-                css.colours[ 1 ] )
-        } else {
-          last.1.int[ ll ] <- paste(
-              as.character( format(  last.1.aux[ ll ], digits = 4 ) ),
-              " ", css.colours[ 2 ] ) } }
-      ## For the test statistic all changes to lower values are
-      ## marked green
-      for ( ll in ( length( x.fit.evd$par ) + 1 ) :
-               length( last.1.aux ) ){
-        if( last.1.aux[ ll ] > 0 ){
-          last.1.int[ ll ] <- paste0(
-              "+", as.character( format(  last.1.aux[ ll ],
-                                        digits = 4 ) ),
-              " ", css.colours[ 1 ] )
-        } else if ( last.1.aux[ ll ] < 0 ){
-          last.1.int[ ll ] <- paste(
-              as.character( format( last.1.aux[ ll ], digits = 4 ) ),
-              " ", css.colours[ 2 ] )
-        } else {
-          last.1.int[ ll ] <- as.character( format(  last.1.aux[ ll ],
-                                                   digits = 4 ) )
-        } }
-      last.1 <<- last.1.int
-      if ( all( last.values == 0 ) ){
-        ## I don't want to see the statistics during the initialization
-        last.1 <<- rep( 0, length( last.1 ) ) }
-      last.values <<- current
-      x.table <- data.frame( current = current, h_1 = last.1,
-                            h_2 = last.2, h_3 = last.3,
-                            row.names = c( "location", "scale",
-                                          "shape", "nllh", "AIC",
-                                          "BIC", "rlevel" ) )
-      ## generate a html table with the 'pander' and the 'markdown'
-      ## package
-      x.html.table <- markdown::markdownToHTML(
-                                    text = pander::pandoc.table.return(
-                                                       x.table,
-                                                       style =
-                                                         "rmarkdown",
-                                                       split.tables =
-                                                         Inf ),
-                                    fragment.only = TRUE )
-      x.color.table <- climex:::color.table( x.html.table, css.colours ) })
+             reactive( input$selectOptimization ) )
+  ## Table containing the fits results. Those four global variable will
+  ## store the previous results of the GEV/GP fitting. This is
+  ## unfortunately necessary in order to highlight the progress in the
+  ## table red or green.
+  last.values <<- last.1 <<- last.2 <<- last.3 <<- rep( 0,  )
+  output$generalFitStatistics <-
+    climex:::generalFitStatistics( reactive.fitting, reactive.extreme,
+                                  reactive( input$sliderThreshold ),
+                                  reactive( input$buttonMinMax ),
+                                  reactive( input$radioEvdStatistics ),
+                                  climex:::color.table )
 ########################################################################
   
 ########################################################################
@@ -851,17 +738,13 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
             id = "loadingWrapper" ) ) ),
     body = dashboardBody(
       ## shinyjs::useShinyjs(),
-      includeCSS( paste0( system.file( "climex_app",
-                                      package = "climex" ),
+      includeCSS( paste0( system.file( "climex_app", package = "climex" ),
                          "/css/climex.css" ) ),
-      includeCSS( paste0( system.file( "climex_app",
-                                      package = "climex" ),
+      includeCSS( paste0( system.file( "climex_app", package = "climex" ),
                          "/css/reset.css" ) ),
-      includeCSS( paste0( system.file( "climex_app",
-                                      package = "climex" ),
+      includeCSS( paste0( system.file( "climex_app", package = "climex" ),
                          "/css/styles.css" ) ),
-      includeCSS( paste0( system.file( "climex_app",
-                                      package = "climex" ),
+      includeCSS( paste0( system.file( "climex_app", package = "climex" ),
                          "/css/scianimator.css" ) ),
       tabItems(
         tabItem(
@@ -893,10 +776,8 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
               climex:::deseasonalizeInput(),
               climex:::generalFittingRoutineInput() ) ),
           fluidRow(
-            box( title = h2( "Results" ), width = 3,
-              background = "orange", id = "boxGevResults",
-              uiOutput( "tableStatistics", colHeaders = "provided" ) ),
-             climex:::generalTimeSeriesPlotOutput( "ts" ) ) ),
+              climex:::generalFitStatisticsTable(),
+              climex:::generalTimeSeriesPlotOutput( "ts" ) ) ),
         tabItem( tabName = "tabLikelihood",
           box( title =
               h2( "Starting points of the optimization routine" ),
