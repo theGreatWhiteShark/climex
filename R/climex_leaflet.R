@@ -433,7 +433,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
 ##' measurements should be used for the selected station. In case of the
 ##' default import of the DWD data, there are three options:
 ##' c( "Daily max. temp", "Daily min. temp", "Daily precipitation" ).
-##' Determined by menuSelectDataSource2.
+##' Determined by menuSelectDataType.
 ##' @param reactive.loading Reactive value allowing the user to load a
 ##' time series of class "xts" or "list" with "xts" as their elements
 ##' into the climex app. \code{\link{file.loading}}
