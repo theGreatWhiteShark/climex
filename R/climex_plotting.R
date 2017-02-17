@@ -319,10 +319,10 @@ generalFitPlotOutput <- function( id ){
 ##' events. Boundaries: minimal and maximal value of the deseasonalized
 ##' time series (rounded). Default: 0.8* the upper end point.
 ##' @param selectOptimization Character (select) input to determine which
-##' optimization routine/method is going to be used when fitting the maximum
-##' likelihood function of the GEV/GP distribution. The choices are given in
-##' \code{\link{generalFittingRoutineInput}} and the default value is set to
-##' "Nelder-Mead".
+##' optimization routine/method is going to be used when fitting the
+##' maximum likelihood function of the GEV/GP distribution. The choices
+##' are given in \code{\link{generalFittingRoutineInput}} and the default
+##' value is set to "Nelder-Mead".
 ##'
 ##' @family climex-plot
 ##'
