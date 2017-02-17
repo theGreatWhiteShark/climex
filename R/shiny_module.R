@@ -1,38 +1,3 @@
-##' @title Adds font color to a HTML table.
-##'
-##' @details In each element of the table where the font should be colored, the corresponding color has to be added via a paste( as.character( table[ x, y ] ), "#0000FF" ).
-##'
-##' @param x.html.table HTML table.
-##' @param css.colours Character vector containing the colors in hex.
-##' @param style Additional style tags for the output table.
-##'
-##' @seealso \code{\link{pander::pandoc.table.return}} and \code{\link{markdown::markdownToHTML}}
-##'
-##' @return Same format as input.
-##' @author Philipp Mueller 
-color.table <- function( x.html.table, css.colours,
-                        style = "table-condensed table-bordered" ){
-  x.html.table.split <- stringr::str_split( x.html.table, "\n" )[[ 1 ]]
-  ids <- paste0( "\"center\"><font color='", css.colours, "'>" )
-  for ( ii in 1 : length( css.colours ) ){
-    locations <- grep( css.colours[[ ii ]], x.html.table.split )
-    x.html.table.split[ locations ] <- gsub( css.colours[ ii ],
-                                            "</font>",
-                                            x.html.table.split[
-                                                locations ],
-                                            fixed = TRUE ) 
-    x.html.table.split[ locations ] <- gsub( "\"center\">", ids[ ii ],
-                                            x.html.table.split[
-                                                locations ] ) }
-  x.html.table <- paste( x.html.table.split, collapse = "\n" )
-  Encoding( x.html.table ) <- "UTF-8"
-  return( list(
-      htmltools::tags$script( sprintf(
-                          '$( "table" ).addClass( "table %s" );',
-                          style ) ),
-      htmltools::HTML( x.html.table ) ) )
-}
-
 ##' @title Displays the contour plots of the GEV likelihood function of a time series and the optimization routes for a bunch of provided initial points.
 ##'
 ##' @details Three orthogonal 2D plots are done for the negative log-likelihood of the GEV function intersecting in the actual result of the default optimization. Caution: An optimization only be displayed for optimization.method == 'nmk' and the trajectories will move out of the planes and so the precise position of the trajectory might be misleading. But the overall goal is to check for local minima. A bunch of images will be generated in the provided folder. Since the likelihood values cover quite some orders of magnitude they will be cut 1E3 above the minimal value. Also mind the differing height value: for a plot containing the legend (in this version of the script it is just the last one) the height value is increased to also cover the additional legend.
