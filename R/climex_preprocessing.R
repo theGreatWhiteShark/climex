@@ -294,7 +294,9 @@ extremes.interactive <- function( x.xts, buttonMinMax,
     block.mode <- "max"
   } else
     block.mode <- "min"
-  if ( is.null( radioEvdStatistics() ) ){
+  if ( is.null( radioEvdStatistics() ) ||
+       ( radioEvdStatistics() == "GEV" &&
+         is.null( sliderBlockLength() ) ) ){
     ## While initialization input$radioEvdStatistics and
     ## input$sliderBoxLength are NULL. Therefore this is the
     ## fallback default x.extreme
@@ -304,11 +306,12 @@ extremes.interactive <- function( x.xts, buttonMinMax,
     x.extreme <- climex::block( x.xts, block.length = sliderBlockLength(),
                              block.mode = block.mode )
   } else if ( radioEvdStatistics() == "GP" ){
-    ## Due to "historical" reasons the vector containing the
-    ## resulting values will still be called x.block. The
-    ## "block.mode" and the corresponding "input$buttonMinMax"
-    ## are still use full and decide if the values above or below
-    ## the threshold are going to be extracted
+    ## Since the GP can only be set in the General tab, the
+    ## input$sliderThreshold has to be initialized eventually. Just have
+    ## some more patience and throw a NULL
+    if ( is.null( sliderThreshold() ) ){
+      return( NULL )
+    }
     x.extreme <- climex::threshold( x.xts,
                                  threshold = sliderThreshold(),
                                  decluster = checkboxDecluster(),
