@@ -396,36 +396,26 @@ data.extremes <- function( reactive.selection, radioEvdStatistics,
       return( NULL )
     }
     x.xts <- reactive.selection()
-    if ( is.null( radioEvdStatistics() ) ||
-         radioEvdStatistics() == "GEV" ){
+    if ( ( is.null( radioEvdStatistics() ) ||
+           radioEvdStatistics() == "GEV" ) &&
+         ( is.null( checkboxIncompleteYears() ) ||
+           checkboxIncompleteYears() ) ) {
       ## Remove all incomplete years. Since the check boxes need some time
       ## too for updating, it can happen that after switching to "GEV"
       ## the checkboxDecluster is still equal TRUE and the time series
       ## is getting torn to pieces.
-      if ( is.null( checkboxIncompleteYears() ) ||
-           checkboxIncompleteYears() ) {
         x.clean <- cleaning.interactive( x.xts,
                                        function(){ return( TRUE ) },
                                        function(){ return( NULL ) },
                                        sliderThreshold )
-      } else {
-        x.clean <- cleaning.interactive( x.xts, 
-                                       function(){ return( FALSE ) },
-                                       function(){ return( NULL ) },
-                                       sliderThreshold )
-      }
     } else {
-      if ( is.null( checkboxDecluster() ) ||
-           is.null( sliderThreshold() ) ){
-        return( NULL )
-      }
-      ## For this one it is guaranteed for the user to be in the
-      ## General tab. so just wait until all the other stuff is
-      ## initialized.
-      x.clean <- cleaning.interactive( x.xts, checkboxIncompleteYears,
-                                      checkboxDecluster,
+      ## In case of GP fitting, do not decluster yet. This will be done
+      ## while extracting the extreme events later on.
+      x.clean <- cleaning.interactive( x.xts, 
+                                      function(){ return( FALSE ) },
+                                      function(){ return( NULL ) },
                                       sliderThreshold )
-    }           
+    }        
     x.deseasonalized <- deseasonalize.interactive(
         x.clean, selectDeseasonalize, selectDataBase )
     if ( !is.null( radioEvdStatistics() ) &&
