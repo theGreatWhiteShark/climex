@@ -39,8 +39,11 @@ values obtained by \code{\link{likelihood.initials}} will be used.
 Philipp Mueller
 }
 \seealso{
-Other climex-fitting: \code{\link{data.fitting}},
+Other climex-fitting: \code{\link{color.table}},
+  \code{\link{data.fitting}},
   \code{\link{fit.interactive}},
+  \code{\link{generalFitStatisticsTable}},
+  \code{\link{generalFitStatistics}},
   \code{\link{generalFittingRoutineInput}}
 }
 

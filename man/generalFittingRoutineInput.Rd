@@ -13,8 +13,10 @@ selectInput
 Philipp Mueller
 }
 \seealso{
-Other climex-fitting: \code{\link{data.fitting}},
-  \code{\link{data.initials}},
-  \code{\link{fit.interactive}}
+Other climex-fitting: \code{\link{color.table}},
+  \code{\link{data.fitting}}, \code{\link{data.initials}},
+  \code{\link{fit.interactive}},
+  \code{\link{generalFitStatisticsTable}},
+  \code{\link{generalFitStatistics}}
 }
 
