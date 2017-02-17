@@ -51,6 +51,7 @@ first.
 Philipp Mueller
 }
 \seealso{
-Other climex-fitting: \code{\link{generalFittingRoutineInput}}
+Other climex-fitting: \code{\link{data.fitting}},
+  \code{\link{generalFittingRoutineInput}}
 }
 

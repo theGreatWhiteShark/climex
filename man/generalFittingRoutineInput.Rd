@@ -13,6 +13,7 @@ selectInput
 Philipp Mueller
 }
 \seealso{
-Other climex-fitting: \code{\link{fit.interactive}}
+Other climex-fitting: \code{\link{data.fitting}},
+  \code{\link{fit.interactive}}
 }
 
