@@ -185,46 +185,20 @@ climex.server <- function( input, output, session ){
                  reactive( input$selectDeseasonalize ),
                  reactive( input$buttonMinMax ), reactive.selection,
                  reactive( input$selectDataBase ) )
-
-  
-  data.blocking <- reactive( {
-    ## Decides if either the GEV distribution with block maxima or
-    ## the Pareto distribution if threshold exceedance should be
-    ## considered. Import data set, cut it to the desired interval,
-    ## deseasonalize and block it
-    x.xts <- reactive.selection()
-    if ( is.null( x.xts ) ||
-         is.null( input$radioEvdStatistics ) ){
-      ## if the initialization has not finished yet just wait a
-      ## little longer
-      return( NULL )
-    }
-    if ( input$radioEvdStatistics == "GEV" ){
-      if ( is.null( input$sliderBlockLength ) )
-        return( NULL )
-    } else {
-      if ( is.null( input$sliderThreshold ) ||
-          is.null( input$checkBoxDecluster ) )
-        return( NULL )
-    }
-    x.deseasonalized <- climex:::deseasonalize.interactive(
-        x.xts, reactive( input$selectDeseasonalize ),
-        reactive( input$selectDataBase ) )
-    if ( input$radioEvdStatistics == "GP" &&
-         max( x.deseasonalized ) < input$sliderThreshold ){
-      return( NULL )
-    }
-    x.block <- climex:::extremes.interactive(
-                            x.deseasonalized,
-                            reactive( input$buttonMinMax ),
-                            reactive( input$radioEvdStatistics ),
-                            reactive( input$sliderBlockLength ),
-                            reactive( input$sliderThreshold ),
-                            reactive( input$checkBoxDecluster ) )
-    return( list( blocked.data = x.block,
-                 deseasonalized.data = x.deseasonalized,
-                 pure.data = x.xts ) ) } )
-  
+  ## Reactive value containing a list of the extracted extreme events,
+  ## the deseasonalized and pure time series. In addition, it's also
+  ## performing both the extraction and the deseasonalization
+  reactive.extreme <- climex:::data.extremes(
+                                   reactive.selection,
+                                   reactive( input$radioEvdStatistics ),
+                                   reactive( input$sliderBlockLength ),
+                                   reactive( input$sliderThreshold ),
+                                   reactive( input$checkBoxDecluster ),
+                                   climex:::deseasonalize.interactive,
+                                   reactive( input$selectDeseasonalize ),
+                                   reactive( input$selectDataBase ),
+                                   reactive( input$buttonMinMax ),
+                                   climex:::extremes.interactive )
 ########################################################################
   
 ########################################################################
@@ -235,7 +209,7 @@ climex.server <- function( input, output, session ){
   ## for the correspondig year
   reactive.values <- reactiveValues( keep.rows = NULL )
   observe( {
-    x.data <- data.blocking()
+    x.data <- reactive.extreme()
     ## use the x.block variable to update the reactive value
     ## keep.row (containing a listing of all the points of the
     ## actual time series which are used during the fitting procedure)
@@ -243,7 +217,7 @@ climex.server <- function( input, output, session ){
   }, priority = 1 ) # or else the plot functions are reached beforehand
   ## Toggle points that are clicked
   observeEvent( input$plotBlockedClick, {
-    x.block <- data.blocking()[[ 1 ]]
+    x.block <- reactive.extreme()[[ 1 ]]
     if ( is.null( x.block ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -259,7 +233,7 @@ climex.server <- function( input, output, session ){
                                      result$selected_ ) } )
   ## Toggle points that are brushed
   observeEvent( input$excludeBlockedToggle, {
-    x.block <- data.blocking()[[ 1 ]]
+    x.block <- reactive.extreme()[[ 1 ]]
     if ( is.null( x.block ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -275,7 +249,7 @@ climex.server <- function( input, output, session ){
                                      result$selected_ ) } )
   ## Reset plot
   observeEvent( input$excludeBlockedReset, {
-    x.block <- data.blocking()[[ 1 ]]
+    x.block <- reactive.extreme()[[ 1 ]]
     if ( is.null( x.block ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -312,7 +286,7 @@ climex.server <- function( input, output, session ){
     return( y.label ) }
   ## Pure time series 
   output$plotTimeSeries <- renderDygraph( {
-    x.data <- data.blocking( )
+    x.data <- reactive.extreme( )
     x.blocked <- x.data[[ 3 ]][ which( index( x.data[[ 3 ]] ) %in%
                                        index( x.data[[ 1 ]] ) ) ]
     plot.blocked <- x.data[[ 3 ]]
@@ -328,7 +302,7 @@ climex.server <- function( input, output, session ){
                strokeWidth = 0, pointSize = 2 ) } )
   ## deseasonalized time series
   output$plotDeseasonalized <- renderDygraph( {
-    x.data <- data.blocking( )
+    x.data <- reactive.extreme( )
     if ( is.null( x.data ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -349,7 +323,7 @@ climex.server <- function( input, output, session ){
                strokeWidth = 0, pointSize = 2 ) } )
   ## Using ggplot2 for an interactive excluding of points in x.block.
   output$plotBlocked <- renderPlot( {
-    x.block <- data.blocking( )[[ 1 ]]
+    x.block <- reactive.extreme( )[[ 1 ]]
     if ( is.null( x.block ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -381,7 +355,7 @@ climex.server <- function( input, output, session ){
   ## GEV|GPD fit and analysis plots
   output$plotFitEvd <- renderPlot( {
     ## Plots the result of the fitted GEV
-    x.block <- data.blocking( )[[ 1 ]]
+    x.block <- reactive.extreme( )[[ 1 ]]
     if ( is.null( x.block ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -418,7 +392,7 @@ climex.server <- function( input, output, session ){
   } )
   output$plotFitQQ <- renderPlot( {
     ## Quantile-quantile plot for fit statistics
-    x.block <- data.blocking( )[[ 1 ]]
+    x.block <- reactive.extreme( )[[ 1 ]]
     if ( is.null( x.block ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -482,7 +456,7 @@ climex.server <- function( input, output, session ){
   output$plotFitQQ2 <- renderPlot( {
     ## Quantile-quantile plot for fit statistics with samples
     ## drawn from fitted GEV
-    x.block <- data.blocking( )[[ 1 ]]
+    x.block <- reactive.extreme( )[[ 1 ]]
     if ( is.null( x.block ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -574,7 +548,7 @@ climex.server <- function( input, output, session ){
     return( gg.qq2 )        
   } )
   output$plotFitReturnLevel <- renderPlot( {
-    x.data <- data.blocking()
+    x.data <- reactive.extreme()
     x.block <- x.data[[ 1 ]]
     if ( is.null( x.block ) ){
       ## if the initialization has not finished yet just wait a
@@ -829,7 +803,7 @@ climex.server <- function( input, output, session ){
   ## For this time series it is possible to exclude individual points
   ## via clicking on them in the time series::remaining plot
   evd.fitting <- reactive( {
-    x.block <- data.blocking( )[[ 1 ]]
+    x.block <- reactive.extreme( )[[ 1 ]]
     if ( is.null( x.block ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -861,7 +835,7 @@ climex.server <- function( input, output, session ){
     x.fit.evd <- evd.fitting( )
     if ( is.null( x.fit.evd ) )
       return( NULL )
-      x.data <- data.blocking()
+      x.data <- reactive.extreme()
       x.block <- x.data[[ 1 ]]
       if ( is.null( x.block ) ){
         ## if the initialization has not finished yet just wait a
@@ -973,7 +947,7 @@ climex.server <- function( input, output, session ){
     ## Hide input when fitting the GPD
     if ( input$radioEvdStatistics == "GP" )
       return( NULL )
-    x.block <- data.blocking()[[ 1 ]]
+    x.block <- reactive.extreme()[[ 1 ]]
     if ( is.null( x.block ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -988,7 +962,7 @@ climex.server <- function( input, output, session ){
     x.fit.evd <- evd.fitting()
     if ( is.null( x.fit.evd ) )
       return( NULL )
-    x.block <- data.blocking()[[ 1 ]]
+    x.block <- reactive.extreme()[[ 1 ]]
     if ( is.null( x.block ) || is.null( input$radioEvdStatistics ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -1008,7 +982,7 @@ climex.server <- function( input, output, session ){
     x.fit.evd <- evd.fitting()
     if ( is.null( x.fit.evd ) )
       return( NULL )
-    x.block <- data.blocking()[[ 1 ]]
+    x.block <- reactive.extreme()[[ 1 ]]
     if ( is.null( x.block ) || is.null( input$radioEvdStatistics ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -1029,7 +1003,7 @@ climex.server <- function( input, output, session ){
   ## numerical inputs chosing the climex::likelihood.initials as
   ## default and a reactive vector gluing all together
   output$inputInitialLocation <- renderMenu( {
-    x.block <- data.blocking()[[ 1 ]]
+    x.block <- reactive.extreme()[[ 1 ]]
     if ( is.null( x.block ) || is.null( input$radioEvdStatistics ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -1049,7 +1023,7 @@ climex.server <- function( input, output, session ){
     numericInput( "initialLocation", "",
                  value = round( parameter.default[ 1 ], 4 ) ) } )
   output$inputInitialScale <- renderMenu( {
-    x.block <- data.blocking()[[ 1 ]]
+    x.block <- reactive.extreme()[[ 1 ]]
     if ( is.null( x.block ) || is.null( input$radioEvdStatistics ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -1070,7 +1044,7 @@ climex.server <- function( input, output, session ){
                  value = round( parameter.default[ 2 ], 4 ),
                  min = 0 ) } )
   output$inputInitialShape <- renderMenu( {
-    x.block <- data.blocking()[[ 1 ]]
+    x.block <- reactive.extreme()[[ 1 ]]
     if ( is.null( x.block ) || is.null( input$radioEvdStatistics ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -1097,7 +1071,7 @@ climex.server <- function( input, output, session ){
          is.null( input$initialShape ) ){
       ## If the sliders arn't set yet, I will just use the default
       ## values
-      x.block <- data.blocking()[[ 1 ]]
+      x.block <- reactive.extreme()[[ 1 ]]
       if ( is.null( x.block ) || is.null( input$radioEvdStatistics ) ){
         ## if the initialization has not finished yet just wait a
         ## little longer
@@ -1114,7 +1088,7 @@ climex.server <- function( input, output, session ){
                 input$initialShape ) ) } )
   cached.table.init <- NULL
   initial.parameters.likelihood <- reactive( {
-    x.block <- data.blocking()[[ 1 ]]
+    x.block <- reactive.extreme()[[ 1 ]]
     if ( is.null( x.block ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -1228,7 +1202,7 @@ climex.server <- function( input, output, session ){
   ## Displaying of the heuristic estimates for a wiser picking of
   ## the limits
   output$tableHeuristicEstimates <- renderDataTable( {
-    x.block <- data.blocking()[[ 1 ]]
+    x.block <- reactive.extreme()[[ 1 ]]
     if ( is.null( x.block ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
@@ -1293,7 +1267,7 @@ climex.server <- function( input, output, session ){
     ## Don't make the plot the first time I look at the tab
     if ( input$buttonDrawAnimation < 1 )
       return( NULL )
-      isolate( { x.block <- data.blocking()[[ 1 ]]
+      isolate( { x.block <- reactive.extreme()[[ 1 ]]
         if ( is.null( x.block ) ){
           ## if the initialization has not finished yet just wait a
           ## little longer
@@ -1387,7 +1361,7 @@ climex.server <- function( input, output, session ){
       climex:::leafletClimex, "leaflet", reactive.chosen,
       reactive( input$buttonMinMax ),
       reactive( input$radioEvdStatistics ),
-      reactive( input$sliderYears ), data.blocking,
+      reactive( input$sliderYears ), reactive.extreme,
       evd.fitting,
       reactive( input$sliderThreshold ), fit.interactive,
       climex:::cleaning.interactive, climex:::deseasonalize.interactive,

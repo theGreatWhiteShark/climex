@@ -316,3 +316,94 @@ extremes.interactive <- function( x.xts, buttonMinMax,
     return( x.block )
   }
 }
+
+##' @title Reactive value extracting the extreme event of a time series
+##' and all input.
+##' @details First this reactive value will use reactive.selection to
+##' obtain the time series it shall be working on. Afterwards it applies
+##' both deseasonalize.interactive and extremes.interactive to this time
+##' series. Finally it return the resulting extreme events as well as the
+##' deseasonalized and pure time series.
+##'
+##' @param reactive.selection Reactive value providing a time series of
+##' class 'xts'. \code{\link{data.selection}}
+##' @param radioEvdStatistics Character (radio) input determining whether
+##' the GEV or GP distribution shall be fitted to the data. Choices:
+##' c( "GEV", "GP" ), default = "GEV".
+##' @param sliderBlockLength Numerical (slider) input determining the
+##' block length used in the GEV flavor of extreme value theory. On
+##' default it is set to one year.
+##' @param sliderThreshold Numerical (slider) input determining the
+##' threshold used within the GP fit and the extraction of the extreme
+##' events. Boundaries: minimal and maximal value of the deseasonalized
+##' time series (rounded). Default: 0.8* the upper end point.
+##' @param checkBoxDecluster Logical (checkbox) input determining
+##' whether to remove all clusters in a time series and replace them by
+##' their maximal value. This box will be only available if
+##' input$radioEvdStatistics == "GP" and else will be NULL.
+##' @param deseasonalize.interactive Function used to remove seasonality
+##' from a given time series. \code{\link{deseasonalize.interactive}}
+##' @param selectDeseasonalize Character (select) input determining which
+##' deseasonalization method should be used to remove the short-range
+##' correlations from the provided time series.
+##' \code{\link{deseasonalizeInput}}
+##' @param selectDataBase Character (select) input to determine the data
+##' source. In the default installation there are three options:
+##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' provided as an argument to the call of the \code{\link{climex}}
+##' function. The second one uses the database of the German weather
+##' service (see \code{link{download.data.dwd}}). The third one allows
+##' the user to produce random numbers distributed according to the GEV
+##' or GP distribution. Determined by menuSelectDataBase.
+##' Default = "DWD".
+##' @param buttonMinMax Character (radio) input determining whether
+##' the GEV/GP distribution shall be fitted to the smallest or biggest
+##' vales. Choices: c( "Max", "Min ), default = "Max".
+##' @param extremes.interactive Function used to split a time series into
+##' blocks of equal lengths and to just extract the maximal values from
+##' then or to extract all data points above a certain threshold value.
+##' Which option is chosen depends of the radioEvdStatistic.
+##' \code{\link{extremes.interactive}}
+##'
+##' @family preprocessing
+##' 
+##' @return Reactive value containing a names list of the extracted
+##' extreme events, the deseasonalized and pure time series. All three
+##' are of class 'xts'.
+##' @author Philipp Mueller 
+data.extremes <- function( reactive.selection, radioEvdStatistics,
+                          sliderBlockLength, sliderThreshold,
+                          checkBoxDecluster, deseasonalize.interactive,
+                          selectDeseasonalize, selectDataBase,
+                          buttonMinMax, extremes.interactive ){
+  reactive( {
+    x.xts <- reactive.selection()
+    if ( is.null( x.xts ) || is.null( radioEvdStatistics() ) ){
+      ## if the initialization has not finished yet just wait a
+      ## little longer
+      return( NULL )
+    }
+    if ( ( radioEvdStatistics() == "GEV" &&
+           is.null( sliderBlockLength() ) ) ||
+         ( radioEvdStatistics() == "GP" &&
+           ( is.null( sliderThreshold() ) ||
+             is.null( checkBoxDecluster() ) ) ) ){
+        return( NULL )
+    }
+    x.deseasonalized <- deseasonalize.interactive(
+        x.xts, selectDeseasonalize, selectDataBase )
+    if ( radioEvdStatistics() == "GP" &&
+         max( x.deseasonalized ) < sliderThreshold() ){
+      ## This can happen when switching time series. A lot of things
+      ## are marked dirty and the input$sliderThreshold will be only
+      ## updated after this reactive is called
+      return( NULL )
+    }
+    x.block <- extremes.interactive(
+        x.deseasonalized, buttonMinMax, radioEvdStatistics,
+        sliderBlockLength, sliderThreshold, checkBoxDecluster )
+    return( list( blocked.data = x.block,
+                 deseasonalized.data = x.deseasonalized,
+                 pure.data = x.xts ) )
+  } )
+}
