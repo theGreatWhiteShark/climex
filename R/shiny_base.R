@@ -204,60 +204,6 @@ climex.server <- function( input, output, session ){
 ########################################################################
 ##################### Interactive stuff and auxillary functions ########
 ########################################################################
-  ## By doing this the value is temporary removed from the ts (after
-  ## removal of incomplete years) and a new extremum is calculated
-  ## for the correspondig year
-  reactive.values <- reactiveValues( keep.rows = NULL )
-  observe( {
-    x.data <- reactive.extreme()
-    ## use the x.block variable to update the reactive value
-    ## keep.row (containing a listing of all the points of the
-    ## actual time series which are used during the fitting procedure)
-    reactive.values$keep.rows <- rep( TRUE, length( x.data[[ 1 ]] ) )
-  }, priority = 1 ) # or else the plot functions are reached beforehand
-  ## Toggle points that are clicked
-  observeEvent( input$plotBlockedClick, {
-    x.block <- reactive.extreme()[[ 1 ]]
-    if ( is.null( x.block ) ){
-      ## if the initialization has not finished yet just wait a
-      ## little longer
-      ## Just a precaution but no way this point is reached before
-      ## initialization 
-      return( NULL )
-    }
-    df.block <- data.frame( date = index( x.block ),
-                           value = as.numeric( x.block ) )
-    result <- nearPoints( df.block, input$plotBlockedClick,
-                         allRows = TRUE )
-    reactive.values$keep.rows <- xor( reactive.values$keep.rows,
-                                     result$selected_ ) } )
-  ## Toggle points that are brushed
-  observeEvent( input$excludeBlockedToggle, {
-    x.block <- reactive.extreme()[[ 1 ]]
-    if ( is.null( x.block ) ){
-      ## if the initialization has not finished yet just wait a
-      ## little longer
-      ## Just a precaution but no way this point is reached before
-      ## initialization 
-      return( NULL )
-    }
-    df.block <- data.frame( date = index( x.block ),
-                           value = as.numeric( x.block ) )
-    result <- brushedPoints( df.block, input$plotBlockedBrush,
-                            allRows = TRUE )
-    reactive.values$keep.rows <- xor( reactive.values$keep.rows,
-                                     result$selected_ ) } )
-  ## Reset plot
-  observeEvent( input$excludeBlockedReset, {
-    x.block <- reactive.extreme()[[ 1 ]]
-    if ( is.null( x.block ) ){
-      ## if the initialization has not finished yet just wait a
-      ## little longer
-      ## Just a precaution but no way this point is reached before
-      ## initialization 
-      return( NULL )
-    }
-    reactive.values$keep.rows <- rep( TRUE, length( x.block ) ) } )
 ########################################################################
   
 ########################################################################
@@ -268,81 +214,19 @@ climex.server <- function( input, output, session ){
   colour.extremes <- grDevices::rgb( 1, 0.55, 0 )
   colour.ts.light <- "#7171EC"
   colour.extremes.light <- grDevices::rgb( 1, 0.9, 0.8 )
+  ## Reactive value containing a logical vector indicating which element
+  ## of reactive.extreme()[[ 1 ]] should still be used after clicking and
+  ## brushing in the extreme's gplot2 plot. In addition the plotting and
+  ## rendering of the extremes, deseasonalized and pure time series is
+  ## done in here.
+  reactive.rows <- callModule( climex:::generalTimeSeriesPlot, "ts",
+                              reactive.extreme,
+                              reactive( input$selectDataBase ),
+                              reactive( input$selectDataType ),
+                              climex:::function.get.y.label,
+                              reactive( input$radioEvdStatistics ),
+                              reactive( input$sliderThreshold ) )
   
-  ## Pure time series 
-  output$plotTimeSeries <- renderDygraph( {
-    x.data <- reactive.extreme( )
-    x.blocked <- x.data[[ 3 ]][ which( index( x.data[[ 3 ]] ) %in%
-                                       index( x.data[[ 1 ]] ) ) ]
-    plot.blocked <- x.data[[ 3 ]]
-    plot.blocked[ !index( x.data[[ 3 ]] ) %in%
-                  index( x.blocked ) ] <- NA
-    y.label <- climex:::function.get.y.label(
-                            reactive( input$selectDataBase ),
-                            reactive( input$selectDataType ) )
-    bind.dy <- cbind( x.data[[ 3 ]], plot.blocked )
-    names( bind.dy ) <- c( "pure ts", "annual maxima" )        
-    dygraph( bind.dy, ylab = y.label ) %>%
-      dySeries( "pure ts", color = colour.ts ) %>%
-      dySeries( "annual maxima", color = colour.extremes,
-               drawPoints = TRUE,
-               strokeWidth = 0, pointSize = 2 ) } )
-  ## deseasonalized time series
-  output$plotDeseasonalized <- renderDygraph( {
-    x.data <- reactive.extreme( )
-    if ( is.null( x.data ) ){
-      ## if the initialization has not finished yet just wait a
-      ## little longer
-      return( NULL )
-    }
-    x.blocked <- x.data[[ 2 ]][ which( index( x.data[[ 2 ]] ) %in%
-                                       index( x.data[[ 1 ]] ) ) ]
-    plot.blocked <- x.data[[ 2 ]]
-    plot.blocked[ !index( x.data[[ 2 ]] ) %in%
-                  index( x.blocked ) ] <- NA
-    y.label <- climex:::function.get.y.label(
-                            reactive( input$selectDataBase ),
-                            reactive( input$selectDataType ) )
-    bind.dy <- cbind( x.data[[ 2 ]], plot.blocked )
-    names( bind.dy ) <- c( "deseasonalized ts", "annual maxima" )        
-    dygraph( bind.dy, ylab = y.label ) %>%
-      dySeries( "deseasonalized ts", color = colour.ts ) %>%
-      dySeries( "annual maxima", color = colour.extremes,
-               drawPoints = TRUE,
-               strokeWidth = 0, pointSize = 2 ) } )
-  ## Using ggplot2 for an interactive excluding of points in x.block.
-  output$plotBlocked <- renderPlot( {
-    x.block <- reactive.extreme( )[[ 1 ]]
-    if ( is.null( x.block ) ){
-      ## if the initialization has not finished yet just wait a
-      ## little longer
-      return( NULL )
-    }
-    if ( input$radioEvdStatistics == "GP" &&
-         !is.null( input$sliderThreshold ) ){
-      x.block <- x.block + input$sliderThreshold
-    }
-    x.kept <- x.block[ reactive.values$keep.rows ]
-    x.excluded <- x.block[ !reactive.values$keep.rows ]
-    plot.kept <- data.frame( date = index( x.kept ),
-                            value = as.numeric( x.kept ) )
-    plot.excluded <- data.frame( date = index( x.excluded ),
-                                value = as.numeric( x.excluded ) )
-    y.label <- climex:::function.get.y.label(
-                            reactive( input$selectDataBase ),
-                            reactive( input$selectDataType ) )
-    ggplot() + geom_line( data = plot.kept, aes( x = date, y = value ),
-                         colour = colour.ts ) +
-      geom_point( data = plot.kept, aes( x = date, y = value ),
-                 colour = colour.extremes,
-                 fill = colour.extremes, size = 2, shape = 21 ) +
-      geom_point( data = plot.excluded, aes( x = date, y = value ),
-                 colour = colour.extremes,
-                 fill = "white", size = 2, shape = 21 ) +
-      ylab( y.label ) + theme_bw() +
-      theme( axis.title = element_text( size = 17, colour = colour.ts ),
-            axis.text = element_text( size = 13, colour = colour.ts ) )
-  } )
   ## GEV|GPD fit and analysis plots
   output$plotFitEvd <- renderPlot( {
     ## Plots the result of the fitted GEV
@@ -352,7 +236,7 @@ climex.server <- function( input, output, session ){
       ## little longer
       return( NULL )
     }
-    x.kept <- x.block[ reactive.values$keep.rows ]
+    x.kept <- x.block[ reactive.rows$keep.rows ]
     x.fit.evd <- evd.fitting( )
     if ( is.null( x.fit.evd ) ){
       return( NULL )
@@ -391,7 +275,7 @@ climex.server <- function( input, output, session ){
       ## little longer
       return( NULL )
     }
-    x.kept <- x.block[ reactive.values$keep.rows ]
+    x.kept <- x.block[ reactive.rows$keep.rows ]
     x.fit.evd <- evd.fitting()
     if ( is.null( x.fit.evd ) ){
       return( NULL )
@@ -455,7 +339,7 @@ climex.server <- function( input, output, session ){
       ## little longer
       return( NULL )
     }
-    x.kept <- x.block[ reactive.values$keep.rows ]
+    x.kept <- x.block[ reactive.rows$keep.rows ]
     x.fit.evd <- evd.fitting()
     if ( is.null( x.fit.evd ) ){
       return( NULL )
@@ -548,7 +432,7 @@ climex.server <- function( input, output, session ){
       ## little longer
       return( NULL )
     }
-    x.kept <- x.block[ reactive.values$keep.rows ]
+    x.kept <- x.block[ reactive.rows$keep.rows ]
     x.fit.evd <- evd.fitting()
     if ( is.null( x.fit.evd ) )
       return( NULL )
@@ -807,7 +691,7 @@ climex.server <- function( input, output, session ){
       print( "the fitting will start as soon as the initial parameters are available" )
       return( NULL )
     }
-    x.kept <- x.block[ reactive.values$keep.rows ]
+    x.kept <- x.block[ reactive.rows$keep.rows ]
     return( fit.interactive( x.kept, x.initial ) )
   } )
 ########################################################################
@@ -1484,18 +1368,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
             box( title = h2( "Results" ), width = 3,
               background = "orange", id = "boxGevResults",
               uiOutput( "tableStatistics", colHeaders = "provided" ) ),
-            tabBox( title = h2( "Time series" ),
-              selected = "Remaining", width = 9, id = "boxTimeSeries",
-              tabPanel( "Pure",
-                dygraphOutput( "plotTimeSeries", height = 250 ) ),
-              tabPanel( "Deseasonalized",
-                dygraphOutput( "plotDeseasonalized", height = 250 ) ),
-              tabPanel( "Remaining",
-                plotOutput( "plotBlocked", height = 250,
-                  click = "plotBlockedClick",
-                  brush = brushOpts( id = "plotBlockedBrush" ) ),
-                actionButton( "excludeBlockedReset", "Reset" ),
-                actionButton( "excludeBlockedToggle", "Brush" ) ) ) ) ),
+             climex:::generalTimeSeriesPlotOutput( "ts" ) ) ),
         tabItem( tabName = "tabLikelihood",
           box( title =
               h2( "Starting points of the optimization routine" ),
