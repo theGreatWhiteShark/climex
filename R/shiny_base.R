@@ -268,22 +268,7 @@ climex.server <- function( input, output, session ){
   colour.extremes <- grDevices::rgb( 1, 0.55, 0 )
   colour.ts.light <- "#7171EC"
   colour.extremes.light <- grDevices::rgb( 1, 0.9, 0.8 )
-  function.get.y.label <- function( input ){
-    if ( is.null( input$selectDataBase ) ){
-      y.label <- "temperature in °C"            
-    } else if ( input$selectDataBase == "artificial data" ){
-      y.label <- "EVD sample"
-    } else if ( input$selectDataBase == "DWD" ){
-      if ( is.null( input$selectDataType ) ){
-        y.label <- "temperature in °C"
-      } else if ( input$selectDataType == "Daily precipitation" ){
-        y.label <- "precipitation in mm"
-      } else {
-        y.label <- "temperature in °C" }
-    } else if ( input$selectDataBase == "input" ){
-      y.label <- "input"
-    }
-    return( y.label ) }
+  
   ## Pure time series 
   output$plotTimeSeries <- renderDygraph( {
     x.data <- reactive.extreme( )
@@ -292,7 +277,9 @@ climex.server <- function( input, output, session ){
     plot.blocked <- x.data[[ 3 ]]
     plot.blocked[ !index( x.data[[ 3 ]] ) %in%
                   index( x.blocked ) ] <- NA
-    y.label <- function.get.y.label( input )
+    y.label <- climex:::function.get.y.label(
+                            reactive( input$selectDataBase ),
+                            reactive( input$selectDataType ) )
     bind.dy <- cbind( x.data[[ 3 ]], plot.blocked )
     names( bind.dy ) <- c( "pure ts", "annual maxima" )        
     dygraph( bind.dy, ylab = y.label ) %>%
@@ -313,7 +300,9 @@ climex.server <- function( input, output, session ){
     plot.blocked <- x.data[[ 2 ]]
     plot.blocked[ !index( x.data[[ 2 ]] ) %in%
                   index( x.blocked ) ] <- NA
-    y.label <- function.get.y.label( input )
+    y.label <- climex:::function.get.y.label(
+                            reactive( input$selectDataBase ),
+                            reactive( input$selectDataType ) )
     bind.dy <- cbind( x.data[[ 2 ]], plot.blocked )
     names( bind.dy ) <- c( "deseasonalized ts", "annual maxima" )        
     dygraph( bind.dy, ylab = y.label ) %>%
@@ -339,7 +328,9 @@ climex.server <- function( input, output, session ){
                             value = as.numeric( x.kept ) )
     plot.excluded <- data.frame( date = index( x.excluded ),
                                 value = as.numeric( x.excluded ) )
-    y.label <- function.get.y.label( input )
+    y.label <- climex:::function.get.y.label(
+                            reactive( input$selectDataBase ),
+                            reactive( input$selectDataType ) )
     ggplot() + geom_line( data = plot.kept, aes( x = date, y = value ),
                          colour = colour.ts ) +
       geom_point( data = plot.kept, aes( x = date, y = value ),
@@ -381,7 +372,9 @@ climex.server <- function( input, output, session ){
     ## with the length of x.kept yields the number of blocks.
     gg1.bins <- ( ( ( length( x.kept ) - 1 )*100/
                     length( x.block ) )  %/% 5 )* 0.025
-    x.label <- function.get.y.label( input )
+    x.label <- climex:::function.get.y.label(
+                            reactive( input$selectDataBase ),
+                            reactive( input$selectDataType ) )
     plot( x.fit.evd, bin.factor = gg1.bins ) +
       xlab( x.label ) +
       theme( legend.position = "none" ) +
