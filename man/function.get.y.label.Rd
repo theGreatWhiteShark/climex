@@ -34,4 +34,8 @@ considered. For artificial data the label will be "temperature".
 \author{
 Philipp Mueller
 }
+\seealso{
+Other climex-plot: \code{\link{generalTimeSeriesPlotOutput}},
+  \code{\link{generalTimeSeriesPlot}}
+}
 
