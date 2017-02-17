@@ -81,13 +81,13 @@ leafletClimexUI <- function( id ){
 ##' length (in years) of the time series to be displayed. Minimal value
 ##' is 0 and maximal is 155 (longest one in the DWD database), the
 ##' default value is 65 and the step width is 1.
-##' @param data.blocking Reactive value returning a list containing three
-##' elements: 1. the blocked time series, 2. the deseasonalized time
+##' @param reactive.extreme Reactive value returning a list containing
+##' three elements: 1. the blocked time series, 2. the deseasonalized time
 ##' series, and 3. the pure time series.   
-##' @param evd.fitting Reactive value containing the results of the fit
-##' (\code{\link{fit.gev}} or \code{\link{fit.gpd}} depending on
+##' @param reactive.fitting Reactive value containing the results of the
+##' fit (\code{\link{fit.gev}} or \code{\link{fit.gpd}} depending on
 ##' radioEvdStatistic) to the blocked time series in
-##' data.blocking()[[ 1 ]].
+##' reactive.extreme()[[ 1 ]].
 ##' @param sliderThreshold Numerical (slider) input determining the
 ##' threshold used within the GP fit and the extraction of the extreme
 ##' events. Boundaries: minimal and maximal value of the deseasonalized
@@ -133,7 +133,7 @@ leafletClimexUI <- function( id ){
 ##' @author Philipp Mueller 
 leafletClimex <- function( input, output, session, reactive.chosen,
                           buttonMinMax, radioEvdStatistics,
-                          sliderYears, data.blocking, evd.fitting,
+                          sliderYears, reactive.extreme, reactive.fitting,
                           sliderThreshold, fit.interactive,
                           cleaning.interactive,
                           deseasonalize.interactive,
@@ -330,8 +330,8 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                  icon = red.icon, lng = ~longitude,
                  lat = ~latitude )
     ## calculate the GEV fit and various return levels
-    x.fit.gev <- evd.fitting()
-    x.data <- data.blocking()
+    x.fit.gev <- reactive.fitting()
+    x.data <- reactive.extreme()
     if ( is.null( x.fit.gev ) )
       return( NULL )
     if ( radioEvdStatistics() == "GEV" ){

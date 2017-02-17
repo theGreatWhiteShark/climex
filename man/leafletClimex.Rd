@@ -6,10 +6,11 @@
 information.}
 \usage{
 leafletClimex(input, output, session, reactive.chosen, buttonMinMax,
-  radioEvdStatistics, sliderYears, data.blocking, evd.fitting, sliderThreshold,
-  fit.interactive, cleaning.interactive, deseasonalize.interactive,
-  extremes.interactive, selectDataSource, checkBoxIncompleteYears,
-  checkBoxDecluster, selectDeseasonalize, sliderBlockLength)
+  radioEvdStatistics, sliderYears, reactive.extreme, reactive.fitting,
+  sliderThreshold, fit.interactive, cleaning.interactive,
+  deseasonalize.interactive, extremes.interactive, selectDataSource,
+  checkBoxIncompleteYears, checkBoxDecluster, selectDeseasonalize,
+  sliderBlockLength)
 }
 \arguments{
 \item{input}{Namespace input. For more details check out
@@ -35,14 +36,14 @@ length (in years) of the time series to be displayed. Minimal value
 is 0 and maximal is 155 (longest one in the DWD database), the
 default value is 65 and the step width is 1.}
 
-\item{data.blocking}{Reactive value returning a list containing three
-elements: 1. the blocked time series, 2. the deseasonalized time
+\item{reactive.extreme}{Reactive value returning a list containing
+three elements: 1. the blocked time series, 2. the deseasonalized time
 series, and 3. the pure time series.}
 
-\item{evd.fitting}{Reactive value containing the results of the fit
-(\code{\link{fit.gev}} or \code{\link{fit.gpd}} depending on
+\item{reactive.fitting}{Reactive value containing the results of the
+fit (\code{\link{fit.gev}} or \code{\link{fit.gpd}} depending on
 radioEvdStatistic) to the blocked time series in
-data.blocking()[[ 1 ]].}
+reactive.extreme()[[ 1 ]].}
 
 \item{sliderThreshold}{Numerical (slider) input determining the
 threshold used within the GP fit and the extraction of the extreme
