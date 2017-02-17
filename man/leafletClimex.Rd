@@ -89,6 +89,16 @@ correlations from the provided time series.
 \item{sliderBlockLength}{Numerical (slider) input determining the
 block length used in the GEV flavor of extreme value theory. On
 default it is set to one year.}
+
+\item{selectOptimization}{Character (select) input to determine which
+optimization routine/method is going to be used when fitting the maximum
+likelihood function of the GEV/GP distribution. The choices are given in
+\code{\link{generalFittingRoutineInput}} and the default value is set to
+"Nelder-Mead".}
+
+\item{checkBoxRerun}{Logical (checkbox) input from the Likelihood tab.
+It determines whether or not to start the optimization at the results
+of the first run again to escape local minima.}
 }
 \value{
 Reactive value holding the selected station.
