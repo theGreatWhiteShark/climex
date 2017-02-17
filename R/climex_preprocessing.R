@@ -297,11 +297,11 @@ extremes.interactive <- function( x.xts, buttonMinMax,
   if ( is.null( radioEvdStatistics() ) ){
     ## While initialization input$radioEvdStatistics and
     ## input$sliderBoxLength are NULL. Therefore this is the
-    ## fallback default x.block
-    x.block <- climex::block( x.xts, separation.mode = "years",
+    ## fallback default x.extreme
+    x.extreme <- climex::block( x.xts, separation.mode = "years",
                              block.mode = block.mode )
   } else if ( radioEvdStatistics() == "GEV" ){
-    x.block <- climex::block( x.xts, block.length = sliderBlockLength(),
+    x.extreme <- climex::block( x.xts, block.length = sliderBlockLength(),
                              block.mode = block.mode )
   } else if ( radioEvdStatistics() == "GP" ){
     ## Due to "historical" reasons the vector containing the
@@ -309,11 +309,11 @@ extremes.interactive <- function( x.xts, buttonMinMax,
     ## "block.mode" and the corresponding "input$buttonMinMax"
     ## are still use full and decide if the values above or below
     ## the threshold are going to be extracted
-    x.block <- climex::threshold( x.xts,
+    x.extreme <- climex::threshold( x.xts,
                                  threshold = sliderThreshold(),
                                  decluster = checkBoxDecluster(),
                                  na.rm = TRUE )
-    return( x.block )
+    return( x.extreme )
   }
 }
 
@@ -383,26 +383,20 @@ data.extremes <- function( reactive.selection, radioEvdStatistics,
       ## little longer
       return( NULL )
     }
-    if ( ( radioEvdStatistics() == "GEV" &&
-           is.null( sliderBlockLength() ) ) ||
-         ( radioEvdStatistics() == "GP" &&
-           ( is.null( sliderThreshold() ) ||
-             is.null( checkBoxDecluster() ) ) ) ){
-        return( NULL )
-    }
     x.deseasonalized <- deseasonalize.interactive(
         x.xts, selectDeseasonalize, selectDataBase )
-    if ( radioEvdStatistics() == "GP" &&
+    if ( !is.null( radioEvdStatistics() ) &&
+         !is.null( sliderThreshold() ) && radioEvdStatistics() == "GP" &&
          max( x.deseasonalized ) < sliderThreshold() ){
       ## This can happen when switching time series. A lot of things
       ## are marked dirty and the input$sliderThreshold will be only
       ## updated after this reactive is called
       return( NULL )
     }
-    x.block <- extremes.interactive(
+    x.extreme <- extremes.interactive(
         x.deseasonalized, buttonMinMax, radioEvdStatistics,
         sliderBlockLength, sliderThreshold, checkBoxDecluster )
-    return( list( blocked.data = x.block,
+    return( list( blocked.data = x.extreme,
                  deseasonalized.data = x.deseasonalized,
                  pure.data = x.xts ) )
   } )
