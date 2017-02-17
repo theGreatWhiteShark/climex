@@ -40,7 +40,8 @@ the corresponding checkbox is checked.
 Philipp Mueller
 }
 \seealso{
-Other preprocessing: \code{\link{deseasonalize.interactive}},
+Other preprocessing: \code{\link{data.extremes}},
+  \code{\link{deseasonalize.interactive}},
   \code{\link{deseasonalizeInput}},
   \code{\link{extremes.interactive}},
   \code{\link{generalExtremeExtractionInput}},

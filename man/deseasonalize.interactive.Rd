@@ -33,6 +33,7 @@ Philipp Mueller
 }
 \seealso{
 Other preprocessing: \code{\link{cleaning.interactive}},
+  \code{\link{data.extremes}},
   \code{\link{deseasonalizeInput}},
   \code{\link{extremes.interactive}},
   \code{\link{generalExtremeExtractionInput}},
