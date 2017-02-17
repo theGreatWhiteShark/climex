@@ -414,11 +414,11 @@ leafletClimex <- function( input, output, session, reactive.chosen,
         station.name <- station.name.sidebar
         station.name.previous <<- station.name.sidebar
       } else {
-        ## Since station.name.previous is supposed to be set to
-        ## "Potsdam" during initialization and the user can't choose
-        ## something in the sidebar and click on the map at the same
-        ## time, this should not be happening.
-        stop( "None of the station names fit the previous selection" )
+        ## If none of the station names are matching, the user most
+        ## probably switched the station more than one time using the
+        ## sidebar.
+        station.name <- station.name.sidebar
+        station.name.previous <<- station.name.sidebar
       }
     }
     return( station.name )
