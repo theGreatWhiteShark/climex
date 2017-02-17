@@ -12,4 +12,7 @@ selectInput
 \author{
 Philipp Mueller
 }
+\seealso{
+Other climex-fitting: \code{\link{fit.interactive}}
+}
 
