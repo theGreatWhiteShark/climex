@@ -58,8 +58,7 @@ of the time series provided by \code{\link{data.extremes}} to use after
 clicking and brushing.
 }
 \details{
-This function provides the ouput to
-\code{\link{generalTimeSeriesPlot}}. Both the pure time series and the
+Both the pure time series and the
 deseasonalized one are rendered using the dygraphs package. The extreme
 events are rendered using the ggplot2 package. For the later one
 clicking or brushing points enables the user to exclude them. This is
@@ -70,6 +69,8 @@ Philipp Mueller
 }
 \seealso{
 Other climex-plot: \code{\link{function.get.y.label}},
+  \code{\link{generalFitPlotOutput}},
+  \code{\link{generalFitPlot}},
   \code{\link{generalTimeSeriesPlotOutput}}
 }
 

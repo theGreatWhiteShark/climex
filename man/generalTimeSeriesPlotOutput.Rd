@@ -24,6 +24,8 @@ Philipp Mueller
 }
 \seealso{
 Other climex-plot: \code{\link{function.get.y.label}},
+  \code{\link{generalFitPlotOutput}},
+  \code{\link{generalFitPlot}},
   \code{\link{generalTimeSeriesPlot}}
 }
 
