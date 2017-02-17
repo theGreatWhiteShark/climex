@@ -14,6 +14,7 @@ Philipp Mueller
 }
 \seealso{
 Other climex-fitting: \code{\link{data.fitting}},
+  \code{\link{data.initials}},
   \code{\link{fit.interactive}}
 }
 

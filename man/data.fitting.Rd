@@ -4,7 +4,7 @@
 \alias{data.fitting}
 \title{Reactive value performing the GEV/GP fit.}
 \usage{
-data.fitting(reactive.extreme, initial.parameters, reactive.rows,
+data.fitting(reactive.extreme, reactive.initials, reactive.rows,
   fit.interactive, radioEvdStatistics, selectOptimization, buttonMinMax,
   checkboxRerun, sliderThreshold)
 }
@@ -12,10 +12,6 @@ data.fitting(reactive.extreme, initial.parameters, reactive.rows,
 \item{reactive.extreme}{Reactive value returning a list containing
 three elements: 1. the blocked time series, 2. the deseasonalized time
 series, and 3. the pure time series.}
-
-\item{initial.parameters}{Reactive value holding the initial parameters
-to start the time series fit at. \code{\link{data.initial}}. Those can
-be specified in the top right box of the Likelihood tab.}
 
 \item{reactive.rows}{Reactive value holding a logical vector indicating
 which values of the time series provided by \code{\link{data.extremes}}
@@ -46,6 +42,10 @@ of the first run again to escape local minima.}
 threshold used within the GP fit and the extraction of the extreme
 events. Boundaries: minimal and maximal value of the deseasonalized
 time series (rounded). Default: 0.8* the upper end point.}
+
+\item{reactive.initial}{Reactive value holding the initial parameters
+to start the time series fit at. \code{\link{data.initials}}. Those can
+be specified in the top right box of the Likelihood tab.}
 }
 \value{
 Reactive value holding a fitted object of class
@@ -61,7 +61,8 @@ removed.
 Philipp Mueller
 }
 \seealso{
-Other climex-fitting: \code{\link{fit.interactive}},
+Other climex-fitting: \code{\link{data.initials}},
+  \code{\link{fit.interactive}},
   \code{\link{generalFittingRoutineInput}}
 }
 
