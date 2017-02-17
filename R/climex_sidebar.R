@@ -307,7 +307,7 @@ sidebarCleaning <- function( radioEvdStatistics ){
     ## to occure due to short range correlations. This has to be
     ## avoided by using declustering algorithms (which mainly picks
     ## the maximum of a specific cluster)
-    if ( !is.null( radioEvdStatistics() ) ||
+    if ( is.null( radioEvdStatistics() ) ||
          radioEvdStatistics() == "GEV" ){
       checkboxInput( "checkBoxIncompleteYears",
                     "Remove incomplete years", TRUE )
