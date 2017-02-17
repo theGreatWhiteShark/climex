@@ -171,3 +171,73 @@ fit.interactive <- function( x.kept, x.initial = NULL,
   }
   return( x.fit.evd )
 }
+
+## Fitting of the time series selected via a click on the map or
+  ## the select form in the sidebar.
+  ## For this time series it is possible to exclude individual points
+## via clicking on them in the time series::remaining plot
+##' @title Reactive value performing the GEV/GP fit.
+##' @details The fit is performed using the fit.interactive function. Using
+##' the reactive.rows input specific points of the time series can be
+##' removed.
+##'
+##' @param reactive.extreme Reactive value returning a list containing
+##' three elements: 1. the blocked time series, 2. the deseasonalized time
+##' series, and 3. the pure time series.
+##' @param initial.parameters Reactive value holding the initial parameters
+##' to start the time series fit at. \code{\link{data.initial}}. Those can
+##' be specified in the top right box of the Likelihood tab.
+##' @param reactive.rows Reactive value holding a logical vector indicating
+##' which values of the time series provided by \code{\link{data.extremes}}
+##' to use after clicking and brushing.
+##' @param fit.interactive Function used to perform the actual GEV/GP
+##' fit. \code{\link{fit.interactive}}
+##' @param radioEvdStatistics Character (radio) input determining whether
+##' the GEV or GP distribution shall be fitted to the data. Choices:
+##' c( "GEV", "GP" ), default = "GEV".
+##' @param selectOptimization Character (select) input to determine which
+##' optimization routine/method is going to be used when fitting the
+##' maximum likelihood function of the GEV/GP distribution. The choices
+##' are given in \code{\link{generalFittingRoutineInput}} and the default
+##' value is set to "Nelder-Mead".
+##' @param buttonMinMax Character (radio) input determining whether
+##' the GEV/GP distribution shall be fitted to the smallest or biggest
+##' vales. Choices: c( "Max", "Min ), default = "Max".
+##' @param checkboxRerun Logical (checkbox) input from the Likelihood tab.
+##' It determines whether or not to start the optimization at the results
+##' of the first run again to escape local minima.
+##' @param sliderThreshold Numerical (slider) input determining the
+##' threshold used within the GP fit and the extraction of the extreme
+##' events. Boundaries: minimal and maximal value of the deseasonalized
+##' time series (rounded). Default: 0.8* the upper end point.
+##' 
+##' @import shiny
+##'
+##' @family climex-fitting
+##'
+##' @return Reactive value holding a fitted object of class
+##' 'climex.fit.gev' or 'climex.fit.gpd', depending on the choice of
+##' input$radioEvdStatistics
+##' @author Philipp Mueller 
+data.fitting <- function( reactive.extreme, initial.parameters,
+                         reactive.rows, fit.interactive,
+                         radioEvdStatistics, selectOptimization,
+                         buttonMinMax, checkboxRerun, sliderThreshold ){
+  reactive( {
+    if ( is.null( reactive.extreme() ) ||
+         is.null( initial.parameters() ) ||
+         is.null( reactive.rows ) ){
+      return( NULL )
+    }
+    x.extreme <- reactive.extreme()[[ 1 ]]
+    x.initial <- initial.parameters()
+    ## Removing all points marked by clicking or brushing in the ggplot2
+    ## plot of the extreme events in the bottom right box in the General
+    ## tab
+    x.kept <- x.extreme[ reactive.rows$keep.rows ]
+    return( fit.interactive( x.kept, x.initial, radioEvdStatistics,
+                            selectOptimization, buttonMinMax,
+                            checkboxRerun,
+                            sliderThreshold ) )
+  } )
+}

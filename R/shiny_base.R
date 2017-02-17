@@ -199,6 +199,18 @@ climex.server <- function( input, output, session ){
                                    reactive( input$selectDataBase ),
                                    reactive( input$buttonMinMax ),
                                    climex:::extremes.interactive )
+  ## Reactive value performing the GEV/GP fit to the selected time series
+  ## and providing the fitted object of class 'climex.fit.gev' or
+  ## 'climex.fit.gpd'.
+  reactive.fitting <- climex:::data.fitting(
+                                   reactive.extreme, initial.parameters,
+                                   reactive.rows,
+                                   climex:::fit.interactive,
+                                   reactive( input$radioEvdStatistics ),
+                                   reactive( input$selectOptimization ),
+                                   reactive( input$buttonMinMax ),
+                                   reactive( input$checkboxRerun ),
+                                   reactive( input$sliderThreshold ) )
 ########################################################################
   
 ########################################################################
@@ -220,7 +232,8 @@ climex.server <- function( input, output, session ){
   ## Plotting of the fitted distribution and the corresponding PP, QQ
   ## and return level goodness-of-fit plots.
   callModule( climex:::generalFitPlot, "fit", reactive.extreme,
-             reactive.rows, evd.fitting, reactive( input$buttonMinMax ),
+             reactive.rows, reactive.fitting,
+             reactive( input$buttonMinMax ),
              reactive( input$radioEvdStatistics ),
              climex:::function.get.y.label,
              reactive( input$selectDataBase ), 
@@ -233,31 +246,7 @@ climex.server <- function( input, output, session ){
 ################### Fitting of the GEV distribution ####################
 ########################################################################
   
-  ## Fitting of the time series selected via a click on the map or
-  ## the select form in the sidebar.
-  ## For this time series it is possible to exclude individual points
-  ## via clicking on them in the time series::remaining plot
-  evd.fitting <- reactive( {
-    x.block <- reactive.extreme( )[[ 1 ]]
-    if ( is.null( x.block ) ){
-      ## if the initialization has not finished yet just wait a
-      ## little longer
-      return( NULL )
-    }
-    x.initial <- initial.parameters()
-    if ( is.null( x.initial ) ){
-      print( "the fitting will start as soon as the initial parameters are available" )
-      return( NULL )
-    }
-    x.kept <- x.block[ reactive.rows$keep.rows ]
-    return( climex:::fit.interactive(
-                         x.kept, x.initial,
-                         reactive( input$radioEvdStatistics ),
-                         reactive( input$selectOptimization ),
-                         reactive( input$buttonMinMax ),
-                         reactive( input$checkboxRerun ),
-                         reactive( input$sliderThreshold ) ) )
-  } )
+  
 ########################################################################
   
 ########################################################################
@@ -273,7 +262,7 @@ climex.server <- function( input, output, session ){
     ## >0, <0, normal
     css.colours <- c( "#C53100",
                      "#0D8F20" )
-    x.fit.evd <- evd.fitting( )
+    x.fit.evd <- reactive.fitting( )
     if ( is.null( x.fit.evd ) )
       return( NULL )
       x.data <- reactive.extreme()
@@ -382,7 +371,7 @@ climex.server <- function( input, output, session ){
 ########################################################################
   ## Fitting the MLE again with the algorithm of choice
   output$menuSliderLocationLim <- renderMenu( {
-    x.fit.evd <- evd.fitting()
+    x.fit.evd <- reactive.fitting()
     if ( is.null( x.fit.evd ) )
       return( NULL )
     ## Hide input when fitting the GPD
@@ -400,7 +389,7 @@ climex.server <- function( input, output, session ){
                 c( round( x.fit.evd$par[ 1 ], 1 ) - 5,
                   round( x.fit.evd$par[ 1 ], 1 ) + 5 ) ) } )
   output$menuSliderScaleLim <- renderMenu( {
-    x.fit.evd <- evd.fitting()
+    x.fit.evd <- reactive.fitting()
     if ( is.null( x.fit.evd ) )
       return( NULL )
     x.block <- reactive.extreme()[[ 1 ]]
@@ -420,7 +409,7 @@ climex.server <- function( input, output, session ){
                 c( round( max( 0, x.fit.evd.scale - 5 ), 1 ),
                   round( x.fit.evd.scale, 1 ) + 5 ) ) } )
   output$menuSliderShapeLim <- renderMenu( {
-    x.fit.evd <- evd.fitting()
+    x.fit.evd <- reactive.fitting()
     if ( is.null( x.fit.evd ) )
       return( NULL )
     x.block <- reactive.extreme()[[ 1 ]]
@@ -537,7 +526,7 @@ climex.server <- function( input, output, session ){
     }
     x.initial <- initial.parameters()
     input$tableDrawPoints
-    x.fit.evd <- evd.fitting()
+    x.fit.evd <- reactive.fitting()
     par.init <- x.fit.evd$par
     if ( input$radioEvdStatistics == "GEV" ){
       model <- "gev"
@@ -649,7 +638,7 @@ climex.server <- function( input, output, session ){
       ## little longer
       return( NULL )
     }
-    x.fit.evd <- evd.fitting()
+    x.fit.evd <- reactive.fitting()
     if ( input$radioEvdStatistics == "GEV" ){
       model <- "gev"
     } else {
@@ -803,14 +792,16 @@ climex.server <- function( input, output, session ){
       reactive( input$buttonMinMax ),
       reactive( input$radioEvdStatistics ),
       reactive( input$sliderYears ), reactive.extreme,
-      evd.fitting,
+      reactive.fitting,
       reactive( input$sliderThreshold ), climex:::fit.interactive,
       climex:::cleaning.interactive, climex:::deseasonalize.interactive,
       climex:::extremes.interactive, reactive( input$selectDataSource ),
       reactive( input$checkBoxIncompleteYears ),
       reactive( input$checkBoxDecluster ),
       reactive( input$selectDeseasonalize ),
-      reactive( input$sliderBlockLength ) )
+      reactive( input$sliderBlockLength ),
+      reactive( input$selectOptimization ),
+      reactive( input$checkboxRerun ) )
 }
 
 ##' @title The user interface for the \code{\link{climex}} function.
