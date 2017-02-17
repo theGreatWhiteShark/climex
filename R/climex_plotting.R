@@ -150,6 +150,9 @@ generalTimeSeriesPlot <- function( input, output, session,
   reactive.rows <- reactiveValues( keep.rows = NULL )
   observe( {
     x.data <- reactive.extreme()
+    if ( is.null( x.data ) ){
+      return( NULL )
+    }
     ## use the x.extreme variable to update the reactive value
     ## keep.row (containing a listing of all the points of the
     ## actual time series which are used during the fitting procedure)

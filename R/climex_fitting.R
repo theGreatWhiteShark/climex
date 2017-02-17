@@ -226,7 +226,7 @@ data.fitting <- function( reactive.extreme, reactive.initials,
   reactive( {
     if ( is.null( reactive.extreme() ) ||
          is.null( reactive.initials() ) ||
-         is.null( reactive.rows ) ){
+         is.null( reactive.rows$keep.rows ) ){
       return( NULL )
     }
     x.extreme <- reactive.extreme()[[ 1 ]]
@@ -234,6 +234,14 @@ data.fitting <- function( reactive.extreme, reactive.initials,
     ## Removing all points marked by clicking or brushing in the ggplot2
     ## plot of the extreme events in the bottom right box in the General
     ## tab
+    if ( length( reactive.rows$keep.rows ) != length( x.extreme ) ){
+      ## Sometime, when switching between time series, the updating of
+      ## reactive.rows needs longer/is evaluated at a later step.
+      ## Therefore its length does not correspond to the selected time
+      ## series anymore. In such a case, just return NULL and wait for
+      ## the next round (updating reactive.rows)
+      return( NULL )
+    }        
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
     return( fit.interactive( x.kept, x.initial, radioEvdStatistics,
                             selectOptimization, buttonMinMax,
