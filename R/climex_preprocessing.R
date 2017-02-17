@@ -102,11 +102,11 @@ generalExtremeExtraction <- function( radioEvdStatistics,
 ##' the corresponding checkbox is checked.
 ##'
 ##' @param x.xts Time series of class 'xts' which has to be cleaned.
-##' @param checkBoxIncompleteYears Logical (checkbox) input determining
+##' @param checkboxIncompleteYears Logical (checkbox) input determining
 ##' whether to remove all incomplete years of a time series. This box
 ##' will be only available if input$radioEvdStatistics == "GEV" and else
 ##' will be NULL.
-##' @param checkBoxDecluster Logical (checkbox) input determining
+##' @param checkboxDecluster Logical (checkbox) input determining
 ##' whether to remove all clusters in a time series and replace them by
 ##' their maximal value. This box will be only available if
 ##' input$radioEvdStatistics == "GP" and else will be NULL.
@@ -120,17 +120,17 @@ generalExtremeExtraction <- function( radioEvdStatistics,
 ##'
 ##' @return Time series of class 'xts'.
 ##' @author Philipp Mueller 
-cleaning.interactive <- function( x.xts, checkBoxIncompleteYears,
-                                 checkBoxDecluster, sliderThreshold ){
+cleaning.interactive <- function( x.xts, checkboxIncompleteYears,
+                                 checkboxDecluster, sliderThreshold ){
     x.xts[ which( is.na( x.xts ) ) ] <- NaN
     x.xts[ which( x.xts == -999 ) ] <- NaN
-    if ( !is.null( checkBoxIncompleteYears() ) &&
-         checkBoxIncompleteYears() ){
+    if ( !is.null( checkboxIncompleteYears() ) &&
+         checkboxIncompleteYears() ){
         ## Remove all incomplete years from time series
       x.xts <- climex::remove.incomplete.years( x.xts )
     }
-    if ( !is.null( checkBoxDecluster() ) &&
-         checkBoxDecluster() ){
+    if ( !is.null( checkboxDecluster() ) &&
+         checkboxDecluster() ){
       x.xts <- climex::decluster( x.xts, sliderThreshold() )
     }
     if ( any( is.nan( x.xts ) ) )
@@ -277,7 +277,7 @@ deseasonalize.interactive <- function( x.xts, selectDeseasonalize,
 ##' threshold used within the GP fit and the extraction of the extreme
 ##' events. Boundaries: minimal and maximal value of the deseasonalized
 ##' time series (rounded). Default: 0.8* the upper end point.
-##' @param checkBoxDecluster Logical (checkbox) input determining
+##' @param checkboxDecluster Logical (checkbox) input determining
 ##' whether to remove all clusters in a time series and replace them by
 ##' their maximal value. This box will be only available if
 ##' input$radioEvdStatistics == "GP" and else will be NULL.
@@ -288,7 +288,7 @@ deseasonalize.interactive <- function( x.xts, selectDeseasonalize,
 ##' @author Philipp Mueller 
 extremes.interactive <- function( x.xts, buttonMinMax,
                                  radioEvdStatistics, sliderBlockLength,
-                                 sliderThreshold, checkBoxDecluster ){
+                                 sliderThreshold, checkboxDecluster ){
   ## Toggle if maxima of minima are going to be used
   if ( is.null( buttonMinMax() ) || buttonMinMax() == "Max" ){
     block.mode <- "max"
@@ -311,7 +311,7 @@ extremes.interactive <- function( x.xts, buttonMinMax,
     ## the threshold are going to be extracted
     x.extreme <- climex::threshold( x.xts,
                                  threshold = sliderThreshold(),
-                                 decluster = checkBoxDecluster(),
+                                 decluster = checkboxDecluster(),
                                  na.rm = TRUE )
     return( x.extreme )
   }
@@ -337,7 +337,7 @@ extremes.interactive <- function( x.xts, buttonMinMax,
 ##' threshold used within the GP fit and the extraction of the extreme
 ##' events. Boundaries: minimal and maximal value of the deseasonalized
 ##' time series (rounded). Default: 0.8* the upper end point.
-##' @param checkBoxDecluster Logical (checkbox) input determining
+##' @param checkboxDecluster Logical (checkbox) input determining
 ##' whether to remove all clusters in a time series and replace them by
 ##' their maximal value. This box will be only available if
 ##' input$radioEvdStatistics == "GP" and else will be NULL.
@@ -373,7 +373,7 @@ extremes.interactive <- function( x.xts, buttonMinMax,
 ##' @author Philipp Mueller 
 data.extremes <- function( reactive.selection, radioEvdStatistics,
                           sliderBlockLength, sliderThreshold,
-                          checkBoxDecluster, deseasonalize.interactive,
+                          checkboxDecluster, deseasonalize.interactive,
                           selectDeseasonalize, selectDataBase,
                           buttonMinMax, extremes.interactive ){
   reactive( {
@@ -395,7 +395,7 @@ data.extremes <- function( reactive.selection, radioEvdStatistics,
     }
     x.extreme <- extremes.interactive(
         x.deseasonalized, buttonMinMax, radioEvdStatistics,
-        sliderBlockLength, sliderThreshold, checkBoxDecluster )
+        sliderBlockLength, sliderThreshold, checkboxDecluster )
     return( list( blocked.data = x.extreme,
                  deseasonalized.data = x.deseasonalized,
                  pure.data = x.xts ) )

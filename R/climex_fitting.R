@@ -37,7 +37,7 @@ generalFittingRoutineInput <- function(){
 ##' @param buttonMinMax Character (radio) input determining whether
 ##' the GEV/GP distribution shall be fitted to the smallest or biggest
 ##' vales. Choices: c( "Max", "Min ), default = "Max".
-##' @param checkBoxRerun Logical (checkbox) input from the Likelihood tab.
+##' @param checkboxRerun Logical (checkbox) input from the Likelihood tab.
 ##' It determines whether or not to start the optimization at the results
 ##' of the first run again to escape local minima.
 ##' @param sliderThreshold Numerical (slider) input determining the
@@ -52,7 +52,7 @@ generalFittingRoutineInput <- function(){
 ##' @author Philipp Mueller 
 fit.interactive <- function( x.kept, x.initial = NULL,
                             radioEvdStatistics, selectOptimization,
-                            buttonMinMax, checkBoxRerun, sliderThreshold ){
+                            buttonMinMax, checkboxRerun, sliderThreshold ){
   ## Don't wait for initialization here or the summary statistic table in
   ## the leaflet tab will be only available after switching to the General
   ## tab and back.
@@ -98,27 +98,27 @@ fit.interactive <- function( x.kept, x.initial = NULL,
     x.fit.evd <- suppressWarnings( switch(
         selectOptimization(),
         "Nelder-Mead" = climex::fit.gev( x.kept, initial = x.initial,
-                                        rerun = checkBoxRerun(),
+                                        rerun = checkboxRerun(),
                                         method = "Nelder-Mead",
                                         error.estimation = "none" ),
         "CG" = climex::fit.gev( x.kept, initial = x.initial,
-                               rerun = checkBoxRerun(),
+                               rerun = checkboxRerun(),
                                method = "CG", error.estimation = "none" ),
         "BFGS" = climex::fit.gev( x.kept, initial = x.initial,
-                                 rerun = checkBoxRerun(),
+                                 rerun = checkboxRerun(),
                                  method = "BFGS",
                                  error.estimation = "none" ),
         "SANN" = climex::fit.gev( x.kept, initial = x.initial,
-                                 rerun = checkBoxRerun(),
+                                 rerun = checkboxRerun(),
                                  method = "SANN",
                                  error.estimation = "none" ),
         "dfoptim::nmk" = climex::fit.gev( x.kept, initial = x.initial,
-                                         rerun = checkBoxRerun(),
+                                         rerun = checkboxRerun(),
                                          method = "nmk",
                                          error.estimation = "none" ),
         NULL = climex::fit.gev( x.kept, initial = x.initial,
                                method = "Nelder-Mead",
-                               rerun = checkBoxRerun(),
+                               rerun = checkboxRerun(),
                                error.estimation = "none" ) ) ) 
   } else {
     ## Fits of GPD parameters to blocked data set
@@ -135,32 +135,32 @@ fit.interactive <- function( x.kept, x.initial = NULL,
         selectOptimization(),
         "Nelder-Mead" = climex::fit.gpd( x.kept, initial = x.initial,
                                         threshold = threshold,
-                                        rerun = checkBoxRerun(),
+                                        rerun = checkboxRerun(),
                                         method = "Nelder-Mead",
                                         error.estimation = "none" ),
         "CG" = climex::fit.gpd( x.kept, initial = x.initial, 
                                threshold = threshold,
-                               rerun = checkBoxRerun(),
+                               rerun = checkboxRerun(),
                                method = "CG",
                                error.estimation = "none" ),
         "BFGS" = climex::fit.gpd( x.kept, initial = x.initial,
                                  threshold = threshold,
-                                 rerun = checkBoxRerun(),
+                                 rerun = checkboxRerun(),
                                  method = "BFGS",
                                  error.estimation = "none" ),
         "SANN" = climex::fit.gpd( x.kept, initial = x.initial,
                                  threshold = threshold,
-                                 rerun = checkBoxRerun(),
+                                 rerun = checkboxRerun(),
                                  method = "SANN",
                                  error.estimation = "none" ),
         "dfoptim::nmk" = climex::fit.gpd( x.kept, initial = x.initial,
                                          threshold = threshold,
-                                         rerun = checkBoxRerun(),
+                                         rerun = checkboxRerun(),
                                          method = "nmk",
                                          error.estimation = "none" ),
         NULL = climex::fit.gpd( x.kept, initial = x.initial,
                                threshold = threshold,
-                               rerun = checkBoxRerun(),
+                               rerun = checkboxRerun(),
                                method = "Nelder-Mead",
                                error.estimation = "none" ) ) )
   }

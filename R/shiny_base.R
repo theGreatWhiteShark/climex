@@ -170,8 +170,8 @@ climex.server <- function( input, output, session ){
                  reactive( input$sliderArtificialDataScale ),
                  reactive( input$sliderArtificialDataShape ),
                  cleaning.interactive,
-                 reactive( input$checkBoxIncompleteYears ),
-                 reactive( input$checkBoxDecluster ) )
+                 reactive( input$checkboxIncompleteYears ),
+                 reactive( input$checkboxDecluster ) )
 ########################################################################
   
 ########################################################################
@@ -193,7 +193,7 @@ climex.server <- function( input, output, session ){
                                    reactive( input$radioEvdStatistics ),
                                    reactive( input$sliderBlockLength ),
                                    reactive( input$sliderThreshold ),
-                                   reactive( input$checkBoxDecluster ),
+                                   reactive( input$checkboxDecluster ),
                                    climex:::deseasonalize.interactive,
                                    reactive( input$selectDeseasonalize ),
                                    reactive( input$selectDataBase ),
@@ -668,8 +668,8 @@ climex.server <- function( input, output, session ){
       reactive( input$sliderThreshold ), climex:::fit.interactive,
       climex:::cleaning.interactive, climex:::deseasonalize.interactive,
       climex:::extremes.interactive, reactive( input$selectDataSource ),
-      reactive( input$checkBoxIncompleteYears ),
-      reactive( input$checkBoxDecluster ),
+      reactive( input$checkboxIncompleteYears ),
+      reactive( input$checkboxDecluster ),
       reactive( input$selectDeseasonalize ),
       reactive( input$sliderBlockLength ),
       reactive( input$selectOptimization ),

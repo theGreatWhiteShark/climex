@@ -4,18 +4,18 @@
 \alias{cleaning.interactive}
 \title{Function to get rid of artifacts within the Climex app}
 \usage{
-cleaning.interactive(x.xts, checkBoxIncompleteYears, checkBoxDecluster,
+cleaning.interactive(x.xts, checkboxIncompleteYears, checkboxDecluster,
   sliderThreshold)
 }
 \arguments{
 \item{x.xts}{Time series of class 'xts' which has to be cleaned.}
 
-\item{checkBoxIncompleteYears}{Logical (checkbox) input determining
+\item{checkboxIncompleteYears}{Logical (checkbox) input determining
 whether to remove all incomplete years of a time series. This box
 will be only available if input$radioEvdStatistics == "GEV" and else
 will be NULL.}
 
-\item{checkBoxDecluster}{Logical (checkbox) input determining
+\item{checkboxDecluster}{Logical (checkbox) input determining
 whether to remove all clusters in a time series and replace them by
 their maximal value. This box will be only available if
 input$radioEvdStatistics == "GP" and else will be NULL.}

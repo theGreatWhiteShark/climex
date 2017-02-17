@@ -6,7 +6,7 @@
 and all input.}
 \usage{
 data.extremes(reactive.selection, radioEvdStatistics, sliderBlockLength,
-  sliderThreshold, checkBoxDecluster, deseasonalize.interactive,
+  sliderThreshold, checkboxDecluster, deseasonalize.interactive,
   selectDeseasonalize, selectDataBase, buttonMinMax, extremes.interactive)
 }
 \arguments{
@@ -26,7 +26,7 @@ threshold used within the GP fit and the extraction of the extreme
 events. Boundaries: minimal and maximal value of the deseasonalized
 time series (rounded). Default: 0.8* the upper end point.}
 
-\item{checkBoxDecluster}{Logical (checkbox) input determining
+\item{checkboxDecluster}{Logical (checkbox) input determining
 whether to remove all clusters in a time series and replace them by
 their maximal value. This box will be only available if
 input$radioEvdStatistics == "GP" and else will be NULL.}

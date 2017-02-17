@@ -9,8 +9,8 @@ leafletClimex(input, output, session, reactive.chosen, buttonMinMax,
   radioEvdStatistics, sliderYears, reactive.extreme, reactive.fitting,
   sliderThreshold, fit.interactive, cleaning.interactive,
   deseasonalize.interactive, extremes.interactive, selectDataSource,
-  checkBoxIncompleteYears, checkBoxDecluster, selectDeseasonalize,
-  sliderBlockLength, selectOptimization, checkBoxRerun)
+  checkboxIncompleteYears, checkboxDecluster, selectDeseasonalize,
+  sliderBlockLength, selectOptimization, checkboxRerun)
 }
 \arguments{
 \item{input}{Namespace input. For more details check out
@@ -71,12 +71,12 @@ function should only be triggered when selectDataBase equals "DWD",
 this input will be a character string describing the selected
 station's name.}
 
-\item{checkBoxIncompleteYears}{Logical (checkbox) input determining
+\item{checkboxIncompleteYears}{Logical (checkbox) input determining
 whether to remove all incomplete years of a time series. This box
 will be only available if input$radioEvdStatistics == "GEV" and else
 will be NULL.}
 
-\item{checkBoxDecluster}{Logical (checkbox) input determining
+\item{checkboxDecluster}{Logical (checkbox) input determining
 whether to remove all clusters in a time series and replace them by
 their maximal value. This box will be only available if
 input$radioEvdStatistics == "GP" and else will be NULL.}
@@ -96,7 +96,7 @@ likelihood function of the GEV/GP distribution. The choices are given in
 \code{\link{generalFittingRoutineInput}} and the default value is set to
 "Nelder-Mead".}
 
-\item{checkBoxRerun}{Logical (checkbox) input from the Likelihood tab.
+\item{checkboxRerun}{Logical (checkbox) input from the Likelihood tab.
 It determines whether or not to start the optimization at the results
 of the first run again to escape local minima.}
 }

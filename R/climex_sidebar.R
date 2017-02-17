@@ -309,10 +309,10 @@ sidebarCleaning <- function( radioEvdStatistics ){
     ## the maximum of a specific cluster)
     if ( is.null( radioEvdStatistics() ) ||
          radioEvdStatistics() == "GEV" ){
-      checkboxInput( "checkBoxIncompleteYears",
+      checkboxInput( "checkboxIncompleteYears",
                     "Remove incomplete years", TRUE )
     } else {
-      checkboxInput( "checkBoxDecluster",
+      checkboxInput( "checkboxDecluster",
                     "Declustering of the data", TRUE )
     }
   } )
@@ -367,11 +367,11 @@ sidebarCleaning <- function( radioEvdStatistics ){
 ##' @param cleaning.interactive Function used to remove incomplete years
 ##' from blocked time series or to remove clusters from data above a
 ##' certain threshold.
-##' @param checkBoxIncompleteYears Logical (checkbox) input determining
+##' @param checkboxIncompleteYears Logical (checkbox) input determining
 ##' whether to remove all incomplete years of a time series. This box
 ##' will be only available if input$radioEvdStatistics == "GEV" and else
 ##' will be NULL.
-##' @param checkBoxDecluster Logical (checkbox) input determining
+##' @param checkboxDecluster Logical (checkbox) input determining
 ##' whether to remove all clusters in a time series and replace them by
 ##' their maximal value. This box will be only available if
 ##' input$radioEvdStatistics == "GP" and else will be NULL.
@@ -390,7 +390,7 @@ data.selection <- function( reactive.chosen, selectDataSource,
                            sliderArtificialDataScale,
                            sliderArtificialDataShape,
                            cleaning.interactive,
-                           checkBoxIncompleteYears, checkBoxDecluster ){
+                           checkboxIncompleteYears, checkboxDecluster ){
   reactive( {
     ## Selecting the data out of a pool of different possibilities
     ## or generate them artificially
@@ -451,8 +451,8 @@ data.selection <- function( reactive.chosen, selectDataSource,
               selectDataSource() ) ]]
       }
     }
-    return( cleaning.interactive( x.xts, checkBoxIncompleteYears,
-                                 checkBoxDecluster, sliderThreshold ) )
+    return( cleaning.interactive( x.xts, checkboxIncompleteYears,
+                                 checkboxDecluster, sliderThreshold ) )
   } )
 }
 

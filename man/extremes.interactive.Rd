@@ -5,7 +5,7 @@
 \title{Function to extract the extreme event from a time series.}
 \usage{
 extremes.interactive(x.xts, buttonMinMax, radioEvdStatistics, sliderBlockLength,
-  sliderThreshold, checkBoxDecluster)
+  sliderThreshold, checkboxDecluster)
 }
 \arguments{
 \item{x.xts}{Time series of class 'xts' which has to be cleaned.}
@@ -27,7 +27,7 @@ threshold used within the GP fit and the extraction of the extreme
 events. Boundaries: minimal and maximal value of the deseasonalized
 time series (rounded). Default: 0.8* the upper end point.}
 
-\item{checkBoxDecluster}{Logical (checkbox) input determining
+\item{checkboxDecluster}{Logical (checkbox) input determining
 whether to remove all clusters in a time series and replace them by
 their maximal value. This box will be only available if
 input$radioEvdStatistics == "GP" and else will be NULL.}

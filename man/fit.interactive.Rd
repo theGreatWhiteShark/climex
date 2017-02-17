@@ -5,7 +5,7 @@
 \title{Function to perform the GEV/GP fit within the Climex app.}
 \usage{
 fit.interactive(x.kept, x.initial = NULL, radioEvdStatistics,
-  selectOptimization, buttonMinMax, checkBoxRerun, sliderThreshold)
+  selectOptimization, buttonMinMax, checkboxRerun, sliderThreshold)
 }
 \arguments{
 \item{x.kept}{Time series of class 'xts'. Removing clicked or brushed
@@ -28,7 +28,7 @@ likelihood function of the GEV/GP distribution. The choices are given in
 the GEV/GP distribution shall be fitted to the smallest or biggest
 vales. Choices: c( "Max", "Min ), default = "Max".}
 
-\item{checkBoxRerun}{Logical (checkbox) input from the Likelihood tab.
+\item{checkboxRerun}{Logical (checkbox) input from the Likelihood tab.
 It determines whether or not to start the optimization at the results
 of the first run again to escape local minima.}
 

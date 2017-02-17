@@ -108,11 +108,11 @@ leafletClimexUI <- function( id ){
 ##' function should only be triggered when selectDataBase equals "DWD",
 ##' this input will be a character string describing the selected
 ##' station's name.
-##' @param checkBoxIncompleteYears Logical (checkbox) input determining
+##' @param checkboxIncompleteYears Logical (checkbox) input determining
 ##' whether to remove all incomplete years of a time series. This box
 ##' will be only available if input$radioEvdStatistics == "GEV" and else
 ##' will be NULL.
-##' @param checkBoxDecluster Logical (checkbox) input determining
+##' @param checkboxDecluster Logical (checkbox) input determining
 ##' whether to remove all clusters in a time series and replace them by
 ##' their maximal value. This box will be only available if
 ##' input$radioEvdStatistics == "GP" and else will be NULL.
@@ -128,7 +128,7 @@ leafletClimexUI <- function( id ){
 ##' likelihood function of the GEV/GP distribution. The choices are given in
 ##' \code{\link{generalFittingRoutineInput}} and the default value is set to
 ##' "Nelder-Mead".
-##' @param checkBoxRerun Logical (checkbox) input from the Likelihood tab.
+##' @param checkboxRerun Logical (checkbox) input from the Likelihood tab.
 ##' It determines whether or not to start the optimization at the results
 ##' of the first run again to escape local minima.
 ##'
@@ -146,9 +146,9 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                           cleaning.interactive,
                           deseasonalize.interactive,
                           extremes.interactive, selectDataSource,
-                          checkBoxIncompleteYears, checkBoxDecluster,
+                          checkboxIncompleteYears, checkboxDecluster,
                           selectDeseasonalize, sliderBlockLength,
-                          selectOptimization, checkBoxRerun ){
+                          selectOptimization, checkboxRerun ){
   ## This variable contains the name of the previously selected station.
   ## It's a little bit ugly since it's global, but right now I'm lacking
   ## an alternative.
@@ -225,7 +225,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
       return( NULL )
     ## clean the stations
     data.cleaned <- lapply( data.selected[[ 1 ]], cleaning.interactive,
-                           checkBoxIncompleteYears, checkBoxDecluster,
+                           checkboxIncompleteYears, checkboxDecluster,
                            sliderThreshold )
     ## deseasonalize them
     data.deseasonalized <- lapply( data.cleaned,
@@ -234,7 +234,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
     ## block them
     data.blocked <- lapply( data.deseasonalized, extremes.interactive,
                            radioEvdStatistics, sliderBlockLength,
-                           sliderThreshold, checkBoxDecluster )
+                           sliderThreshold, checkboxDecluster )
     ## choose whether to calculate the GEV or GP parameters
     if ( is.null( radioEvdStatistics() ) ||
          radioEvdStatistics() == "GEV" ){
@@ -253,7 +253,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                                               radioEvdStatistics,
                                               selectOptimization,
                                               buttonMinMax,
-                                              checkBoxRerun,
+                                              checkboxRerun,
                                               sliderThreshold ),
                              return.period = return.level.year,
                              model = model, error.estimation = "none",
