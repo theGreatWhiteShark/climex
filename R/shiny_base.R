@@ -202,18 +202,9 @@ climex.server <- function( input, output, session ){
 ########################################################################
   
 ########################################################################
-##################### Interactive stuff and auxillary functions ########
-########################################################################
-########################################################################
-  
-########################################################################
 ############### Plotting of the time series and fit ####################
 ########################################################################
   ## Displaying of the original, intermediate and final time series.
-  colour.ts <- grDevices::rgb( 0.098, 0.098, 0.44 )
-  colour.extremes <- grDevices::rgb( 1, 0.55, 0 )
-  colour.ts.light <- "#7171EC"
-  colour.extremes.light <- grDevices::rgb( 1, 0.9, 0.8 )
   ## Reactive value containing a logical vector indicating which element
   ## of reactive.extreme()[[ 1 ]] should still be used after clicking and
   ## brushing in the extreme's gplot2 plot. In addition the plotting and
@@ -226,335 +217,14 @@ climex.server <- function( input, output, session ){
                               climex:::function.get.y.label,
                               reactive( input$radioEvdStatistics ),
                               reactive( input$sliderThreshold ) )
-  
-  ## GEV|GPD fit and analysis plots
-  output$plotFitEvd <- renderPlot( {
-    ## Plots the result of the fitted GEV
-    x.block <- reactive.extreme( )[[ 1 ]]
-    if ( is.null( x.block ) ){
-      ## if the initialization has not finished yet just wait a
-      ## little longer
-      return( NULL )
-    }
-    x.kept <- x.block[ reactive.rows$keep.rows ]
-    x.fit.evd <- evd.fitting( )
-    if ( is.null( x.fit.evd ) ){
-      return( NULL )
-    }
-    if ( input$buttonMinMax == "Min" &&
-         input$radioEvdStatistics == "GEV" ){
-      x.kept <- x.kept* ( -1 )
-      x.fit.evd$par[ 1 ] <- x.fit.evd$par[ 1 ]* -1
-      shinytoastr::toastr_info( "Since the minimal extremes are chosen the GEV distribution \n will be fitted to the negated time series" )
-    }
-    x.lim <- c( max( x.kept ), min( x.kept ) )
-    ## the amount of bins is changing whenever a single event
-    ## is toggled. This is distracting only if a certain amount
-    ## of points are toggled (5%) a different number of bins shall
-    ## be used. The number of boxes should be half the number of
-    ## points in 5% steps. gg1.bins gives a factor which multiplied
-    ## with the length of x.kept yields the number of blocks.
-    gg1.bins <- ( ( ( length( x.kept ) - 1 )*100/
-                    length( x.block ) )  %/% 5 )* 0.025
-    x.label <- climex:::function.get.y.label(
-                            reactive( input$selectDataBase ),
-                            reactive( input$selectDataType ) )
-    plot( x.fit.evd, bin.factor = gg1.bins ) +
-      xlab( x.label ) +
-      theme( legend.position = "none" ) +
-      theme( axis.title = element_text( size = 17,
-                                       colour = colour.ts ),
-            axis.text = element_text( size = 13,
-                                     colour = colour.ts ) )
-  } )
-  output$plotFitQQ <- renderPlot( {
-    ## Quantile-quantile plot for fit statistics
-    x.block <- reactive.extreme( )[[ 1 ]]
-    if ( is.null( x.block ) ){
-      ## if the initialization has not finished yet just wait a
-      ## little longer
-      return( NULL )
-    }
-    x.kept <- x.block[ reactive.rows$keep.rows ]
-    x.fit.evd <- evd.fitting()
-    if ( is.null( x.fit.evd ) ){
-      return( NULL )
-      }
-    if ( input$radioEvdStatistics == "GEV" ){
-      if ( !is.null( input$buttonMinMax ) &&
-           input$buttonMinMax == "Min"  ){
-        x.kept <- -1* x.kept
-        x.fit.evd$par[ 1 ] <- -1* x.fit.evd$par[ 1 ]
-      }
-      model <- climex:::qevd( p = stats::ppoints(
-                                             length( x.kept ), 0 ),
-                             location = x.fit.evd$par[ 1 ],
-                             scale = x.fit.evd$par[ 2 ],
-                             shape = x.fit.evd$par[ 3 ],
-                             model = "gev", silent = TRUE )
-      if ( !is.null( input$buttonMinMax ) &&
-           input$buttonMinMax == "Min"  ){
-        empirical <- -1* sort( as.numeric( x.kept ) )
-        model <- -1* model
-      } else {
-        empirical <- sort( as.numeric( x.kept ) )
-      }
-      plot.data <- data.frame( model = model, empirical = empirical )
-    } else {
-      ## input$radioEvdStatistics == "GP"
-      threshold <- input$sliderThreshold
-      plot.data <- data.frame(
-          model = sort(
-              climex:::qevd( p = stats::ppoints(
-                                            length( x.kept ), 0 ),
-                            scale = x.fit.evd$par[ 1 ], 
-                            shape = x.fit.evd$par[ 2 ],
-                            model = "gpd", silent = TRUE,
-                            threshold = threshold ) ),
-          empirical = sort( as.numeric( x.kept ) ) +
-            threshold )
-    }
-    plot.fit <- stats::lm( empirical ~ model, plot.data )[[ 1 ]]
-    gg.qq1 <- ggplot() +
-      geom_point( data = plot.data, aes( x = model, y = empirical ),
-                 colour = colour.ts,
-                 shape = 1, size = 2, alpha = 0.8 ) +
-      geom_abline( intercept = plot.fit[ 1 ],
-                  slope = plot.fit[ 2 ], colour = colour.ts,
-                  linetype = 2 ) +
-      geom_abline( intercept = 0, slope = 1,
-                  colour = colour.extremes ) +
-      theme_bw() +
-      theme( axis.title = element_text( size = 15,
-                                       colour = colour.ts ),
-            axis.text = element_text( size = 12,
-                                     colour = colour.ts ) )
-    return( gg.qq1 ) } )
-  output$plotFitQQ2 <- renderPlot( {
-    ## Quantile-quantile plot for fit statistics with samples
-    ## drawn from fitted GEV
-    x.block <- reactive.extreme( )[[ 1 ]]
-    if ( is.null( x.block ) ){
-      ## if the initialization has not finished yet just wait a
-      ## little longer
-      return( NULL )
-    }
-    x.kept <- x.block[ reactive.rows$keep.rows ]
-    x.fit.evd <- evd.fitting()
-    if ( is.null( x.fit.evd ) ){
-      return( NULL )
-    }
-    if ( !is.null( input$buttonMinMax ) &&
-         input$buttonMinMax == "Min" ){
-      x.kept <- -1* x.kept
-      x.fit.evd$par[ 1 ] <- -1* x.fit.evd$par[ 1 ]
-    }
-    if ( input$radioEvdStatistics == "GEV" ){
-      sampled <- sort(
-          climex:::revd( n = length( x.kept ),
-                        location = x.fit.evd$par[ 1 ],
-                        scale = x.fit.evd$par[ 2 ], silent = TRUE,
-                        shape = x.fit.evd$par[ 3 ], model = "gev" ) )
-      if ( !is.null( input$buttonMinMax ) &&
-           input$buttonMinMax == "Min" ){
-        sampled <- -1* sampled
-        empirical <- -1* sort( as.numeric( x.kept ) )
-      } else {
-        empirical <- sort( as.numeric( x.kept ) )
-      }
-    } else {
-      sampled <- sort(
-          climex:::revd( n = length( x.kept ),
-                        scale = x.fit.evd$par[ 1 ], silent = TRUE,
-                        shape = x.fit.evd$par[ 2 ], model = "gpd",
-                        threshold = input$sliderThreshold ) )
-      empirical <- sort( as.numeric( x.kept ) +
-                         input$sliderThreshold )
-    }
-    length.e <- length( empirical )
-    length.s <- length( sampled )
-    ## inspired by extRemes::qqplot( plot.data$empirical,
-    ## plot.data$sampled )
-    ## function giving a linear interpolation 
-    function.sampled.interpolate <-
-      stats::approxfun( seq( 0, 1, length = length( sampled ) ),
-                       sort( sampled ), yleft = NA, yright = NA )
-    if ( is.null( input$buttonMinMax ) ){
-      period <- ( 1 : length( empirical ) - 1 )/
-        ( length( empirical ) - 1 )
-    } else if ( input$buttonMinMax == "Min" &&
-                input$radioEvdStatistics == "GEV" ){
-      period <- rev( ( 1 : length( empirical ) - 1 )/
-                     ( length( empirical ) - 1 ) )
-    } else {
-      period <- ( 1 : length( empirical ) - 1 )/
-        ( length( empirical ) - 1 )
-    }
-    sampled.interpolate <- function.sampled.interpolate( period )
-    sampled.ci.low <- function.sampled.interpolate(
-        period - 1.36/ sqrt( length.e* length.s/
-                             ( length.e + length.s ) ) )
-    sampled.ci.high <- function.sampled.interpolate(
-        period + 1.36/ sqrt( length.e* length.s/
-                             ( length.e + length.s ) ) )
-    plot.data <- data.frame( empirical = empirical,
-                            sampled = sampled.interpolate,
-                            ci.low = sampled.ci.low,
-                            ci.high = sampled.ci.high )
-    plot.fit <- stats::lm( empirical ~ sampled, plot.data )[[ 1 ]]
-    gg.qq2 <- ggplot() +
-      geom_point( data = plot.data,
-                 aes( x = sampled, y = empirical ),
-                 colour = colour.ts, shape = 1, size = 2,
-                 alpha = 0.8, na.rm = TRUE ) +
-      geom_line( data = plot.data, na.rm = TRUE,
-                aes( x = sampled.ci.low, y = empirical ),
-                linetype = 2, colour = colour.extremes ) +
-      geom_line( data = plot.data, linetype = 2,
-                aes( x = sampled.ci.high, y = empirical ),
-                colour = colour.extremes, na.rm = TRUE ) +
-      geom_abline( intercept = plot.fit[ 1 ],
-                  slope = plot.fit[ 2 ], colour = colour.ts,
-                  linetype = 2 ) + theme_bw() +
-      geom_abline( intercept = 0, slope = 1,
-                  colour = colour.extremes ) +
-      theme( axis.title = element_text( size = 15,
-                                       colour = colour.ts ),
-            axis.text = element_text( size = 12,
-                                     colour = colour.ts ) )
-    return( gg.qq2 )        
-  } )
-  output$plotFitReturnLevel <- renderPlot( {
-    x.data <- reactive.extreme()
-    x.block <- x.data[[ 1 ]]
-    if ( is.null( x.block ) ){
-      ## if the initialization has not finished yet just wait a
-      ## little longer
-      return( NULL )
-    }
-    x.kept <- x.block[ reactive.rows$keep.rows ]
-    x.fit.evd <- evd.fitting()
-    if ( is.null( x.fit.evd ) )
-      return( NULL )
-    x.period <- c( 2, 5, 10, 20, 50, 80, 100, 120, 200,
-                  250, 300, 500, 800 )
-    ## Forget about the extRemes::ci.fevd.mle.
-    ## I have an implementation of the error estimate of the
-    ## return level myself! The confidence level will be set to
-    ## one standard deviation.
-    fit.aux <- x.fit.evd
-    if ( input$buttonMinMax == "Min" &&
-         input$radioEvdStatistics == "GEV" ){
-      ## For calculating the return level of the minimum extremes,
-      ## one has to multiply the time series with (-1), fit the
-      ## data using standard GEV, calculate the return level using
-      ## standard GEV and then multiply the location parameter as
-      ## well as the return levels by (-1).
-      ## For determining the error of the return level in the
-      ## bottom-most goodness of fit plot the MLE-approach was
-      ## used. It underestimates the error but is way faster than
-      ## the Monte Carlo alternative.
-      fit.aux$par[ 1 ] <- fit.aux$par[ 1 ]* ( -1 )
-      fit.aux$x <- fit.aux$x* ( -1 ) 
-      if ( is.nan( climex::likelihood( fit.aux$par,
-                                      fit.aux$x ) ) ){
-        ## Just multiplying by -1 does not always work since
-        ## the processes in the real world are rarely symmetric
-        ## and the minimum and maximum extremes behave
-        ## differently.
-        ## I don't consider all the input argument since it's
-        ## just one in three goodness of fit plots
-        fit.aux <- fit.gev( -1* x.kept,
-                           error.estimation = "none" )
-      }
-    }
-    if ( input$radioEvdStatistics == "GEV" ){
-      model <- "gev"
-    } else {
-      model <- "gpd"
-    }
-    if ( input$selectOptimization == "SANN" ||
-         input$selectOptimization == "dfoptim::nmk" ){
-      ## When performing simulated annealing the hessian was not
-      ## calculated so the error estimate of the return levels
-      ## will just be calculated via the Monte Carlo approach
-      x.confidence.intervals.aux <-
-        climex::return.level( fit.aux, return.period = x.period,
-                             error.estimation = "MC",
-                             threshold = fit.aux$threshold,
-                             total.length = length( x.data[[ 3 ]] ),
-                             model = model )
-    } else {           
-      x.confidence.intervals.aux <-
-        climex::return.level( fit.aux, return.period = x.period,
-                             error.estimation = "MLE",
-                             threshold = fit.aux$threshold,
-                             total.length = length( x.data[[ 3 ]] ),
-                             model = model )
-    }
-    if ( input$buttonMinMax == "Min" &&
-         input$radioEvdStatistics == "GEV" ){
-      x.confidence.intervals.aux$return.levels <-
-        x.confidence.intervals.aux$return.levels* ( -1 )
-    }
-    x.confidence.intervals <- data.frame(
-        ci.low = x.confidence.intervals.aux$return.levels -
-          as.numeric( x.confidence.intervals.aux$errors ),
-        level = x.confidence.intervals.aux$return.levels,
-        ci.high = x.confidence.intervals.aux$return.levels +
-          as.numeric( x.confidence.intervals.aux$errors ) )
-    if ( input$radioEvdStatistics == "GEV" ){
-      if ( input$buttonMinMax == "Min" ){
-        plot.data <- data.frame(
-            x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
-            y = -1* sort( as.numeric( x.kept* -1 ) ) )
-      } else {
-        plot.data <- data.frame(
-            x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
-            y = sort( as.numeric( x.kept ) ) )
-      } 
-    } else {
-      ## GP
-      plot.data <-  data.frame(
-          x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
-          y = sort( as.numeric( x.kept +
-                                input$sliderThreshold ) ) )
-    }
-    plot.y.limits <- c( plot.data$y[ which.min(
-                                      abs( plot.data$x - 1 ) ) ],
-                       max( x.confidence.intervals[ , 3 ] ) )
-    plot.statistics <- data.frame(
-        period = -1/ ( log( 1 - 1/ x.period ) ),
-        level = as.numeric( x.confidence.intervals[ , 2 ] ),
-        ci.low = as.numeric( x.confidence.intervals[ , 1 ] ), 
-        ci.high = as.numeric( x.confidence.intervals[ , 3 ] ) )
-    gg.rl <- ggplot() +
-      geom_point( data = plot.data, aes( x = x, y = y ),
-                 colour = colour.ts, shape = 1, size = 2,
-                 alpha = 0.8, na.rm = TRUE ) +
-      geom_line( data = plot.statistics,
-                aes( x = period, y = level ),
-                colour = colour.extremes, na.rm = TRUE ) +
-      geom_line( data = plot.statistics,
-                aes( x = period, y = ci.low ), linetype = 2,
-                colour = colour.extremes, na.rm = TRUE ) +
-      geom_line( data = plot.statistics,
-                aes( x = period, y = ci.high ), linetype = 2,
-                colour = colour.extremes, na.rm = TRUE ) +
-      xlab( "return period" ) + ylab( "return level" ) +
-      theme_bw() + scale_x_log10( limits = c( 1, 1000 ) ) +
-      theme( axis.title = element_text( size = 15,
-                                       colour = colour.ts ),
-            axis.text = element_text( size = 12,
-                                     colour = colour.ts ) )
-    if ( !is.null( input$buttonMinMax ) ){
-      if ( input$buttonMinMax == "Min" &&
-           input$radioEvdStatistics == "GEV" ){
-        gg.rl <- gg.rl + scale_y_reverse() 
-      } else
-        gg.rl <- gg.rl + ylim( plot.y.limits )
-    }
-    return( gg.rl )  } )
+  callModule( climex:::generalFitPlot, "fit", reactive.extreme,
+             reactive.rows, evd.fitting, reactive( input$buttonMinMax ),
+             reactive( input$radioEvdStatistics ),
+             climex:::function.get.y.label,
+             reactive( input$selectDataBase ), 
+             reactive( input$selectDataType ),
+             reactive( input$sliderThreshold ),
+             reactive( input$selectOptimization ) )  
 ########################################################################
    
 ########################################################################
@@ -1247,8 +917,6 @@ climex.server <- function( input, output, session ){
       reactive( input$checkBoxDecluster ),
       reactive( input$selectDeseasonalize ),
       reactive( input$sliderBlockLength ) )
-  
-   ## })
 }
 
 ##' @title The user interface for the \code{\link{climex}} function.
@@ -1339,13 +1007,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
           ## their ordering using CSS3 if the max-width is below a
           ## certain threshold
           fluidRow(
-            box( title = h2( "GEV fit" ), status = "primary", 
-              solidheader = TRUE, width = 8, id = "boxPlotFit",
-              column( 9, plotOutput( "plotFitEvd" ) ),
-              column( 3, plotOutput( "plotFitQQ", height = 140 ),
-                     plotOutput( "plotFitQQ2", height = 140 ),
-                     plotOutput( "plotFitReturnLevel",
-                                height = 140 ) ) ),
+            climex:::generalFitPlotOutput( "fit" ),
             box( title = h2( "Options" ), width = 4,
               height = 550, background = "orange",
               id = "boxGevStatistics",
