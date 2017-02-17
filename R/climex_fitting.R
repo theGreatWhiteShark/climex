@@ -84,9 +84,9 @@ fit.interactive <- function( x.kept, x.initial = NULL,
     ## While changing the EVD statistics from "GEV" to "GP" the initial
     ## parameter combination has to be reset. This is nevertheless a
     ## little bit problematic since both reactive.fitting() and
-    ## initial.parameters() are labeled dirty during this procedure. So
+    ## reactive.initials() are labeled dirty during this procedure. So
     ## one can not really control which is evaluted first. But since the
-    ## reseting of initial.parameters() would result in the default
+    ## reseting of reactive.initials() would result in the default
     ## setting, we are save to use it in here too.
     if ( model == "gev" && length( x.initial ) != 3 )
       x.initial <- NULL
@@ -184,8 +184,8 @@ fit.interactive <- function( x.kept, x.initial = NULL,
 ##' @param reactive.extreme Reactive value returning a list containing
 ##' three elements: 1. the blocked time series, 2. the deseasonalized time
 ##' series, and 3. the pure time series.
-##' @param initial.parameters Reactive value holding the initial parameters
-##' to start the time series fit at. \code{\link{data.initial}}. Those can
+##' @param reactive.initial Reactive value holding the initial parameters
+##' to start the time series fit at. \code{\link{data.initials}}. Those can
 ##' be specified in the top right box of the Likelihood tab.
 ##' @param reactive.rows Reactive value holding a logical vector indicating
 ##' which values of the time series provided by \code{\link{data.extremes}}
@@ -219,18 +219,18 @@ fit.interactive <- function( x.kept, x.initial = NULL,
 ##' 'climex.fit.gev' or 'climex.fit.gpd', depending on the choice of
 ##' input$radioEvdStatistics
 ##' @author Philipp Mueller 
-data.fitting <- function( reactive.extreme, initial.parameters,
+data.fitting <- function( reactive.extreme, reactive.initials,
                          reactive.rows, fit.interactive,
                          radioEvdStatistics, selectOptimization,
                          buttonMinMax, checkboxRerun, sliderThreshold ){
   reactive( {
     if ( is.null( reactive.extreme() ) ||
-         is.null( initial.parameters() ) ||
+         is.null( reactive.initials() ) ||
          is.null( reactive.rows ) ){
       return( NULL )
     }
     x.extreme <- reactive.extreme()[[ 1 ]]
-    x.initial <- initial.parameters()
+    x.initial <- reactive.initials()
     ## Removing all points marked by clicking or brushing in the ggplot2
     ## plot of the extreme events in the bottom right box in the General
     ## tab
@@ -239,5 +239,63 @@ data.fitting <- function( reactive.extreme, initial.parameters,
                             selectOptimization, buttonMinMax,
                             checkboxRerun,
                             sliderThreshold ) )
+  } )
+}
+
+##' @title Reactive value containing the initial parameters to start the
+##' GEV/GP fit at.
+##' @details The initial parameter combination can be set by the numerical
+##' input in the Likelihood tab. Until that happened, just the default
+##' values obtained by \code{\link{likelihood.initials}} will be used.
+##'
+##' @param initialLocation Numerical (numerical) input determining the
+##' location parameter at which to start the fitting procedure.
+##' @param initialScale Numerical (numerical) input determining the
+##' scale parameter at which to start the fitting procedure.
+##' @param initialShape Numerical (numerical) input determining the
+##' shape parameter at which to start the fitting procedure.
+##' @param radioEvdStatistics Character (radio) input determining whether
+##' the GEV or GP distribution shall be fitted to the data. Choices:
+##' c( "GEV", "GP" ), default = "GEV".
+##' @param reactive.extreme Reactive value returning a list containing
+##' three elements: 1. the blocked time series, 2. the deseasonalized time
+##' series, and 3. the pure time series.
+##'
+##' @import shiny
+##'
+##' @family climex-fitting
+##'
+##' @return Numerical vector containing three elements: location, scale
+##' and shape parameter to start the GEV fit at.
+##' @author Philipp Mueller 
+data.initials <- function( initialLocation, initialScale, initialShape,
+                          radioEvdStatistics, reactive.extreme ){
+  reactive( {
+    if ( is.null( initialLocation() ) || is.null( initialScale() ) ||
+         is.null( initialShape() ) ){
+      ## If the sliders arn't set yet, I will just use the default
+      ## values
+      x.extreme <- reactive.extreme()[[ 1 ]]
+      if ( is.null( x.extreme ) ){
+        ## if the initialization has not finished yet just wait a
+        ## little longer
+        return( NULL )
+      }
+      if ( is.null( radioEvdStatistics() ) ||
+           radioEvdStatistics() == "GEV" ){
+        model <- "gev"
+      } else {
+        model <- "gpd"
+      }
+      return( climex::likelihood.initials( x.extreme, model = model ) )
+    } else {
+      if ( is.null( radioEvdStatistics() ) ||
+           radioEvdStatistics() == "GEV" ){
+        return( c( initialLocation(), initialScale(),
+                  initialShape() ) )
+      } else {
+        return( c( initialScale(), initialShape() ) )
+      }
+    }
   } )
 }

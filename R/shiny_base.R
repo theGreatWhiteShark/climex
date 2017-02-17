@@ -199,11 +199,19 @@ climex.server <- function( input, output, session ){
                                    reactive( input$selectDataBase ),
                                    reactive( input$buttonMinMax ),
                                    climex:::extremes.interactive )
+  ## Reactive value determining the initial parameters of the fitting
+  ## procedure.
+  reactive.initials <- climex:::data.initials(
+                                    reactive( input$initialLocation ),
+                                    reactive( input$initialScale ),
+                                    reactive( input$initialShape ),
+                                    reactive( input$radioEvdStatistics ),
+                                    reactive.extreme )
   ## Reactive value performing the GEV/GP fit to the selected time series
   ## and providing the fitted object of class 'climex.fit.gev' or
   ## 'climex.fit.gpd'.
   reactive.fitting <- climex:::data.fitting(
-                                   reactive.extreme, initial.parameters,
+                                   reactive.extreme, reactive.initials,
                                    reactive.rows,
                                    climex:::fit.interactive,
                                    reactive( input$radioEvdStatistics ),
@@ -493,29 +501,6 @@ climex.server <- function( input, output, session ){
                                                      model = model )
     numericInput( "initialShape", "",
                  value = round( parameter.default[ 3 ], 4 ) ) } )
-  ## Why I need this reactive content? Well, not really necessary
-  ## but quite convenient
-  initial.parameters <- reactive( {
-    if ( is.null( input$initialLocation ) ||
-         is.null( input$initialScale ) ||
-         is.null( input$initialShape ) ){
-      ## If the sliders arn't set yet, I will just use the default
-      ## values
-      x.block <- reactive.extreme()[[ 1 ]]
-      if ( is.null( x.block ) || is.null( input$radioEvdStatistics ) ){
-        ## if the initialization has not finished yet just wait a
-        ## little longer
-        return( NULL )
-      }
-      if ( input$radioEvdStatistics == "GEV" ){
-        model <- "gev"
-      } else {
-        model <- "gpd"
-      }
-      return( climex::likelihood.initials( x.block, model = model ) )
-    } else
-      return( c( input$initialLocation, input$initialScale,
-                input$initialShape ) ) } )
   cached.table.init <- NULL
   initial.parameters.likelihood <- reactive( {
     x.block <- reactive.extreme()[[ 1 ]]
@@ -524,7 +509,7 @@ climex.server <- function( input, output, session ){
       ## little longer
       return( NULL )
     }
-    x.initial <- initial.parameters()
+    x.initial <- reactive.initials()
     input$tableDrawPoints
     x.fit.evd <- reactive.fitting()
     par.init <- x.fit.evd$par
@@ -617,12 +602,12 @@ climex.server <- function( input, output, session ){
     }
     return( table.init ) } )
   output$tableInitialPoints <- renderDataTable( {
-    initial.parameters <- initial.parameters.likelihood()
-    if ( all( is.na( initial.parameters ) ) )
+    reactive.initials <- initial.parameters.likelihood()
+    if ( all( is.na( reactive.initials ) ) )
       return( NULL )
-    initial.parameters$ID <- seq( 1, nrow( initial.parameters ) )
+    reactive.initials$ID <- seq( 1, nrow( reactive.initials ) )
     ## round the number in the table
-    return( initial.parameters ) },
+    return( reactive.initials ) },
     ## the drawCallback ensures that the width of the parent table
     ## is not set to a specific pixel number but to 100% percent.
     ## This ensures its correct rendering on mobile devices
@@ -645,7 +630,7 @@ climex.server <- function( input, output, session ){
       model <- "gpd"
     }
     x.mle.par <- x.fit.evd$par
-    x.initial <- initial.parameters()
+    x.initial <- reactive.initials()
     x.suggested <- climex::likelihood.initials( x.block, model = model )
     if ( input$radioEvdStatistics == "GEV" ){
       x.df <- data.frame( parameter = c( "fitting results",
@@ -703,7 +688,7 @@ climex.server <- function( input, output, session ){
           ## little longer
           return( NULL )
         } } )
-      isolate( initial.parameters <- initial.parameters.likelihood() )
+      isolate( reactive.initials <- initial.parameters.likelihood() )
       isolate( {
         if ( input$selectOptimization == "dfoptim::nmk" ){
           optimization.method <- "nmk"
@@ -751,7 +736,7 @@ climex.server <- function( input, output, session ){
         }
         climex:::animation.wrapper(
                      time.series = x.block,
-                     starting.points = initial.parameters,
+                     starting.points = reactive.initials,
                      location.lim = location.lim,
                      scale.lim = isolate( input$sliderScaleLim ),
                      shape.lim = isolate( input$sliderShapeLim ),
