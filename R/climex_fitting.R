@@ -241,7 +241,7 @@ data.fitting <- function( reactive.extreme, reactive.initials,
       ## series anymore. In such a case, just return NULL and wait for
       ## the next round (updating reactive.rows)
       return( NULL )
-    }        
+    }
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
     return( fit.interactive( x.kept, x.initial, radioEvdStatistics,
                             selectOptimization, buttonMinMax,

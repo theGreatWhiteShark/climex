@@ -6,8 +6,7 @@
 \usage{
 data.selection(reactive.chosen, selectDataSource, selectDataBase, sliderYears,
   sliderThreshold, radioEvdStatistics, sliderArtificialDataLocation,
-  sliderArtificialDataScale, sliderArtificialDataShape, cleaning.interactive,
-  checkboxIncompleteYears, checkboxDecluster)
+  sliderArtificialDataScale, sliderArtificialDataShape)
 }
 \arguments{
 \item{reactive.chosen}{Reactive value containing a list of the list
@@ -56,20 +55,6 @@ series. For input$selectDataBase
 providing the shape parameter to generate an artificial time
 series. For input$selectDataBase
 != "artificial data" this argument will be NULL.}
-
-\item{cleaning.interactive}{Function used to remove incomplete years
-from blocked time series or to remove clusters from data above a
-certain threshold.}
-
-\item{checkboxIncompleteYears}{Logical (checkbox) input determining
-whether to remove all incomplete years of a time series. This box
-will be only available if input$radioEvdStatistics == "GEV" and else
-will be NULL.}
-
-\item{checkboxDecluster}{Logical (checkbox) input determining
-whether to remove all clusters in a time series and replace them by
-their maximal value. This box will be only available if
-input$radioEvdStatistics == "GP" and else will be NULL.}
 }
 \value{
 Reactive value containing a 'xts' class time series.

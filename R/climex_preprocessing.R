@@ -367,6 +367,13 @@ extremes.interactive <- function( x.xts, buttonMinMax,
 ##' then or to extract all data points above a certain threshold value.
 ##' Which option is chosen depends of the radioEvdStatistic.
 ##' \code{\link{extremes.interactive}}
+##' @param cleaning.interactive Function used to remove incomplete years
+##' from blocked time series or to remove clusters from data above a
+##' certain threshold.
+##' @param checkboxIncompleteYears Logical (checkbox) input determining
+##' whether to remove all incomplete years of a time series. This box
+##' will be only available if input$radioEvdStatistics == "GEV" and else
+##' will be NULL.
 ##'
 ##' @family preprocessing
 ##' 
@@ -378,16 +385,49 @@ data.extremes <- function( reactive.selection, radioEvdStatistics,
                           sliderBlockLength, sliderThreshold,
                           checkboxDecluster, deseasonalize.interactive,
                           selectDeseasonalize, selectDataBase,
-                          buttonMinMax, extremes.interactive ){
+                          buttonMinMax, extremes.interactive,
+                          cleaning.interactive,
+                          checkboxIncompleteYears ){
   reactive( {
-    x.xts <- reactive.selection()
-    if ( is.null( x.xts ) || is.null( radioEvdStatistics() ) ){
+    if ( is.null( reactive.selection() ) ||
+         is.null( radioEvdStatistics() ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
       return( NULL )
     }
+    x.xts <- reactive.selection()
+    if ( is.null( radioEvdStatistics() ) ||
+         radioEvdStatistics() == "GEV" ){
+      ## Remove all incomplete years. Since the check boxes need some time
+      ## too for updating, it can happen that after switching to "GEV"
+      ## the checkboxDecluster is still equal TRUE and the time series
+      ## is getting torn to pieces.
+      if ( is.null( checkboxIncompleteYears() ) ||
+           checkboxIncompleteYears() ) {
+        x.clean <- cleaning.interactive( x.xts,
+                                       function(){ return( TRUE ) },
+                                       function(){ return( NULL ) },
+                                       sliderThreshold )
+      } else {
+        x.clean <- cleaning.interactive( x.xts, 
+                                       function(){ return( FALSE ) },
+                                       function(){ return( NULL ) },
+                                       sliderThreshold )
+      }
+    } else {
+      if ( is.null( checkboxDecluster() ) ||
+           is.null( sliderThreshold() ) ){
+        return( NULL )
+      }
+      ## For this one it is guaranteed for the user to be in the
+      ## General tab. so just wait until all the other stuff is
+      ## initialized.
+      x.clean <- cleaning.interactive( x.xts, checkboxIncompleteYears,
+                                      checkboxDecluster,
+                                      sliderThreshold )
+    }           
     x.deseasonalized <- deseasonalize.interactive(
-        x.xts, selectDeseasonalize, selectDataBase )
+        x.clean, selectDeseasonalize, selectDataBase )
     if ( !is.null( radioEvdStatistics() ) &&
          !is.null( sliderThreshold() ) && radioEvdStatistics() == "GP" &&
          max( x.deseasonalized ) < sliderThreshold() ){

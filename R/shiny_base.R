@@ -164,14 +164,12 @@ climex.server <- function( input, output, session ){
                  reactive.chosen, reactive( input$selectDataSource ),
                  reactive( input$selectDataBase ),
                  reactive( input$sliderYears ),
+
                  reactive( input$sliderThreshold ),
                  reactive( input$radioEvdStatistics ),
                  reactive( input$sliderArtificialDataLocation ),
                  reactive( input$sliderArtificialDataScale ),
-                 reactive( input$sliderArtificialDataShape ),
-                 cleaning.interactive,
-                 reactive( input$checkboxIncompleteYears ),
-                 reactive( input$checkboxDecluster ) )
+                 reactive( input$sliderArtificialDataShape ) )
 ########################################################################
   
 ########################################################################
@@ -188,17 +186,19 @@ climex.server <- function( input, output, session ){
   ## Reactive value containing a list of the extracted extreme events,
   ## the deseasonalized and pure time series. In addition, it's also
   ## performing both the extraction and the deseasonalization
-  reactive.extreme <- climex:::data.extremes(
-                                   reactive.selection,
-                                   reactive( input$radioEvdStatistics ),
-                                   reactive( input$sliderBlockLength ),
-                                   reactive( input$sliderThreshold ),
-                                   reactive( input$checkboxDecluster ),
-                                   climex:::deseasonalize.interactive,
-                                   reactive( input$selectDeseasonalize ),
-                                   reactive( input$selectDataBase ),
-                                   reactive( input$buttonMinMax ),
-                                   climex:::extremes.interactive )
+  reactive.extreme <-
+    climex:::data.extremes(
+                 reactive.selection, reactive( input$radioEvdStatistics ),
+                 reactive( input$sliderBlockLength ),
+                 reactive( input$sliderThreshold ),
+                 reactive( input$checkboxDecluster ),
+                 climex:::deseasonalize.interactive,
+                 reactive( input$selectDeseasonalize ),
+                 reactive( input$selectDataBase ),
+                 reactive( input$buttonMinMax ),
+                 climex:::extremes.interactive,
+                 climex:::cleaning.interactive,
+                 reactive( input$checkboxIncompleteYears ) )
   ## Reactive value determining the initial parameters of the fitting
   ## procedure.
   reactive.initials <- climex:::data.initials(

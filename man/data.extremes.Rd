@@ -7,7 +7,8 @@ and all input.}
 \usage{
 data.extremes(reactive.selection, radioEvdStatistics, sliderBlockLength,
   sliderThreshold, checkboxDecluster, deseasonalize.interactive,
-  selectDeseasonalize, selectDataBase, buttonMinMax, extremes.interactive)
+  selectDeseasonalize, selectDataBase, buttonMinMax, extremes.interactive,
+  cleaning.interactive, checkboxIncompleteYears)
 }
 \arguments{
 \item{reactive.selection}{Reactive value providing a time series of
@@ -58,6 +59,15 @@ blocks of equal lengths and to just extract the maximal values from
 then or to extract all data points above a certain threshold value.
 Which option is chosen depends of the radioEvdStatistic.
 \code{\link{extremes.interactive}}}
+
+\item{cleaning.interactive}{Function used to remove incomplete years
+from blocked time series or to remove clusters from data above a
+certain threshold.}
+
+\item{checkboxIncompleteYears}{Logical (checkbox) input determining
+whether to remove all incomplete years of a time series. This box
+will be only available if input$radioEvdStatistics == "GEV" and else
+will be NULL.}
 }
 \value{
 Reactive value containing a names list of the extracted
