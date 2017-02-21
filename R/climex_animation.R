@@ -1,3 +1,483 @@
+##' @title User interface controlling the optimization's animation
+##' @details This function generates two boxes containing the
+##' table of all starting points, the animations/pictures, as well
+##' as all the sliders, numerical inputs etc. to control the
+##' animation.
+##'
+##' @param id Namespace prefix
+##'
+##' @family animation
+##'
+##' @import shiny
+##' @importFrom shinydashboard box
+##' 
+##' @return tagList
+##' @author Philipp Mueller 
+likelihoodAnimationUI <- function( id ){
+  # Create a namespace function using the provided id
+  ns <- NS( id )
+  tagList(
+      box( title = h2( "Starting points of the optimization routine" ),
+          width = 8, status = "primary", id = "boxStartingPoints",
+          dataTableOutput( ns( "tableInitialPoints" ) ),
+          ## a plot of height 0? Well, its actually a very nice
+          ## trick since I need a width value for the generated
+          ## pngs in the animation in pixel. But I really want to
+          ## make app to be rendered nicely on different screen
+          ## sizes. Via the session$clientData I can access the
+          ## width and height of plots. Thus I can access the width
+          ## of this specific box via the plotPlaceholder without
+          ## seeing it at all.
+          plotOutput( ns( "placeholder" ), height = 0, width = '100%' ),
+          htmlOutput( ns( "drawLikelihoodAnimation" ) ) ),      
+      box( title = h2( "Options" ), width = 4,
+          background = "orange", id = "boxHeuristic",
+          dataTableOutput( ns( "tableHeuristicEstimates" ) ),
+          div( p( "actual initials", id = "tableInitialDescription" ),
+              uiOutput( ns( "inputInitialLocation" ) ),
+              uiOutput( ns( "inputInitialScale" ) ),
+              uiOutput( ns( "inputInitialShape" ) ),
+              id = "initialTable" ),
+          checkboxInput( "checkboxRerun",
+                        "Rerun the optimization", value = TRUE ),
+          sliderInput( ns( "sliderNumberInitialPoints" ),
+                      "Number of initial points", 1, 20, 5 ),
+          uiOutput( ns( "menuSliderLocationLim" ) ),
+          uiOutput( ns( "menuSliderScaleLim" ) ),
+          uiOutput( ns( "menuSliderShapeLim" ) ),
+          sliderInput( ns( "sliderOptimizationSteps" ),
+                      "Which optimization steps", 0, 1, c( .1, .5 ) ),
+          actionButton( ns( "buttonDrawAnimation" ), "Start animation" ),
+          actionButton( ns( "tableDrawPoints" ), "Reset" ) )
+  )
+}
+
+##' @title Module rendering an animation of the fitting procedure.
+##' @details This should help the user to determine whether she obtained
+##' the global minima while fitting the GEV/GP maximum likelihood function.
+##' Since it is not straight forward to change the optimizations implementation
+##' of the underlying optim fitting routines, just the "dfoptim::nmk" method
+##' produces an animation. For all other methods the a picture will be displayed
+##' showing the starting and end position connected by an arrow.
+##'
+##' @param input Namespace input. For more details check out
+##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html } }
+##' @param output Namespace output.
+##' @param session Namespace session. 
+##' @param reactive.fitting Reactive value containing the results of the
+##' fit (\code{\link{fit.gev}} or \code{\link{fit.gpd}} depending on
+##' radioEvdStatistic) to the blocked time series in
+##' reactive.extreme()[[ 1 ]].
+##' @param reactive.extreme Reactive value returning a list containing
+##' three elements: 1. the blocked time series, 2. the deseasonalized time
+##' series, and 3. the pure time series.   
+##' @param reactive.initial Reactive value holding the initial parameters
+##' to start the time series fit at. \code{\link{data.initials}}. Those can
+##' be specified in the top right box of the Likelihood tab.
+##' @param radioEvdStatistics Character (radio) input determining whether
+##' the GEV or GP distribution shall be fitted to the data. Choices:
+##' c( "GEV", "GP" ), default = "GEV".
+##' @param buttonMinMax Character (radio) input determining whether
+##' the GEV/GP distribution shall be fitted to the smallest or biggest
+##' vales. Choices: c( "Max", "Min ), default = "Max".
+##' @param selectOptimization Character (select) input to determine which
+##' optimization routine/method is going to be used when fitting the maximum
+##' likelihood function of the GEV/GP distribution. The choices are given in
+##' \code{\link{generalFittingRoutineInput}} and the default value is set to
+##' "Nelder-Mead".
+##' @param checkboxRerun Logical (checkbox) input from the Likelihood tab.
+##' It determines whether or not to start the optimization at the results
+##' of the first run again to escape local minima.
+##'
+##' family animation
+##'
+##' @import shiny
+##'
+##' @return Nothing in particular
+##' @author Philipp Mueller 
+likelihoodAnimation <- function( input, output, session, reactive.fitting,
+                                reactive.extreme, reactive.initials,
+                                radioEvdStatistics, buttonMinMax,
+                                selectOptimization, checkboxRerun ){
+  ## Fitting the MLE again with the algorithm of choice
+  output$menuSliderLocationLim <- renderMenu( {
+    x.fit.evd <- reactive.fitting()
+    if ( is.null( x.fit.evd ) )
+      return( NULL )
+    ## Hide input when fitting the GPD
+    if ( radioEvdStatistics() == "GP" )
+      return( NULL )
+    x.block <- reactive.extreme()[[ 1 ]]
+    if ( is.null( x.block ) ){
+      ## if the initialization has not finished yet just wait a
+      ## little longer
+      return( NULL )
+    }
+    sliderInput( session$ns( "sliderLocationLim" ),
+                "Location sampling limits",
+                round( x.fit.evd$par[ 1 ], 1 ) - 10,
+                round( x.fit.evd$par[ 1 ] + 10, 1 ),
+                c( round( x.fit.evd$par[ 1 ], 1 ) - 5,
+                  round( x.fit.evd$par[ 1 ], 1 ) + 5 ) ) } )
+  output$menuSliderScaleLim <- renderMenu( {
+    x.fit.evd <- reactive.fitting()
+    if ( is.null( x.fit.evd ) )
+      return( NULL )
+    x.block <- reactive.extreme()[[ 1 ]]
+    if ( is.null( x.block ) || is.null( radioEvdStatistics() ) ){
+      ## if the initialization has not finished yet just wait a
+      ## little longer
+      return( NULL )
+    }
+    if ( radioEvdStatistics() == "GEV" ){
+      x.fit.evd.scale <- x.fit.evd$par[ 2 ]
+    } else {
+      x.fit.evd.scale <- x.fit.evd$par[ 1 ]
+    }
+    sliderInput( session$ns( "sliderScaleLim" ),
+                "Scale sampling limits",
+                round( max( 0, x.fit.evd.scale  - 10 ), 1 ),
+                round( x.fit.evd.scale + 10, 1 ),
+                c( round( max( 0, x.fit.evd.scale - 5 ), 1 ),
+                  round( x.fit.evd.scale, 1 ) + 5 ) ) } )
+  output$menuSliderShapeLim <- renderMenu( {
+    x.fit.evd <- reactive.fitting()
+    if ( is.null( x.fit.evd ) )
+      return( NULL )
+    x.block <- reactive.extreme()[[ 1 ]]
+    if ( is.null( x.block ) || is.null( radioEvdStatistics() ) ){
+      ## if the initialization has not finished yet just wait a
+      ## little longer
+      return( NULL )
+    }
+    if ( radioEvdStatistics() == "GEV" ){
+      x.fit.evd.shape <- x.fit.evd$par[ 3 ]
+    } else {
+      x.fit.evd.shape <- x.fit.evd$par[ 2 ]
+    }
+    sliderInput( session$ns( "sliderShapeLim" ),
+                "Shape sampling limits",
+                round( x.fit.evd.shape - 1, 1 ),
+                round( x.fit.evd.shape + 1, 1 ),
+                c( round( x.fit.evd.shape, 1 ) - .3,
+                  round( x.fit.evd.shape, 1 ) + .3  ) ) } )
+  ## To enable the user to input her/his own custom initialization
+  ## points for the optimization it needs two things: three
+  ## numerical inputs chosing the climex::likelihood.initials as
+  ## default and a reactive vector gluing all together
+  output$inputInitialLocation <- renderMenu( {
+    x.block <- reactive.extreme()[[ 1 ]]
+    if ( is.null( x.block ) || is.null( radioEvdStatistics() ) ){
+      ## if the initialization has not finished yet just wait a
+      ## little longer
+      return( NULL )
+    }
+    if ( radioEvdStatistics() == "GEV" ){
+      model <- "gev"
+      ## In order to fit the minimal extremes
+      if ( ( !is.null( buttonMinMax() ) ) &&
+           ( buttonMinMax() == "Min" ) )
+        x.block <- x.block*( -1 )
+    } else {
+      model <- "gpd"
+    }
+    parameter.default <- climex::likelihood.initials( x.block,
+                                                     model = model )
+    numericInput( "initialLocation", "",
+                 value = round( parameter.default[ 1 ], 4 ) ) } )
+  output$inputInitialScale <- renderMenu( {
+    x.block <- reactive.extreme()[[ 1 ]]
+    if ( is.null( x.block ) || is.null( radioEvdStatistics() ) ){
+      ## if the initialization has not finished yet just wait a
+      ## little longer
+      return( NULL )
+    }
+    if ( radioEvdStatistics() == "GEV" ){
+      model <- "gev"
+      ## In order to fit the minimal extremes
+      if ( ( !is.null( buttonMinMax() ) ) &&
+           ( buttonMinMax() == "Min" ) )
+        x.block <- x.block*( -1 )
+    } else {
+      model <- "gpd"
+    }
+    parameter.default <- climex::likelihood.initials( x.block,
+                                                     model = model )
+    numericInput( "initialScale", "",
+                 value = round( parameter.default[ 2 ], 4 ),
+                 min = 0 ) } )
+  output$inputInitialShape <- renderMenu( {
+    x.block <- reactive.extreme()[[ 1 ]]
+    if ( is.null( x.block ) || is.null( radioEvdStatistics() ) ){
+      ## if the initialization has not finished yet just wait a
+      ## little longer
+      return( NULL )
+    }
+    if ( radioEvdStatistics() == "GEV" ){
+      model <- "gev"
+      ## In order to fit the minimal extremes
+      if ( ( !is.null( buttonMinMax() ) ) &&
+           ( buttonMinMax() == "Min" ) )
+        x.block <- x.block*( -1 )
+    } else {
+      model <- "gpd"
+    }
+    parameter.default <- climex::likelihood.initials( x.block,
+                                                     model = model )
+    numericInput( "initialShape", "",
+                 value = round( parameter.default[ 3 ], 4 ) ) } )
+  cached.table.init <- NULL
+  initial.parameters.likelihood <- reactive( {
+    x.block <- reactive.extreme()[[ 1 ]]
+    if ( is.null( x.block ) ){
+      ## if the initialization has not finished yet just wait a
+      ## little longer
+      return( NULL )
+    }
+    x.initial <- reactive.initials()
+    x.fit.evd <- reactive.fitting()
+    par.init <- x.fit.evd$par
+    if ( radioEvdStatistics() == "GEV" ){
+      model <- "gev"
+      if ( is.null( input$sliderNumberInitialPoints ) ||
+           is.null( input$sliderLocationLim ) ||
+           is.null( input$sliderScaleLim ) ||
+           is.null( input$sliderShapeLim ) ){
+        return( c( NaN, NaN, NaN ) )
+      }
+    } else {
+      model <- "gpd"
+      if ( is.null( input$sliderNumberInitialPoints ) || 
+           is.null( input$sliderScaleLim ) ||
+           is.null( input$sliderShapeLim ) ){
+        return( c( NaN, NaN ) )
+      }
+    }
+    ## the first entry of the table should always be the actual
+    ## point the optimization is starting from
+    if ( radioEvdStatistics() == "GEV" ){
+      location <- c( x.initial[ 1 ],
+                    round( stats::runif( (
+                      input$sliderNumberInitialPoints - 1 ),
+                      input$sliderLocationLim[ 1 ],
+                      input$sliderLocationLim[ 2 ] ), 4 ) )
+      scale <- c( x.initial[ 2 ],
+                 round( stats::runif( (
+                   input$sliderNumberInitialPoints - 1 ),
+                   input$sliderScaleLim[ 1 ],
+                   input$sliderScaleLim[ 2 ] ), 4 ) )
+      shape <- c( x.initial[ 3 ],
+                 round( stats::runif( (
+                   input$sliderNumberInitialPoints - 1 ),
+                   input$sliderShapeLim[ 1 ],
+                   input$sliderShapeLim[ 2 ] ), 4 ) )
+      table.init <- data.frame( location = location,
+                               scale = scale, shape = shape )
+    } else {
+      scale <- c( x.initial[ 2 ],
+                 round( stats::runif( (
+                   input$sliderNumberInitialPoints - 1 ),
+                   input$sliderScaleLim[ 1 ],
+                   input$sliderScaleLim[ 2 ] ), 4 ) )
+      shape <- c( x.initial[ 3 ],
+                 round( stats::runif( (
+                   input$sliderNumberInitialPoints - 1 ),
+                   input$sliderShapeLim[ 1 ],
+                   input$sliderShapeLim[ 2 ] ), 4 ) )
+      table.init <- data.frame( scale = scale, shape = shape )
+    }
+    ## but we only want to have starting points which do not
+    ## result in a NA
+    if ( radioEvdStatistics() == "GEV" ){
+      while ( any( is.nan( apply(
+          table.init, 1, climex::likelihood,
+          x.in = x.block, model = model ) ) ) ){
+            for ( ii in 1 : nrow( table.init ) ){
+              if ( is.nan( climex::likelihood(
+                                       as.numeric( table.init[ ii, ] ),
+                                       x.in = x.block,
+                                       model = model ) ) )
+                table.init[ ii, ] <- c(
+                    round( stats::runif( 1, input$sliderLocationLim[ 1 ],
+                                        input$sliderLocationLim[ 2 ] ),
+                          4 ),
+                    round( stats::runif( 1, input$sliderScaleLim[ 1 ],
+                                        input$sliderScaleLim[ 2 ] ),
+                          4 ),
+                    round( stats::runif( 1, input$sliderShapeLim[ 1 ],
+                                        input$sliderShapeLim[ 2 ] ),
+                          4 ) ) } }
+    } else {
+      while ( any( is.nan( apply(
+          table.init, 1, climex::likelihood,
+          x.in = x.block, model = model ) ) ) ){
+            for ( ii in 1 : nrow( table.init ) ){
+              if ( is.nan( climex::likelihood(
+                                       as.numeric( table.init[ ii, ] ),
+                                       x.in = x.block,
+                                       model = model ) ) )
+                table.init[ ii, ] <- c(
+                    round( stats::runif( 1, input$sliderScaleLim[ 1 ],
+                                        input$sliderScaleLim[ 2 ] ),
+                          4 ),
+                    round( stats::runif( 1, input$sliderShapeLim[ 1 ],
+                                        input$sliderShapeLim[ 2 ] ),
+                          4 ) ) } }
+    }
+    return( table.init ) } )
+  output$tableInitialPoints <- renderDataTable( {
+    reactive.initials <- initial.parameters.likelihood()
+    if ( all( is.na( reactive.initials ) ) )
+      return( NULL )
+    reactive.initials$ID <- seq( 1, nrow( reactive.initials ) )
+    ## round the number in the table
+    return( reactive.initials ) },
+    ## the drawCallback ensures that the width of the parent table
+    ## is not set to a specific pixel number but to 100% percent.
+    ## This ensures its correct rendering on mobile devices
+    options = list( dom = 't', pageLength = 5,
+                   drawCallback = I( "function( settings )
+            {document.getElementById( 'tableInitialPoints' ).style.width = '100%';}") ) )
+  ## Displaying of the heuristic estimates for a wiser picking of
+  ## the limits
+  output$tableHeuristicEstimates <- renderDataTable( {
+    x.block <- reactive.extreme()[[ 1 ]]
+    if ( is.null( x.block ) ){
+      ## if the initialization has not finished yet just wait a
+      ## little longer
+      return( NULL )
+    }
+    x.fit.evd <- reactive.fitting()
+    if ( radioEvdStatistics() == "GEV" ){
+      model <- "gev"
+    } else {
+      model <- "gpd"
+    }
+    x.mle.par <- x.fit.evd$par
+    x.initial <- reactive.initials()
+    x.suggested <- climex::likelihood.initials( x.block, model = model )
+    if ( radioEvdStatistics() == "GEV" ){
+      x.df <- data.frame( parameter = c( "fitting results",
+                                        "suggested initials" ),
+                         location = c( round( x.mle.par[ 1 ], 4 ),
+                                      round( x.suggested[ 1 ], 4 ) ),
+                         scale = c( round( x.mle.par[ 2 ], 4 ),
+                                   round( x.suggested[ 2 ], 4 ) ),
+                         shape = c( round( x.mle.par[ 3 ], 4 ),
+                                   round( x.suggested[ 3 ], 4 ) ) )
+    } else {
+      x.df <- data.frame( parameter = c( "fitting results",
+                                        "suggested initials" ),
+                         scale = c( round( x.mle.par[ 1 ], 4 ),
+                                   round( x.suggested[ 1 ], 4 ) ),
+                         shape = c( round( x.mle.par[ 2 ], 4 ),
+                                   round( x.suggested[ 2 ], 4 ) ) )
+    }            
+    return( x.df ) },
+    options = list( dom = 't',
+                   drawCallback = I( "function( settings )
+            {document.getElementById( 'tableHeuristicEstimates' ).style.width = '100%';}") ) )
+  ## the two dummies to get the current width of the screen
+  output$placeholder <- renderPlot({
+    ttplot( x.block ) } )
+  output$drawLikelihoodAnimation <- renderUI( {
+    ## This reactive content only depends on the action button
+    ## because of the use of the isolate() functions.        
+    ## Don't make the plot the first time I look at the tab
+    if ( input$buttonDrawAnimation < 1 )
+      return( NULL )
+      isolate( { x.block <- reactive.extreme()[[ 1 ]]
+        if ( is.null( x.block ) ){
+          ## if the initialization has not finished yet just wait a
+          ## little longer
+          return( NULL )
+        } } )
+      isolate( reactive.initials <- initial.parameters.likelihood() )
+      isolate( {
+        if ( selectOptimization() == "dfoptim::nmk" ){
+          optimization.method <- "nmk"
+        } else 
+          optimization.method <- selectOptimization()
+        ## I use the plot "plotPlaceholder" to determine the width
+        ## of the current box and adjust the pixel width of the png
+        ## pictures
+        session.width <- session$clientData[[ "output_animation-placeholder_width" ]]
+        session.plot.width <- floor( session.width/ 3 )
+        print( "starting animation......." )
+        ## a temporary folder will be generate to harvest the images
+        ## of the animation whenever the animation will be redone
+        ## the old folder should be removed to avoid wasting memory
+        ## of the server. Therefore the folder name has to be a global
+        ## variable
+        if ( !is.null( image.folder ) )
+          unlink( image.folder, recursive = TRUE )
+        ## if the shiny server is running on localhost it is run in
+        ## the CLIMEX.PATH folder and the folder containing the images
+        ## is constantly overwritten to prevent the script from
+        ## occupying to much space. Due to a setwd in the climex()
+        ## wrapper we are already in this folder
+        if ( session$clientData$url_hostname == "localhost" ||
+             session$clientData$url_hostname == "127.0.0.1"  ){
+          working.folder <- paste0( CLIMEX.PATH, "app/www" )
+          ## in case of the local session the variable image.folder
+          ## was already set in the wrapper climex::climex()
+        } else {
+          ## I decided to make the variable image.folder a global
+          ## one because in this way the folder addressed with it
+          ## can be deleted the next time this function is called
+          working.folder <- "/srv/shiny-server/assets" 
+          image.folder <<- paste0(
+              "/srv/shiny-server/assets/tmp/images_",
+              as.numeric ( as.POSIXct( lubridate::now() ) ) )
+        }
+        dir.create( image.folder, recursive = TRUE )
+        if ( radioEvdStatistics() == "GEV" ){
+          location.lim <- isolate( input$sliderLocationLim )
+          model <- "gev"
+        } else {
+          location.lim <- NULL
+          model <- "gpd"
+        }
+        climex:::animation.wrapper(
+                     time.series = x.block,
+                     starting.points = reactive.initials,
+                     location.lim = location.lim,
+                     scale.lim = isolate( input$sliderScaleLim ),
+                     shape.lim = isolate( input$sliderShapeLim ),
+                     optimization.method = optimization.method,
+                     optimization.steps = isolate(
+                         input$sliderOptimizationSteps ),
+                     optimization.rerun = checkboxRerun(),
+                     height = 300, width = session.plot.width,
+                     model = model, delay = 300,
+                     loopMode = "loop",
+                     image.folder = image.folder,
+                     working.folder = working.folder )
+        ## if the code is not running on localhost the shiny server
+        ## won't find the animation.js script using its absolute path
+        if ( session$clientData$url_hostname != "localhost" &&
+             session$clientData$url_hostname != "127.0.0.1" ){
+          working.folder <- sub( "/srv/shiny-server", "",
+                                working.folder )
+          animation.script <- "/assets/"
+        } else {
+          working.folder <- ""
+          animation.script <- ""
+        }
+        return( div(
+            class = "scianimator",
+            style = "display: inline-block;",
+            tags$script( src = paste0( animation.script,
+                                      "jquery.scianimator.min.js" ) ),
+            tags$script( src = paste0( working.folder,
+                                      "/animation.js" ) ),
+            div( id = "animationLocSc", class = "animationClimex" ),
+            div( id = "animationLocSh", class = "animationClimex" ),
+            div( id = "animationScSh", class = "animationClimex" ) ) )
+      } ) } )
+}
+
+
 ##' @title Displays the contour plots of the GEV likelihood function of a time series and the optimization routes for a bunch of provided initial points.
 ##'
 ##' @details Three orthogonal 2D plots are done for the negative log-likelihood of the GEV function intersecting in the actual result of the default optimization. Caution: An optimization only be displayed for optimization.method == 'nmk' and the trajectories will move out of the planes and so the precise position of the trajectory might be misleading. But the overall goal is to check for local minima. A bunch of images will be generated in the provided folder. Since the likelihood values cover quite some orders of magnitude they will be cut 1E3 above the minimal value. Also mind the differing height value: for a plot containing the legend (in this version of the script it is just the last one) the height value is increased to also cover the additional legend.
