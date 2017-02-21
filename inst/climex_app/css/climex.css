@@ -170,13 +170,15 @@ tfoot {
 #tableInitialPoints > tbody > tr:nth-of-type(n) {
     background-color: #FFFFFF !important;
 }
-#tableHeuristicEstimates .even, #tableHeuristicEstimates .odd {
+#animation-tableHeuristicEstimates .even,
+#animation-tableHeuristicEstimates .odd {
     background-color: #FF8C00 !important;
 }
 table.table-bordered.dataTable {
     border-collapse: collapse !important;
 }
-#inputInitialLocation, #inputInitialScale, #inputInitialShape {
+#animation-inputInitialLocation, #animation-inputInitialScale,
+#animation-inputInitialShape {
     /* children container for the individual numerical input */
     margin-left: 3%;
     width: 19% ;
@@ -186,22 +188,22 @@ table.table-bordered.dataTable {
     display: inline;
     margin-top: -4%;
 }
-#inputInitialLocation {
+#animation-inputInitialLocation {
     /* in order to align the numerical inputs with the content of the table */
     margin-left: 13% !important;
     width: 22%;
 }
-#inputInitialScale {
+#animation-inputInitialScale {
     width: 15.8%;
 }
-#inputInitialShape {
+#animation-inputInitialShape {
     width: 19%;
 }
-#inputInitialScale > .form-control {
+#animation-inputInitialScale > .form-control {
     /* to perfectly align it with the table */
     padding: 5% 28% !important;
 }
-#inputInitialShape{
+#animation-inputInitialShape{
     margin-left: 3% !important;
 }
 #boxHeuristic > .box > .box-body > .form-group > .checkbox > label > span {
@@ -353,7 +355,7 @@ table.table-bordered.dataTable {
 	width: 30% !important;
 	left: 0px !important;
     }
-    #inputInitialLocation {
+    #animation-inputInitialLocation {
 	margin-left: 4% !important;
     }
     .scianimator .controls, .scianimator .control {

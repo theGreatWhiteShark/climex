@@ -1,11 +1,11 @@
 (function($) {
     /* if the animation is started, show the Gif */
-    $('#buttonDrawAnimation').bind( 'click', function( event ){
+    $('#animation-buttonDrawAnimation').bind( 'click', function( event ){
 	$( '#loadingGif' ).css( 'visibility', 'visible' );
 	$( '#loadingGif' ).css( 'width', '100%' );
     });
     /* if the animation is started, show the Gif */
-    $('#buttonDrawMarkers').bind( 'click', function( event ){
+    $('#animation-buttonDrawMarkers').bind( 'click', function( event ){
 	$( '#loadingGif' ).css( 'visibility', 'visible' );
 	$( '#loadingGif' ).css( 'width', '100%' );
     });
