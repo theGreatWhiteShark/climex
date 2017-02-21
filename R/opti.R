@@ -94,7 +94,8 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE,
     ## the optimization.
     ## In principle I would recommend using the default optim procedures.
     aux <- dfoptim::nmk( par = initial, fn = likelihood, x = x,
-                        MODIFIED = TRUE, WARNINGS = FALSE )
+                        model = "gev", MODIFIED = TRUE,
+                        WARNINGS = FALSE )
     res.optim <- list( par = aux$par, value = aux$value,
                       counts = aux$feval, convergence = 0,
                       message = NULL, updates = aux$x.updates,
@@ -121,7 +122,8 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE,
                                                ... ), silent = TRUE ) )
     } else if ( method == "nmk" ){
       aux <- dfoptim::nmk( par = res.optim$par, fn = likelihood, x = x,
-                          MODIFIED = TRUE, WARNINGS = FALSE )
+                          model = "gev", MODIFIED = TRUE,
+                          WARNINGS = FALSE )
       res.optim.rerun <- list( par = aux$par, value = aux$value,
                               counts = aux$feval, convergence = 0,
                               message = NULL, updates = aux$x.updates,
