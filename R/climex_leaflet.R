@@ -322,7 +322,9 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                                  width = map.width )
         return( map.leaflet )
       } } )
-
+  ## Placeholder to determine the window's width
+  output$placeholder <- renderPlot( {
+    ttplot( x.block ) } )
   ## This chunk both updates/renders the table containing the summary
   ## statistics of an individual station and adds a red icon for the
   ## selected station.
