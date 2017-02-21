@@ -151,6 +151,8 @@ climex.server <- function( input, output, session ){
   ## Removing incomplete years (GEV) or clusters (GP)
   output$sidebarCleaning <-
     climex:::sidebarCleaning( reactive( input$radioEvdStatistics ) )
+  ## Displaying a loading gif whenever the app is busy
+  callModule( climex:::sidebarLoadingGif, "busy" )
   ## Reactive value listening for file input
   reactive.loading <- climex:::file.loading(
                                    reactive( input$fileInputSelection ) )
@@ -355,10 +357,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
         climex:::sidebarDataTypeInput(),
         climex:::sidebarLoadingInput(),
         climex:::sidebarCleaningInput(),
-        ## while plotting the images for the animation a gif
-        ## should be shown
-        div( uiOutput( "loadingScript" ), uiOutput( "loadingImage" ),
-            id = "loadingWrapper" ) ) ),
+        climex:::sidebarLoadingGifOutput( "busy" ) ) ),
     body = dashboardBody(
       ## shinyjs::useShinyjs(),
       includeCSS( paste0( system.file( "climex_app", package = "climex" ),

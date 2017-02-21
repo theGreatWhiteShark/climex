@@ -486,3 +486,62 @@ file.loading <- function( fileInputSelection ){
       return( NULL )
   } )
 }
+
+##' @title Showing a Gif in the sidebar while the app is processing/on hold
+##' @details Rendering of \code{link{sidebarLoadingGif}}.
+##'
+##' @param id Namespace prefix
+##'
+##' @family sidebar
+##'
+##' @import shiny
+##'
+##' @return div
+##' @author Philipp Mueller 
+sidebarLoadingGifOutput <- function( id ){
+  # Create a namespace function using the provided id
+  ns <- NS( id )
+  div( uiOutput( ns( "loadingScript" ) ),
+      uiOutput( ns( "loadingImage" ) ),
+      id = "loadingWrapper" )
+} 
+
+##' @title Showing a Gif in the sidebar while the app is processing/on hold
+##' @details This module will display a loading gif. Most of the code of
+##' this function is already written in a JavaScript script installed
+##' alongside the climex package. It just determines if the app is run on
+##' either a localhost (direct interaction) or on a server waiting for
+##' client interaction. Accordingly it looks up both the JavaScript script
+##' and the corresponding gif file.
+##'
+##' @param input Namespace input. For more details check out
+##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html } }
+##' @param output Namespace output.
+##' @param session Namespace session.
+##'
+##' @family sidebar
+##'
+##' @import shiny
+##' 
+##' @return div
+##' @author Philipp Mueller 
+sidebarLoadingGif <- function( input, output, session ){
+  output$loadingImage <- renderUI({
+    if ( session$clientData$url_hostname != "localhost" &&
+         session$clientData$url_hostname != "127.0.0.1" ){
+      folder <- "/assets/"
+    } else
+      folder <- ""
+    return( img( src = paste0( folder, "loading.gif" ),
+                id = session$ns( "loadingGif" ) ) ) } )
+  output$loadingScript <- renderUI({
+    if ( session$clientData$url_hostname != "localhost" &&
+         session$clientData$url_hostname != "127.0.0.1" ){
+      folder <- "/assets/"
+    } else
+      folder <- ""
+    return( div( singleton(
+        tags$script( src = paste0( folder, "loadingGif.js" )
+                    ) ) ) )
+  } )
+}
