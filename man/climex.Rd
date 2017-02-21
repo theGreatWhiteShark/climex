@@ -33,7 +33,7 @@ stations geo-coordinates, height and name
 Philipp Mueller
 }
 \seealso{
-Other shiny: \code{\link{animation.wrapper}},
-  \code{\link{plot.animation}}
+Other climex: \code{\link{climex.server}},
+  \code{\link{climex.ui}}
 }
 

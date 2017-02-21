@@ -19,7 +19,7 @@
 ##' stations geo-coordinates, height and name 
 ##' }
 ##'
-##' @family shiny
+##' @family climex
 ##'
 ##' @return starts a shiny app.
 ##' @export
@@ -120,7 +120,11 @@ climex <- function(){
 ##' @import xts
 ##' @import dygraphs
 ##' @import ggplot2
+##'
+##' @family climex
+##' 
 ##' @export
+##' 
 ##' @author Philipp Mueller 
 climex.server <- function( input, output, session ){
 ########################################################################
@@ -700,7 +704,11 @@ climex.server <- function( input, output, session ){
 ##' @importFrom dygraphs dygraphOutput
 ##' @importFrom htmltools includeCSS
 ##' @importFrom htmltools h2
+##' 
 ##' @export
+##'
+##' @family climex
+##' 
 ##' @author Philipp Mueller 
 climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
   if ( missing( selected ) )

@@ -21,4 +21,7 @@ copy/pasting the code in some files somewhere in /srv/shiny-server.
 \author{
 Philipp Mueller
 }
+\seealso{
+Other climex: \code{\link{climex.ui}}, \code{\link{climex}}
+}
 
