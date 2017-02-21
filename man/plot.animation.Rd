@@ -56,6 +56,7 @@ Three orthogonal 2D plots are done for the negative log-likelihood of the GEV fu
 Philipp Mueller
 }
 \seealso{
-Other animation: \code{\link{animation.wrapper}}
+Other animation: \code{\link{animation.wrapper}},
+  \code{\link{likelihoodAnimationUI}}
 }
 

@@ -57,6 +57,7 @@ All the images as well as the JavaScript script will be produced in a folder in 
 Philipp Mueller
 }
 \seealso{
-Other animation: \code{\link{plot.animation}}
+Other animation: \code{\link{likelihoodAnimationUI}},
+  \code{\link{plot.animation}}
 }
 
