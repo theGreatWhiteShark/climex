@@ -26,6 +26,8 @@ Other sidebar: \code{\link{data.selection}},
   \code{\link{sidebarDataSourceInput}},
   \code{\link{sidebarDataSource}},
   \code{\link{sidebarDataType}},
+  \code{\link{sidebarLoadingGifOutput}},
+  \code{\link{sidebarLoadingGif}},
   \code{\link{sidebarLoadingInput}},
   \code{\link{sidebarLoading}}
 }

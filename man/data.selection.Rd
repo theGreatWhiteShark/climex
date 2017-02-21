@@ -80,6 +80,8 @@ Other sidebar: \code{\link{file.loading}},
   \code{\link{sidebarDataSource}},
   \code{\link{sidebarDataTypeInput}},
   \code{\link{sidebarDataType}},
+  \code{\link{sidebarLoadingGifOutput}},
+  \code{\link{sidebarLoadingGif}},
   \code{\link{sidebarLoadingInput}},
   \code{\link{sidebarLoading}}
 }
