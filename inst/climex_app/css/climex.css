@@ -264,7 +264,7 @@ table.table-bordered.dataTable {
 /* a gif image is going to be displayed while the pictures for the animation are generated */
 /* since it is displayed in the sidebar, always center it */
 /* TODO: not visible on narrow screens */
-#loadingGif {
+#busy-loadingGif {
     width: 0%;
     visibility: hidden;
     position: relative !important;
