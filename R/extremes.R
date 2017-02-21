@@ -348,6 +348,8 @@ return.level <- function( x, return.period = 100,
 ##' @param model Determines if to use the GEV or GP distribution. Default = "gev".
 ##' @param silent Whether to display warnings or not. Default = FALSE.  
 ##'
+##' @export
+##' 
 ##' @return Numerical vector of the same length as 'period'.
 ##' @author Philipp Mueller 
 rlevd <- function ( period, location = NULL, scale = NULL, shape = NULL, threshold = NULL, 
@@ -445,6 +447,8 @@ qevd <- function ( p, location = NULL, scale = NULL, shape = NULL,
 ##' @param model Determines if to use the GEV or GP distribution. Default = "gev".
 ##' @param silent Whether to display warnings or not. Default = FALSE.    
 ##'
+##' @export
+##' 
 ##' @return Numerical vector of length n drawn from the corresponding distribution. 
 ##' @author Philipp Mueller 
 revd <- function ( n, location = NULL, scale = NULL, shape = NULL,
