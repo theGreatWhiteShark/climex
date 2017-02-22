@@ -475,7 +475,8 @@ revd <- function ( n, location = NULL, scale = NULL, shape = NULL,
   }
   ## allocating memory
   result <- numeric( n ) + NA
-  result <- location + scale * ( z^( -shape ) - 1 )/ shape
+  result <- as.numeric( location ) + as.numeric( scale )*
+    ( z^( -as.numeric( shape ) ) - 1 )/ as.numeric( shape )
   return( result )
 }
 
