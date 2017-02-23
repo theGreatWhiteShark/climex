@@ -42,4 +42,17 @@ block( temp.potsdam )
 \author{
 Philipp Mueller
 }
+\seealso{
+Other extremes: \code{\link{decluster}},
+  \code{\link{extremal.index}}, \code{\link{gev.density}},
+  \code{\link{gpd.density}}, \code{\link{qevd}},
+  \code{\link{return.level}}, \code{\link{revd}},
+  \code{\link{rlevd}}, \code{\link{threshold}}
+
+Other extremes: \code{\link{decluster}},
+  \code{\link{extremal.index}}, \code{\link{gev.density}},
+  \code{\link{gpd.density}}, \code{\link{qevd}},
+  \code{\link{return.level}}, \code{\link{revd}},
+  \code{\link{rlevd}}, \code{\link{threshold}}
+}
 

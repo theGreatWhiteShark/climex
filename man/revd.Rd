@@ -40,4 +40,11 @@ refer to the original package.
 \author{
 Philipp Mueller
 }
+\seealso{
+Other extremes: \code{\link{block}},
+  \code{\link{decluster}}, \code{\link{extremal.index}},
+  \code{\link{gev.density}}, \code{\link{gpd.density}},
+  \code{\link{qevd}}, \code{\link{return.level}},
+  \code{\link{rlevd}}, \code{\link{threshold}}
+}
 

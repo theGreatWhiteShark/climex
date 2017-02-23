@@ -81,4 +81,11 @@ fit.results <- fit.gev( block( anomalies( temp.potsdam ) ) )
 return.level( fit.results, return.period = c( 10, 50, 100 ),
               error.estimation = "MLE" )
 }
+\seealso{
+Other extremes: \code{\link{block}},
+  \code{\link{decluster}}, \code{\link{extremal.index}},
+  \code{\link{gev.density}}, \code{\link{gpd.density}},
+  \code{\link{qevd}}, \code{\link{revd}},
+  \code{\link{rlevd}}, \code{\link{threshold}}
+}
 

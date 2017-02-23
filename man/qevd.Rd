@@ -40,4 +40,11 @@ function outside of the fitting function.
 \author{
 Philipp Mueller
 }
+\seealso{
+Other extremes: \code{\link{block}},
+  \code{\link{decluster}}, \code{\link{extremal.index}},
+  \code{\link{gev.density}}, \code{\link{gpd.density}},
+  \code{\link{return.level}}, \code{\link{revd}},
+  \code{\link{rlevd}}, \code{\link{threshold}}
+}
 
