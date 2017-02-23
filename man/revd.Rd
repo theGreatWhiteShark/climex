@@ -16,17 +16,26 @@ revd(n, location = NULL, scale = NULL, shape = NULL, threshold = NULL,
 
 \item{shape}{Of the GEV/GP distribution. Default = NULL.}
 
-\item{threshold}{Used in the GP distribution. This parameter is optional but should be provided in order to create a representation of the fitted data exceedance. Default = NULL.}
+\item{threshold}{Used in the GP distribution. This parameter is
+optional but should be provided in order to create a representation
+of the fitted data exceedance. Default = NULL.}
 
-\item{model}{Determines if to use the GEV or GP distribution. Default = "gev".}
+\item{model}{Determines if to use the GEV or GP distribution.
+Default = "gev".}
 
 \item{silent}{Whether to display warnings or not. Default = FALSE.}
 }
 \value{
-Numerical vector of length n drawn from the corresponding distribution.
+Numerical vector of length n drawn from the corresponding
+distribution.
 }
 \details{
-This function was originally part of the extRemes package. But since one had to provide the threshold I couldn't use it insight the fit.gpd function. In contrast to the original implementation this function only features constant location, scale and shape parameters. If you want to do time dependent analysis of extreme events please refer to the original package.
+This function was originally part of the extRemes package.
+But since one had to provide the threshold I couldn't use it insight
+the fit.gpd function. In contrast to the original implementation this
+function only features constant location, scale and shape parameters.
+If you want to do time dependent analysis of extreme events please
+refer to the original package.
 }
 \author{
 Philipp Mueller

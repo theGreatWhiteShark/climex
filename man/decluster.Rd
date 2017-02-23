@@ -9,13 +9,15 @@ decluster(x, threshold)
 \arguments{
 \item{x}{Time series}
 
-\item{threshold}{Has to be set sufficient high to fulfill the asymptotic condition for the GP distribution.}
+\item{threshold}{Has to be set sufficient high to fulfill the
+asymptotic condition for the GP distribution.}
 }
 \value{
 Declustered values above the provided threshold (xts).
 }
 \details{
-Inspired by the decluster algorithm used in the extRemes package
+Inspired by the decluster algorithm used in the extRemes
+package
 }
 \author{
 Philipp Mueller

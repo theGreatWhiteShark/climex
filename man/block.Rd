@@ -2,7 +2,8 @@
 % Please edit documentation in R/extremes.R
 \name{block}
 \alias{block}
-\title{Separates the input into blocks of equal size and returns the maximum or minimum of the block as result.}
+\title{Separates the input into blocks of equal size and returns the
+maximum or minimum of the block as result.}
 \usage{
 block(input.bulk, block.number = round(length(input.bulk)/50),
   block.length = NULL, block.mode = c("max", "min"),
@@ -11,19 +12,29 @@ block(input.bulk, block.number = round(length(input.bulk)/50),
 \arguments{
 \item{input.bulk}{Provided data of class 'xts'.}
 
-\item{block.number}{Specifies the number of blocks the input data is going to be separated in.}
+\item{block.number}{Specifies the number of blocks the input data is
+going to be separated in.}
 
-\item{block.length}{Length of the blocks. For the sake of simplicity the last block is not forced to match the length of the other plots.}
+\item{block.length}{Length of the blocks. For the sake of simplicity
+the last block is not forced to match the length of the other plots.}
 
-\item{block.mode}{This parameter determines if the maximum "max" or the minimum "min" of a block shall be returned. Default: "max".}
+\item{block.mode}{This parameter determines if the maximum "max" or
+the minimum "min" of a block shall be returned. Default: "max".}
 
-\item{separation.mode}{"years" is used to split the data according to its date values instead. If 'block.length' or 'block.number' is specified this argument will not be considered and set to "none". Default = "years".}
+\item{separation.mode}{"years" is used to split the data according to
+its date values instead. If 'block.length' or 'block.number' is
+specified this argument will not be considered and set to "none".
+Default = "years".}
 }
 \value{
 Of class 'xts'.
 }
 \details{
-If 'separation.mode' is set to "years" the data is separated according to it's time stamps. If not the size of a block is determined by the 'block.length' parameter or calculated via the 'block.number' parameter. For calculating the mean of the blocks have a look at the \code{\link{stats::ave}} function.
+If 'separation.mode' is set to "years" the data is separated
+according to it's time stamps. If not the size of a block is
+determined by the 'block.length' parameter or calculated via the
+'block.number' parameter. For calculating the mean of the blocks have
+a look at the \code{\link{stats::ave}} function.
 }
 \examples{
 block( temp.potsdam )

@@ -2,7 +2,8 @@
 % Please edit documentation in R/extremes.R
 \name{rlevd}
 \alias{rlevd}
-\title{Internal function to calculate the return level of GEV or GP distribution.}
+\title{Internal function to calculate the return level of GEV or GP
+distribution.}
 \usage{
 rlevd(period, location = NULL, scale = NULL, shape = NULL,
   threshold = NULL, model = c("gev", "gpd"), silent = FALSE)
@@ -16,9 +17,12 @@ rlevd(period, location = NULL, scale = NULL, shape = NULL,
 
 \item{shape}{Of the GEV/GP distribution. Default = NULL.}
 
-\item{threshold}{Used in the GP distribution. This parameter is optional but should be provided in order to create a representation of the fitted data exceedance. Default = NULL.}
+\item{threshold}{Used in the GP distribution. This parameter is
+optional but should be provided in order to create a representation
+of the fitted data exceedance. Default = NULL.}
 
-\item{model}{Determines if to use the GEV or GP distribution. Default = "gev".}
+\item{model}{Determines if to use the GEV or GP distribution.
+Default = "gev".}
 
 \item{silent}{Whether to display warnings or not. Default = FALSE.}
 }
@@ -26,7 +30,9 @@ rlevd(period, location = NULL, scale = NULL, shape = NULL,
 Numerical vector of the same length as 'period'.
 }
 \details{
-Port from the extRemes package to ensure compatibility and to make the threshold argument obligatory. This is just for internal usage. Please use the \link{\code{return.level}} function instead!
+Port from the extRemes package to ensure compatibility and
+to make the threshold argument obligatory. This is just for internal
+usage. Please use the \link{\code{return.level}} function instead!
 }
 \author{
 Philipp Mueller

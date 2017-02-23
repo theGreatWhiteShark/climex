@@ -1,12 +1,23 @@
-##' @title Separates the input into blocks of equal size and returns the maximum or minimum of the block as result.
+##' @title Separates the input into blocks of equal size and returns the
+##' maximum or minimum of the block as result.
 ##'
-##' @details If 'separation.mode' is set to "years" the data is separated according to it's time stamps. If not the size of a block is determined by the 'block.length' parameter or calculated via the 'block.number' parameter. For calculating the mean of the blocks have a look at the \code{\link{stats::ave}} function.
+##' @details If 'separation.mode' is set to "years" the data is separated
+##' according to it's time stamps. If not the size of a block is
+##' determined by the 'block.length' parameter or calculated via the
+##' 'block.number' parameter. For calculating the mean of the blocks have
+##' a look at the \code{\link{stats::ave}} function.
 ##'
 ##' @param input.bulk Provided data of class 'xts'.
-##' @param block.number Specifies the number of blocks the input data is going to be separated in.
-##' @param block.length Length of the blocks. For the sake of simplicity the last block is not forced to match the length of the other plots.
-##' @param block.mode This parameter determines if the maximum "max" or the minimum "min" of a block shall be returned. Default: "max".
-##' @param separation.mode "years" is used to split the data according to its date values instead. If 'block.length' or 'block.number' is specified this argument will not be considered and set to "none". Default = "years".
+##' @param block.number Specifies the number of blocks the input data is
+##' going to be separated in.
+##' @param block.length Length of the blocks. For the sake of simplicity
+##' the last block is not forced to match the length of the other plots.
+##' @param block.mode This parameter determines if the maximum "max" or
+##' the minimum "min" of a block shall be returned. Default: "max".
+##' @param separation.mode "years" is used to split the data according to
+##' its date values instead. If 'block.length' or 'block.number' is
+##' specified this argument will not be considered and set to "none".
+##' Default = "years".
 ##' @return Of class 'xts'.
 ##' @family extremes
 ##' @author Philipp Mueller
@@ -73,10 +84,12 @@ block <- function( input.bulk,
 
 ##' @title Decluster point over threshold data used for GP fitting.
 ##'
-##' @details Inspired by the decluster algorithm used in the extRemes package
+##' @details Inspired by the decluster algorithm used in the extRemes
+##' package
 ##'
 ##' @param x Time series
-##' @param threshold Has to be set sufficient high to fulfill the asymptotic condition for the GP distribution.
+##' @param threshold Has to be set sufficient high to fulfill the
+##' asymptotic condition for the GP distribution.
 ##'
 ##' @return Declustered values above the provided threshold (xts).
 ##' @export
@@ -115,12 +128,23 @@ decluster <- function( x, threshold ){
 }
 
 ##' @title Extracts all data above a certain threshold
-##' @details Due to the UNIX principle (make each program do one thing well) I decided to provide this extra function instead of incorporating it into the fitting function. After extracting all data above the threshold it is going to be subtracted from the data. In addition all exceedance can be declustered. This step is highly recommended since the extreme value theory is only valid for data without correlations and short-range correlations (which are present in most measured data) can be filtered out using this procedure. 
+##' @details Due to the UNIX principle (make each program do one thing
+##' well) I decided to provide this extra function instead of
+##' incorporating it into the fitting function. After extracting all data
+##' above the threshold it is going to be subtracted from the data. In
+##' addition all exceedance can be declustered. This step is highly
+##' recommended since the extreme value theory is only valid for data
+##' without correlations and short-range correlations (which are present
+##' in most measured data) can be filtered out using this procedure. 
 ##'
 ##' @param x Time series or numerical vector.
 ##' @param threshold Value which has to be exceeded.
-##' @param decluster Flag indicating whether of not to decluster the obtained exceedance. Default = TRUE.
-##' @param na.rm Flag indicating whether to remove all NA values from the time series (removed points in clusters). For important steps like calculating the Lmoments of the time series there must not be any NA left. Default = TRUE.
+##' @param decluster Flag indicating whether of not to decluster the
+##' obtained exceedance. Default = TRUE.
+##' @param na.rm Flag indicating whether to remove all NA values from the
+##' time series (removed points in clusters). For important steps like
+##' calculating the Lmoments of the time series there must not be any NA
+##' left. Default = TRUE.
 ##'
 ##' @export
 ##' @return Declustered time series of the same format as the input.
@@ -144,23 +168,67 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
 
 ##' @title Calculation of the return levels.
 ##'
-##' @details Uses the climex:::rlevd function at its core (a port from the extRemes package) but also can handle the outputs of the \code{\link{fit.gev}} and \code{\link{fit.gpd}} function, is capable of calculating numerous return levels at once and also calculates the errors of the return levels. For the errors the ML fit is using the option hessian=TRUE (if not done already) or uses a Monte Carlo based approach. If no fitting object is provided, no errors will be calculated. 
+##' @details Uses the climex:::rlevd function at its core (a port from
+##' the extRemes package) but also can handle the outputs of the
+##' \code{\link{fit.gev}} and \code{\link{fit.gpd}} function, is capable
+##' of calculating numerous return levels at once and also calculates the
+##' errors of the return levels. For the errors the ML fit is using the
+##' option hessian=TRUE (if not done already) or uses a Monte Carlo based
+##' approach. If no fitting object is provided, no errors will be
+##' calculated. 
 ##'
-##' @param x Parameter input. Class numeric, climex.fit.gev or climex.fit.gpd.
-##' @param return.period Numeric vector of the return periods in years. Default = 100.
-##' @param error.estimation Method of calculating the standard errors of the return levels. Using option "MLE" it is calculated using the Delta method and the MLE of the GEV/GPD parameters. For the GPD type the total length of the original time series has to be provided as well or the MLE error estimation will not be able to work. Alternative one can use Monte Carlo simulations with "MC" for which monte.carlo.sample.size samples of the same size as x will be drawn from a GEV/GP distribution constituted by the obtained MLE of the GEV/GPD parameters of x. The standard error is then calculated via the square of the variance of the calculated return levels. Sometimes the inversion of the hessian fails (since the are some NaN in the hessian) (which is also the reason why the ismev package occasionally does not work). Option "none" just skips the calculation of the error and return just a numeric value of the estimate. To avoid broken dependencies  with existing code this option will be default. Default = "none".
-##' @param model Determining whether to calculate the initial parameters of the GEV or GPD function. Default = "gev".
-##' @param monte.carlo.sample.size Number of samples used to obtain the Monte Carlo estimate of the standard error of the fitting. Default = 1000.
-##' @param threshold Optional threshold for the GPD model. If present it will be added to the return level to produce a value which fits to underlying time series. Default = NULL.
-##' @param total.length Total number of observations in the time series the exceedance were obtained from (before! applying the threshold). This argument is needed to calculate the standard error of the return level via the delta method of the MLE in the GPD model. Default = NULL.
-##' @param original.time.series Time series used with \code{link{fit.gpd}} on which already a threshold (the one supplied here as well) was applied. Necessary to transform the return level for numerical input and the GPD model from m-th observation return level to annual return level. If omitted the return level will be per observation. Default = NULL.
-##' @param silent Throws an warning whenever the "gpd" model is used and the original.time.series is not supplied. Since this can be annoying one can also disable it. Default = FALSE.
+##' @param x Parameter input. Class numeric, climex.fit.gev or
+##' climex.fit.gpd.
+##' @param return.period Numeric vector of the return periods in years.
+##' Default = 100.
+##' @param error.estimation Method of calculating the standard errors of
+##' the return levels. Using option "MLE" it is calculated using the
+##' Delta method and the MLE of the GEV/GPD parameters. For the GPD type
+##' the total length of the original time series has to be provided as
+##' well or the MLE error estimation will not be able to work.
+##' Alternative one can use Monte Carlo simulations with "MC" for which
+##' monte.carlo.sample.size samples of the same size as x will be drawn
+##' from a GEV/GP distribution constituted by the obtained MLE of the
+##' GEV/GPD parameters of x. The standard error is then calculated via
+##' the square of the variance of the calculated return levels. Sometimes
+##' the inversion of the hessian fails (since the are some NaN in the
+##' hessian) (which is also the reason why the ismev package occasionally
+##' does not work). Option "none" just skips the calculation of the error
+##' and return just a numeric value of the estimate. To avoid broken
+##' dependencies  with existing code this option will be default.
+##' Default = "none".
+##' @param model Determining whether to calculate the initial parameters
+##' of the GEV or GPD function. Default = "gev".
+##' @param monte.carlo.sample.size Number of samples used to obtain the
+##' Monte Carlo estimate of the standard error of the fitting.
+##' Default = 1000.
+##' @param threshold Optional threshold for the GPD model. If present it
+##' will be added to the return level to produce a value which fits to
+##' underlying time series. Default = NULL.
+##' @param total.length Total number of observations in the time series
+##' the exceedance were obtained from (before! applying the threshold).
+##' This argument is needed to calculate the standard error of the
+##' return level via the delta method of the MLE in the GPD model.
+##' Default = NULL.
+##' @param original.time.series Time series used with \code{link{fit.gpd}}
+##' on which already a threshold (the one supplied here as well) was
+##' applied. Necessary to transform the return level for numerical input
+##' and the GPD model from m-th observation return level to annual return
+##' level. If omitted the return level will be per observation.
+##' Default = NULL.
+##' @param silent Throws an warning whenever the "gpd" model is used and
+##' the original.time.series is not supplied. Since this can be annoying
+##' one can also disable it. Default = FALSE.
 ##'
-##' @return If error.estimation == "none" a numerical vector containing the estimates of the return levels will be returned. Else a list containing the estimates and their standard errors will be returned.
+##' @return If error.estimation == "none" a numerical vector containing
+##' the estimates of the return levels will be returned. Else a list
+##' containing the estimates and their standard errors will be returned.
 ##' @export
+##'
 ##' @examples
 ##' fit.results <- fit.gev( block( anomalies( temp.potsdam ) ) )
-##' return.level( fit.results, return.period = c( 10, 50, 100 ), error.estimation = "MLE" )
+##' return.level( fit.results, return.period = c( 10, 50, 100 ),
+##'               error.estimation = "MLE" )
 return.level <- function( x, return.period = 100,
                          error.estimation = c( "none", "MC", "MLE" ),
                          model = c( "gev", "gpd" ),
@@ -337,15 +405,21 @@ return.level <- function( x, return.period = 100,
   return( list( return.levels = return.levels, errors = errors ) )
 }
 
-##' @title Internal function to calculate the return level of GEV or GP distribution.
-##' @details Port from the extRemes package to ensure compatibility and to make the threshold argument obligatory. This is just for internal usage. Please use the \link{\code{return.level}} function instead!
+##' @title Internal function to calculate the return level of GEV or GP
+##' distribution.
+##' @details Port from the extRemes package to ensure compatibility and
+##' to make the threshold argument obligatory. This is just for internal
+##' usage. Please use the \link{\code{return.level}} function instead!
 ##'
 ##' @param period Return period in years.
 ##' @param location Of the GEV distribution. Default = NULL.
 ##' @param scale Of the GEV/GP distribution. Default = NULL.
 ##' @param shape Of the GEV/GP distribution. Default = NULL.
-##' @param threshold Used in the GP distribution. This parameter is optional but should be provided in order to create a representation of the fitted data exceedance. Default = NULL.
-##' @param model Determines if to use the GEV or GP distribution. Default = "gev".
+##' @param threshold Used in the GP distribution. This parameter is
+##' optional but should be provided in order to create a representation
+##' of the fitted data exceedance. Default = NULL.
+##' @param model Determines if to use the GEV or GP distribution.
+##' Default = "gev".
 ##' @param silent Whether to display warnings or not. Default = FALSE.  
 ##'
 ##' @export
@@ -387,16 +461,23 @@ rlevd <- function ( period, location = NULL, scale = NULL, shape = NULL, thresho
   return( res )
 }
 
-##' @title Calculates the quantile of either the GEV or the GPD distribution
-##' @details Port from the extRemes package to (again) get rid of the 'threshold' argument to be able to have an separate 'threshold()' function outside of the fitting function. 
+##' @title Calculates the quantile of either the GEV or the GPD
+##' distribution
+##' @details Port from the extRemes package to (again) get rid of the
+##' 'threshold' argument to be able to have an separate 'threshold()'
+##' function outside of the fitting function. 
 ##'
 ##' @param p (Numeric) probability vector.
 ##' @param location Of the GEV distribution. Default = NULL.
 ##' @param scale Of the GEV/GP distribution. Default = NULL.
 ##' @param shape Of the GEV/GP distribution. Default = NULL.
-##' @param threshold Used in the GP distribution. This parameter is optional but should be provided in order to create a representation of the fitted data exceedance. Default = NULL.
-##' @param model Determines if to use the GEV or GP distribution. Default = "gev".
-##' @param lower.tail Whether to sample the probabilities P[X <= x] or P[X > x]. Default = TRUE (first case).
+##' @param threshold Used in the GP distribution. This parameter is
+##' optional but should be provided in order to create a representation
+##' of the fitted data exceedance. Default = NULL.
+##' @param model Determines if to use the GEV or GP distribution.
+##' Default = "gev".
+##' @param lower.tail Whether to sample the probabilities P[X <= x] or
+##' P[X > x]. Default = TRUE (first case).
 ##' @param silent Whether to display warnings or not. Default = FALSE.    
 ##'
 ##' @return Numerical vector of the same length as input argument p.
@@ -437,19 +518,28 @@ qevd <- function ( p, location = NULL, scale = NULL, shape = NULL,
 }
 
 ##' @title Drawing random numbers from the GEV or GP distribution
-##' @details This function was originally part of the extRemes package. But since one had to provide the threshold I couldn't use it insight the fit.gpd function. In contrast to the original implementation this function only features constant location, scale and shape parameters. If you want to do time dependent analysis of extreme events please refer to the original package.
+##' @details This function was originally part of the extRemes package.
+##' But since one had to provide the threshold I couldn't use it insight
+##' the fit.gpd function. In contrast to the original implementation this
+##' function only features constant location, scale and shape parameters.
+##' If you want to do time dependent analysis of extreme events please
+##' refer to the original package.
 ##'
 ##' @param n Number of samples to draw
 ##' @param location Of the GEV distribution. Default = NULL.
 ##' @param scale Of the GEV/GP distribution. Default = NULL.
 ##' @param shape Of the GEV/GP distribution. Default = NULL.
-##' @param threshold Used in the GP distribution. This parameter is optional but should be provided in order to create a representation of the fitted data exceedance. Default = NULL.
-##' @param model Determines if to use the GEV or GP distribution. Default = "gev".
+##' @param threshold Used in the GP distribution. This parameter is
+##' optional but should be provided in order to create a representation
+##' of the fitted data exceedance. Default = NULL.
+##' @param model Determines if to use the GEV or GP distribution.
+##' Default = "gev".
 ##' @param silent Whether to display warnings or not. Default = FALSE.    
 ##'
 ##' @export
 ##' 
-##' @return Numerical vector of length n drawn from the corresponding distribution. 
+##' @return Numerical vector of length n drawn from the corresponding
+##' distribution. 
 ##' @author Philipp Mueller 
 revd <- function ( n, location = NULL, scale = NULL, shape = NULL,
                   threshold = NULL, model = c( "gev", "gpd" ),

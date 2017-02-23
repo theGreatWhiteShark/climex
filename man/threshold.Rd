@@ -11,15 +11,26 @@ threshold(x, threshold, decluster = TRUE, na.rm = TRUE)
 
 \item{threshold}{Value which has to be exceeded.}
 
-\item{decluster}{Flag indicating whether of not to decluster the obtained exceedance. Default = TRUE.}
+\item{decluster}{Flag indicating whether of not to decluster the
+obtained exceedance. Default = TRUE.}
 
-\item{na.rm}{Flag indicating whether to remove all NA values from the time series (removed points in clusters). For important steps like calculating the Lmoments of the time series there must not be any NA left. Default = TRUE.}
+\item{na.rm}{Flag indicating whether to remove all NA values from the
+time series (removed points in clusters). For important steps like
+calculating the Lmoments of the time series there must not be any NA
+left. Default = TRUE.}
 }
 \value{
 Declustered time series of the same format as the input.
 }
 \details{
-Due to the UNIX principle (make each program do one thing well) I decided to provide this extra function instead of incorporating it into the fitting function. After extracting all data above the threshold it is going to be subtracted from the data. In addition all exceedance can be declustered. This step is highly recommended since the extreme value theory is only valid for data without correlations and short-range correlations (which are present in most measured data) can be filtered out using this procedure.
+Due to the UNIX principle (make each program do one thing
+well) I decided to provide this extra function instead of
+incorporating it into the fitting function. After extracting all data
+above the threshold it is going to be subtracted from the data. In
+addition all exceedance can be declustered. This step is highly
+recommended since the extreme value theory is only valid for data
+without correlations and short-range correlations (which are present
+in most measured data) can be filtered out using this procedure.
 }
 \author{
 Philipp Mueller

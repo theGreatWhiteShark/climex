@@ -2,7 +2,8 @@
 % Please edit documentation in R/extremes.R
 \name{qevd}
 \alias{qevd}
-\title{Calculates the quantile of either the GEV or the GPD distribution}
+\title{Calculates the quantile of either the GEV or the GPD
+distribution}
 \usage{
 qevd(p, location = NULL, scale = NULL, shape = NULL, threshold = NULL,
   model = c("gev", "gpd"), lower.tail = TRUE, silent = FALSE)
@@ -16,11 +17,15 @@ qevd(p, location = NULL, scale = NULL, shape = NULL, threshold = NULL,
 
 \item{shape}{Of the GEV/GP distribution. Default = NULL.}
 
-\item{threshold}{Used in the GP distribution. This parameter is optional but should be provided in order to create a representation of the fitted data exceedance. Default = NULL.}
+\item{threshold}{Used in the GP distribution. This parameter is
+optional but should be provided in order to create a representation
+of the fitted data exceedance. Default = NULL.}
 
-\item{model}{Determines if to use the GEV or GP distribution. Default = "gev".}
+\item{model}{Determines if to use the GEV or GP distribution.
+Default = "gev".}
 
-\item{lower.tail}{Whether to sample the probabilities P[X <= x] or P[X > x]. Default = TRUE (first case).}
+\item{lower.tail}{Whether to sample the probabilities P[X <= x] or
+P[X > x]. Default = TRUE (first case).}
 
 \item{silent}{Whether to display warnings or not. Default = FALSE.}
 }
@@ -28,7 +33,9 @@ qevd(p, location = NULL, scale = NULL, shape = NULL, threshold = NULL,
 Numerical vector of the same length as input argument p.
 }
 \details{
-Port from the extRemes package to (again) get rid of the 'threshold' argument to be able to have an separate 'threshold()' function outside of the fitting function.
+Port from the extRemes package to (again) get rid of the
+'threshold' argument to be able to have an separate 'threshold()'
+function outside of the fitting function.
 }
 \author{
 Philipp Mueller
