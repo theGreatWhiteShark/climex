@@ -773,9 +773,11 @@ likelihood.gradient <- function( parameters, x.in,
 ##' method of Hosking & Wallis implemented in the
 ##' extRemes::initializer.lmoments() function and an estimation using
 ##' the first two moments of the Gumbel distribution. For the later one
-##' a modification was added: By looking at skewness of the distribution
+##' a modification was added: By looking at skewness of the time series x
 ##' and with respect to some heuristic thresholds a shape parameter
-##' between -.4 and .2 is assigned. Warning: both methods do not work
+##' between -.4 and .2 is assigned for the GEV distribution. In case of
+##' the GP one, the sign of the skewness matches the sign of the series'
+##' shape parameter. Warning: both methods do not work
 ##' for samples with diverging (or pretty big) mean or variance. For
 ##' this reason the restrict argument is included. If the estimates are
 ##' bigger than the corresponding restrict.thresholds, they will be
@@ -887,6 +889,7 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
                                                x.in = x,
                                                model = "gev" ) ) )
   } else {
+    ## model == "gpd"
     ## Approximationg using the Lmoments method
     ## Since I decided to not calculate the threshold inside the
     ## fitting (or even inside this function - for the sake of the
@@ -908,7 +911,20 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
 
     ## Approximation using the method of moments
     sc.init <- sqrt( var( x ) )
-    sh.init <- .1
+    if ( modified ){
+      ## For positive shape parameters the skewness to the time series is
+      ## positive as well. For negative it's negative. This way at least
+      ## the sign of the shape (but unfortunately not the magnitude) can
+      ## be estimated
+      x.skewness <- moments::skewness( x )
+      if ( x.skewness >= 0 ){
+        sh.init <- .1
+      } else {
+        sh.init <- -.1
+      }
+    } else {
+      sh.init <- .1
+    }
     if ( type == "mom" )
       return( c( sc.init, sh.init ) )
 

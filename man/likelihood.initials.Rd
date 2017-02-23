@@ -34,9 +34,11 @@ Two main methods are used for the estimation: the L-moments
 method of Hosking & Wallis implemented in the
 extRemes::initializer.lmoments() function and an estimation using
 the first two moments of the Gumbel distribution. For the later one
-a modification was added: By looking at skewness of the distribution
+a modification was added: By looking at skewness of the time series x
 and with respect to some heuristic thresholds a shape parameter
-between -.4 and .2 is assigned. Warning: both methods do not work
+between -.4 and .2 is assigned for the GEV distribution. In case of
+the GP one, the sign of the skewness matches the sign of the series'
+shape parameter. Warning: both methods do not work
 for samples with diverging (or pretty big) mean or variance. For
 this reason the restrict argument is included. If the estimates are
 bigger than the corresponding restrict.thresholds, they will be
