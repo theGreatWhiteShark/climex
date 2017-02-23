@@ -24,6 +24,9 @@
 ##' @export
 ##' @import xts
 ##'
+##' @family extremes
+##' 
+##'
 ##' @examples
 ##' block( temp.potsdam )
 block <- function( input.bulk,
@@ -92,6 +95,9 @@ block <- function( input.bulk,
 ##' asymptotic condition for the GP distribution.
 ##'
 ##' @return Declustered values above the provided threshold (xts).
+##'
+##' @family extremes
+##' 
 ##' @export
 ##' @import xts
 ##' @author Philipp Mueller
@@ -127,6 +133,97 @@ decluster <- function( x, threshold ){
   x.result[ which.x.over.threshold ] <- x.over.threshold
 }
 
+##' @title Calculates the extremal index of a time series
+##' @details Started as a reduced version of the extRemes::extremalindex
+##' function. The extremal index can be thought of as the inverse of the
+##' mean cluster size. It can be calculated either by the "runs" method
+##' described by Stuart Coles, 2001 p. 100 or by the "intervals" method
+##' of Ferro and Segers, 2003.
+##'
+##' @param x Time series of class 'xts' or numerical vector.
+##' @param threshold Only events exceeding a specific threshold will be
+##' considered extreme event and thus will be subject of the
+##' declustering.
+##' @param method "runs" considers a event to start a new cluster only
+##' after run.length events already were below the supplied threshold
+##' (see Stuart Coles). "intervals" is doing something different.
+##' Default = "intervals".
+##' @param minimal.distance Number of events below the threshold until
+##' the following event will be considered the starting point of a new
+##' cluster. This only affects the "runs" method. Default = 3.
+##'
+##' @family extremes
+##'
+##' @return Numerical vector containing c( extremal index, number of
+##' clusters, minimal distance between clusters (minimal.distance) ).
+##' @author Philipp Mueller 
+extremal.index <- function( x, threshold,
+                           method = c( "intervals", "runs" ),
+                           minimal.distance = 3 ){
+  if ( missing( method ) ){
+    method <- "intervals"
+  }
+  method <- match.arg( method )
+  ## Positions (logical) of all events exceeding the threshold
+  exceedances <- x > threshold
+  number.exceedances <- sum( exceedances )
+  if ( number.exceesdances == 0 ){
+    warning( "No exceedances in extremal.index. The provided threshold parameter is most probably to high!" )
+    return( NaN )
+  }
+  if ( method == "intervals" ){
+    ## Distance between neighboring exceedances in number of
+    ## observations
+    distance.exceedances <- diff( ( 1 : length( x ) )[ exceedances ] )
+    if ( !any( distance.exceedances > 2 ) ){
+      hold <- colSums( cbind( distance.exceedances,
+                             distance.exceedances^ 2 ) )
+      if ( !any( distance.exceedances > 1 ) ){
+        warning( "The maximal distance between exceedances in extremal.index is 1! The provided threshold is way to low!" )
+      }
+    } else {
+      hold <- colSums( cbind( distance.exceedances - 1,
+      ( distance.exceedances - 1 )* ( distance.exceedances - 2 ) ) )
+    }
+    ## Calculating the extremal index
+    theta <- 2* hold[ 1 ]^2/( ( number.exceedances - 1 )* hold[ 2 ] )
+    ## Sanity check
+    if ( theta > 1 ){
+      theta <- 1
+      warning( "The calculated extremal index in extremal.index was too big and has been reset to 1" )
+    }
+    ## The number cluster need to be an integer
+    cluster.number <- ceiling( theta* number.exceedances - .5 )
+    ## Calculating the minimal distance between two clusters
+    ## Ordering the exceedances
+    distance.exceedances.ordered <- distance.exceedances[
+        order( distance.exceedances, na.last = TRUE,
+              decreasing = TRUE ) ]
+    minimal.distance <- distance.exceedances.ordered[ cluster.number ]
+    ## Difference in the number of elements per cluster
+    difference.elements <- c( diff( distance.exceedances.ordered ), 0 )
+    if ( cluster.number > 1 &&
+         difference.elements[ cluster.number - 1 ] == 0 ){
+      aux.elements <- 1 : ( number.exceedances - 1 )
+      cluster.same <- aux.elements[ difference.elements == 0 ]
+      cluster.changed <- aux.elements[ difference.elements != 0 ]
+      blub <- ( cluster.same < cluster.number ) &
+        ( cluster.same > max( cluster.changed[ cluster.changed <
+                                               cluster.number ] ) )
+      cluster.number <- min( cluster.same[ blub ] )
+    } else if ( method == "runs" ) {
+        tmp <- decluster( x = x, threshold = threshold, method = "runs", 
+            r = run.length, ...)
+        nc <- length(unique(attributes(tmp)$clusters))
+        N.r <- sum(c(tmp) > threshold)
+        res <- c(N.r/N.u, nc, run.length)
+        attr(res, "cluster") <- attributes(tmp)$cluster
+    }
+  } else
+    stop( "Unknown method supplied in extremal.index" )
+  return( c( theta, cluster.number, minimal.distance ) )
+}
+
 ##' @title Extracts all data above a certain threshold
 ##' @details Due to the UNIX principle (make each program do one thing
 ##' well) I decided to provide this extra function instead of
@@ -145,6 +242,9 @@ decluster <- function( x, threshold ){
 ##' time series (removed points in clusters). For important steps like
 ##' calculating the Lmoments of the time series there must not be any NA
 ##' left. Default = TRUE.
+##'
+##' @family extremes
+##' 
 ##'
 ##' @export
 ##' @return Declustered time series of the same format as the input.
@@ -224,6 +324,9 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
 ##' the estimates of the return levels will be returned. Else a list
 ##' containing the estimates and their standard errors will be returned.
 ##' @export
+##'
+##' @family extremes
+##' 
 ##'
 ##' @examples
 ##' fit.results <- fit.gev( block( anomalies( temp.potsdam ) ) )
@@ -420,7 +523,10 @@ return.level <- function( x, return.period = 100,
 ##' of the fitted data exceedance. Default = NULL.
 ##' @param model Determines if to use the GEV or GP distribution.
 ##' Default = "gev".
-##' @param silent Whether to display warnings or not. Default = FALSE.  
+##' @param silent Whether to display warnings or not. Default = FALSE.
+##'
+##' @family extremes
+##'   
 ##'
 ##' @export
 ##' 
@@ -478,7 +584,10 @@ rlevd <- function ( period, location = NULL, scale = NULL, shape = NULL, thresho
 ##' Default = "gev".
 ##' @param lower.tail Whether to sample the probabilities P[X <= x] or
 ##' P[X > x]. Default = TRUE (first case).
-##' @param silent Whether to display warnings or not. Default = FALSE.    
+##' @param silent Whether to display warnings or not. Default = FALSE. 
+##'
+##' @family extremes
+##'    
 ##'
 ##' @return Numerical vector of the same length as input argument p.
 ##' @author Philipp Mueller 
@@ -534,7 +643,10 @@ qevd <- function ( p, location = NULL, scale = NULL, shape = NULL,
 ##' of the fitted data exceedance. Default = NULL.
 ##' @param model Determines if to use the GEV or GP distribution.
 ##' Default = "gev".
-##' @param silent Whether to display warnings or not. Default = FALSE.    
+##' @param silent Whether to display warnings or not. Default = FALSE.
+##'
+##' @family extremes
+##'     
 ##'
 ##' @export
 ##' 
@@ -581,6 +693,8 @@ revd <- function ( n, location = NULL, scale = NULL, shape = NULL,
 ##' @param z Numerical vector of sites where to evaluate the
 ##' density of the GEV distribution.
 ##'
+##' @family extremes
+##' 
 ##' @return Numerical vector of same length as z.
 ##' @author Philipp Mueller
 gev.density <- function ( parameters, z ){
@@ -606,7 +720,9 @@ gev.density <- function ( parameters, z ){
 ##' @param threshold Threshold used to fit the GP distribution.
 ##' @param z Numerical vector of sites where to evaluate the
 ##' density of the GP distribution.
-##'
+##' 
+##' @family extremes
+##' 
 ##' @return Numerical vector of same length as z.
 ##' @author Philipp Mueller 
 gpd.density <- function( parameters, threshold, z ) {
