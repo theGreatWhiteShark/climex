@@ -1,33 +1,84 @@
 ##' @title Performing a fit to the GEV function.
 ##'
-##' @details Custom fitting of the GEV function including the estimation of the initial conditions. Per default the optimization is run twice to prevent getting trapped in local minima of the negative log-likelihood function. The output is of optim style. But the errors of the fitting are also provided as well as the estimates and the errors of some specified return levels. I had some problems with the optim implementation of the simulated annealing implementation. The optimization just kept its value and nothing happened. That's why I switched to the \code{\link{GenSA}} package. More for convenience and due to its use in the animation of the climex shiny app I also introduced a slightly modified version of the dfoptim package's 'nmk' function. But I do not recommend using it since they produce slightly worse results and seem to be numerical more unstable.
+##' @details Custom fitting of the GEV function including the
+##' estimation of the initial conditions. Per default the
+##' optimization is run twice to prevent getting trapped in local
+##' minima of the negative log-likelihood function. The output is
+##' of optim style. But the errors of the fitting are also provided
+##' as well as the estimates and the errors of some specified return
+##' levels. I had some problems with the optim implementation of the
+##' simulated annealing implementation. The optimization just kept
+##' its value and nothing happened. That's why I switched to the
+##' \code{\link{GenSA}} package. More for convenience and due to its
+##' use in the animation of the climex shiny app I also introduced a
+##' slightly modified version of the dfoptim package's 'nmk' function.
+##' But I do not recommend using it since they produce slightly worse
+##' results and seem to be numerical more unstable.
 ##'
-##' @param x Blocked time series to which the GEV distribution should be fitted.
-##' @param initial Initial values for the GEV parameters. Has to be provided as 3x1 vector. If NULL the parameters are estimated with the function \code{\link{likelihood.initials}}. Default = NULL
-##' @param rerun The optimization will be started again using the results of the first optimization run. If the "Nelder-Mead" algorithm is used for optimization (as it is here) this can be useful to escape local minima. When choosing simulated annealing as method the rerun will be skipped. Provide a different number of runs directly to the GenSA function via ... instead. Default = TRUE
-##' @param optim.function Function which is going to be optimized. Default: \code{\link{likelihood}}
-##' @param gradient.function If NULL a finite difference method is invoked. Default: \code{\link{likelihood.gradient}}
-##' @param error.estimation Method for calculating the standard errors of the fitted results. Using the option "MLE" the errors of the GEV parameters will be calculated as the square roots of the diagonal elements of the inverse of the hessian matrix calculated with the MLE of the GEV parameters. The standard error of the return level is calculated using the Delta method and the MLE of the GEV parameters. Alternative one can use Monte Carlo simulations with "MC" for which 1000 samples of the same size as x will be drawn from a GEV distribution constituted by the obtained MLE of the GEV parameters of x. The standard error is then calculated via the square of the variance of all fitted GEV parameters and calculated return levels. Sometimes the inversion of the hessian fails (since the are some NaN in the hessian) (which is also the reason why the ismev package occasionally does not work). In such cases the Monte Carlo method is used. Option "none" just skips the calculation of the error. Default = "none".
-##' @param method Through the argument 'method' (which is passed to the optim function) the optimization algorithm is chosen. The default one is the "Nelder-Mead".
-##' @param monte.carlo.sample.size Number of samples used to obtain the Monte Carlo estimate of the standard error of the fitting. Default = 1000
-##' @param return.period Quantiles at which the return level is going to be evaluated. Class "numeric". Default = 100.
-##' @param ... Additional arguments for the optim() or GenSA::GenSA() function. Depending on the chosen method.
+##' @param x Blocked time series to which the GEV distribution should
+##' be fitted.
+##' @param initial Initial values for the GEV parameters. Has to be
+##' provided as 3x1 vector. If NULL the parameters are estimated with
+##' the function \code{\link{likelihood.initials}}. Default = NULL
+##' @param rerun The optimization will be started again using the
+##' results of the first optimization run. If the "Nelder-Mead"
+##' algorithm is used for optimization (as it is here) this can be
+##' useful to escape local minima. When choosing simulated annealing as
+##' method the rerun will be skipped. Provide a different number of runs
+##' directly to the GenSA function via ... instead. Default = TRUE
+##' @param optim.function Function which is going to be optimized.
+##' Default: \code{\link{likelihood}}
+##' @param gradient.function If NULL a finite difference method is
+##' invoked. Default: \code{\link{likelihood.gradient}}
+##' @param error.estimation Method for calculating the standard errors of
+##' the fitted results. Using the option "MLE" the errors of the GEV
+##' parameters will be calculated as the square roots of the diagonal
+##' elements of the inverse of the hessian matrix calculated with the MLE
+##' of the GEV parameters. The standard error of the return level is
+##' calculated using the Delta method and the MLE of the GEV parameters.
+##' Alternative one can use Monte Carlo simulations with "MC" for which
+##' 1000 samples of the same size as x will be drawn from a GEV distribution
+##' constituted by the obtained MLE of the GEV parameters of x. The standard
+##' error is then calculated via the square of the variance of all fitted
+##' GEV parameters and calculated return levels. Sometimes the inversion
+##' of the hessian fails (since the are some NaN in the hessian) (which is
+##' also the reason why the ismev package occasionally does not work). In
+##' such cases the Monte Carlo method is used. Option "none" just skips
+##' the calculation of the error. Default = "none".
+##' @param method Through the argument 'method' (which is passed to the
+##' optim function) the optimization algorithm is chosen. The default one
+##' is the "Nelder-Mead".
+##' @param monte.carlo.sample.size Number of samples used to obtain the
+##' Monte Carlo estimate of the standard error of the fitting. Default = 1000
+##' @param return.period Quantiles at which the return level is going to be
+##' evaluated. Class "numeric". Default = 100.
+##' @param ... Additional arguments for the optim() or GenSA::GenSA()
+##' function. Depending on the chosen method.
 ##' 
 ##' @family optimization
 ##' 
-##' @return Output of the optim function with class == c( "list", "climex.fit.gev" )
+##' @return Output of the optim function with class == c( "list",
+##' "climex.fit.gev" )
 ##' \itemize{
 ##'  \item{ par = MLE of the GEV parameters }
-##'  \item{ value = Value of the negative log-likelihood evaluated at the MLE }
-##'  \item{ counts = Number of function evaluations during the optimization }
-##'  \item{ convergence = Specifies the state of the convergence (see \code{\link{optim}})) }
+##'  \item{ value = Value of the negative log-likelihood evaluated
+##' at the MLE }
+##'  \item{ counts = Number of function evaluations during the
+##' optimization }
+##'  \item{ convergence = Specifies the state of the convergence
+##' (see \code{\link{optim}})) }
 ##'  \item{ message = see \code{\link{optim}} }
-##'  \item{ hessian = Hessian or the observed information matrix evaluated at the MLE }
-##'  \item{ return.level = Estimate of the return levels at the provided return periods }
-##'  \item{ se = Standard error of the GEV parameters and the return levels }
+##'  \item{ hessian = Hessian or the observed information matrix
+##' evaluated at the MLE }
+##'  \item{ return.level = Estimate of the return levels at the
+##' provided return periods }
+##'  \item{ se = Standard error of the GEV parameters and the return
+##' levels }
 ##'  \item{ x = Original time series }
-##'  \item{ updates = A data.frame either the first and last step ( !'nmk' )
-##'         containing all the optimization steps visited during the call. }
+##'  \item{ updates = A data.frame either the first and last step
+##' ( !'nmk' )
+##'         containing all the optimization steps visited during the
+##' call. }
 ##' }
 ##' @author Philipp Mueller
 ##' @export
@@ -237,43 +288,103 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE,
 
 ##' @title Performing a fit to the GPD function.
 ##'
-##' @details Custom fitting of the generalized Pareto distribution (GPD) function including the estimation of the initial conditions. Per default the optimization is run twice to prevent getting trapped in local minima of the negative log-likelihood function. The output is of optim style. But the errors of the fitting are also provided as well as the estimates and the errors of some specified return levels. I had some problems with the optim implementation of the simulated annealing implementation. The optimization just kept its value and nothing happened. That's why I switched to the \code{\link{GenSA}} package. More for convenience and due to its use in the animation of the climex shiny app I also introduced a slightly modified version of the dfoptim package's 'nmk' function. But I do not recommend using it since they produce slightly worse results and seem to be numerical more unstable.
+##' @details Custom fitting of the generalized Pareto distribution (GPD)
+##' function including the estimation of the initial conditions. Per
+##' default the optimization is run twice to prevent getting trapped in
+##' local minima of the negative log-likelihood function. The output is
+##' of optim style. But the errors of the fitting are also provided as
+##' well as the estimates and the errors of some specified return levels.
+##' I had some problems with the optim implementation of the simulated
+##' annealing implementation. The optimization just kept its value and
+##' nothing happened. That's why I switched to the \code{\link{GenSA}}
+##' package. More for convenience and due to its use in the animation of
+##' the climex shiny app I also introduced a slightly modified version of
+##' the dfoptim package's 'nmk' function. But I do not recommend using it
+##' since they produce slightly worse results and seem to be numerical
+##' more unstable.
 ##'
-##' @param x Blocked time series to which the GPD distribution should be fitted.
-##' @param initial Initial values for the GPD parameters. Has to be provided as 2x1 vector. If NULL the parameters are estimated with the function \code{\link{likelihood.initials}}. Default = NULL
-##' @param threshold Optional threshold for the GPD model. If present it will be added to the return level to produce a value which fits to underlying time series. Default = NULL.
-##' @param rerun The optimization will be started again using the results of the first optimization run. If the "Nelder-Mead" algorithm is used for optimization (as it is here) this can be useful to escape local minima. When choosing simulated annealing as method the rerun will be skipped. Provide a different number of runs directly to the GenSA function via ... instead. Default = TRUE
-##' @param optim.function Function which is going to be optimized. Default: \code{\link{likelihood}}
-##' @param gradient.function If NULL a finite difference method is invoked. I'm not really sure why but I obtained more consistent results using the finite difference method instead of the derived formula of the GPD likelihood gradient. To use the later one provide \code{\link{likelihood.gradient}}. Default = NULL.
-##' @param error.estimation Method for calculating the standard errors of the fitted results. Using the option "MLE" the errors of the GPD parameters will be calculated as the square roots of the diagonal elements of the inverse of the hessian matrix calculated with the MLE of the GPD parameters. The standard error of the return level is calculated using the Delta method and the MLE of the GPD parameters. Alternative one can use Monte Carlo simulations with "MC" for which 1000 samples of the same size as x will be drawn from a GPD constituted by the obtained MLE of the GPD parameters of x. The standard error is then calculated via the square of the variance of all fitted GPD parameters and calculated return levels. Sometimes the inversion of the hessian fails (since the are some NaN in the hessian) (which is also the reason why the ismev package occasionally does not work). In such cases the Monte Carlo method is used. Option "none" just skips the calculation of the error. Default = "none".
-##' @param method Through the argument 'method' (which is passed to the optim function) the optimization algorithm is chosen. The default one is the "Nelder-Mead".
-##' @param monte.carlo.sample.size Number of samples used to obtain the Monte Carlo estimate of the standard error of the fitting. Default = 1000
-##' @param return.period Quantiles at which the return level is going to be evaluated. Class "numeric". Default = 100.
-##' @param total.length Total number of observations in the time series the exceedance were obtained from. This argument is needed to calculate the standard error of the return level via the delta method of the MLE. Default = NULL.
-##' @param ... Additional arguments for the optim() or GenSA::GenSA() function. Depending on the chosen method.
+##' @param x Blocked time series to which the GPD distribution should be
+##' fitted.
+##' @param initial Initial values for the GPD parameters. Has to be
+##' provided as 2x1 vector. If NULL the parameters are estimated with the
+##' function \code{\link{likelihood.initials}}. Default = NULL
+##' @param threshold Optional threshold for the GPD model. If present it
+##' will be added to the return level to produce a value which fits to
+##' underlying time series. Default = NULL.
+##' @param rerun The optimization will be started again using the results
+##' of the first optimization run. If the "Nelder-Mead" algorithm is used
+##' for optimization (as it is here) this can be useful to escape local
+##' minima. When choosing simulated annealing as method the rerun will be
+##' skipped. Provide a different number of runs directly to the GenSA
+##' function via ... instead. Default = TRUE
+##' @param optim.function Function which is going to be optimized. Default:
+##' \code{\link{likelihood}}
+##' @param gradient.function If NULL a finite difference method is invoked.
+##' I'm not really sure why but I obtained more consistent results using
+##' the finite difference method instead of the derived formula of the GPD
+##' likelihood gradient. To use the later one provide
+##' \code{\link{likelihood.gradient}}. Default = NULL.
+##' @param error.estimation Method for calculating the standard errors of
+##' the fitted results. Using the option "MLE" the errors of the GPD
+##' parameters will be calculated as the square roots of the diagonal
+##' elements of the inverse of the hessian matrix calculated with the MLE
+##' of the GPD parameters. The standard error of the return level is
+##' calculated using the Delta method and the MLE of the GPD parameters.
+##' Alternative one can use Monte Carlo simulations with "MC" for which
+##' 1000 samples of the same size as x will be drawn from a GPD constituted
+##' by the obtained MLE of the GPD parameters of x. The standard error is
+##' then calculated via the square of the variance of all fitted GPD
+##' parameters and calculated return levels. Sometimes the inversion of the
+##' hessian fails (since the are some NaN in the hessian) (which is also the
+##' reason why the ismev package occasionally does not work). In such cases
+##' the Monte Carlo method is used. Option "none" just skips the calculation
+##' of the error. Default = "none".
+##' @param method Through the argument 'method' (which is passed to the optim
+##' function) the optimization algorithm is chosen. The default one is the
+##' "Nelder-Mead".
+##' @param monte.carlo.sample.size Number of samples used to obtain the Monte
+##' Carlo estimate of the standard error of the fitting. Default = 1000
+##' @param return.period Quantiles at which the return level is going to be
+##' evaluated. Class "numeric". Default = 100.
+##' @param total.length Total number of observations in the time series the
+##' exceedance were obtained from. This argument is needed to calculate the
+##' standard error of the return level via the delta method of the MLE.
+##' Default = NULL.
+##' @param ... Additional arguments for the optim() or GenSA::GenSA() function.
+##' Depending on the chosen method.
 ##' 
 ##' @family optimization
 ##' 
-##' @return Output of the optim function with class == c( "list", "climex.fit.gpd" )
+##' @return Output of the optim function with class ==
+##' c( "list", "climex.fit.gpd" )
 ##' \itemize{
 ##'  \item{ par = MLE of the GPD parameters }
-##'  \item{ value = Value of the negative log-likelihood evaluated at the MLE }
-##'  \item{ counts = Number of function evaluations during the optimization }
-##'  \item{ convergence = Specifies the state of the convergence (see \code{\link{optim}})) }
+##'  \item{ value = Value of the negative log-likelihood
+##' evaluated at the MLE }
+##'  \item{ counts = Number of function evaluations during the
+##' optimization }
+##'  \item{ convergence = Specifies the state of the convergence
+##' (see \code{\link{optim}})) }
 ##'  \item{ message = see \code{\link{optim}} }
-##'  \item{ hessian = Hessian or the observed information matrix evaluated at the MLE }
-##'  \item{ return.level = Estimate of the return levels at the provided return periods }
-##'  \item{ se = Standard error of the GPD parameters and the return levels }
+##'  \item{ hessian = Hessian or the observed information matrix
+##' evaluated at the MLE }
+##'  \item{ return.level = Estimate of the return levels at the provided
+##' return periods }
+##'  \item{ se = Standard error of the GPD parameters and the return
+##' levels }
 ##'  \item{ x = Original time series }
-##'  \item{ updates = A data.frame either the first and last step ( !'nmk' )
-##'         containing all the optimization steps visited during the call. }
+##'  \item{ updates = A data.frame either the first and last step
+##' ( !'nmk' )
+##'         containing all the optimization steps visited during the
+##' call. }
 ##' }
 ##' @author Philipp Mueller
 ##' @export
 ##' @import xts
 ##' @examples
 ##' potsdam.anomalies <- anomalies( temp.potsdam )
-##' potsdam.extremes <- threshold( potsdam.anomalies, threshold = 10, decluster = TRUE )
+##' potsdam.extremes <- threshold( potsdam.anomalies, threshold = 10,
+##'                                decluster = TRUE )
 ##' fit.gpd( potsdam.extremes )
 fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
                     optim.function = likelihood,
@@ -505,13 +616,19 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
   return( res.optim )
 }
 
-##' @title Calculated the negative log likelihood of the GEV or GPD function.
+##' @title Calculated the negative log likelihood of the GEV or GPD
+##' function.
 ##'
-##' @details This function is only meant to work with constant parameters and no covariats. x.in is not called "x" anymore since the call grad( func = likelihood, x = parameters, ... ) wouldn't be possible.
+##' @details This function is only meant to work with constant parameters
+##' and no covariats. x.in is not called "x" anymore since the call
+##' grad( func = likelihood, x = parameters, ... ) wouldn't be possible.
 ##'
-##' @param parameters Vector containing the location, scale and shape parameter for the GEV or the scale and shape parameter for the GPD. If NULL the \code{\link{likelihood.initials}} is used. Default = NULL
+##' @param parameters Vector containing the location, scale and shape
+##' parameter for the GEV or the scale and shape parameter for the GPD.
+##' If NULL the \code{\link{likelihood.initials}} is used. Default = NULL
 ##' @param x.in Time series.
-##' @param model Determining whether to calculate the initial parameters of the GEV or GPD function. Default = "gev"
+##' @param model Determining whether to calculate the initial parameters
+##' of the GEV or GPD function. Default = "gev"
 ##' 
 ##' @family optimization
 ##'
@@ -578,17 +695,24 @@ likelihood <- function( parameters = NULL, x.in,
   return( negloglikelihood )
 }
 
-##' @title Calculates the gradient of the negative log likelihood of the GEV or GPD function.
+##' @title Calculates the gradient of the negative log likelihood of the
+##' GEV or GPD function.
 ##'
 ##' @details 
 ##'
-##' @param parameters Vector containing the location, scale and shape parameter for the GEV model or the scale and shape parameter for the GPD one.
-##' @param x.in Time series or numerical vector containing the extreme events.
-##' @param model Determining whether to calculate the initial parameters of the GEV or GPD function. Default = "gev".
+##' @param parameters Vector containing the location, scale and shape
+##' parameter for the GEV model or the scale and shape parameter for the
+##' GPD one.
+##' @param x.in Time series or numerical vector containing the extreme
+##' events.
+##' @param model Determining whether to calculate the initial parameters
+##' of the GEV or GPD function. Default = "gev".
 ##' 
 ##' @family optimization
 ##'
-##' @return Numerical vector containing the derivative of the negative log likelihood in (location, scale, shape for GEV) or (scale, shape for GPD) direction.
+##' @return Numerical vector containing the derivative of the negative
+##' log-likelihood in (location, scale, shape for GEV) or (scale,
+##' shape for GPD) direction.
 ##' @author Philipp Mueller
 likelihood.gradient <- function( parameters, x.in,
                                 model = c( "gev", "gpd" ) ){
@@ -645,17 +769,37 @@ likelihood.gradient <- function( parameters, x.in,
 
 ##' @title Estimates the initial GEV or GPD parameters of a time series.
 ##'
-##' @details Two main methods are used for the estimation: the L-moments method of Hosking & Wallis implemented in the extRemes::initializer.lmoments() function and an estimation using the first two moments of the Gumbel distribution. For the later one a modification was added: By looking at skewness of the distribution and with respect to some heuristic thresholds a shape parameter between -.4 and .2 is assigned. Warning: both methods do not work for samples with diverging (or pretty big) mean or variance. For this reason the restrict argument is included. If the estimates are bigger than the corresponding restrict.thresholds, they will be replaced by this specific value.
+##' @details Two main methods are used for the estimation: the L-moments
+##' method of Hosking & Wallis implemented in the
+##' extRemes::initializer.lmoments() function and an estimation using
+##' the first two moments of the Gumbel distribution. For the later one
+##' a modification was added: By looking at skewness of the distribution
+##' and with respect to some heuristic thresholds a shape parameter
+##' between -.4 and .2 is assigned. Warning: both methods do not work
+##' for samples with diverging (or pretty big) mean or variance. For
+##' this reason the restrict argument is included. If the estimates are
+##' bigger than the corresponding restrict.thresholds, they will be
+##' replaced by this specific value.
 ##'
 ##' @param x Time series/numeric.
-##' @param model Determining whether to calculate the initial parameters of the GEV or GPD function. Default = "gev"
-##' @param type Which method should be used to calculate the initial parameters. "best" combines all methods, in addition samples 100 different shape values around the one determined by type 'mom' and returns the result with the least likelihood. "mom" - method of moments returns an approximation according to the first two moments of the Gumbel distribution. "lmom" - returns an estimate according to the Lmoments method. Default = "best"
-##' @param modified Determines if the skewness is getting used to determine the initial shape parameter. Default = TRUE.
+##' @param model Determining whether to calculate the initial parameters
+##' of the GEV or GPD function. Default = "gev"
+##' @param type Which method should be used to calculate the initial
+##' parameters. "best" combines all methods, in addition samples 100
+##' different shape values around the one determined by type 'mom' and
+##' returns the result with the least likelihood. "mom" - method of
+##' moments returns an approximation according to the first two moments
+##' of the Gumbel distribution. "lmom" - returns an estimate according
+##' to the Lmoments method. Default = "best"
+##' @param modified Determines if the skewness is getting used to
+##' determine the initial shape parameter. Default = TRUE.
 ##'
 ##' @family optimization
 ##'
 ##' @export
-##' @return Numerical vector containing the c( location, scale, shape ) estimates for method = "gev" or the c( scale, shape ) estimates for method = "gpd".
+##' @return Numerical vector containing the c( location, scale, shape )
+##' estimates for method = "gev" or the c( scale, shape ) estimates for
+##' method = "gpd".
 ##' @author Philipp Mueller
 likelihood.initials <- function( x, model = c( "gev", "gpd" ),
                                 type = c( "best", "mom", "lmom" ),

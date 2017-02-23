@@ -2,22 +2,28 @@
 % Please edit documentation in R/opti.R
 \name{likelihood}
 \alias{likelihood}
-\title{Calculated the negative log likelihood of the GEV or GPD function.}
+\title{Calculated the negative log likelihood of the GEV or GPD
+function.}
 \usage{
 likelihood(parameters = NULL, x.in, model = c("gev", "gpd"))
 }
 \arguments{
-\item{parameters}{Vector containing the location, scale and shape parameter for the GEV or the scale and shape parameter for the GPD. If NULL the \code{\link{likelihood.initials}} is used. Default = NULL}
+\item{parameters}{Vector containing the location, scale and shape
+parameter for the GEV or the scale and shape parameter for the GPD.
+If NULL the \code{\link{likelihood.initials}} is used. Default = NULL}
 
 \item{x.in}{Time series.}
 
-\item{model}{Determining whether to calculate the initial parameters of the GEV or GPD function. Default = "gev"}
+\item{model}{Determining whether to calculate the initial parameters
+of the GEV or GPD function. Default = "gev"}
 }
 \value{
 Numerical value of the negative log likelihood.
 }
 \details{
-This function is only meant to work with constant parameters and no covariats. x.in is not called "x" anymore since the call grad( func = likelihood, x = parameters, ... ) wouldn't be possible.
+This function is only meant to work with constant parameters
+and no covariats. x.in is not called "x" anymore since the call
+grad( func = likelihood, x = parameters, ... ) wouldn't be possible.
 }
 \author{
 Philipp Mueller
