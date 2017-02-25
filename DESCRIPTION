@@ -11,7 +11,7 @@ Maintainer: Philipp Mueller <thetruephil@googlemail.com>
 Description: This package has three purposes: 1. it provides a webscrapper easing the pain of downloading the station data of the German weather service, 2. it provides tools for the Maximum Likelihood fitting of GEV functions of time series and 3. it contains a shiny app enabling the user to both easily analyse a large amount of data and check the validity of the fitting results (avoidance of local minima).
 URL: https://github.com/theGreatWhiteShark/climex
 Depends:
-    R(>= 3.0.1),
+    R(>= 3.3.0),
     xts
 Imports:
     xtable,
