@@ -21,8 +21,6 @@ Imports:
     pander,
     stringr,
     grid,
-    ismev,
-    extRemes,
     Rcpp,
     RcppArmadillo,
     markdown,
