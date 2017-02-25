@@ -63,6 +63,19 @@ test_that( "threshold does the thresholding right", {
                                        decluster = FALSE ) ), 12.6 )
 })
 
+test_that( "decluster works as expected", {
+  expect_equal( as.numeric( climex::decluster( temp.potsdam, 29 ) ),
+               climex::decluster( as.numeric( temp.potsdam ), 29 ) )
+  expect_warning( climex::decluster( temp.potsdam, 29,
+                                    cluster.distance = 3 ) )
+})
+
+test_that( "extremal.index calculates correct results and throws warnings", {
+  expect_equal( climex:::extremal.index( temp.potsdam, 29 ),
+               c( 0.2413838, 350, 12 ) )
+  expect_warning( climex:::extremal.index( temp.potsdam, 100 ) )
+})
+
 test_that( "return.level fit results and GEV/GP parameters as input pisse", {
   expect_error( climex::return.level( temp.potsdam ) )
   expect_error( climex::return.level( as.numeric( temp.potsdam ) ) )
