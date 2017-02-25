@@ -31,8 +31,7 @@ method = "gpd".
 }
 \details{
 Two main methods are used for the estimation: the L-moments
-method of Hosking & Wallis implemented in the
-extRemes::initializer.lmoments() function and an estimation using
+method of Hosking & Wallis  and an estimation using
 the first two moments of the Gumbel distribution. For the later one
 a modification was added: By looking at skewness of the time series x
 and with respect to some heuristic thresholds a shape parameter

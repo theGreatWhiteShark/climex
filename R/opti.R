@@ -770,8 +770,7 @@ likelihood.gradient <- function( parameters, x.in,
 ##' @title Estimates the initial GEV or GPD parameters of a time series.
 ##'
 ##' @details Two main methods are used for the estimation: the L-moments
-##' method of Hosking & Wallis implemented in the
-##' extRemes::initializer.lmoments() function and an estimation using
+##' method of Hosking & Wallis  and an estimation using
 ##' the first two moments of the Gumbel distribution. For the later one
 ##' a modification was added: By looking at skewness of the time series x
 ##' and with respect to some heuristic thresholds a shape parameter
@@ -893,7 +892,7 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
     ## Approximationg using the Lmoments method
     ## Since I decided to not calculate the threshold inside the
     ## fitting (or even inside this function - for the sake of the
-    ## Linux principle) I will use the interior of the
+    ## Linux principle), I will use the interior of the
     ## extRemes:::initializer.lmoments function
     lambda <- try( Lmoments::Lmoments( x ), silent = TRUE )
     
