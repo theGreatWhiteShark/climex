@@ -2,7 +2,8 @@
 % Please edit documentation in R/climex_animation.R
 \name{animation.wrapper}
 \alias{animation.wrapper}
-\title{Help function filling the JavaScript template which produces the likelihood animation.}
+\title{Help function filling the JavaScript template which produces
+the likelihood animation.}
 \usage{
 animation.wrapper(time.series, starting.points, location.lim, scale.lim,
   shape.lim, optimization.method = "nmk", optimization.steps,
@@ -14,50 +15,70 @@ animation.wrapper(time.series, starting.points, location.lim, scale.lim,
 
 \item{starting.points}{of the optimization.}
 
-\item{location.lim}{Range of the location parameter in which the likelihood surface will be calculated.}
+\item{location.lim}{Range of the location parameter in which the
+likelihood surface will be calculated.}
 
-\item{scale.lim}{Range of the scale parameter in which the likelihood surface will be calculated.}
+\item{scale.lim}{Range of the scale parameter in which the likelihood
+surface will be calculated.}
 
-\item{shape.lim}{Range of the shape parameter in which the likelihood surface will be calculated.}
+\item{shape.lim}{Range of the shape parameter in which the likelihood
+surface will be calculated.}
 
-\item{optimization.method}{For fitting the time.series using the provided
-starting.points the fit.gev() function of this package will be used. This
-parameter determines the 'method' argument. Caution: only for the 'nmk'
-method all the updates and therefore an animation can be displayed. The
-other methods from the stats::optim() function are not that straight forward
-to modify since they link a lot of different libraries and I do not want to
-make an R fork just to get the animation going. Default = 'nmk'.}
+\item{optimization.method}{For fitting the time.series using the
+provided starting.points the fit.gev() function of this package will
+be used. This parameter determines the 'method' argument. Caution:
+only for the 'nmk' method all the updates and therefore an animation
+can be displayed. The other methods from the stats::optim() function
+are not that straight forward to modify since they link a lot of
+different libraries and I do not want to make an R fork just to get
+the animation going. Default = 'nmk'.}
 
-\item{optimization.steps}{Since the first updates contain a lot of jumps and the last ones almost no deviations in the GEV parameters the range of the trajectories can be limited.}
+\item{optimization.steps}{Since the first updates contain a lot of
+jumps and the last ones almost no deviations in the GEV parameters
+the range of the trajectories can be limited.}
 
-\item{optimization.rerun}{Flag deciding if to rerun the optimization at the
-parameters determined by the first run. Default = TRUE.}
+\item{optimization.rerun}{Flag deciding if to rerun the optimization
+at the parameters determined by the first run. Default = TRUE.}
 
-\item{height}{of both the images and the form with the playback options in pixel.}
+\item{height}{of both the images and the form with the playback
+options in pixel.}
 
-\item{width}{of both the images and the form with the playback options in pixel.}
+\item{width}{of both the images and the form with the playback
+options in pixel.}
 
-\item{model}{Whether to calculate the likelihood for the GEV or GP distribution. Default = "gev".}
+\item{model}{Whether to calculate the likelihood for the GEV or GP
+distribution. Default = "gev".}
 
-\item{delay}{Time for which the individual pictures stay visible during the animation in ms. Default = 300.}
+\item{delay}{Time for which the individual pictures stay visible
+during the animation in ms. Default = 300.}
 
-\item{loopMode}{Scianimator parameter declaring what will happen after a full run through all the images. Default = "loop".}
+\item{loopMode}{Scianimator parameter declaring what will happen
+after a full run through all the images. Default = "loop".}
 
 \item{image.folder}{where the generated pictures should be saved.}
 
-\item{working.folder}{the overall folder containing the generated pictures, JavaScript files etc.}
+\item{working.folder}{the overall folder containing the generated
+pictures, JavaScript files etc.}
 }
 \value{
 An invisible copy of the generated JavaScript file.
 }
 \details{
-All the images as well as the JavaScript script will be produced in a folder in the /tmp/ directory, while the template will be extracted from the climex app system files. A huge thank towards Brent Ertz for his awesome scianimator jquery plugin \url{https://github.com/brentertz/scianimator} and Yihui Xie who's animation R package was the basis for this code. The warning messages "Removed x rows ..." appear since a couple of trajectories are outside the plotted area.
+All the images as well as the JavaScript script will be
+produced in a folder in the /tmp/ directory, while the template will
+be extracted from the climex app system files. A huge thank towards
+Brent Ertz for his awesome scianimator jquery plugin
+\url{https://github.com/brentertz/scianimator} and Yihui Xie who's
+animation R package was the basis for this code. The warning
+messages "Removed x rows ..." appear since a couple of trajectories
+are outside the plotted area.
 }
 \author{
 Philipp Mueller
 }
 \seealso{
 Other animation: \code{\link{likelihoodAnimationUI}},
+  \code{\link{likelihoodAnimation}},
   \code{\link{plot.animation}}
 }
 

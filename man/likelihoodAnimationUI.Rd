@@ -23,6 +23,7 @@ Philipp Mueller
 }
 \seealso{
 Other animation: \code{\link{animation.wrapper}},
+  \code{\link{likelihoodAnimation}},
   \code{\link{plot.animation}}
 }
 

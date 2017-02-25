@@ -22,8 +22,8 @@ radioEvdStatistic) to the blocked time series in
 reactive.extreme()[[ 1 ]].}
 
 \item{reactive.extreme}{Reactive value returning a list containing
-three elements: 1. the blocked time series, 2. the deseasonalized time
-series, and 3. the pure time series.}
+three elements: 1. the blocked time series, 2. the deseasonalized
+time series, and 3. the pure time series.}
 
 \item{radioEvdStatistics}{Character (radio) input determining whether
 the GEV or GP distribution shall be fitted to the data. Choices:
@@ -34,33 +34,37 @@ the GEV/GP distribution shall be fitted to the smallest or biggest
 vales. Choices: c( "Max", "Min ), default = "Max".}
 
 \item{selectOptimization}{Character (select) input to determine which
-optimization routine/method is going to be used when fitting the maximum
-likelihood function of the GEV/GP distribution. The choices are given in
-\code{\link{generalFittingRoutineInput}} and the default value is set to
-"Nelder-Mead".}
+optimization routine/method is going to be used when fitting the
+maximum likelihood function of the GEV/GP distribution. The choices
+are given in \code{\link{generalFittingRoutineInput}} and the default
+value is set to "Nelder-Mead".}
 
-\item{checkboxRerun}{Logical (checkbox) input from the Likelihood tab.
-It determines whether or not to start the optimization at the results
-of the first run again to escape local minima.
-
-family animation}
+\item{checkboxRerun}{Logical (checkbox) input from the Likelihood
+tab. It determines whether or not to start the optimization at the
+results of the first run again to escape local minima.}
 
 \item{reactive.initial}{Reactive value holding the initial parameters
-to start the time series fit at. \code{\link{data.initials}}. Those can
-be specified in the top right box of the Likelihood tab.}
+to start the time series fit at. \code{\link{data.initials}}. Those
+can be specified in the top right box of the Likelihood tab.}
 }
 \value{
 Nothing in particular
 }
 \details{
 This should help the user to determine whether she obtained
-the global minima while fitting the GEV/GP maximum likelihood function.
-Since it is not straight forward to change the optimizations implementation
-of the underlying optim fitting routines, just the "dfoptim::nmk" method
-produces an animation. For all other methods the a picture will be displayed
-showing the starting and end position connected by an arrow.
+the global minima while fitting the GEV/GP maximum likelihood
+function. Since it is not straight forward to change the
+optimization's implementation of the underlying optim fitting
+routines, just the "dfoptim::nmk" method produces an animation. For
+all other methods the a picture will be displayed showing the
+starting and end position connected by an arrow.
 }
 \author{
 Philipp Mueller
+}
+\seealso{
+Other animation: \code{\link{animation.wrapper}},
+  \code{\link{likelihoodAnimationUI}},
+  \code{\link{plot.animation}}
 }
 
