@@ -87,140 +87,173 @@ block <- function( input.bulk,
 
 ##' @title Decluster point over threshold data used for GP fitting.
 ##'
-##' @details Inspired by the decluster algorithm used in the extRemes
-##' package
+##' @details This function determines clusters in a time series and
+##' extract just their maximal value in order to remove short-range
+##' correlations. All exceedances.position will be considered belonging to a
+##' cluster until at least cluster.distance consecutive points fall
+##' below the threshold. The parameter cluster.distance will be
+##' determined using the extremal index as suggested in Ferro & Segers
+##' (2003) when set to NULL. It thus provides a non-parametric way of
+##' declustering.
 ##'
-##' @param x Time series
+##' @param x Time series. The full one, not just the
+##' exceedances.position! Can be of class 'xts' or 'numeric'
 ##' @param threshold Has to be set sufficient high to fulfill the
 ##' asymptotic condition for the GP distribution.
+##' @param cluster.distance Specifies how many points have to be below
+##' the threshold for the next point to be considered the starting point
+##' of a new cluster. Only supply a value when you really know what you
+##' are doing! Default = NULL
+##' @param silent Whether or not to display warnings.
 ##'
-##' @return Declustered values above the provided threshold (xts).
+##' @return Returns the original time series x with all the elements
+##' within one cluster having smaller values than the clusters maximum
+##' being replaced by NaN.
 ##'
 ##' @family extremes
 ##' 
 ##' @export
 ##' @import xts
 ##' @author Philipp Mueller
-decluster <- function( x, threshold ){
+decluster <- function( x, threshold, cluster.distance = NULL,
+                      silent = FALSE ){
   ## Caution: x is the full time series and not the blocked one!
-  x.extremal.index <- extRemes::extremalindex( x, threshold,
-                                              na.action = stats::na.omit )
-  ifelse( x.extremal.index[ 1 ] >= 1,
-         cluster.size <- 0,
-         cluster.size <- x.extremal.index[ 3 ] )
-  ## cluster.size is the number of indices a two points have to be away
-  ## from each other to belong to different indices
-  n <- length( x )
-  which.x.over.threshold <- x > threshold
-  which.x.over.threshold <- stats::na.omit( which.x.over.threshold )
-  x.over.threshold <- x[ which.x.over.threshold ]
-  ## amount of points over threshold
-  n.over.threshold <- sum( which.x.over.threshold )
-  ## index of those points in the ts 'x'
-  index.x.over.threshold <- ( 1 : n )[
-      stats::na.omit( which.x.over.threshold ) ] 
-  which.cluster <- rep( 1, n.over.threshold )
-  x.result <- x
-  ## number of indices the threshold exceedences are apart from eachother
-  x.distances <- diff( index.x.over.threshold )
-  ## which point belongs to which cluster
-  which.cluster[ 2 : n.over.threshold ] <- 1 +
-    cumsum( x.distances > cluster.size )
-  x.cluster <- split( x.over.threshold, which.cluster )
-  x.cluster.max <- as.numeric( lapply( x.cluster, max ) )
-  ## Only the maxima of the clusters survive
-  x.over.threshold[ -which( x.over.threshold %in% x.cluster.max ) ] <- NA
-  x.result[ which.x.over.threshold ] <- x.over.threshold
+  if ( is.null( cluster.distance ) ){
+    ## Estimating the number of points between two clusters using the
+    ## extremal index.
+    cluster.distance <- extremal.index( x, threshold,
+                                       silent = TRUE )[ 3 ]
+  } else if ( !silent ){
+    warning( "You are choosing the cluster size by hand instead of relying on the non-parametric version. Proceed with care!" )
+  }
+  exceedances.position <- x > threshold
+  ## Böse, böse, böse
+  exceedances.position <- stats::na.omit( exceedances.position )
+  exceedances <- x[ exceedances.position ]
+  ## Amount of points above the threshold
+  exceedances.number <- sum( exceedances.position )
+  ## Index of those points in the ts 'x'
+  ## Böse, böse, böse
+  exceedances.index <- ( 1 : length( x ) )[
+      stats::na.omit( exceedances.position ) ] 
+  which.cluster <- rep( 1, exceedances.number )
+  ## Number of indices the exceedances are apart from each other
+  exceedances.distance <- diff( exceedances.index )
+  ## Which point belongs to which cluster
+  which.cluster[ 2 : exceedances.number ] <- 1 +
+    cumsum( exceedances.distance > cluster.distance )
+  ## Create a list in which element is a numerical vector containing the
+  ## exceedances within a certain cluster
+  cluster.list <- split( exceedances, which.cluster )
+  ## Replacing all events in a cluster smaller than its maximum with NaN
+  if ( is.xts( x ) ) {
+    ## Extra care when input is of type xts
+    index.not.max <- Reduce( c, lapply( cluster.list, function( y )
+      index( y[ -which( y == max( y ) ) ] ) ) )
+    exceedances[ index( exceedances ) %in% index.not.max ] <- NaN
+  } else {
+    exceedances <- Reduce( c, lapply( cluster.list, function( y ){
+      y[ -which( y == max( y ) ) ] <- NaN
+      return( y ) } ) )
+  }
+  ## Introducing the NaN to the original time series.
+  x[ x > threshold ] <- exceedances
+  return( x )
 }
 
-##' @title Calculates the extremal index of a time series
-##' @details Started as a reduced version of the extRemes::extremalindex
-##' function. The extremal index can be thought of as the inverse of the
-##' mean cluster size. It can be calculated either by the "runs" method
-##' described by Stuart Coles, 2001 p. 100 or by the "intervals" method
-##' of Ferro and Segers, 2003.
+##' @title Estimates the extremal index of a time series.
+##' @details The extremal index can be thought of as the inverse of the
+##' mean cluster size. It can be calculated by the "blocks" method
+##' of Ferro and Segers, 2003. I will use the bias-free estimator
+##' provided in equation (4) in their paper. This one is supposed to be
+##' the most robust one and is relying on a moment estimation.
+##' Another way to estimate it, would be using the "runs" method as in
+##' Stuart Coles (2001). But therefore one had to know the minimal
+##' distance between the clusters first. Since the whole point of this
+##' function to estimate exactly this quantity for its use in the
+##' \code{\link{decluster}} function, I don't see the point of
+##' implementing this method too.
 ##'
 ##' @param x Time series of class 'xts' or numerical vector.
 ##' @param threshold Only events exceeding a specific threshold will be
-##' considered extreme event and thus will be subject of the
+##' considered extreme events and thus will be subject of the
 ##' declustering.
-##' @param method "runs" considers a event to start a new cluster only
-##' after run.length events already were below the supplied threshold
-##' (see Stuart Coles). "intervals" is doing something different.
-##' Default = "intervals".
-##' @param minimal.distance Number of events below the threshold until
-##' the following event will be considered the starting point of a new
-##' cluster. This only affects the "runs" method. Default = 3.
+##' @param silent Whether or not to display warnings.
 ##'
 ##' @family extremes
 ##'
 ##' @return Numerical vector containing c( extremal index, number of
 ##' clusters, minimal distance between clusters (minimal.distance) ).
 ##' @author Philipp Mueller 
-extremal.index <- function( x, threshold,
-                           method = c( "intervals", "runs" ),
-                           minimal.distance = 3 ){
-  if ( missing( method ) ){
-    method <- "intervals"
-  }
-  method <- match.arg( method )
+extremal.index <- function( x, threshold, silent = FALSE ){
   ## Positions (logical) of all events exceeding the threshold
-  exceedances <- x > threshold
-  number.exceedances <- sum( exceedances )
-  if ( number.exceesdances == 0 ){
-    warning( "No exceedances in extremal.index. The provided threshold parameter is most probably to high!" )
+  exceedances.position <- x > threshold
+  exceedances.number <- sum( exceedances.position )
+  if ( exceedances.number == 0 ){
+    warning( "No exceedances.position in extremal.index. The provided threshold parameter is most probably to high!" )
     return( NaN )
   }
-  if ( method == "intervals" ){
-    ## Distance between neighboring exceedances in number of
-    ## observations
-    distance.exceedances <- diff( ( 1 : length( x ) )[ exceedances ] )
-    if ( !any( distance.exceedances > 2 ) ){
-      hold <- colSums( cbind( distance.exceedances,
-                             distance.exceedances^ 2 ) )
-      if ( !any( distance.exceedances > 1 ) ){
-        warning( "The maximal distance between exceedances in extremal.index is 1! The provided threshold is way to low!" )
-      }
-    } else {
-      hold <- colSums( cbind( distance.exceedances - 1,
-      ( distance.exceedances - 1 )* ( distance.exceedances - 2 ) ) )
-    }
-    ## Calculating the extremal index
-    theta <- 2* hold[ 1 ]^2/( ( number.exceedances - 1 )* hold[ 2 ] )
+  ## Distance between neighboring exceedances.position in number of
+  ## observations
+  exceedances.distance <- diff( ( 1 : length( x ) )[
+                                    exceedances.position ] )
+  if ( !any( exceedances.distance > 2 ) ){
     ## Sanity check
-    if ( theta > 1 ){
-      theta <- 1
+    if ( !any( exceedances.distance > 1 ) ){
+      warning( "The maximal distance between exceedances.position in extremal.index is 1! The provided threshold is way to low!" )
+    }
+    ## If the largest interexceedance time (distance between exceedances)
+    ## is smaller than 2, the (first order) unbiased estimator in the
+    ## else counterpart is not defined. Therefore I will use a fallback
+    ## one using the true moments of the exceedance distance
+    ## distribution.
+    theta <- 2* sum( exceedances.distance )^ 2/
+      ( ( exceedances.number - 1 )* sum( exceedances.distance^2 ) )
+  } else {
+    theta <- 2* sum( exceedances.distance - 1 )^ 2/
+      ( ( exceedances.number - 1 )*
+        sum( ( exceedances.distance - 2 )^2 ) )
+  }
+  ## Sanity check
+  if ( theta > 1 ){
+    theta <- 1
+    cluster.distance <- 0
+    if ( !silent ){
       warning( "The calculated extremal index in extremal.index was too big and has been reset to 1" )
     }
-    ## The number cluster need to be an integer
-    cluster.number <- ceiling( theta* number.exceedances - .5 )
-    ## Calculating the minimal distance between two clusters
-    ## Ordering the exceedances
-    distance.exceedances.ordered <- distance.exceedances[
-        order( distance.exceedances, na.last = TRUE,
-              decreasing = TRUE ) ]
-    minimal.distance <- distance.exceedances.ordered[ cluster.number ]
-    ## Difference in the number of elements per cluster
-    difference.elements <- c( diff( distance.exceedances.ordered ), 0 )
-    if ( cluster.number > 1 &&
-         difference.elements[ cluster.number - 1 ] == 0 ){
-      aux.elements <- 1 : ( number.exceedances - 1 )
-      cluster.same <- aux.elements[ difference.elements == 0 ]
-      cluster.changed <- aux.elements[ difference.elements != 0 ]
-      blub <- ( cluster.same < cluster.number ) &
-        ( cluster.same > max( cluster.changed[ cluster.changed <
-                                               cluster.number ] ) )
-      cluster.number <- min( cluster.same[ blub ] )
-    } else if ( method == "runs" ) {
-        tmp <- decluster( x = x, threshold = threshold, method = "runs", 
-            r = run.length, ...)
-        nc <- length(unique(attributes(tmp)$clusters))
-        N.r <- sum(c(tmp) > threshold)
-        res <- c(N.r/N.u, nc, run.length)
-        attr(res, "cluster") <- attributes(tmp)$cluster
-    }
-  } else
-    stop( "Unknown method supplied in extremal.index" )
+  }
+  ## The (mean) number cluster need to be an integer
+  cluster.number <- floor( theta* exceedances.number )
+  ## Calculating the minimal distance between two clusters
+  ## Ordering the exceedances.position
+  exceedances.distance.ordered <- exceedances.distance[
+      order( exceedances.distance, na.last = TRUE,
+            decreasing = TRUE ) ]
+  minimal.distance <- exceedances.distance.ordered[ cluster.number ]
+  ## Ordered difference of distances between the clusters
+  distance.difference <- c( diff( exceedances.distance.ordered ), 0 )
+  if ( cluster.number > 1 &&
+       distance.difference[ cluster.number - 1 ] == 0 ){
+    ## We have a tie. There are several clusters having the same distance
+    ## as the one with the cluster.number - 1 largest interexceedance
+    ## distance. I don't really see the problem just now, but the paper
+    ## of Ferro & Seger asked to reduce the cluster number until there
+    ## is no tie anymore.
+    cluster.index <- 1 : ( exceedances.number - 1 )
+    ## Clusters sharing the exceedance distance with other ones. 
+    cluster.ties <- cluster.index[ distance.difference == 0 ]
+    cluster.step <- cluster.index[ distance.difference != 0 ]
+    ## All indices between the last jump in the exceedance distance just
+    ## before the current cluster.number largest cluster distance and
+    ## the later one.
+    cluster.before.step <- ( cluster.ties < cluster.number ) &
+      ( cluster.ties > max( cluster.step[ cluster.step <
+                                          cluster.number ] ) )
+    ## The cluster.number - 1 exceedance distance is supposed to be a
+    ## step in the exceedance distance.
+    cluster.number <- min( cluster.ties[ cluster.before.step ] )
+    minimal.distance <- exceedances.distance.ordered[ cluster.number ]
+  }
   return( c( theta, cluster.number, minimal.distance ) )
 }
 

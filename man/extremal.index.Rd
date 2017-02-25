@@ -2,37 +2,35 @@
 % Please edit documentation in R/extremes.R
 \name{extremal.index}
 \alias{extremal.index}
-\title{Calculates the extremal index of a time series}
+\title{Estimates the extremal index of a time series.}
 \usage{
-extremal.index(x, threshold, method = c("intervals", "runs"),
-  minimal.distance = 3)
+extremal.index(x, threshold, silent = FALSE)
 }
 \arguments{
 \item{x}{Time series of class 'xts' or numerical vector.}
 
 \item{threshold}{Only events exceeding a specific threshold will be
-considered extreme event and thus will be subject of the
+considered extreme events and thus will be subject of the
 declustering.}
 
-\item{method}{"runs" considers a event to start a new cluster only
-after run.length events already were below the supplied threshold
-(see Stuart Coles). "intervals" is doing something different.
-Default = "intervals".}
-
-\item{minimal.distance}{Number of events below the threshold until
-the following event will be considered the starting point of a new
-cluster. This only affects the "runs" method. Default = 3.}
+\item{silent}{Whether or not to display warnings.}
 }
 \value{
 Numerical vector containing c( extremal index, number of
 clusters, minimal distance between clusters (minimal.distance) ).
 }
 \details{
-Started as a reduced version of the extRemes::extremalindex
-function. The extremal index can be thought of as the inverse of the
-mean cluster size. It can be calculated either by the "runs" method
-described by Stuart Coles, 2001 p. 100 or by the "intervals" method
-of Ferro and Segers, 2003.
+The extremal index can be thought of as the inverse of the
+mean cluster size. It can be calculated by the "blocks" method
+of Ferro and Segers, 2003. I will use the bias-free estimator
+provided in equation (4) in their paper. This one is supposed to be
+the most robust one and is relying on a moment estimation.
+Another way to estimate it, would be using the "runs" method as in
+Stuart Coles (2001). But therefore one had to know the minimal
+distance between the clusters first. Since the whole point of this
+function to estimate exactly this quantity for its use in the
+\code{\link{decluster}} function, I don't see the point of
+implementing this method too.
 }
 \author{
 Philipp Mueller
