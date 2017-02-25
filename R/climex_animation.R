@@ -54,11 +54,12 @@ likelihoodAnimationUI <- function( id ){
 
 ##' @title Module rendering an animation of the fitting procedure.
 ##' @details This should help the user to determine whether she obtained
-##' the global minima while fitting the GEV/GP maximum likelihood function.
-##' Since it is not straight forward to change the optimizations implementation
-##' of the underlying optim fitting routines, just the "dfoptim::nmk" method
-##' produces an animation. For all other methods the a picture will be displayed
-##' showing the starting and end position connected by an arrow.
+##' the global minima while fitting the GEV/GP maximum likelihood
+##' function. Since it is not straight forward to change the
+##' optimization's implementation of the underlying optim fitting
+##' routines, just the "dfoptim::nmk" method produces an animation. For
+##' all other methods the a picture will be displayed showing the
+##' starting and end position connected by an arrow.
 ##'
 ##' @param input Namespace input. For more details check out
 ##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html } }
@@ -69,11 +70,11 @@ likelihoodAnimationUI <- function( id ){
 ##' radioEvdStatistic) to the blocked time series in
 ##' reactive.extreme()[[ 1 ]].
 ##' @param reactive.extreme Reactive value returning a list containing
-##' three elements: 1. the blocked time series, 2. the deseasonalized time
-##' series, and 3. the pure time series.   
+##' three elements: 1. the blocked time series, 2. the deseasonalized
+##' time series, and 3. the pure time series.   
 ##' @param reactive.initial Reactive value holding the initial parameters
-##' to start the time series fit at. \code{\link{data.initials}}. Those can
-##' be specified in the top right box of the Likelihood tab.
+##' to start the time series fit at. \code{\link{data.initials}}. Those
+##' can be specified in the top right box of the Likelihood tab.
 ##' @param radioEvdStatistics Character (radio) input determining whether
 ##' the GEV or GP distribution shall be fitted to the data. Choices:
 ##' c( "GEV", "GP" ), default = "GEV".
@@ -81,21 +82,22 @@ likelihoodAnimationUI <- function( id ){
 ##' the GEV/GP distribution shall be fitted to the smallest or biggest
 ##' vales. Choices: c( "Max", "Min ), default = "Max".
 ##' @param selectOptimization Character (select) input to determine which
-##' optimization routine/method is going to be used when fitting the maximum
-##' likelihood function of the GEV/GP distribution. The choices are given in
-##' \code{\link{generalFittingRoutineInput}} and the default value is set to
-##' "Nelder-Mead".
-##' @param checkboxRerun Logical (checkbox) input from the Likelihood tab.
-##' It determines whether or not to start the optimization at the results
-##' of the first run again to escape local minima.
+##' optimization routine/method is going to be used when fitting the
+##' maximum likelihood function of the GEV/GP distribution. The choices
+##' are given in \code{\link{generalFittingRoutineInput}} and the default
+##' value is set to "Nelder-Mead".
+##' @param checkboxRerun Logical (checkbox) input from the Likelihood
+##' tab. It determines whether or not to start the optimization at the
+##' results of the first run again to escape local minima.
 ##'
-##' family animation
+##' @family animation
 ##'
 ##' @import shiny
 ##'
 ##' @return Nothing in particular
 ##' @author Philipp Mueller 
-likelihoodAnimation <- function( input, output, session, reactive.fitting,
+likelihoodAnimation <- function( input, output, session,
+                                reactive.fitting,
                                 reactive.extreme, reactive.initials,
                                 radioEvdStatistics, buttonMinMax,
                                 selectOptimization, checkboxRerun ){
@@ -384,122 +386,158 @@ likelihoodAnimation <- function( input, output, session, reactive.fitting,
     ## This reactive content only depends on the action button
     ## because of the use of the isolate() functions.        
     ## Don't make the plot the first time I look at the tab
-    if ( input$buttonDrawAnimation < 1 )
+    if ( input$buttonDrawAnimation < 1 ){
       return( NULL )
-      isolate( { x.block <- reactive.extreme()[[ 1 ]]
-        if ( is.null( x.block ) ){
-          ## if the initialization has not finished yet just wait a
-          ## little longer
-          return( NULL )
-        } } )
-      isolate( reactive.initials <- initial.parameters.likelihood() )
-      isolate( {
-        if ( selectOptimization() == "dfoptim::nmk" ){
-          optimization.method <- "nmk"
-        } else 
-          optimization.method <- selectOptimization()
-        ## I use the plot "plotPlaceholder" to determine the width
-        ## of the current box and adjust the pixel width of the png
-        ## pictures
-        session.width <- session$clientData[[ "output_animation-placeholder_width" ]]
-        session.plot.width <- floor( session.width/ 3 )
-        print( "starting animation......." )
-        ## a temporary folder will be generate to harvest the images
-        ## of the animation whenever the animation will be redone
-        ## the old folder should be removed to avoid wasting memory
-        ## of the server. Therefore the folder name has to be a global
-        ## variable
-        if ( !is.null( image.folder ) )
-          unlink( image.folder, recursive = TRUE )
-        ## if the shiny server is running on localhost it is run in
-        ## the CLIMEX.PATH folder and the folder containing the images
-        ## is constantly overwritten to prevent the script from
-        ## occupying to much space. Due to a setwd in the climex()
-        ## wrapper we are already in this folder
-        if ( session$clientData$url_hostname == "localhost" ||
-             session$clientData$url_hostname == "127.0.0.1"  ){
-          working.folder <- paste0( CLIMEX.PATH, "app/www" )
-          ## in case of the local session the variable image.folder
-          ## was already set in the wrapper climex::climex()
-        } else {
-          ## I decided to make the variable image.folder a global
-          ## one because in this way the folder addressed with it
-          ## can be deleted the next time this function is called
-          working.folder <- "/srv/shiny-server/assets" 
-          image.folder <<- paste0(
-              "/srv/shiny-server/assets/tmp/images_",
-              as.numeric ( as.POSIXct( lubridate::now() ) ) )
-        }
-        dir.create( image.folder, recursive = TRUE )
-        if ( radioEvdStatistics() == "GEV" ){
-          location.lim <- isolate( input$sliderLocationLim )
-          model <- "gev"
-        } else {
-          location.lim <- NULL
-          model <- "gpd"
-        }
-        climex:::animation.wrapper(
-                     time.series = x.block,
-                     starting.points = reactive.initials,
-                     location.lim = location.lim,
-                     scale.lim = isolate( input$sliderScaleLim ),
-                     shape.lim = isolate( input$sliderShapeLim ),
-                     optimization.method = optimization.method,
-                     optimization.steps = isolate(
-                         input$sliderOptimizationSteps ),
-                     optimization.rerun = checkboxRerun(),
-                     height = 300, width = session.plot.width,
-                     model = model, delay = 300,
-                     loopMode = "loop",
-                     image.folder = image.folder,
-                     working.folder = working.folder )
-        ## if the code is not running on localhost the shiny server
-        ## won't find the animation.js script using its absolute path
-        if ( session$clientData$url_hostname != "localhost" &&
-             session$clientData$url_hostname != "127.0.0.1" ){
-          working.folder <- sub( "/srv/shiny-server", "",
-                                working.folder )
-          animation.script <- "/assets/"
-        } else {
-          working.folder <- ""
-          animation.script <- ""
-        }
-        return( div(
-            class = "scianimator",
-            style = "display: inline-block;",
-            tags$script( src = paste0( animation.script,
-                                      "jquery.scianimator.min.js" ) ),
-            tags$script( src = paste0( working.folder,
-                                      "/animation.js" ) ),
-            div( id = "animationLocSc", class = "animationClimex" ),
-            div( id = "animationLocSh", class = "animationClimex" ),
-            div( id = "animationScSh", class = "animationClimex" ) ) )
-      } ) } )
+    }
+    ## This feature is not ready yet
+    if ( radioEvdStatistics() == "GP" ){
+      shinytoastr::toastr_error( "The animation is not implemented for the GP method yet!" )
+      return( NULL )
+    }
+    isolate( { x.block <- reactive.extreme()[[ 1 ]]
+      if ( is.null( x.block ) ){
+        ## if the initialization has not finished yet just wait a
+        ## little longer
+        return( NULL )
+      } } )
+    isolate( reactive.initials <- initial.parameters.likelihood() )
+    isolate( {
+      if ( selectOptimization() == "dfoptim::nmk" ){
+        optimization.method <- "nmk"
+      } else {
+        optimization.method <- selectOptimization()
+      }
+      ## I use the plot "plotPlaceholder" to determine the width
+      ## of the current box and adjust the pixel width of the png
+      ## pictures
+      session.width <- session$clientData[[ "output_animation-placeholder_width" ]]
+      session.plot.width <- floor( session.width/ 3 )
+      print( "starting animation......." )
+      ## a temporary folder will be generate to harvest the images
+      ## of the animation whenever the animation will be redone
+      ## the old folder should be removed to avoid wasting memory
+      ## of the server. Therefore the folder name has to be a global
+      ## variable
+      if ( !is.null( image.folder ) ){
+        unlink( image.folder, recursive = TRUE )
+      }
+      ## if the shiny server is running on localhost it is run in
+      ## the CLIMEX.PATH folder and the folder containing the images
+      ## is constantly overwritten to prevent the script from
+      ## occupying to much space. Due to a setwd in the climex()
+      ## wrapper we are already in this folder
+      if ( session$clientData$url_hostname == "localhost" ||
+           session$clientData$url_hostname == "127.0.0.1"  ){
+        working.folder <- paste0( CLIMEX.PATH, "app/www" )
+        ## in case of the local session the variable image.folder
+        ## was already set in the wrapper climex::climex()
+      } else {
+        ## I decided to make the variable image.folder a global
+        ## one because in this way the folder addressed with it
+        ## can be deleted the next time this function is called
+        working.folder <- "/srv/shiny-server/assets" 
+        image.folder <<- paste0(
+            "/srv/shiny-server/assets/tmp/images_",
+            as.numeric ( as.POSIXct( lubridate::now() ) ) )
+      }
+      dir.create( image.folder, recursive = TRUE )
+      if ( radioEvdStatistics() == "GEV" ){
+        location.lim <- isolate( input$sliderLocationLim )
+        model <- "gev"
+      } else {
+        location.lim <- NULL
+        model <- "gpd"
+      }
+      climex:::animation.wrapper(
+                   time.series = x.block,
+                   starting.points = reactive.initials,
+                   location.lim = location.lim,
+                   scale.lim = isolate( input$sliderScaleLim ),
+                   shape.lim = isolate( input$sliderShapeLim ),
+                   optimization.method = optimization.method,
+                   optimization.steps = isolate(
+                       input$sliderOptimizationSteps ),
+                   optimization.rerun = checkboxRerun(),
+                   height = 300, width = session.plot.width,
+                   model = model, delay = 300,
+                   loopMode = "loop",
+                   image.folder = image.folder,
+                   working.folder = working.folder )
+      ## if the code is not running on localhost the shiny server
+      ## won't find the animation.js script using its absolute path
+      if ( session$clientData$url_hostname != "localhost" &&
+           session$clientData$url_hostname != "127.0.0.1" ){
+        working.folder <- sub( "/srv/shiny-server", "",
+                              working.folder )
+        animation.script <- "/assets/"
+      } else {
+        working.folder <- ""
+        animation.script <- ""
+      }
+      return( div(
+          class = "scianimator",
+          style = "display: inline-block;",
+          tags$script( src = paste0( animation.script,
+                                    "jquery.scianimator.min.js" ) ),
+          tags$script( src = paste0( working.folder,
+                                    "/animation.js" ) ),
+          div( id = "animationLocSc", class = "animationClimex" ),
+          div( id = "animationLocSh", class = "animationClimex" ),
+          div( id = "animationScSh", class = "animationClimex" ) ) )
+    } ) } )
 }
 
 
-##' @title Displays the contour plots of the GEV likelihood function of a time series and the optimization routes for a bunch of provided initial points.
+##' @title Displays the contour plots of the GEV likelihood function of
+##' a time series and the optimization routes for a bunch of provided
+##' initial points.
 ##'
-##' @details Three orthogonal 2D plots are done for the negative log-likelihood of the GEV function intersecting in the actual result of the default optimization. Caution: An optimization only be displayed for optimization.method == 'nmk' and the trajectories will move out of the planes and so the precise position of the trajectory might be misleading. But the overall goal is to check for local minima. A bunch of images will be generated in the provided folder. Since the likelihood values cover quite some orders of magnitude they will be cut 1E3 above the minimal value. Also mind the differing height value: for a plot containing the legend (in this version of the script it is just the last one) the height value is increased to also cover the additional legend.
+##' @details Three orthogonal 2D plots are done for the negative
+##' log-likelihood of the GEV function intersecting in the actual result
+##' of the default optimization. Caution: An optimization only be
+##' displayed for optimization.method == 'nmk' and the trajectories will
+##' move out of the planes and so the precise position of the trajectory
+##' might be misleading. But the overall goal is to check for local
+##' minima. A bunch of images will be generated in the provided folder.
+##' Since the likelihood values cover quite some orders of magnitude they
+##' will be cut 1E3 above the minimal value. Also mind the differing
+##' height value: for a plot containing the legend (in this version of
+##' the script it is just the last one) the height value is increased to
+##' also cover the additional legend.
 ##'
 ##' @param time.series Vector of block maxima.
-##' @param starting.points Data.frame of the starting points where each one is contained in the single row and the columns are spanned by location, scale and shape.
-##' @param location.lim Region of the location parameter for which the likelihood function is going to be evaluated and plotted as a density plot and a contour plot.
-##' @param scale.lim Region of the scale parameter for which the likelihood function is going to be evaluated and plotted as a density plot and a contour plot.
-##' @param shape.lim Region of the shape parameter for which the likelihood function is going to be evaluated and plotted as a density plot and a contour plot.
-##' @param optimization.method For fitting the time.series using the provided
-##' starting.points the fit.gev() function of this package will be used. This
-##' parameter determines the 'method' argument. Caution: only for the 'nmk'
-##' method all the updates and therefore an animation can be displayed. The
-##' other methods from the stats::optim() function are not that straight forward
-##' to modify since they link a lot of different libraries and I do not want to
-##' make an R fork just to get the animation going. Default = 'nmk'.
-##' @param optimization.steps Vector containing two numbers from 0 to 1 specifying the start and the end point of the optimization. Since the number of steps is unknown beforehand it will be chosen relativley to the total number of steps. Default = c( 0, 1 ).
-##' @param optimization.rerun Flag deciding if to rerun the optimization at the
-##' parameters determined by the first run. Default = TRUE.
-##' @param height of both the images and the form with the playback options in pixel.
-##' @param width of both the images and the form with the playback options in pixel.
-##' @param model Whether to calculate the likelihood for the GEV or GP distribution. Default = "gev".
+##' @param starting.points Data.frame of the starting points where each
+##' one is contained in the single row and the columns are spanned by
+##' location, scale and shape.
+##' @param location.lim Region of the location parameter for which the
+##' likelihood function is going to be evaluated and plotted as a density
+##' plot and a contour plot.
+##' @param scale.lim Region of the scale parameter for which the
+##' likelihood function is going to be evaluated and plotted as a
+##' density plot and a contour plot.
+##' @param shape.lim Region of the shape parameter for which the
+##' likelihood function is going to be evaluated and plotted as a
+##' density plot and a contour plot.
+##' @param optimization.method For fitting the time.series using the
+##' provided starting.points the fit.gev() function of this package will
+##' be used. This parameter determines the 'method' argument. Caution:
+##' only for the 'nmk' method all the updates and therefore an animation
+##' can be displayed. The other methods from the stats::optim() function
+##' are not that straight forward to modify since they link a lot of
+##' different libraries and I do not want to make an R fork just to get
+##' the animation going. Default = 'nmk'.
+##' @param optimization.steps Vector containing two numbers from 0 to 1
+##' specifying the start and the end point of the optimization. Since
+##' the number of steps is unknown beforehand it will be chosen
+##' relativley to the total number of steps. Default = c( 0, 1 ).
+##' @param optimization.rerun Flag deciding if to rerun the optimization
+##' at the parameters determined by the first run. Default = TRUE.
+##' @param height of both the images and the form with the playback
+##' options in pixel.
+##' @param width of both the images and the form with the playback
+##' options in pixel.
+##' @param model Whether to calculate the likelihood for the GEV or GP
+##' distribution. Default = "gev".
 ##' @param colors List of colors used to generate the plots.
 ##' @param image.folder where the generated pictures should be saved.
 ##'
@@ -507,7 +545,8 @@ likelihoodAnimation <- function( input, output, session, reactive.fitting,
 ##'
 ##' @import ggplot2
 ##' @import shiny
-##' @return Opens a HTML widget showing the animation of the optimization routine.
+##' @return Opens a HTML widget showing the animation of the optimization
+##' routine.
 ##' @author Philipp Mueller 
 plot.animation <- function( time.series, starting.points,
                            location.lim = NULL, scale.lim = NULL,
@@ -863,31 +902,51 @@ plot.animation <- function( time.series, starting.points,
   }
 }
 
-##' @title Help function filling the JavaScript template which produces the likelihood animation.
-##' @details All the images as well as the JavaScript script will be produced in a folder in the /tmp/ directory, while the template will be extracted from the climex app system files. A huge thank towards Brent Ertz for his awesome scianimator jquery plugin \url{https://github.com/brentertz/scianimator} and Yihui Xie who's animation R package was the basis for this code. The warning messages "Removed x rows ..." appear since a couple of trajectories are outside the plotted area.
+##' @title Help function filling the JavaScript template which produces
+##' the likelihood animation.
+##' @details All the images as well as the JavaScript script will be
+##' produced in a folder in the /tmp/ directory, while the template will
+##' be extracted from the climex app system files. A huge thank towards
+##' Brent Ertz for his awesome scianimator jquery plugin
+##' \url{https://github.com/brentertz/scianimator} and Yihui Xie who's
+##' animation R package was the basis for this code. The warning
+##' messages "Removed x rows ..." appear since a couple of trajectories
+##' are outside the plotted area.
 ##'
 ##' @param time.series Blocked data for which the GEV fit is performed
 ##' @param starting.points of the optimization.
-##' @param location.lim Range of the location parameter in which the likelihood surface will be calculated.
-##' @param scale.lim Range of the scale parameter in which the likelihood surface will be calculated.
-##' @param shape.lim Range of the shape parameter in which the likelihood surface will be calculated.
-##' @param optimization.method For fitting the time.series using the provided
-##' starting.points the fit.gev() function of this package will be used. This
-##' parameter determines the 'method' argument. Caution: only for the 'nmk'
-##' method all the updates and therefore an animation can be displayed. The
-##' other methods from the stats::optim() function are not that straight forward
-##' to modify since they link a lot of different libraries and I do not want to
-##' make an R fork just to get the animation going. Default = 'nmk'.
-##' @param optimization.steps Since the first updates contain a lot of jumps and the last ones almost no deviations in the GEV parameters the range of the trajectories can be limited.
-##' @param optimization.rerun Flag deciding if to rerun the optimization at the
-##' parameters determined by the first run. Default = TRUE.
-##' @param height of both the images and the form with the playback options in pixel.
-##' @param width of both the images and the form with the playback options in pixel.
-##' @param model Whether to calculate the likelihood for the GEV or GP distribution. Default = "gev".
-##' @param delay Time for which the individual pictures stay visible during the animation in ms. Default = 300.
-##' @param loopMode Scianimator parameter declaring what will happen after a full run through all the images. Default = "loop".
+##' @param location.lim Range of the location parameter in which the
+##' likelihood surface will be calculated.
+##' @param scale.lim Range of the scale parameter in which the likelihood
+##' surface will be calculated.
+##' @param shape.lim Range of the shape parameter in which the likelihood
+##' surface will be calculated.
+##' @param optimization.method For fitting the time.series using the
+##' provided starting.points the fit.gev() function of this package will
+##' be used. This parameter determines the 'method' argument. Caution:
+##' only for the 'nmk' method all the updates and therefore an animation
+##' can be displayed. The other methods from the stats::optim() function
+##' are not that straight forward to modify since they link a lot of
+##' different libraries and I do not want to make an R fork just to get
+##' the animation going. Default = 'nmk'.
+##' @param optimization.steps Since the first updates contain a lot of
+##' jumps and the last ones almost no deviations in the GEV parameters
+##' the range of the trajectories can be limited.
+##' @param optimization.rerun Flag deciding if to rerun the optimization
+##' at the parameters determined by the first run. Default = TRUE.
+##' @param height of both the images and the form with the playback
+##' options in pixel.
+##' @param width of both the images and the form with the playback
+##' options in pixel.
+##' @param model Whether to calculate the likelihood for the GEV or GP
+##' distribution. Default = "gev".
+##' @param delay Time for which the individual pictures stay visible
+##' during the animation in ms. Default = 300.
+##' @param loopMode Scianimator parameter declaring what will happen
+##' after a full run through all the images. Default = "loop".
 ##' @param image.folder where the generated pictures should be saved.
-##' @param working.folder the overall folder containing the generated pictures, JavaScript files etc.
+##' @param working.folder the overall folder containing the generated
+##' pictures, JavaScript files etc.
 ##'
 ##' @family animation
 ##'
