@@ -23,17 +23,25 @@ are doing! Default = NULL}
 \value{
 Returns the original time series x with all the elements
 within one cluster having smaller values than the clusters maximum
-being replaced by NaN.
+being replaced by NA.
 }
 \details{
 This function determines clusters in a time series and
 extract just their maximal value in order to remove short-range
-correlations. All exceedances.position will be considered belonging to a
-cluster until at least cluster.distance consecutive points fall
+correlations. All exceedances.position will be considered belonging
+to a cluster until at least cluster.distance consecutive points fall
 below the threshold. The parameter cluster.distance will be
 determined using the extremal index as suggested in Ferro & Segers
 (2003) when set to NULL. It thus provides a non-parametric way of
 declustering.
+It also features a special treatment of missing values. All of them
+will be kept and the returned time series will have the same length
+as the input. Separate missing values and small sequences will be
+omitted in the cluster determination. But if more than 15 missing
+values appear in a row, they will be replaced with the minimal value
+of the time series for the cluster detection. This way exceedances
+separated over a big temporal distance will not be considered to
+belong to the same cluster.
 }
 \author{
 Philipp Mueller

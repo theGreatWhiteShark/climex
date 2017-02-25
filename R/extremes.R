@@ -89,12 +89,20 @@ block <- function( input.bulk,
 ##'
 ##' @details This function determines clusters in a time series and
 ##' extract just their maximal value in order to remove short-range
-##' correlations. All exceedances.position will be considered belonging to a
-##' cluster until at least cluster.distance consecutive points fall
+##' correlations. All exceedances.position will be considered belonging
+##' to a cluster until at least cluster.distance consecutive points fall
 ##' below the threshold. The parameter cluster.distance will be
 ##' determined using the extremal index as suggested in Ferro & Segers
 ##' (2003) when set to NULL. It thus provides a non-parametric way of
 ##' declustering.
+##' It also features a special treatment of missing values. All of them
+##' will be kept and the returned time series will have the same length
+##' as the input. Separate missing values and small sequences will be
+##' omitted in the cluster determination. But if more than 15 missing
+##' values appear in a row, they will be replaced with the minimal value
+##' of the time series for the cluster detection. This way exceedances
+##' separated over a big temporal distance will not be considered to
+##' belong to the same cluster.
 ##'
 ##' @param x Time series. The full one, not just the
 ##' exceedances.position! Can be of class 'xts' or 'numeric'
@@ -108,7 +116,7 @@ block <- function( input.bulk,
 ##'
 ##' @return Returns the original time series x with all the elements
 ##' within one cluster having smaller values than the clusters maximum
-##' being replaced by NaN.
+##' being replaced by NA.
 ##'
 ##' @family extremes
 ##' 
@@ -118,24 +126,60 @@ block <- function( input.bulk,
 decluster <- function( x, threshold, cluster.distance = NULL,
                       silent = FALSE ){
   ## Caution: x is the full time series and not the blocked one!
+  if ( any( is.na( x ) ) ){
+    ## Handling of missing values.
+    ## I will introduce a heuristic here. When less minimal.na points are
+    ## missing, they are just removed. So they do not interfer with the
+    ## determination of the cluster end. But if more points are missing,
+    ## they are replaced with an arbitrary value below the threshold.
+    ## This one will be overwritten with NA later on again. But in the
+    ## meanwhile it will separate the last cluster from the next one.
+    ## The idea is the following: When whole year of data is missing, it
+    ## makes no sense to assign data points separated by such a distance
+    ## to one and the same cluster. As done in the extRemes::decluster
+    ## function.
+    minimal.na <- 15 # NA in a row will be replaced with a low value
+    na.index <- which( is.na( x ) )
+    na.distance <- diff( na.index )
+    na.cluster <- rep( 1, length( na.index ) )
+    ## Each sequence of NA will get a separate number. As soon as there
+    ## is a single point between to missing values, those two will be
+    ## considered belonging to different sequences.
+    na.cluster[ 2 : length( na.index ) ] <- 1 + cumsum( na.distance > 1 )
+    na.list <- split( na.index, na.cluster )
+    ## Logical vector whether or not to replace a NA by the minimum of
+    ## the time series
+    na.replace <- Reduce( c, lapply( na.list, function( y ){
+      if ( length( y ) >= minimal.na ){
+        return( rep( TRUE, length( y ) ) )
+      } else {
+        return( rep( FALSE, length( y ) ) ) } }
+      ) )
+    ## Replacing the long NA sequences by the minimal value
+    x[ na.index ][ na.replace ] <- min( x, na.rm = TRUE )
+    ## Now we are save to omit the NA for the cluster detection
+    x.no.na.index <- which( !is.na( x ) )
+    x.no.na <- na.omit( x )
+  } else {
+    x.no.na <- x
+  }
   if ( is.null( cluster.distance ) ){
     ## Estimating the number of points between two clusters using the
     ## extremal index.
-    cluster.distance <- extremal.index( x, threshold,
+    cluster.distance <- extremal.index( x.no.na, threshold,
                                        silent = TRUE )[ 3 ]
   } else if ( !silent ){
     warning( "You are choosing the cluster size by hand instead of relying on the non-parametric version. Proceed with care!" )
   }
-  exceedances.position <- x > threshold
+  exceedances.position <- x.no.na > threshold
   ## Böse, böse, böse
-  exceedances.position <- stats::na.omit( exceedances.position )
-  exceedances <- x[ exceedances.position ]
+  exceedances.position <- exceedances.position
+  exceedances <- x.no.na[ exceedances.position ]
   ## Amount of points above the threshold
   exceedances.number <- sum( exceedances.position )
   ## Index of those points in the ts 'x'
   ## Böse, böse, böse
-  exceedances.index <- ( 1 : length( x ) )[
-      stats::na.omit( exceedances.position ) ] 
+  exceedances.index <- ( 1 : length( x.no.na ) )[ exceedances.position ] 
   which.cluster <- rep( 1, exceedances.number )
   ## Number of indices the exceedances are apart from each other
   exceedances.distance <- diff( exceedances.index )
@@ -146,18 +190,28 @@ decluster <- function( x, threshold, cluster.distance = NULL,
   ## exceedances within a certain cluster
   cluster.list <- split( exceedances, which.cluster )
   ## Replacing all events in a cluster smaller than its maximum with NaN
-  if ( is.xts( x ) ) {
+  if ( is.xts( x.no.na ) ) {
     ## Extra care when input is of type xts
     index.not.max <- Reduce( c, lapply( cluster.list, function( y )
       index( y[ -which( y == max( y ) ) ] ) ) )
-    exceedances[ index( exceedances ) %in% index.not.max ] <- NaN
+    exceedances[ index( exceedances ) %in% index.not.max ] <- NA
   } else {
     exceedances <- Reduce( c, lapply( cluster.list, function( y ){
-      y[ -which( y == max( y ) ) ] <- NaN
+      y[ -which( y == max( y ) ) ] <- NA
       return( y ) } ) )
   }
   ## Introducing the NaN to the original time series.
-  x[ x > threshold ] <- exceedances
+  x.no.na[ x.no.na > threshold ] <- exceedances
+  if ( any( is.na( x ) ) ){
+    ## Now I have to introduce the NA again or else my time series will
+    ## shrink and I have both missing values marked by NA and those
+    ## complete gone from the time series
+    x[ x.no.na.index ] <- x.no.na
+    ## Replaceing the long NA sequences with NA again
+    x[ na.index ][ na.replace ] <- NA
+  } else {
+    x <- x.no.na
+  }
   return( x )
 }
 
@@ -289,9 +343,9 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
     stop( "Please provide a threshold to be applied to the time series!" )
   ## declustering of the data
   if ( decluster ){
-    x.threshold <- climex::decluster( x, threshold ) - threshold
-  } else
-    x.threshold <- x[ x > threshold ] - threshold
+    x <- climex::decluster( x, threshold )
+  }
+  x.threshold <- x[ x > threshold ] - threshold
   ## removing the NA
   if ( na.rm )
     x.threshold <- na.omit( x.threshold )        
