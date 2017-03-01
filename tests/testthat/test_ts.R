@@ -11,7 +11,7 @@ x.thresh.fit <- climex::fit.gpd( x.thresh,
 test_that( "aic accepts the right input and produces the right output", {
   expect_equal( climex:::aic( x.block.fit ), 447.2131,
                tolerance = 1e-4 )
-  expect_equal( climex:::aic( x.thresh.fit ), 5147.229,
+  expect_equal( climex:::aic( x.thresh.fit ), 1454.037,
                tolerance = 1e-4 )
   expect_error( climex:::aic( x.block ) )
   expect_error( climex:::aic( as.numeric( x.block ) ) )
@@ -19,7 +19,7 @@ test_that( "aic accepts the right input and produces the right output", {
 test_that( "bic accepts the right input and produces the right output", {
   expect_equal( climex:::bic( x.block.fit ), 455.6739,
                tolerance = 1e-4 )
-  expect_equal( climex:::bic( x.thresh.fit ), 5157.811,
+  expect_equal( climex:::bic( x.thresh.fit ), 1461.792,
                tolerance = 1e-4 )
   expect_error( climex:::bic( x.block ) )
   expect_error( climex:::bic( as.numeric( x.block ) ) )
