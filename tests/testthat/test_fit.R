@@ -122,9 +122,10 @@ test_that( "fit.gpd's actual fitting works for all methods", {
                                             total.length = length(
                                                 temp.potsdam )  )$par ),
                c( 4.2828058, -0.4237436 ), tolerance = 1E-3 )
-  ## does not work yet
-  ## expect_equal( as.numeric( climex::fit.gpd( x.thresh, method = "nmk" )$par ),
-  ##              c( 11.7270472, 1.4292892, -0.2607769 ) )
+  expect_equal( as.numeric( climex::fit.gpd( x.thresh, method = "nmk",
+                                            total.length = length(
+                                                temp.potsdam ) )$par ),
+                c( 4.2825927, -0.4236907 ), tolerance = 6E-4 )
 })
 test_that( "the handing over of initial parameters works", {
   expect_equal( as.numeric(
