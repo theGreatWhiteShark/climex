@@ -421,9 +421,9 @@ download.data.dwd <- function( save.downloads = TRUE,
   save(  list = c( paste0( "stations.", data.type ),
                   "station.positions" ),
        file = paste0( "./dwd_",
-                     pracma::strRep( pracma::strcat( data.name,
-                                                    collapse = "_" ),
-                                    ".", "-" ), ".RData" ) )
+                     gsub( ".", "-", paste( data.name, 
+                                           collapse = "_" ) ),
+                     ".RData" ) )
   setwd( old.dir )
   invisible()
 }
