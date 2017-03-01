@@ -120,9 +120,26 @@ download.data.dwd <- function( save.downloads = TRUE,
     }
   }
   setwd( "./recent" )
+  ## Always download the latest description file. Else the algorithm
+  ## would fail importing recently added stations.
+  file.description.recent <- grep( "Beschreibung",
+                                  files.recent[[ 1 ]], value = TRUE )
+  utils::download.file( url = paste0( url.recent,
+                                     file.description.recent ),
+                       destfile = file.description.recent,
+                       method = "wget" )
   ## This will download quite a number of .zip files
   download.content( url.recent, files.recent )
   setwd( "../historical" )
+  ## Always download the latest description file. Else the algorithm
+  ## would fail importing recently added stations.
+  file.description.historical <- grep( "Beschreibung",
+                                      files.historical[[ 1 ]],
+                                      value = TRUE )
+  utils::download.file( url = paste0( url.historical,
+                                     file.description.historical ),
+                       destfile = file.description.historical,
+                       method = "wget" )
   download.content( url.historical, files.historical )
   setwd( "../" )
   ## file containing the discription of the station data
@@ -351,6 +368,16 @@ download.data.dwd <- function( save.downloads = TRUE,
     ## The conversion to numeric and back is necessary to delete zeros
     line.raw <- grep( paste0( " ", as.numeric( station.id ), " [1,2]" ),
                      file.description, value = TRUE )
+    ## The extraction of the name fails, because the DWD has not yet
+    ## added the station to the Description file holding of the
+    ## stations meta data. This can happen (already happened to me).
+    if ( length( line.raw ) == 0 ){
+      ## Show a warning and recommend downloading the newest data.
+      warning( "Some of the station data are not contained in the overall description file. Please make sure you have the most recent data!" )
+      ## Worst case, just delete the corresponding file and download
+      ## the new one.
+      return( list( "none", c( 0, 0, 0 ) ) )
+    }
     ## The name can consist of multiple words. In the previous column
     ## there is a digit and in the next the county consisting of one
     ## word (including a minus)
@@ -372,7 +399,7 @@ download.data.dwd <- function( save.downloads = TRUE,
   }
   station.extracts <- parallel::mclapply( list.station.ids, function( x )
     extract.station.names( x, file.description ),
-    mc.cores = parallel::detectCores() )
+    mc.cores = parallel::detectCores( logical = FALSE ) )
   station.names <- Reduce( c, lapply( station.extracts,
                                      function( x ) x[[ 1 ]] ) )
   station.positions.aux <- Reduce( rbind, lapply( station.extracts,
