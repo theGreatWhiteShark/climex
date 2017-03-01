@@ -89,10 +89,9 @@ test_that( "likelihood.initials' type and modified argument work", {
                                             type = "mom",
                                             modified = FALSE ),
                c( 11.602097, 1.120919, 0.000010 ), tolerance = 1e-5 )
-  ## no modification yet for the initials of the GP distribution
-  ## expect_equal( climex::likelihood.initials( x.block, model = "gpd",
-  ##                                           type = "mom",
-  ##                                           modified = FALSE ),
-  ##              c( 1.437634, 1.307424 ), tolerance = 1e-5 )
+  expect_equal( climex::likelihood.initials( x.block, model = "gpd",
+                                            type = "mom",
+                                            modified = FALSE ),
+               c( 1.437634, 0.1 ), tolerance = 1e-5 )
 })
 
