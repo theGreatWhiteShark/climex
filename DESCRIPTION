@@ -14,12 +14,9 @@ Depends:
     R(>= 3.3.0),
     xts
 Imports:
-    xtable,
     lubridate,
-    pracma,
     ggplot2,
     pander,
-    stringr,
     grid,
     Rcpp,
     RcppArmadillo,
@@ -28,7 +25,6 @@ Imports:
     parallel,
     shiny,
     htmltools,
-    latex2exp,
     shinydashboard,
     shinytoastr,
     RCurl,
