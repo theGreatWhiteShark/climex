@@ -145,7 +145,9 @@ decluster <- function( x, threshold, cluster.distance = NULL,
     ## Each sequence of NA will get a separate number. As soon as there
     ## is a single point between to missing values, those two will be
     ## considered belonging to different sequences.
-    na.cluster[ 2 : length( na.index ) ] <- 1 + cumsum( na.distance > 1 )
+    if ( length( na.index ) > 1 ){
+      na.cluster[ 2 : length( na.index ) ] <- 1 + cumsum( na.distance > 1 )
+    }
     na.list <- split( na.index, na.cluster )
     ## Logical vector whether or not to replace a NA by the minimum of
     ## the time series
