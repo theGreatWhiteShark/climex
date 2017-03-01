@@ -489,7 +489,7 @@ generalFitStatistics <- function( reactive.fitting, reactive.extreme,
 ##' @author Philipp Mueller 
 color.table <- function( x.html.table, css.colours,
                         style = "table-condensed table-bordered" ){
-  x.html.table.split <- stringr::str_split( x.html.table, "\n" )[[ 1 ]]
+  x.html.table.split <- strsplit( x.html.table, split = "\n" )[[ 1 ]]
   ids <- paste0( "\"center\"><font color='", css.colours, "'>" )
   for ( ii in 1 : length( css.colours ) ){
     locations <- grep( css.colours[[ ii ]], x.html.table.split )
