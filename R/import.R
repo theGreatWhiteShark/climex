@@ -445,11 +445,12 @@ download.data.dwd <- function( save.downloads = TRUE,
   if ( all( data.name == c( "temp.max", "temp.min", "prec" ) ) )
     data.name <- "default"
   ## save the extracted data
-  save(  list = c( paste0( "stations.", data.type ),
+  save( list = c( paste0( "stations.", data.type ),
                   "station.positions" ),
        file = paste0( "./dwd_",
                      gsub( ".", "-", paste( data.name, 
-                                           collapse = "_" ) ),
+                                           collapse = "_" ),
+                          fixed = TRUE ),
                      ".RData" ) )
   setwd( old.dir )
   invisible()
