@@ -23,7 +23,7 @@ test_that( "Likelihood spits the right vales", {
                222.9288, tolerance = 1e-4 )
   expect_equal( climex::likelihood( c( 1.4, -.1 ), x.thresh,
                                    model = "gpd" ),
-               2907.355, tolerance = 1e-4 )
+               976.5173, tolerance = 1e-4 )
 })
 
 test_that( "Input and output of likelihood.gradient are alright", {
@@ -51,7 +51,7 @@ test_that( "Likelihood.gradient spits the right vales", {
                c( 11.44009, -14.32531, -35.40255 ), tolerance = 1e-4 )
   expect_equal( climex:::likelihood.gradient( c( 1.4, -.1 ), x.thresh,
                                              model = "gpd" ),
-               c( 1014.373, 2051.769 ), tolerance = 1e-4 )
+               c( 525.510, 1411.622 ), tolerance = 1e-4 )
 })
 
 test_that( "likelihood.initials' inputs and outputs are alright", {
@@ -84,7 +84,7 @@ test_that( "likelihood.initials' type and modified argument work", {
                c( 172.1049, -13.0504 ), tolerance = 1e-5 )
   expect_equal( climex::likelihood.initials( x.block, model = "gpd",
                                             type = "mom" ),
-               c( 1.437634, 0.1 ), tolerance = 1e-5 )
+               c( 1.437634, -0.1 ), tolerance = 1e-5 )
   expect_equal( climex::likelihood.initials( x.block, model = "gev",
                                             type = "mom",
                                             modified = FALSE ),
