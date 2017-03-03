@@ -414,6 +414,7 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
 ##' containing the estimates and their standard errors will be returned.
 ##' @export
 ##'
+##' @importFrom xts apply.yearly
 ##' @family extremes
 ##' 
 ##'
