@@ -8,7 +8,7 @@ fit.gpd(x, initial = NULL, threshold = NULL, rerun = TRUE,
   optim.function = likelihood, gradient.function = NULL,
   error.estimation = c("none", "MLE", "MC"), method = c("Nelder-Mead",
   "BFGS", "CG", "SANN", "nmk"), monte.carlo.sample.size = 1000,
-  return.period = 100, total.length = NULL, ...)
+  return.period = 100, total.length = NULL, silent = FALSE, ...)
 }
 \arguments{
 \item{x}{Blocked time series to which the GPD distribution should be
@@ -69,6 +69,9 @@ exceedance were obtained from. This argument is needed to calculate the
 standard error of the return level via the delta method of the MLE.
 Default = NULL.}
 
+\item{silent}{If TRUE, avoid the warning in case of a missing total.length
+parameter. Default = FALSE}
+
 \item{...}{Additional arguments for the optim() or GenSA::GenSA() function.
 Depending on the chosen method.}
 }
@@ -119,13 +122,12 @@ potsdam.extremes <- threshold( potsdam.anomalies, threshold = 10,
                                decluster = TRUE )
 fit.gpd( potsdam.extremes )
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other optimization: \code{\link{fit.gev}},
   \code{\link{likelihood.gradient}},
   \code{\link{likelihood.initials}},
   \code{\link{likelihood}}
 }
-
+\author{
+Philipp Mueller
+}

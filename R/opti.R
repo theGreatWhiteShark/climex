@@ -350,6 +350,8 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE,
 ##' exceedance were obtained from. This argument is needed to calculate the
 ##' standard error of the return level via the delta method of the MLE.
 ##' Default = NULL.
+##' @param silent If TRUE, avoid the warning in case of a missing total.length
+##' parameter. Default = FALSE
 ##' @param ... Additional arguments for the optim() or GenSA::GenSA() function.
 ##' Depending on the chosen method.
 ##' 
@@ -393,7 +395,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
                     method = c( "Nelder-Mead", "BFGS", "CG",
                                "SANN", "nmk" ),
                     monte.carlo.sample.size = 1000, return.period = 100,
-                    total.length = NULL, ... ){
+                    total.length = NULL, silent = FALSE, ... ){
   if ( missing( method ) )
     method <- "Nelder-Mead"
   method <- match.arg( method )    
@@ -501,7 +503,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
   res.optim$x <- x
   res.optim$threshold <- threshold
   ## For an adequate calculation of the return level
-  if ( is.null( total.length ) )
+  if ( is.null( total.length ) && !silent )
     warning( "The estimation of the return level of the GP distribution does need the total length 'total.length' of the time series the exceedance are extracted from! Please supply it or use the Monte Carlo approach!" ) 
   ##
   ## Regarding the animation in the climex web app
