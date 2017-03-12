@@ -32,9 +32,6 @@ function to estimate exactly this quantity for its use in the
 \code{\link{decluster}} function, I don't see the point of
 implementing this method too.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other extremes: \code{\link{block}},
   \code{\link{decluster}}, \code{\link{gev.density}},
@@ -42,4 +39,6 @@ Other extremes: \code{\link{block}},
   \code{\link{return.level}}, \code{\link{revd}},
   \code{\link{rlevd}}, \code{\link{threshold}}
 }
-
+\author{
+Philipp Mueller
+}

@@ -18,10 +18,9 @@ maintained in the same place. I do not really like the idea of
 installing the newest version of the code from Github and than
 copy/pasting the code in some files somewhere in /srv/shiny-server.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other climex: \code{\link{climex.ui}}, \code{\link{climex}}
 }
-
+\author{
+Philipp Mueller
+}

@@ -32,9 +32,6 @@ recommended since the extreme value theory is only valid for data
 without correlations and short-range correlations (which are present
 in most measured data) can be filtered out using this procedure.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other extremes: \code{\link{block}},
   \code{\link{decluster}}, \code{\link{extremal.index}},
@@ -42,4 +39,6 @@ Other extremes: \code{\link{block}},
   \code{\link{qevd}}, \code{\link{return.level}},
   \code{\link{revd}}, \code{\link{rlevd}}
 }
-
+\author{
+Philipp Mueller
+}

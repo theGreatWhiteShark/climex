@@ -59,12 +59,11 @@ routines, just the "dfoptim::nmk" method produces an animation. For
 all other methods the a picture will be displayed showing the
 starting and end position connected by an arrow.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other animation: \code{\link{animation.wrapper}},
   \code{\link{likelihoodAnimationUI}},
   \code{\link{plot.animation}}
 }
-
+\author{
+Philipp Mueller
+}

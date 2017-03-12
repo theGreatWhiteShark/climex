@@ -13,9 +13,6 @@ menuItemOutput
 Provides the shinydashboard::menuItemOutput for \code{\link{
 generalExtremeExtraction}}. See the later one for details.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{data.extremes}},
@@ -24,4 +21,6 @@ Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{extremes.interactive}},
   \code{\link{generalExtremeExtraction}}
 }
-
+\author{
+Philipp Mueller
+}

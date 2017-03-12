@@ -41,11 +41,10 @@ their positions.
 It uses the current database and returns all stations which
 are at least as long as the value of the input$sliderYears slider.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other leaflet: \code{\link{leafletClimexUI}},
   \code{\link{leafletClimex}}
 }
-
+\author{
+Philipp Mueller
+}

@@ -34,4 +34,3 @@ The likelihood will be plotted around its optimal value. To determine it the tim
 \author{
 Philipp Mueller
 }
-

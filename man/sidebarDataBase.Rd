@@ -18,9 +18,6 @@ distribution. Beware: it's not a true module! Using the namespaces
 does not really make sense because it has to be accessed from outside
 of this context.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other sidebar: \code{\link{data.selection}},
   \code{\link{file.loading}},
@@ -36,4 +33,6 @@ Other sidebar: \code{\link{data.selection}},
   \code{\link{sidebarLoadingInput}},
   \code{\link{sidebarLoading}}
 }
-
+\author{
+Philipp Mueller
+}

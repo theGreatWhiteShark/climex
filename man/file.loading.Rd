@@ -20,9 +20,6 @@ named stations in those list.
 To use this function input$selectDataBase has to be set to
 "input".
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other sidebar: \code{\link{data.selection}},
   \code{\link{sidebarCleaningInput}},
@@ -38,4 +35,6 @@ Other sidebar: \code{\link{data.selection}},
   \code{\link{sidebarLoadingInput}},
   \code{\link{sidebarLoading}}
 }
-
+\author{
+Philipp Mueller
+}

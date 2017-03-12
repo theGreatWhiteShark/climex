@@ -13,9 +13,6 @@ selectInput
 Not a real shiny module, since I have to use this select
 input outside its namespace.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{data.extremes}},
@@ -24,4 +21,6 @@ Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{generalExtremeExtractionInput}},
   \code{\link{generalExtremeExtraction}}
 }
-
+\author{
+Philipp Mueller
+}

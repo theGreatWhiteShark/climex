@@ -35,9 +35,6 @@ slider to provide the shape parameter for the GEV or NULL for the GP
 distribution. Else it will be a file input for the user to load
 additional station data.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other sidebar: \code{\link{data.selection}},
   \code{\link{file.loading}},
@@ -53,4 +50,6 @@ Other sidebar: \code{\link{data.selection}},
   \code{\link{sidebarLoadingGif}},
   \code{\link{sidebarLoadingInput}}
 }
-
+\author{
+Philipp Mueller
+}

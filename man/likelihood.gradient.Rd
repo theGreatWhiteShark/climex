@@ -26,12 +26,11 @@ shape for GPD) direction.
 \details{
 
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other optimization: \code{\link{fit.gev}},
   \code{\link{fit.gpd}}, \code{\link{likelihood.initials}},
   \code{\link{likelihood}}
 }
-
+\author{
+Philipp Mueller
+}

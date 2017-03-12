@@ -17,10 +17,9 @@ Nothing. The multiplot function is run in the last step.
 \details{
 Plots all objects of class xts. With the main argument a title can be provided.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other plot: \code{\link{multiplot}}
 }
-
+\author{
+Philipp Mueller
+}

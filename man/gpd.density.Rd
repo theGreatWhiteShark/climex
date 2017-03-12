@@ -23,9 +23,6 @@ certainly write some lines about it. This function takes
 the fitted parameters of a GP distribution and calculates
 its density at specified sites z.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other extremes: \code{\link{block}},
   \code{\link{decluster}}, \code{\link{extremal.index}},
@@ -33,4 +30,6 @@ Other extremes: \code{\link{block}},
   \code{\link{return.level}}, \code{\link{revd}},
   \code{\link{rlevd}}, \code{\link{threshold}}
 }
-
+\author{
+Philipp Mueller
+}

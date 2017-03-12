@@ -21,4 +21,3 @@ Uses ggplot2. Since I will also use it
 in the shiny app, where I want to adjust the number
 of displayed bins, there is a second argument present.
 }
-

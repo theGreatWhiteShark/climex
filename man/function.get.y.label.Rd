@@ -31,13 +31,12 @@ Character
 It's more or less just the input$selectDataType being
 considered. For artificial data the label will be "temperature".
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other climex-plot: \code{\link{generalFitPlotOutput}},
   \code{\link{generalFitPlot}},
   \code{\link{generalTimeSeriesPlotOutput}},
   \code{\link{generalTimeSeriesPlot}}
 }
-
+\author{
+Philipp Mueller
+}

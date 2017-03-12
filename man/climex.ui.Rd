@@ -16,11 +16,10 @@ HTML code of the interface
 \details{
 Contains all the HTML codes.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other climex: \code{\link{climex.server}},
   \code{\link{climex}}
 }
-
+\author{
+Philipp Mueller
+}

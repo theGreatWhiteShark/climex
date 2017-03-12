@@ -105,13 +105,12 @@ potsdam.anomalies <- anomalies( temp.potsdam )
 potsdam.blocked <- block( potsdam.anomalies )
 fit.gev( potsdam.blocked )
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other optimization: \code{\link{fit.gpd}},
   \code{\link{likelihood.gradient}},
   \code{\link{likelihood.initials}},
   \code{\link{likelihood}}
 }
-
+\author{
+Philipp Mueller
+}

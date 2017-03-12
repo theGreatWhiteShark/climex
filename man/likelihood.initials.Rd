@@ -43,12 +43,11 @@ this reason the restrict argument is included. If the estimates are
 bigger than the corresponding restrict.thresholds, they will be
 replaced by this specific value.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other optimization: \code{\link{fit.gev}},
   \code{\link{fit.gpd}}, \code{\link{likelihood.gradient}},
   \code{\link{likelihood}}
 }
-
+\author{
+Philipp Mueller
+}

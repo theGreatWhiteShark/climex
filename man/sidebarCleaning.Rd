@@ -21,9 +21,6 @@ removed from the time series. If on the other hand the GP
 distribution was picked, all cluster will be removed and only their
 highest point will remain.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other sidebar: \code{\link{data.selection}},
   \code{\link{file.loading}},
@@ -39,4 +36,6 @@ Other sidebar: \code{\link{data.selection}},
   \code{\link{sidebarLoadingInput}},
   \code{\link{sidebarLoading}}
 }
-
+\author{
+Philipp Mueller
+}

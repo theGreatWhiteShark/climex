@@ -37,9 +37,6 @@ Port from the extRemes package to (again) get rid of the
 'threshold' argument to be able to have an separate 'threshold()'
 function outside of the fitting function.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other extremes: \code{\link{block}},
   \code{\link{decluster}}, \code{\link{extremal.index}},
@@ -47,4 +44,6 @@ Other extremes: \code{\link{block}},
   \code{\link{return.level}}, \code{\link{revd}},
   \code{\link{rlevd}}, \code{\link{threshold}}
 }
-
+\author{
+Philipp Mueller
+}

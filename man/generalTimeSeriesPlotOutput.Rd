@@ -19,13 +19,12 @@ This function provides the ouput to
 deseasonalized one are rendered using the dygraphs package. The extreme
 events are rendered using the ggplot2 package.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other climex-plot: \code{\link{function.get.y.label}},
   \code{\link{generalFitPlotOutput}},
   \code{\link{generalFitPlot}},
   \code{\link{generalTimeSeriesPlot}}
 }
-
+\author{
+Philipp Mueller
+}

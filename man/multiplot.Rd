@@ -30,10 +30,9 @@ Well, it is not really related to extreme value fitting and I am aware of the fa
 anomalies.potsdam <- anomalies( temp.potsdam )
 multiplot( anomalies.potsdam, temp.potsdam, cols = 2, main = "Difference between the pure data of the daily maximum temperatures of the Potsdam station and their anomalies" )
 }
-\author{
-Paul Teetor
-}
 \seealso{
 Other plot: \code{\link{ttplot}}
 }
-
+\author{
+Paul Teetor
+}

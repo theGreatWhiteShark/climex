@@ -57,9 +57,6 @@ The fit is performed using the fit.interactive function. Using
 the reactive.rows input specific points of the time series can be
 removed.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other climex-fitting: \code{\link{color.table}},
   \code{\link{data.initials}},
@@ -68,4 +65,6 @@ Other climex-fitting: \code{\link{color.table}},
   \code{\link{generalFitStatistics}},
   \code{\link{generalFittingRoutineInput}}
 }
-
+\author{
+Philipp Mueller
+}

@@ -12,4 +12,3 @@ Numerical
 \author{
 Philipp Mueller
 }
-

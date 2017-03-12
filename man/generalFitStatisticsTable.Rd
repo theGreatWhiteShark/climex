@@ -13,9 +13,6 @@ box
 Provides the UI part of \code{\link{generalFitStatistics}}
 but is not a proper Shiny module.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other climex-fitting: \code{\link{color.table}},
   \code{\link{data.fitting}}, \code{\link{data.initials}},
@@ -23,4 +20,6 @@ Other climex-fitting: \code{\link{color.table}},
   \code{\link{generalFitStatistics}},
   \code{\link{generalFittingRoutineInput}}
 }
-
+\author{
+Philipp Mueller
+}

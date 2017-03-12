@@ -22,9 +22,6 @@ In each element of the table where the font should be
 colored, the corresponding color has to be added via a
 paste( as.character( table[ x, y ] ), "#0000FF" ).
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 \code{\link{pander::pandoc.table.return}} and
 \code{\link{markdown::markdownToHTML}}
@@ -36,4 +33,6 @@ Other climex-fitting: \code{\link{data.fitting}},
   \code{\link{generalFitStatistics}},
   \code{\link{generalFittingRoutineInput}}
 }
-
+\author{
+Philipp Mueller
+}
