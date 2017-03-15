@@ -559,7 +559,8 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
                              error.estimation = "none", model = "gpd",
                              threshold = threshold,
                              total.length = total.length,
-                             original.time.series = x )
+                             original.time.series = x,
+                             silent = silent )
                 ) ) ) ) )
       }
       names( errors ) <- c( "scale", "shape",
@@ -613,7 +614,8 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
       c, lapply( return.period, function( y )
         climex::return.level( res.optim, y, error.estimation = "none",
                              model = "gpd", threshold = threshold,
-                             total.length = total.length ) ) )
+                             total.length = total.length,
+                             silent = silent ) ) )
   names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
   return( res.optim )
 }
