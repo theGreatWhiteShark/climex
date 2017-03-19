@@ -1,10 +1,10 @@
 ##' @title Downloads daily weather data from observation stations in Germany and extracts minimum and maximum temperature as well as precipitation data.
 ##'
-##' @details The download will be done using 'wget'. Per default the CLIMEX.PATH variable will be used to set the download path. Since this function will check the files already present it's strongly recommended to use the save.downloads options. Whenever this function is invoked again only updated files will be downloaded which saves a lot of traffic and time. The data.export option can be used to export the time series into a data type file making it available outside of R too. In addition the geographic positions of the individual stations will be extracted and saved as well. They are needed for the leaflet module of the climex shiny app. CAUTION: since this procedure takes a while its run in parallel on all cores of your machine!
+##' @details The download will be done using 'wget'. Per default the CLIMEX.PATH variable will be used to set the download path. Since this function will check the files already present it's strongly recommended to use the save.downloads options. Whenever this function is invoked again only updated files will be downloaded which saves a lot of traffic and time. The csv.export option can be used to export the time series into a data type file making it available outside of R too. In addition the geographic positions of the individual stations will be extracted and saved as well. They are needed for the leaflet module of the climex shiny app. CAUTION: since this procedure takes a while its run in parallel on all cores of your machine!
 ##'
 ##' @param save.downloads If TRUE the downloaded .zip files are stored in download.path/downloads_dwd. Else they will be deleted after the extracting. Default = TRUE.
 ##' @param download.path Specifies the data will be stored and downloaded too. It is advised to store it using the global variable CLIMEX.PATH which is also used for importing the saved data.
-##' @param data.export If TRUE creates an additional folder containing .dat files with the individual station data. Using this the data can be used outside of R too. Default = FALSE.
+##' @param csv.export If TRUE creates an additional folder containing .csv files with the individual station data. Using this the data can be used outside of R too. Default = FALSE.
 ##' @param data.type Specifies which kind of information from the downloaded files should be extracted. This input can be a character vector  The options are: temp.max, temp.min, prec, default (for both the daily maximum and minimum temperature and the precipitation), temp.mean, vapor.pressure, cloud.amount, air.pressure, relative.humidity, wind.speed, temp.min.at.ground, wind.speed.peak, prec.type (0 = no precipitation, 1 = only rain (before 1979), 2 = unknown, 4 = only rain (after 1979), 7 = only snow, 8 = snow or rain), sunshine.duration, snow.height. Default = default.
 ##'
 ##' @export
@@ -13,7 +13,7 @@
 ##' @author Philipp Mueller 
 download.data.dwd <- function( save.downloads = TRUE,
                               download.path = CLIMEX.PATH,
-                              data.export = FALSE,
+                              csv.export = FALSE,
                               data.type = c( "default", "temp.max",
                                             "temp.min", "prec",
                                             "temp.mean",
@@ -90,7 +90,7 @@ download.data.dwd <- function( save.downloads = TRUE,
     dir.create( "./recent" )
   if ( !dir.exists( "./historical" ) )
     dir.create( "./historical" )
-  if ( data.export && !dir.exists( "./data_dwd" ) )
+  if ( csv.export && !dir.exists( "./data_dwd" ) )
     dir.create( "./data_dwd" )
 
   download.content <- function( url.base, url.files ){
@@ -418,7 +418,7 @@ download.data.dwd <- function( save.downloads = TRUE,
     assign( ss, tmp )
   }
   ## writing the data to dat files
-  if ( data.export ){
+  if ( csv.export ){
     ## creating a distinct folder for all the different data types
     for ( dd in data.type ){
       if ( !dir.exists( paste0( "data_dwd/", dd ) ) )
@@ -431,7 +431,7 @@ download.data.dwd <- function( save.downloads = TRUE,
                    file = paste0( "data_dwd/", dd, "/",
                                  pracma::strRep(
                                              names( data.temp )[ ll ],
-                                             "/", "-" ), ".dat" ),
+                                             "/", "-" ), ".csv" ),
                    sep = " ", row.names = FALSE)
     }
   }   
