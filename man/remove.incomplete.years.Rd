@@ -12,13 +12,12 @@ remove.incomplete.years(x)
 \value{
 Time series of class xts
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 \code{\link{remove.seasonality}}
 
 Other ts: \code{\link{aic}}, \code{\link{anomalies}},
   \code{\link{bic}}, \code{\link{remove.seasonality}}
 }
-
+\author{
+Philipp Mueller
+}

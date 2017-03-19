@@ -67,9 +67,6 @@ selected. For the latter one the reactive value
 the generated time series is determined by the input$sliderYears
 slider in the top right part of the leaflet tab.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other sidebar: \code{\link{file.loading}},
   \code{\link{sidebarCleaningInput}},
@@ -85,4 +82,6 @@ Other sidebar: \code{\link{file.loading}},
   \code{\link{sidebarLoadingInput}},
   \code{\link{sidebarLoading}}
 }
-
+\author{
+Philipp Mueller
+}

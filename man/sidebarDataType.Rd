@@ -32,9 +32,6 @@ slider to provide the scale parameter for the GEV or shape
 parameter for the GP distribution. Else it will be a drop down menu
 listing the different types of data available at the chosen station.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other sidebar: \code{\link{data.selection}},
   \code{\link{file.loading}},
@@ -50,4 +47,6 @@ Other sidebar: \code{\link{data.selection}},
   \code{\link{sidebarLoadingInput}},
   \code{\link{sidebarLoading}}
 }
-
+\author{
+Philipp Mueller
+}

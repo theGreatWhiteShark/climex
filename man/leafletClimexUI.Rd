@@ -19,11 +19,10 @@ This function provides the user interface to
 absolutePanels containing the return level and time series length
 sliders as well as the table displaying all the stations information.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other leaflet: \code{\link{data.chosen}},
   \code{\link{leafletClimex}}
 }
-
+\author{
+Philipp Mueller
+}

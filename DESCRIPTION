@@ -42,7 +42,7 @@ Remotes: theGreatWhiteShark/leaflet,
 License: GPL (>= 3)
 LinkingTo: Rcpp, RcppArmadillo
 VignetteBuilder: knitr
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 Suggests:
     knitr,
     rmarkdown,

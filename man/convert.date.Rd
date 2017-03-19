@@ -29,4 +29,3 @@ produce a specific date a string ala "20140101" can be provided.
 \author{
 Philipp Mueller
 }
-

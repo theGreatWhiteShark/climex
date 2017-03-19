@@ -39,9 +39,6 @@ a look at the \code{\link{stats::ave}} function.
 \examples{
 block( temp.potsdam )
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other extremes: \code{\link{decluster}},
   \code{\link{extremal.index}}, \code{\link{gev.density}},
@@ -55,4 +52,6 @@ Other extremes: \code{\link{decluster}},
   \code{\link{return.level}}, \code{\link{revd}},
   \code{\link{rlevd}}, \code{\link{threshold}}
 }
-
+\author{
+Philipp Mueller
+}

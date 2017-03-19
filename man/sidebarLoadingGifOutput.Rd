@@ -15,9 +15,6 @@ div
 \details{
 Rendering of \code{link{sidebarLoadingGif}}.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other sidebar: \code{\link{data.selection}},
   \code{\link{file.loading}},
@@ -33,4 +30,6 @@ Other sidebar: \code{\link{data.selection}},
   \code{\link{sidebarLoadingInput}},
   \code{\link{sidebarLoading}}
 }
-
+\author{
+Philipp Mueller
+}

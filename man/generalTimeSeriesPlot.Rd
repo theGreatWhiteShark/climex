@@ -64,13 +64,12 @@ events are rendered using the ggplot2 package. For the later one
 clicking or brushing points enables the user to exclude them. This is
 handled by a reactive value returned by this function.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other climex-plot: \code{\link{function.get.y.label}},
   \code{\link{generalFitPlotOutput}},
   \code{\link{generalFitPlot}},
   \code{\link{generalTimeSeriesPlotOutput}}
 }
-
+\author{
+Philipp Mueller
+}

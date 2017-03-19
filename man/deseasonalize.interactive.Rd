@@ -28,9 +28,6 @@ Default = "DWD".}
 \value{
 Time series of class 'xts'.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{data.extremes}},
@@ -39,4 +36,6 @@ Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{generalExtremeExtractionInput}},
   \code{\link{generalExtremeExtraction}}
 }
-
+\author{
+Philipp Mueller
+}

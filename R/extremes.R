@@ -435,12 +435,18 @@ return.level <- function( x, return.period = 100,
                                  model = "gev", silent = TRUE ) ) ) )
   } else if ( any( class( x ) == "climex.fit.gpd" ) ){
     model <- "gpd"
-    ## m-observation return level = return.period* the mean number of
-    ## exceedance per year. This way the unit of the provided return
-    ## level and its error are  not 'per observation' but 'per year'.
-    ## In this step we harness the power of the 'xts' package
-    m <- return.period* mean( apply.yearly( x$x,
-                                           function( y ) length( y ) ) )
+    if ( !is.xts( x$x ) ){
+      if ( !silent )
+        warning( "return.level: Since the original time series was not supplied the return level will be not per once every x year but once every x observation" )
+      m <- return.period
+    } else {
+      ## m-observation return level = return.period* the mean number of
+      ## exceedance per year. This way the unit of the provided return
+      ## level and its error are  not 'per observation' but 'per year'.
+      ## In this step we harness the power of the 'xts' package
+      m <- return.period* mean( apply.yearly( x$x,
+                                             function( y ) length( y ) ) )
+    }
     ## When a threshold is supplied, the one in the fitted object will be
     ## overwritten
     if ( !is.null( threshold ) )

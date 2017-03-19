@@ -73,12 +73,11 @@ animation R package was the basis for this code. The warning
 messages "Removed x rows ..." appear since a couple of trajectories
 are outside the plotted area.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other animation: \code{\link{likelihoodAnimationUI}},
   \code{\link{likelihoodAnimation}},
   \code{\link{plot.animation}}
 }
-
+\author{
+Philipp Mueller
+}

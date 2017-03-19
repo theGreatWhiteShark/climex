@@ -47,9 +47,6 @@ slider, checkbox etc. inputs. This way the fit can be performed with its
 default settings in the leaflet tab without switching to the General tab
 first.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other climex-fitting: \code{\link{color.table}},
   \code{\link{data.fitting}}, \code{\link{data.initials}},
@@ -57,4 +54,6 @@ Other climex-fitting: \code{\link{color.table}},
   \code{\link{generalFitStatistics}},
   \code{\link{generalFittingRoutineInput}}
 }
-
+\author{
+Philipp Mueller
+}

@@ -29,11 +29,10 @@ series and a data.frame with the columns \emph{longitude},
 stations geo-coordinates, height and name 
 }
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other climex: \code{\link{climex.server}},
   \code{\link{climex.ui}}
 }
-
+\author{
+Philipp Mueller
+}

@@ -13,9 +13,6 @@ menuItemOutput
 Provides the shinydashboard::menuItemOutput for \code{\link{
 sidebarDataBase}}. See the later one for details.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other sidebar: \code{\link{data.selection}},
   \code{\link{file.loading}},
@@ -31,4 +28,6 @@ Other sidebar: \code{\link{data.selection}},
   \code{\link{sidebarLoadingInput}},
   \code{\link{sidebarLoading}}
 }
-
+\author{
+Philipp Mueller
+}

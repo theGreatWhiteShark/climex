@@ -10,4 +10,3 @@
 \description{
 The data is stored in a data.frame and assigned to the class 'bulk'. It contains 17 columns. In the first is the date of the measurement, in the 4. the daily mean temperature and in the 8. and 9. the lowest respective highest temperature of the individual day. All artifacts detected were replaced by -999. Originally the date was placed in the second column but the columns where switched to increase compatibility.
 }
-

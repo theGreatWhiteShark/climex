@@ -43,9 +43,6 @@ of the time series for the cluster detection. This way exceedances
 separated over a big temporal distance will not be considered to
 belong to the same cluster.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other extremes: \code{\link{block}},
   \code{\link{extremal.index}}, \code{\link{gev.density}},
@@ -53,4 +50,6 @@ Other extremes: \code{\link{block}},
   \code{\link{return.level}}, \code{\link{revd}},
   \code{\link{rlevd}}, \code{\link{threshold}}
 }
-
+\author{
+Philipp Mueller
+}

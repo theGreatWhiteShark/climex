@@ -25,9 +25,6 @@ either a localhost (direct interaction) or on a server waiting for
 client interaction. Accordingly it looks up both the JavaScript script
 and the corresponding gif file.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other sidebar: \code{\link{data.selection}},
   \code{\link{file.loading}},
@@ -43,4 +40,6 @@ Other sidebar: \code{\link{data.selection}},
   \code{\link{sidebarLoadingInput}},
   \code{\link{sidebarLoading}}
 }
-
+\author{
+Philipp Mueller
+}

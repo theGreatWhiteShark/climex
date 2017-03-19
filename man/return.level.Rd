@@ -88,4 +88,3 @@ Other extremes: \code{\link{block}},
   \code{\link{qevd}}, \code{\link{revd}},
   \code{\link{rlevd}}, \code{\link{threshold}}
 }
-

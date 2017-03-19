@@ -45,9 +45,6 @@ with with green and negative with red). This function will define
 some global variables to hold the results of the former fits. This is
 necessary in order to mark the progress in green or red.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other climex-fitting: \code{\link{color.table}},
   \code{\link{data.fitting}}, \code{\link{data.initials}},
@@ -55,4 +52,6 @@ Other climex-fitting: \code{\link{color.table}},
   \code{\link{generalFitStatisticsTable}},
   \code{\link{generalFittingRoutineInput}}
 }
-
+\author{
+Philipp Mueller
+}

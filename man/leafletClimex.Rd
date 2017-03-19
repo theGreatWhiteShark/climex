@@ -113,11 +113,10 @@ with the setting in the basic map without station positions
 select only those stations in Germany with a certain minimum
 number of years.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other leaflet: \code{\link{data.chosen}},
   \code{\link{leafletClimexUI}}
 }
-
+\author{
+Philipp Mueller
+}

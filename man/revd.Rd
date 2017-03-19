@@ -37,9 +37,6 @@ function only features constant location, scale and shape parameters.
 If you want to do time dependent analysis of extreme events please
 refer to the original package.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other extremes: \code{\link{block}},
   \code{\link{decluster}}, \code{\link{extremal.index}},
@@ -47,4 +44,6 @@ Other extremes: \code{\link{block}},
   \code{\link{qevd}}, \code{\link{return.level}},
   \code{\link{rlevd}}, \code{\link{threshold}}
 }
-
+\author{
+Philipp Mueller
+}

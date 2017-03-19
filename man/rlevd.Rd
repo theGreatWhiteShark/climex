@@ -34,9 +34,6 @@ Port from the extRemes package to ensure compatibility and
 to make the threshold argument obligatory. This is just for internal
 usage. Please use the \link{\code{return.level}} function instead!
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other extremes: \code{\link{block}},
   \code{\link{decluster}}, \code{\link{extremal.index}},
@@ -44,4 +41,6 @@ Other extremes: \code{\link{block}},
   \code{\link{qevd}}, \code{\link{return.level}},
   \code{\link{revd}}, \code{\link{threshold}}
 }
-
+\author{
+Philipp Mueller
+}

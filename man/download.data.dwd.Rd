@@ -28,4 +28,3 @@ The download will be done using 'wget'. Per default the CLIMEX.PATH variable wil
 \author{
 Philipp Mueller
 }
-

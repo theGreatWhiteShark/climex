@@ -18,12 +18,11 @@ table of all starting points, the animations/pictures, as well
 as all the sliders, numerical inputs etc. to control the
 animation.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other animation: \code{\link{animation.wrapper}},
   \code{\link{likelihoodAnimation}},
   \code{\link{plot.animation}}
 }
-
+\author{
+Philipp Mueller
+}

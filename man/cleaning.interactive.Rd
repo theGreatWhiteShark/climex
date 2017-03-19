@@ -36,9 +36,6 @@ the data of the German weather service for missing values).
 Second it removes all incomplete years (GEV) or cluster (GP) when
 the corresponding checkbox is checked.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other preprocessing: \code{\link{data.extremes}},
   \code{\link{deseasonalize.interactive}},
@@ -47,4 +44,6 @@ Other preprocessing: \code{\link{data.extremes}},
   \code{\link{generalExtremeExtractionInput}},
   \code{\link{generalExtremeExtraction}}
 }
-
+\author{
+Philipp Mueller
+}

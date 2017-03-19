@@ -25,12 +25,11 @@ This function is only meant to work with constant parameters
 and no covariats. x.in is not called "x" anymore since the call
 grad( func = likelihood, x = parameters, ... ) wouldn't be possible.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other optimization: \code{\link{fit.gev}},
   \code{\link{fit.gpd}}, \code{\link{likelihood.gradient}},
   \code{\link{likelihood.initials}}
 }
-
+\author{
+Philipp Mueller
+}

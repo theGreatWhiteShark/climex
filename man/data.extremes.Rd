@@ -81,9 +81,6 @@ both deseasonalize.interactive and extremes.interactive to this time
 series. Finally it return the resulting extreme events as well as the
 deseasonalized and pure time series.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{deseasonalize.interactive}},
@@ -92,4 +89,6 @@ Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{generalExtremeExtractionInput}},
   \code{\link{generalExtremeExtraction}}
 }
-
+\author{
+Philipp Mueller
+}

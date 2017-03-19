@@ -35,9 +35,6 @@ The initial parameter combination can be set by the numerical
 input in the Likelihood tab. Until that happened, just the default
 values obtained by \code{\link{likelihood.initials}} will be used.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other climex-fitting: \code{\link{color.table}},
   \code{\link{data.fitting}},
@@ -46,4 +43,6 @@ Other climex-fitting: \code{\link{color.table}},
   \code{\link{generalFitStatistics}},
   \code{\link{generalFittingRoutineInput}}
 }
-
+\author{
+Philipp Mueller
+}

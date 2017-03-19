@@ -40,9 +40,6 @@ If the input$radioEvdStatistics is set to "GEV" the time
 series will be block. If it's on the other hand set to "GP", all
 values above a certain threshold will be extracted.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{data.extremes}},
@@ -51,4 +48,6 @@ Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{generalExtremeExtractionInput}},
   \code{\link{generalExtremeExtraction}}
 }
-
+\author{
+Philipp Mueller
+}

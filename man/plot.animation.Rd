@@ -81,12 +81,11 @@ height value: for a plot containing the legend (in this version of
 the script it is just the last one) the height value is increased to
 also cover the additional legend.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other animation: \code{\link{animation.wrapper}},
   \code{\link{likelihoodAnimationUI}},
   \code{\link{likelihoodAnimation}}
 }
-
+\author{
+Philipp Mueller
+}

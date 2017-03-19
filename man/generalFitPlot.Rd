@@ -73,13 +73,12 @@ Nothing in particular.
 \details{
 All four plots are rendered using the ggplot2 package.
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other climex-plot: \code{\link{function.get.y.label}},
   \code{\link{generalFitPlotOutput}},
   \code{\link{generalTimeSeriesPlotOutput}},
   \code{\link{generalTimeSeriesPlot}}
 }
-
+\author{
+Philipp Mueller
+}

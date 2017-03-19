@@ -45,9 +45,6 @@ renderMenu
 Provides a slider input to determine either the block length
 (in case of the GEV distribution) or the height of the threshold (GP)
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{data.extremes}},
@@ -56,4 +53,6 @@ Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{extremes.interactive}},
   \code{\link{generalExtremeExtractionInput}}
 }
-
+\author{
+Philipp Mueller
+}

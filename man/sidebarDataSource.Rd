@@ -42,9 +42,6 @@ parameter for the GP distribution. Else it will be a drop down menu
 listing the names of all available stations (see \code{\link{
 data.chosen}})
 }
-\author{
-Philipp Mueller
-}
 \seealso{
 Other sidebar: \code{\link{data.selection}},
   \code{\link{file.loading}},
@@ -60,4 +57,6 @@ Other sidebar: \code{\link{data.selection}},
   \code{\link{sidebarLoadingInput}},
   \code{\link{sidebarLoading}}
 }
-
+\author{
+Philipp Mueller
+}
