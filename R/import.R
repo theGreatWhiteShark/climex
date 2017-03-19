@@ -429,10 +429,10 @@ download.data.dwd <- function( save.downloads = TRUE,
                    date = index( data.temp[[ ll ]] ),
                    value = data.temp[[ ll ]], row.names = NULL ),
                    file = paste0( "data_dwd/", dd, "/",
-                                 pracma::strRep(
-                                             names( data.temp )[ ll ],
-                                             "/", "-" ), ".csv" ),
-                   sep = " ", row.names = FALSE)
+                                 gsub( "/", "-",
+                                      names( data.temp )[ ll ],
+                                      fixed = TRUE ), ".csv" ),
+                   sep = ",", row.names = FALSE )
     }
   }   
   ## delete all folders
