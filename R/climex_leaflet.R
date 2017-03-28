@@ -228,7 +228,6 @@ leafletClimex <- function( input, output, session, reactive.chosen,
     if ( is.null( input$sliderReturnLevel ) ||
          is.null( data.selected ) )
       return( NULL )
-    browser()
     ## if no geo-coordinates are provided for the time series,
     ## don't calculate the return levels
     if ( any( is.na( c( data.selected[[ 2 ]]$longitude,
@@ -297,9 +296,10 @@ leafletClimex <- function( input, output, session, reactive.chosen,
         ## place the legend next to. Unfortunately I do not know of
         ## any other trick right now to adjust an objects width
         ## according to the current screen width (CSS3 magic)
-        isolate(
+        isolate( 
             map.width <-
-              session$clientData&output_plotplaceholder_width )
+              session$clientData[[ 'output_leaflet-placeholder_width' ]]
+        )
         if ( is.null( map.width ) )
           warning( "The placeholder magic in the leaflet tab went wrong!" )
         ## range of the return levels
