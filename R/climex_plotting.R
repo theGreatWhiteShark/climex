@@ -245,7 +245,7 @@ generalTimeSeriesPlot <- function( input, output, session,
       ylab( y.label ) + theme_bw() +
       theme( axis.title = element_text( size = 17, colour = colour.ts ),
             axis.text = element_text( size = 13, colour = colour.ts ) )
-  } )
+  }, type = "cairo" )
   return( reactive.rows )
 }
 
@@ -378,7 +378,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       xlab( x.label ) + theme( legend.position = "none" ) +
       theme( axis.title = element_text( size = 17, colour = colour.ts ),
             axis.text = element_text( size = 13, colour = colour.ts ) )
-  } )
+  }, type = "cairo" )
   ## PP plot for fit statistics
   output$plotFitPP <- renderPlot( {
     if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) )
@@ -424,7 +424,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       theme_bw() +
       theme( axis.title = element_text( size = 15, colour = colour.ts ),
             axis.text = element_text( size = 12, colour = colour.ts ) )
-    return( gg.pp ) } )
+    return( gg.pp ) }, type = "cairo" )
   ## Quantile-quantile plot for fit statistics with samples
   ## drawn from the fitted distribution
   output$plotFitQQ <- renderPlot( {
@@ -499,7 +499,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       theme( axis.title = element_text( size = 15, colour = colour.ts ),
             axis.text = element_text( size = 12, colour = colour.ts ) )
     return( gg.qq )        
-  } )
+  }, type = "cairo" )
   output$plotFitReturnLevel <- renderPlot( {
     if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) )
       return( NULL )
@@ -613,5 +613,5 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       } else
         gg.rl <- gg.rl + ylim( plot.y.limits )
     }
-    return( gg.rl )  } )
+    return( gg.rl )  }, type = "cairo" )
 }
