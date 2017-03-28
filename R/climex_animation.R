@@ -381,7 +381,7 @@ likelihoodAnimation <- function( input, output, session,
             {document.getElementById( 'tableHeuristicEstimates' ).style.width = '100%';}") ) )
   ## the two dummies to get the current width of the screen
   output$placeholder <- renderPlot({
-    ttplot( x.block ) } )
+    ttplot( x.block ) }, type = "cairo" )
   output$drawLikelihoodAnimation <- renderUI( {
     ## This reactive content only depends on the action button
     ## because of the use of the isolate() functions.        
