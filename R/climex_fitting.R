@@ -70,17 +70,15 @@ fit.interactive <- function( x.kept, x.initial = NULL,
     if ( !is.null( x.initial ) )
       x.initial[ 1 ] <- -1* x.initial[ 1 ]
   }
-  ## Check whether the supplied initial parameter combination can
-  ## still be evaluated. This might fail, e.g. when changing between
-  ## time series or minimal und maximal extremes.
-  if ( is.nan( climex::likelihood( x.initial, x.kept, model = model ) ) ){
-    shinytoastr::toastr_warning(
-                     "Initial parameters can not be evaluated. They have been reseted during the fitting procedure!" )
-    x.initial <- NULL
-  } 
-  if ( is.null( x.initial ) ){
-    x.initial <- climex::likelihood.initials( x.kept, model = model )
-  } else {
+  if ( !is.null( x.initial ) ){
+    ## Check whether the supplied initial parameter combination can
+    ## still be evaluated. This might fail, e.g. when changing between
+    ## time series or minimal und maximal extremes.
+    if ( is.nan( climex::likelihood( x.initial, x.kept, model = model ) ) ){
+      shinytoastr::toastr_warning(
+                       "Initial parameters can not be evaluated. They have been reseted during the fitting procedure!" )
+      x.initial <- NULL
+    } 
     ## While changing the EVD statistics from "GEV" to "GP" the initial
     ## parameter combination has to be reset. This is nevertheless a
     ## little bit problematic since both reactive.fitting() and
@@ -92,7 +90,9 @@ fit.interactive <- function( x.kept, x.initial = NULL,
       x.initial <- NULL
     if ( model == "gpd" && length( x.initial ) != 2 )
       x.initial <- NULL
-  }
+    }
+  x.initial <- climex::likelihood.initials( x.kept, model = model )
+  
   if ( model == "gev" ){
     ## Fits of GEV parameters to blocked data set
     x.fit.evd <- suppressWarnings( switch(
