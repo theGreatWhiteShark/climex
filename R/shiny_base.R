@@ -294,7 +294,8 @@ climex.server <- function( input, output, session ){
       reactive( input$selectDeseasonalize ),
       reactive( input$sliderBlockLength ),
       reactive( input$selectOptimization ),
-      reactive( input$checkboxRerun ) )
+      reactive( input$checkboxRerun ),
+      reactive( input$selectDataBase ) )
 }
 
 ##' @title The user interface for the \code{\link{climex}} function.

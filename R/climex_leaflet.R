@@ -131,6 +131,15 @@ leafletClimexUI <- function( id ){
 ##' @param checkboxRerun Logical (checkbox) input from the Likelihood tab.
 ##' It determines whether or not to start the optimization at the results
 ##' of the first run again to escape local minima.
+##' @param selectDataBase Character (select) input to determine the data
+##' source. In the default installation there are three options:
+##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' provided as an argument to the call of the \code{\link{climex}}
+##' function. The second one uses the database of the German weather
+##' service (see \code{link{download.data.dwd}}). The third one allows
+##' the user to produce random numbers distributed according to the GEV
+##' or GP distribution. Determined by menuSelectDataBase.
+##' Default = "DWD".
 ##'
 ##' @family leaflet
 ##'
@@ -148,7 +157,8 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                           extremes.interactive, selectDataSource,
                           checkboxIncompleteYears, checkboxDecluster,
                           selectDeseasonalize, sliderBlockLength,
-                          selectOptimization, checkboxRerun ){
+                          selectOptimization, checkboxRerun,
+                          selectDataBase ){
   ## This variable contains the name of the previously selected station.
   ## It's a little bit ugly since it's global, but right now I'm lacking
   ## an alternative.
@@ -218,6 +228,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
     if ( is.null( input$sliderReturnLevel ) ||
          is.null( data.selected ) )
       return( NULL )
+    browser()
     ## if no geo-coordinates are provided for the time series,
     ## don't calculate the return levels
     if ( any( is.na( c( data.selected[[ 2 ]]$longitude,

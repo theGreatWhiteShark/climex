@@ -10,7 +10,7 @@ leafletClimex(input, output, session, reactive.chosen, buttonMinMax,
   sliderThreshold, fit.interactive, cleaning.interactive,
   deseasonalize.interactive, extremes.interactive, selectDataSource,
   checkboxIncompleteYears, checkboxDecluster, selectDeseasonalize,
-  sliderBlockLength, selectOptimization, checkboxRerun)
+  sliderBlockLength, selectOptimization, checkboxRerun, selectDataBase)
 }
 \arguments{
 \item{input}{Namespace input. For more details check out
@@ -99,6 +99,16 @@ likelihood function of the GEV/GP distribution. The choices are given in
 \item{checkboxRerun}{Logical (checkbox) input from the Likelihood tab.
 It determines whether or not to start the optimization at the results
 of the first run again to escape local minima.}
+
+\item{selectDataBase}{Character (select) input to determine the data
+source. In the default installation there are three options:
+c( "input", "DWD", "artificial data" ). The first one uses the data
+provided as an argument to the call of the \code{\link{climex}}
+function. The second one uses the database of the German weather
+service (see \code{link{download.data.dwd}}). The third one allows
+the user to produce random numbers distributed according to the GEV
+or GP distribution. Determined by menuSelectDataBase.
+Default = "DWD".}
 }
 \value{
 Reactive value holding the selected station.
