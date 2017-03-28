@@ -282,6 +282,11 @@ table.table-bordered.dataTable {
 #leaflet-box .form-group {
     margin-bottom: 0px !important;
 }
+/* fix the height of the box in order to fix the top-offset
+   of the leaflet legend as well */
+#leaflet-box {
+  height: 250px !important;
+}
 .leaflet-control-layers {
     background-color: #FF8C00DD !important;
     width: 320px !important;
@@ -314,7 +319,7 @@ table.table-bordered.dataTable {
     color: #191970 !important;
     position: absolute;
     right: 0px !important;
-    top: 75px !important;
+    top: 231px !important;
     margin-right: 0px !important;
     border-radius: 9px !important;
 }
