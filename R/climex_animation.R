@@ -760,7 +760,7 @@ plot.animation <- function( time.series, starting.points,
         height.plot <- height
       grDevices::png( filename = paste0( image.folder, "/plane_",
                                         plane.name, id, ".png" ),
-                     width = width, height = height.plot )
+                     width = width, height = height.plot,  type = "cairo" )
       ## here I assume that the entries in segment are ordered
       ## according to their id
       gg.plot <- gg.plane +
@@ -835,7 +835,7 @@ plot.animation <- function( time.series, starting.points,
       height.plot <- height
     grDevices::png( filename = paste0( image.folder, "/plane_",
                                       plane.name, ".png" ),
-                   width = width, height = height.plot )
+                   width = width, height = height.plot, type = "cairo" )
     ## here I assume that the entries in segment are ordered according
     ## to their id
     gg.plot <- gg.plane +
