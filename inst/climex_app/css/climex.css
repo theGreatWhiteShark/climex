@@ -331,6 +331,16 @@ table.table-bordered.dataTable {
     left: 25% !important;
 }
 
+/* display the MathJax text in the same font as everything else */
+#math-text {
+  font-family: inherit !important;
+}
+
+.table > caption + thead > tr:first-child > td, .table > caption + thead > tr:first-child > th, .table > colgroup + thead > tr:first-child > td, .table > colgroup + thead > tr:first-child > th, .table > thead:first-child > tr:first-child > td, .table > thead:first-child > tr:first-child > th {
+  text-align: center !important;
+}
+
+
 @media screen and (max-width: 1400px){
     /* design for my Aspire S3 */
     #boxPlotFit {

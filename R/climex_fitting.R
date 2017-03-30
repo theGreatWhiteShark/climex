@@ -458,6 +458,11 @@ generalFitStatistics <- function( reactive.fitting, reactive.extreme,
                           row.names = c( "location", "scale",
                                         "shape", "nllh", "AIC",
                                         "BIC", "rlevel" ) )
+    colnames( x.table ) <- c( "current",
+                             '<math id="math-text" xmlns="http://www.w3.org/1998/Math/MathML"><msub><mtext>hist</mtext><mn>1</mn></msub></math>',
+                             '<math id="math-text" xmlns="http://www.w3.org/1998/Math/MathML"><msub><mtext>hist</mtext><mn>2</mn></msub></math>',
+                             '<math id="math-text" xmlns="http://www.w3.org/1998/Math/MathML"><msub><mtext>hist</mtext><mn>3</mn></msub></math>' )
+                             
     ## Generate a html table with the 'pander' and the 'markdown'
     ## package
     x.html.table <- markdown::markdownToHTML(
