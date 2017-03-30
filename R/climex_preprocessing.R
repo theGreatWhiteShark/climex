@@ -134,8 +134,7 @@ cleaning.interactive <- function( x.xts, checkboxIncompleteYears,
       x.xts <- climex::decluster( x.xts, sliderThreshold() )
     }
     if ( any( is.nan( x.xts ) ) )
-      shinytoastr::toastr_warning(
-                       "The current time series contains missing values. Please be sure to check 'Remove incomplete years' in the sidebar to avoid wrong results!" )
+      print( "The current time series contains missing values. Please be sure to check 'Remove incomplete years' in the sidebar to avoid wrong results!" )
     return( x.xts )
 }
 
@@ -187,8 +186,7 @@ deseasonalize.interactive <- function( x.xts, selectDeseasonalize,
       return( NULL )
     }
     if ( selectDataBase() == "artificial data" ){
-      ## For the artificial data there is no need for deseasonalization
-      shinytoastr::toastr_info( "Since there is no seasonality in the artificial time series, the choice of deseasonalization method won't affect them at all." )
+      ## For the artificial data there is no need for deseasonalization.
       return( x.xts )
     }
     ## Removing all NaN or most algorithms won't work. But anyway. Just
@@ -252,8 +250,7 @@ deseasonalize.interactive <- function( x.xts, selectDeseasonalize,
       ## dirty solution, but just omitting them and informing the user
       ## will work for now.
       x.deseasonalized <- na.omit( x.deseasonalized )
-      shinytoastr::toastr_error(
-                       "NaNs produced during the deseasonalization." )
+      print( "NaNs produced during the deseasonalization." )
     }
     return( x.deseasonalized )
 }

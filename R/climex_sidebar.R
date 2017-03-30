@@ -430,8 +430,7 @@ data.selection <- function( reactive.chosen, selectDataSource,
         if ( !any(  names( data.selected[[ 1 ]] ) ==
                     selectDataSource() ) ){
           x.xts <- data.selected[[ 1 ]][[ 1 ]]
-          shinytoastr::toastr_info(
-                           "Please check the selected station after changing the data base!" ) 
+          print( "New data source selected." )
         } else
           x.xts <- data.selected[[ 1 ]][[
             which( names( data.selected[[ 1 ]] ) ==

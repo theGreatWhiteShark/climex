@@ -373,7 +373,8 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
     if ( buttonMinMax() == "Min" && radioEvdStatistics() == "GEV" ){
       x.kept <- x.kept* ( -1 )
       x.fit.evd$par[ 1 ] <- x.fit.evd$par[ 1 ]* -1
-      shinytoastr::toastr_info( "Since the minimal extremes are chosen the GEV distribution \n will be fitted to the negated time series" )
+      shinytoastr::toastr_info( "Since the minimal extremes are chosen the GEV distribution <br/> will be fitted to the negated time series",
+                               preventDuplicates = TRUE )
     }
     x.lim <- c( max( x.kept ), min( x.kept ) )
     ## The amount of bins is changing whenever a single event

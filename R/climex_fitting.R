@@ -76,7 +76,8 @@ fit.interactive <- function( x.kept, x.initial = NULL,
     ## time series or minimal und maximal extremes.
     if ( is.nan( climex::likelihood( x.initial, x.kept, model = model ) ) ){
       shinytoastr::toastr_warning(
-                       "Initial parameters can not be evaluated. They have been reseted during the fitting procedure!" )
+                       "Initial parameters can not be evaluated. They have been reseted during the fitting procedure!",
+                       preventDuplicates = TRUE )
       x.initial <- NULL
     } 
     ## While changing the EVD statistics from "GEV" to "GP" the initial
