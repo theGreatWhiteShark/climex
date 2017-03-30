@@ -403,5 +403,5 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
               climex:::generalTimeSeriesPlotOutput( "ts" ) ) ),
         tabItem( tabName = "tabLikelihood",
                 climex:::likelihoodAnimationUI( "animation" )
-           ) ) ) )
+                ))))
 }

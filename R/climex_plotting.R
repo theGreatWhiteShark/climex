@@ -26,16 +26,17 @@
 ##' @author Philipp Mueller 
 function.get.y.label <- function( selectDataBase, selectDataType ){
     if ( is.null( selectDataBase() ) ){
-      y.label <- "temperature in °C"            
+      y.label <- expression( paste( "temperature in ", "", degree, "C" ) )            
     } else if ( selectDataBase() == "artificial data" ){
       y.label <- "EVD sample"
     } else if ( selectDataBase() == "DWD" ){
       if ( is.null( selectDataType() ) ){
-        y.label <- "temperature in °C"
+        y.label <- expression( paste( "temperature in ", "", degree, "C" ) ) 
       } else if ( selectDataType() == "Daily precipitation" ){
         y.label <- "precipitation in mm"
       } else {
-        y.label <- "temperature in °C" }
+        y.label <- expression( paste( "temperature in ", "", degree, "C" ) )
+      }
     } else if ( selectDataBase() == "input" ){
       y.label <- "input"
     }
@@ -192,7 +193,11 @@ generalTimeSeriesPlot <- function( input, output, session,
     plot.extremes[ !index( x.data[[ 3 ]] ) %in% index( x.extreme ) ] <- NA
     y.label <- function.get.y.label( selectDataBase, selectDataType )
     bind.dy <- cbind( x.data[[ 3 ]], plot.extremes )
-    names( bind.dy ) <- c( "pure ts", "annual maxima" )        
+    names( bind.dy ) <- c( "pure ts", "annual maxima" )
+    if ( class( y.label ) == "expression" ){
+      ## dygraphs is not able to handle neither expressions nor MathJax
+      y.label <- "temperature in °C"
+    }
     dygraph( bind.dy, ylab = y.label ) %>%
       dySeries( "pure ts", color = colour.ts ) %>%
       dySeries( "annual maxima", color = colour.extremes,
@@ -210,7 +215,12 @@ generalTimeSeriesPlot <- function( input, output, session,
                   index( x.extreme ) ] <- NA
     y.label <- function.get.y.label( selectDataBase, selectDataType )
     bind.dy <- cbind( x.data[[ 2 ]], plot.extremes )
-    names( bind.dy ) <- c( "deseasonalized ts", "annual maxima" )        
+    names( bind.dy ) <- c( "deseasonalized ts", "annual maxima" )
+    print( y.label )
+    if ( class( y.label ) == "expression" ){
+      ## dygraphs is not able to handle neither expressions nor MathJax
+      y.label <- "temperature in °C"
+    }
     dygraph( bind.dy, ylab = y.label ) %>%
       dySeries( "deseasonalized ts", color = colour.ts ) %>%
       dySeries( "annual maxima", color = colour.extremes,
@@ -613,5 +623,5 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       } else
         gg.rl <- gg.rl + ylim( plot.y.limits )
     }
-    return( gg.rl )  } )
+    return( gg.rl )  })
 }
