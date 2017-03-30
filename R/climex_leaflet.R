@@ -47,9 +47,15 @@ leafletClimexUI <- function( id ){
       ## card licensing
       absolutePanel( bottom = 32, right = 0,
                     id = ns( "markerBox" ),
+                    ## In order to display the return levels on a
+                    ## logarithmic scale, the exponent will be
+                    ## chosen via the slider and its transformation
+                    ## to 10^x is done in the script and inside a
+                    ## JavaScript function 
                     sliderInput( ns( "sliderReturnLevel" ),
                                 "Return level [years]",
-                                30, 1000, value = 100 ),
+                                1, 3, step = .1, round = 0,
+                                value = 2 ),
                     actionButton( ns( "buttonDrawMarkers" ),
                                  "Calculate return levels" ) ) )
 }
@@ -222,8 +228,8 @@ leafletClimex <- function( input, output, session, reactive.chosen,
   calculate.chosen.return.levels <- reactive( {
     data.selected <- reactive.chosen()
     print( "return" )
-    ## selected return level
-    return.level.year <- input$sliderReturnLevel 
+    ## selected return level and transform it to years
+    return.level.year <- 10^input$sliderReturnLevel
     ## wait for initialization
     if ( is.null( input$sliderReturnLevel ) ||
          is.null( data.selected ) )
