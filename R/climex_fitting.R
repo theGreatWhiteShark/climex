@@ -320,7 +320,7 @@ data.initials <- function( initialLocation, initialScale, initialShape,
 ##' @return box
 ##' @author Philipp Mueller 
 generalFitStatisticsTable <- function(){
-  box( title = h2( "Results" ), width = 3,
+  box( title = h2( "Results" ), width = 3, height = 370,
       background = "orange", id = "boxGevResults",
       uiOutput( "generalFitStatistics", colHeaders = "provided" ) )
 }

@@ -385,7 +385,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
           fluidRow(
             climex:::generalFitPlotOutput( "fit" ),
             box( title = h2( "Options" ), width = 4,
-              height = 550, background = "orange",
+              height = 505, background = "orange",
               id = "boxGevStatistics",
               radioButtons( "radioEvdStatistics", label = NULL,
                            inline = TRUE,

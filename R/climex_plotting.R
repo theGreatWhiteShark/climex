@@ -74,7 +74,8 @@ generalTimeSeriesPlotOutput <- function( id ){
                   click = ns( "plotBlockedClick" ),
                   brush = brushOpts( id = ns( "plotBlockedBrush" ) ) ),
                 actionButton( ns( "excludeBlockedReset" ), "Reset" ),
-                actionButton( ns( "excludeBlockedToggle" ), "Brush" ) ) )
+                actionButton( ns( "excludeBlockedToggle" ), "Brush" ) ),
+         height = 370 )
 }
 
 ##' @title TabBox containing a plot of the pure and deseasonalized time
@@ -279,7 +280,7 @@ generalTimeSeriesPlot <- function( input, output, session,
 generalFitPlotOutput <- function( id ){
   # Create a namespace function using the provided id
   ns <- NS( id )
-  box( title = h2( "GEV fit" ), status = "primary", 
+  box( title = h2( "GEV fit" ), status = "primary", height = 505,
       solidheader = TRUE, width = 8, id = "boxPlotFit",
       column( 9, plotOutput( ns( "plotFitEvd" ) ) ),
       column( 3, plotOutput( ns( "plotFitPP" ), height = 140 ),
