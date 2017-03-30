@@ -381,7 +381,7 @@ likelihoodAnimation <- function( input, output, session,
             {document.getElementById( 'tableHeuristicEstimates' ).style.width = '100%';}") ) )
   ## the two dummies to get the current width of the screen
   output$placeholder <- renderPlot({
-    ttplot( x.block ) }, type = "cairo" )
+    ttplot( x.block ) } )
   output$drawLikelihoodAnimation <- renderUI( {
     ## This reactive content only depends on the action button
     ## because of the use of the isolate() functions.        
@@ -760,7 +760,7 @@ plot.animation <- function( time.series, starting.points,
         height.plot <- height
       grDevices::png( filename = paste0( image.folder, "/plane_",
                                         plane.name, id, ".png" ),
-                     width = width, height = height.plot,  type = "cairo" )
+                     width = width, height = height.plot )
       ## here I assume that the entries in segment are ordered
       ## according to their id
       gg.plot <- gg.plane +
@@ -835,7 +835,7 @@ plot.animation <- function( time.series, starting.points,
       height.plot <- height
     grDevices::png( filename = paste0( image.folder, "/plane_",
                                       plane.name, ".png" ),
-                   width = width, height = height.plot, type = "cairo" )
+                   width = width, height = height.plot )
     ## here I assume that the entries in segment are ordered according
     ## to their id
     gg.plot <- gg.plane +
