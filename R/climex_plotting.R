@@ -245,7 +245,7 @@ generalTimeSeriesPlot <- function( input, output, session,
       ylab( y.label ) + theme_bw() +
       theme( axis.title = element_text( size = 17, colour = colour.ts ),
             axis.text = element_text( size = 13, colour = colour.ts ) )
-  }, type = "cairo" )
+  } )
   return( reactive.rows )
 }
 
