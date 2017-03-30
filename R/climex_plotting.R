@@ -196,7 +196,7 @@ generalTimeSeriesPlot <- function( input, output, session,
     names( bind.dy ) <- c( "pure ts", "annual maxima" )
     if ( class( y.label ) == "expression" ){
       ## dygraphs is not able to handle neither expressions nor MathJax
-      y.label <- "temperature in °C"
+      y.label <- "temperature in &deg;C"
     }
     dygraph( bind.dy, ylab = y.label ) %>%
       dySeries( "pure ts", color = colour.ts ) %>%
@@ -219,7 +219,7 @@ generalTimeSeriesPlot <- function( input, output, session,
     print( y.label )
     if ( class( y.label ) == "expression" ){
       ## dygraphs is not able to handle neither expressions nor MathJax
-      y.label <- "temperature in °C"
+      y.label <- "temperature in &deg;C"
     }
     dygraph( bind.dy, ylab = y.label ) %>%
       dySeries( "deseasonalized ts", color = colour.ts ) %>%
@@ -384,7 +384,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
     gg1.bins <- ( ( ( length( x.kept ) - 1 )*100/
                     length( x.extreme ) )  %/% 5 )* 0.025
     x.label <- function.get.y.label( selectDataBase, selectDataType )
-    plot( x.fit.evd, bin.factor = gg1.bins ) +
+    plot( x.fit.evd, bin.factor = gg1.bins ) + ylab( "density" ) +
       xlab( x.label ) + theme( legend.position = "none" ) +
       theme( axis.title = element_text( size = 17, colour = colour.ts ),
             axis.text = element_text( size = 13, colour = colour.ts ) )
