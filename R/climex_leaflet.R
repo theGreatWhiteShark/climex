@@ -233,7 +233,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
     data.selected <- reactive.chosen()
     if ( length( data.selected[[ 1 ]] ) > max.number.of.stations ){
       shinytoastr::toastr_error( "<center>Please select less stations using the 'Minimal length' slider! <br/>The calculation of the return level takes a lot of time.</center>",
-                   title = "Too many stations selected!",
+                   title = "<center>Too many stations selected!</center>",
                    position = "top-center",
                    timeOut = 8000 )
       return( NULL )
