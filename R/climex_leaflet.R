@@ -226,8 +226,18 @@ leafletClimex <- function( input, output, session, reactive.chosen,
   ## This will be calculated on demand (as soon as the user clicks
   ## the corresponding form)
   calculate.chosen.return.levels <- reactive( {
+    ## Do not calculate the return level for more than
+    ## max.number.of.stations stations. Else the calculation would
+    ## just take way to long. Zooming is not helping
+    max.number.of.stations <- 30
     data.selected <- reactive.chosen()
-    print( "return" )
+    if ( length( data.selected[[ 1 ]] ) > max.number.of.stations ){
+      toastr_error( "<center>Please select less stations using the 'Minimal length' slider! <br/>The calculation of the return level takes a lot of time.</center>",
+                   title = "Too many stations selected!",
+                   position = "top-center",
+                   timeOut = 8000 )
+      return( NULL )
+    }
     ## selected return level and transform it to years
     return.level.year <- 10^input$sliderReturnLevel
     ## wait for initialization
