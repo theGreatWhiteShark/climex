@@ -236,6 +236,8 @@ likelihoodAnimation <- function( input, output, session,
       ## little longer
       return( NULL )
     }
+    ## Redraw the initials every time the reset button is used
+    input$tableDrawPoints
     x.initial <- reactive.initials()
     x.fit.evd <- reactive.fitting()
     par.init <- x.fit.evd$par
@@ -586,10 +588,16 @@ plot.animation <- function( time.series, starting.points,
     shape.lim <- c( time.series.par[ 3 ] - .7,
                    time.series.par[ 3 ] + .7 )
   calculate.plane <- function( var1.lim, var2.lim, const,
-                              const.position ){
-    ## only likelihoods which are not plane.threshold values bigger
-    ## than the minimum will be displayed
-    threshold <- 1E3
+                              const.position, starting.points ){
+    ## Even on a logarithmic scale the negative log-likelihood will
+    ## saturate quite quickly. Therefore the range will be restricted
+    ## from the minimal point to either maximal nllh of all starting
+    ## points or range.maximum
+    starting.points.max <- max( apply( starting.points, 1,
+                                      climex::likelihood,
+                                      x.in = time.series ) )
+    range.maximum <- 1E3
+    threshold <- min( starting.points.max, range.maximum )
     var1.range <- seq( var1.lim[ 1 ], var1.lim[ 2 ],, number.of.points )
     var2.range <- seq( var2.lim[ 1 ], var2.lim[ 2 ],, number.of.points )
     plane.aux <- expand.grid( var1.range, var2.range )
@@ -616,11 +624,14 @@ plot.animation <- function( time.series, starting.points,
     return( plane )
   }
   plane.loc.sc <- calculate.plane( location.lim, scale.lim,
-                                  time.series.par[ 3 ], 3 )
+                                  time.series.par[ 3 ], 3,
+                                  starting.points )
   plane.loc.sh <- calculate.plane( location.lim, shape.lim,
-                                  time.series.par[ 2 ], 2 )
+                                  time.series.par[ 2 ], 2,
+                                  starting.points )
   plane.sc.sh <- calculate.plane( scale.lim, shape.lim,
-                                 time.series.par[ 1 ], 1 )
+                                 time.series.par[ 1 ], 1,
+                                 starting.points )
   ## Every element of this list contains one trajetory of the
   ## optimization.
   suppressWarnings(
@@ -655,23 +666,23 @@ plot.animation <- function( time.series, starting.points,
     ## Plotting the trajectory by adding new layers to the plot
     segments.plot <- data.frame(
         path = Reduce( rbind, list.segments ),
-        id = factor( Reduce(
+        ID = factor( Reduce(
             c, lapply( seq( 1, nrow( starting.points ) ), function( x )
               rep( x, nrow( list.segments[[ x ]] ) ) ) ) ) )
     ## it is not really useful to see individual trajectories
     ## disappearing. So the NA in segments.plot will be replaced by
     ## the last finite value.
-    for ( ii in as.numeric( unique( segments.plot$id ) ) ){
+    for ( ii in as.numeric( unique( segments.plot$ID ) ) ){
       if ( any( Reduce(
-          c, lapply( segments.plot[ segments.plot$id == ii, ],
+          c, lapply( segments.plot[ segments.plot$ID == ii, ],
                     is.na ) ) ) ){
-        segments.values <- segments.plot[ segments.plot$id == ii, ]
+        segments.values <- segments.plot[ segments.plot$ID == ii, ]
         ## the following variable contains the content of the last
         ## row without any NA
         segments.last.values <- as.numeric( segments.plot[
             segments.plot$path.step == (
-              max( segments.plot$path.step[ segments.plot$id == ii ],
-                  na.rm = TRUE ) - 1 ) & segments.plot$id == ii &
+              max( segments.plot$path.step[ segments.plot$ID == ii ],
+                  na.rm = TRUE ) - 1 ) & segments.plot$ID == ii &
               !is.na( segments.plot$path.step ), ] )
         ## filling all NA
         for ( rr in 1 : nrow( segments.values ) ){
@@ -683,7 +694,7 @@ plot.animation <- function( time.series, starting.points,
             min( segments.values$path.step ),
             nrow( segments.values) - 1 +
             min( segments.values$path.step ) )
-        segments.plot[ segments.plot$id == ii, ] <- segments.values
+        segments.plot[ segments.plot$ID == ii, ] <- segments.values
       }
     }
   } else {
@@ -695,7 +706,7 @@ plot.animation <- function( time.series, starting.points,
                  scale.end = x$scale[ 2 ],
                  shape.start = x$shape[ 1 ],
                  shape.end = x$shape[ 2 ] ) ) )
-    segments.plot$id <- factor( seq( 1, length( trajectories ) ) )
+    segments.plot$ID <- factor( seq( 1, length( trajectories ) ) )
   }
   ## New approach: just displaying specific number of points every
   ## time with a opacity increasing with the time that pasted.
@@ -709,12 +720,14 @@ plot.animation <- function( time.series, starting.points,
                    na.rm = TRUE, aes_string( x = names( plane[ col1 ] ),
                                             y = names( plane )[ col2 ],
                                             z = "likelihood.lower" ) ) +
-      scale_fill_gradient2( low = colors$plane.low,
-                           high = colors$plane.high,
-                           na.value = "white", trans = "log",
-                           label = function( x ) {
-                             options( digits = 2 );
-                             format( x, scientific = TRUE ) } ) +
+      scale_fill_gradient2(
+          low = colors$plane.low, high = colors$plane.high,
+          na.value = "white", trans = "log",
+          breaks = c( min( plane$likelihood, na.rm = TRUE ),
+                     max( plane$likelihood, na.rm = TRUE ) ),
+          label = function( x ) {
+            options( digits = 2 );
+            format( x, scientific = TRUE ) } ) +
       theme_bw() +
       theme( axis.title = element_text( size = 15, colour = "#191970" ),
             axis.text = element_text( size = 12, colour = "#191970" ),
@@ -771,14 +784,14 @@ plot.animation <- function( time.series, starting.points,
                        alpha = "path.step",
                        y = names( segment )[ col2* 2 - 1 ],
                        yend = names( segment )[ col2* 2 ],
-                       colour = "id" ),
+                       colour = "ID" ),
             arrow = arrow( length = unit( 0.3, "cm" ) ) ) +
         ## for better highlighting of the positions
         geom_point( data = segment,
                    aes_string( x = names( segment )[ col1* 2 - 1 ],
                               alpha = "path.step",
                               y = names( segment )[ col2* 2 - 1 ],
-                              colour = "id" ) ) +
+                              colour = "ID" ) ) +
         ## true end point
         geom_point( data = true.end, size = 2, shape = 21,
                    aes_string( x = names( true.end )[ col1 ],
@@ -786,8 +799,8 @@ plot.animation <- function( time.series, starting.points,
         xlim( x.lim ) + ylim( y.lim ) + scale_alpha( guide = FALSE ) +
         scale_colour_manual( values = color.points ) +
         theme( legend.box = "vertical", legend.box.just = "bottom" ) +
-        guides( fill = guide_legend( title = "Likelihood",
-                                    title.position = "top" ) )
+        guides( fill = guide_legend( title = "likelihood",
+                                    title.position = "left" ) )
       ## depending on the position there is a different legend shown
       ## or none (where the navigation tool resides)
       if ( plot.legend == 0 ){
@@ -845,18 +858,18 @@ plot.animation <- function( time.series, starting.points,
                      xend = names( segments )[ col1* 2 ], 
                      y = names( segments )[ col2* 2 - 1 ],
                      yend = names( segments )[ col2* 2 ],
-                     colour = "id" ),
+                     colour = "ID" ),
           arrow = arrow( length = unit( 0.3, "cm" ) ) ) +
       ## for better highlighting of the positions
       geom_point( data = segments, shape = 1, size = 3,
                  aes_string( x = names( segments )[ col1* 2 - 1 ],
                             y = names( segments )[ col2* 2 - 1 ],
-                            colour = "id" ) ) +
+                            colour = "ID" ) ) +
       xlim( x.lim ) + ylim( y.lim ) +
       scale_colour_manual( values = color.points ) +
       theme( legend.box = "vertical", legend.box.just = "bottom" ) +
-      guides( fill = guide_legend( title = "Likelihood",
-                                  title.position = "top" ) )
+      guides( fill = guide_legend( title = "likelihood",
+                                  title.position = "left" ) )
     ## depending on the position there is a different legend shown
     ## or none (where the navigation tool resides)
     if ( plot.legend == 0 ){
