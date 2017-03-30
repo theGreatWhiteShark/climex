@@ -10,7 +10,7 @@
 	'images': [%imgLocSh],
 	'width': %width,
 	'delay': %delay,
-	'controls': [ 'first', 'play', 'last' ],
+	'controls': %initControl,
 	'loopMode': '%loop'
     });
     $('#animationScSh').scianimator({
@@ -21,9 +21,9 @@
 	'loopMode': '%loop'
     });
     // on start all of the animation should be running
-    $('#animationLocSc').scianimator('play');    
-    $('#animationLocSh').scianimator('play');
-    $('#animationScSh').scianimator('play');
+    $('#animationLocSc').scianimator(%initStatus);
+    $('#animationLocSh').scianimator(%initStatus);
+    $('#animationScSh').scianimator(%initStatus);
 
     // I just want to have one navigation tool. So its clicking should effect all three objects
     $('#animationLocSh-play').bind( 'click', function( event ){

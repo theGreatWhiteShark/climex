@@ -596,7 +596,7 @@ plot.animation <- function( time.series, starting.points,
     starting.points.max <- max( apply( starting.points, 1,
                                       climex::likelihood,
                                       x.in = time.series ) )
-    range.maximum <- 1E3
+    range.maximum <- 5E2
     threshold <- min( starting.points.max, range.maximum )
     var1.range <- seq( var1.lim[ 1 ], var1.lim[ 2 ],, number.of.points )
     var2.range <- seq( var2.lim[ 1 ], var2.lim[ 2 ],, number.of.points )
@@ -1016,7 +1016,6 @@ animation.wrapper <- function( time.series, starting.points,
                                        value = TRUE ), "'",
                             collapse = ", " ),
         template[ grep( "%imgScSh", template ) ] )
-  ## write the other parameters to the template too
   ## So unfortunately the ggsave function does not accept width
   ## values of the unit "pixel" so I have to hard code this fellow
   ## here
@@ -1026,6 +1025,23 @@ animation.wrapper <- function( time.series, starting.points,
       "%delay", delay, template[ grep( "%delay", template ) ] )
   template[ grep( "%loop", template ) ] <- sub(
       "%loop", loopMode, template[ grep( "%loop", template ) ] )
+  ## For the optimization routines, which do not provide the whole
+  ## optimization path, it does not make sense to have an animation.
+  ## The images will only flicker, what's quite annoying. Therefore
+  ## I will disable the controls and stop the animation for them
+  if ( optimization.method == "nmk" ){
+    template[ grep( "%initControl", template ) ] <- sub(
+        "%initControl", "[ 'first', 'play', 'last' ]",
+        template[ grep( "%initControl", template ) ] )
+    template[ grep( "%initStatus", template ) ] <- sub(
+        "%initStatus", "'play'", template[ grep( "%initStatus", template ) ] )
+  } else {
+    template[ grep( "%initControl", template ) ] <- sub(
+        "%initControl", "'NONE'",
+        template[ grep( "%initControl", template ) ] )
+    template[ grep( "%initStatus", template ) ] <- sub(
+        "%initStatus", "'stop'", template[ grep( "%initStatus", template ) ] )
+  }
   ## write the results to a JavaScript file
   writeLines( template, con = paste0( working.folder, "/animation.js" ) )
   invisible( template )
