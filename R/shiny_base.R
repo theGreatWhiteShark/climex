@@ -60,6 +60,9 @@ climex <- function(){
   ## will contain the folder in which the images of the animation
   ## can be found
   image.folder <<- paste0( CLIMEX.PATH, "app/www/images" )
+  ## Global variable holding the hostname. Since I do not want to
+  ## wrap the generation of the sidebar in a reactive context.
+  hostname <<- "localhost"
   ## this is unfortunately necessary since some JavaScript scripts
   ## are written out and some images are plotted which have to be
   ## accessible within the shiny app.
@@ -134,7 +137,7 @@ climex.server <- function( input, output, session ){
   ## why do I use the camel case thisIsAName for the shiny objects?
   ## Well, since CSS file do not support the point separator.
   ## Type of database (input, DWD, artificial data)
-  output$sidebarDataBase <- climex:::sidebarDataBase()
+  output$sidebarDataBase <- climex:::sidebarDataBase( hostname )
   ## Individual station or location (GEV)/scale(GP) for artificial data
   output$sidebarDataSource <-
     climex:::sidebarDataSource( reactive( input$selectDataBase ),
