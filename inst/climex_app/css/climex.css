@@ -146,7 +146,8 @@ thead > tr {
     border-bottom: 1px solid #191970 !important;
 }
 .table > thead > tr > th {
-    border-bottom: 2px solid #191970 !important;
+  border-bottom: 2px solid #191970 !important;
+  text-align: center !important;
 }
 tfoot {
     display: none !important;
@@ -174,51 +175,36 @@ tfoot {
 #animation-tableHeuristicEstimates .odd {
     background-color: #FF8C00 !important;
 }
+/* Only when all columns have the same width the inputs
+   can be place below the right way */
+#animation-tableHeuristicEstimates {
+  table-layout: fixed !important;
+}
 table.table-bordered.dataTable {
     border-collapse: collapse !important;
 }
-#animation-inputInitialLocation, #animation-inputInitialScale,
-#animation-inputInitialShape {
+#initialTable .shiny-input-container{
     /* children container for the individual numerical input */
-    margin-left: 3%;
-    width: 19% ;
     text-align: center;
     float: left;
     position: relative;
     display: inline;
     margin-top: -4%;
 }
-#animation-inputInitialLocation {
-    /* in order to align the numerical inputs with the content of the table */
-    margin-left: 13% !important;
-    width: 22%;
-}
-#animation-inputInitialScale {
-    width: 15.8%;
-}
-#animation-inputInitialShape {
-    width: 19%;
-}
-#animation-inputInitialScale > .form-control {
-    /* to perfectly align it with the table */
-    padding: 5% 28% !important;
-}
-#animation-inputInitialShape{
-    margin-left: 3% !important;
-}
 #boxHeuristic > .box > .box-body > .form-group > .checkbox > label > span {
     font-weight: bold !important;
 }
 #tableInitialDescription {
-    /* paragraph with the description of the numerical input */
-    text-align: center;
-    float: left;
-    display: inline;
-    padding: 1% 1.5%;
+  /* paragraph with the description of the numerical input */
+  text-align: center;
+  float: left;
+  display: inline;
+  padding: 0px;
 }
 #initialLocation, #initialScale, #initialShape {
     /* disables the arrows in the right part of the input in firefox */
-    -moz-appearance: textfield;
+  -moz-appearance: textfield;
+  text-align: center !important;
 }
 .form-control {
     /* adjust the numerical input forms to the rest of the webapp */
@@ -242,7 +228,7 @@ table.table-bordered.dataTable {
 /* customize the appearance of the scianimator control panel */
 .scianimator .controls, .scianimator .control {
     border: 0px solid !important;
-    margin: 0 0 0 14% !important;
+    margin: 0 1% 0 7% !important;
     font-size: 100% !important;
     border-radius: 7px !important; /*display navigator point as real circles*/
 }
@@ -300,7 +286,7 @@ table.table-bordered.dataTable {
 }
 /* make the input sliders fill the whole box */
 .shiny-input-container:not(.shiny-input-container-inline) {
-    width: 100% !important;
+    width: 100%;
 }
 .leaflet-control-layers label {
     display: inline-block !important;
@@ -336,7 +322,7 @@ table.table-bordered.dataTable {
   font-family: inherit !important;
 }
 
-.table > caption + thead > tr:first-child > td, .table > caption + thead > tr:first-child > th, .table > colgroup + thead > tr:first-child > td, .table > colgroup + thead > tr:first-child > th, .table > thead:first-child > tr:first-child > td, .table > thead:first-child > tr:first-child > th {
+table {
   text-align: center !important;
 }
 

@@ -33,11 +33,11 @@ likelihoodAnimationUI <- function( id ){
       box( title = h2( "Options" ), width = 4,
           background = "orange", id = "boxHeuristic",
           dataTableOutput( ns( "tableHeuristicEstimates" ) ),
-          div( p( "actual initials", id = "tableInitialDescription" ),
-              uiOutput( ns( "inputInitialLocation" ) ),
-              uiOutput( ns( "inputInitialScale" ) ),
-              uiOutput( ns( "inputInitialShape" ) ),
-              id = "initialTable" ),
+          uiOutput( ns( "tableInputInitials" ) ),
+          ## In order to make the inputs of the initial points and the
+          ## table above matching in size (probably relative).
+          plotOutput( ns( "placeholderTable" ), height = 0,
+                     width = '100%' ),
           checkboxInput( "checkboxRerun",
                         "Rerun the optimization", value = TRUE ),
           sliderInput( ns( "sliderNumberInitialPoints" ),
@@ -164,10 +164,10 @@ likelihoodAnimation <- function( input, output, session,
                 c( round( x.fit.evd.shape, 1 ) - .3,
                   round( x.fit.evd.shape, 1 ) + .3  ) ) } )
   ## To enable the user to input her/his own custom initialization
-  ## points for the optimization it needs two things: three
+  ## points for the optimization it needs two things: 
   ## numerical inputs chosing the climex::likelihood.initials as
   ## default and a reactive vector gluing all together
-  output$inputInitialLocation <- renderMenu( {
+  output$tableInputInitials <- renderUI({
     x.block <- reactive.extreme()[[ 1 ]]
     if ( is.null( x.block ) || is.null( radioEvdStatistics() ) ){
       ## if the initialization has not finished yet just wait a
@@ -185,49 +185,27 @@ likelihoodAnimation <- function( input, output, session,
     }
     parameter.default <- climex::likelihood.initials( x.block,
                                                      model = model )
-    numericInput( "initialLocation", "",
-                 value = round( parameter.default[ 1 ], 4 ) ) } )
-  output$inputInitialScale <- renderMenu( {
-    x.block <- reactive.extreme()[[ 1 ]]
-    if ( is.null( x.block ) || is.null( radioEvdStatistics() ) ){
-      ## if the initialization has not finished yet just wait a
-      ## little longer
-      return( NULL )
-    }
     if ( radioEvdStatistics() == "GEV" ){
-      model <- "gev"
-      ## In order to fit the minimal extremes
-      if ( ( !is.null( buttonMinMax() ) ) &&
-           ( buttonMinMax() == "Min" ) )
-        x.block <- x.block*( -1 )
+      div( p( "actual initials", id = "tableInitialDescription",
+             style = "width: 34% !important;" ),
+          numericInput( "initialLocation", "", width = "22%",
+                       value = round( parameter.default[ 1 ], 4 ) ),
+          numericInput( "initialScale", "", width = "22%",
+                       value = round( parameter.default[ 2 ], 4 ),
+                       min = 0 ),
+          numericInput( "initialShape", "", width = "22%",
+                       value = round( parameter.default[ 3 ], 4 ) ),
+          id = "initialTable" )
     } else {
-      model <- "gpd"
-    }
-    parameter.default <- climex::likelihood.initials( x.block,
-                                                     model = model )
-    numericInput( "initialScale", "",
-                 value = round( parameter.default[ 2 ], 4 ),
-                 min = 0 ) } )
-  output$inputInitialShape <- renderMenu( {
-    x.block <- reactive.extreme()[[ 1 ]]
-    if ( is.null( x.block ) || is.null( radioEvdStatistics() ) ){
-      ## if the initialization has not finished yet just wait a
-      ## little longer
-      return( NULL )
-    }
-    if ( radioEvdStatistics() == "GEV" ){
-      model <- "gev"
-      ## In order to fit the minimal extremes
-      if ( ( !is.null( buttonMinMax() ) ) &&
-           ( buttonMinMax() == "Min" ) )
-        x.block <- x.block*( -1 )
-    } else {
-      model <- "gpd"
-    }
-    parameter.default <- climex::likelihood.initials( x.block,
-                                                     model = model )
-    numericInput( "initialShape", "",
-                 value = round( parameter.default[ 3 ], 4 ) ) } )
+      div( p( "actual initials", id = "tableInitialDescription",
+             style = "width: 40% !important;" ),
+          numericInput( "initialScale", "", width = "30%",
+                       value = round( parameter.default[ 2 ], 4 ),
+                       min = 0 ),
+          numericInput( "initialShape", "", width = "30%",
+                       value = round( parameter.default[ 3 ], 4 ) ),
+          id = "initialTable" )
+    } } )
   cached.table.init <- NULL
   initial.parameters.likelihood <- reactive( {
     x.block <- reactive.extreme()[[ 1 ]]
@@ -275,8 +253,8 @@ likelihoodAnimation <- function( input, output, session,
                    input$sliderNumberInitialPoints - 1 ),
                    input$sliderShapeLim[ 1 ],
                    input$sliderShapeLim[ 2 ] ), 4 ) )
-      table.init <- data.frame( location = location,
-                               scale = scale, shape = shape )
+      table.init <- data.frame( Location = location,
+                               Scale = scale, Shape = shape )
     } else {
       scale <- c( x.initial[ 2 ],
                  round( stats::runif( (
@@ -288,7 +266,7 @@ likelihoodAnimation <- function( input, output, session,
                    input$sliderNumberInitialPoints - 1 ),
                    input$sliderShapeLim[ 1 ],
                    input$sliderShapeLim[ 2 ] ), 4 ) )
-      table.init <- data.frame( scale = scale, shape = shape )
+      table.init <- data.frame( Scale = scale, Shape = shape )
     }
     ## but we only want to have starting points which do not
     ## result in a NA
@@ -341,7 +319,7 @@ likelihoodAnimation <- function( input, output, session,
     ## This ensures its correct rendering on mobile devices
     options = list( dom = 't', pageLength = 5,
                    drawCallback = I( "function( settings )
-            {document.getElementById( 'tableInitialPoints' ).style.width = '100%';}") ) )
+            {document.getElementById( 'animation-tableInitialPoints' ).style.width = '100%';}") ) )
   ## Displaying of the heuristic estimates for a wiser picking of
   ## the limits
   output$tableHeuristicEstimates <- renderDataTable( {
@@ -361,28 +339,40 @@ likelihoodAnimation <- function( input, output, session,
     x.initial <- reactive.initials()
     x.suggested <- climex::likelihood.initials( x.block, model = model )
     if ( radioEvdStatistics() == "GEV" ){
-      x.df <- data.frame( parameter = c( "fitting results",
+      x.df <- data.frame( Parameter = c( "fitting results",
                                         "suggested initials" ),
-                         location = c( round( x.mle.par[ 1 ], 4 ),
+                         Location = c( round( x.mle.par[ 1 ], 4 ),
                                       round( x.suggested[ 1 ], 4 ) ),
-                         scale = c( round( x.mle.par[ 2 ], 4 ),
+                         Scale = c( round( x.mle.par[ 2 ], 4 ),
                                    round( x.suggested[ 2 ], 4 ) ),
-                         shape = c( round( x.mle.par[ 3 ], 4 ),
+                         Shape = c( round( x.mle.par[ 3 ], 4 ),
                                    round( x.suggested[ 3 ], 4 ) ) )
     } else {
-      x.df <- data.frame( parameter = c( "fitting results",
+      x.df <- data.frame( Parameter = c( "fitting results",
                                         "suggested initials" ),
-                         scale = c( round( x.mle.par[ 1 ], 4 ),
+                         Scale = c( round( x.mle.par[ 1 ], 4 ),
                                    round( x.suggested[ 1 ], 4 ) ),
-                         shape = c( round( x.mle.par[ 2 ], 4 ),
+                         Shape = c( round( x.mle.par[ 2 ], 4 ),
                                    round( x.suggested[ 2 ], 4 ) ) )
-    }            
+    }
     return( x.df ) },
-    options = list( dom = 't',
+    options = list( dom = 't', autoWidth = FALSE,
+                   columnDefs = if ( radioEvdStatistics() == "GEV" ){
+                                  list( list( width = '22%',
+                                             targets = c( 1, 2, 3 ) ),
+                                       list( width = '34%',
+                                            targets = 0 ) )
+                                } else {
+                                  list( list( width = '30%',
+                                             targets = c( 1, 2 ) ),
+                                       list( width = '40%',
+                                            targets = 0 ) ) },
                    drawCallback = I( "function( settings )
-            {document.getElementById( 'tableHeuristicEstimates' ).style.width = '100%';}") ) )
+            {document.getElementById( 'animation-tableHeuristicEstimates' ).style.width = '100%';}") ) )
   ## the two dummies to get the current width of the screen
   output$placeholder <- renderPlot({
+    ttplot( x.block ) } )
+  output$placeholderTable <- renderPlot({
     ttplot( x.block ) } )
   output$drawLikelihoodAnimation <- renderUI( {
     ## This reactive content only depends on the action button
