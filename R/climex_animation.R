@@ -392,7 +392,7 @@ likelihoodAnimation <- function( input, output, session,
         ## little longer
         return( NULL )
       } } )
-    isolate( reactive.initials <- initial.parameters.likelihood() )
+    isolate( reactive.initials.values <- initial.parameters.likelihood() )
     isolate( {
       if ( selectOptimization() == "dfoptim::nmk" ){
         optimization.method <- "nmk"
@@ -442,7 +442,7 @@ likelihoodAnimation <- function( input, output, session,
       }
       climex:::animation.wrapper(
                    time.series = x.block,
-                   starting.points = reactive.initials,
+                   starting.points = reactive.initials.values,
                    location.lim = location.lim,
                    scale.lim = isolate( input$sliderScaleLim ),
                    shape.lim = isolate( input$sliderShapeLim ),
@@ -995,17 +995,20 @@ animation.wrapper <- function( time.series, starting.points,
     files.all <- sub( paste0( CLIMEX.PATH, "app/www/" ), "", files.all )
   template[ grep( "%imgLocSc", template ) ] <-
     sub( "%imgLocSc", paste0( "'", grep( "loc.sc", files.all,
-                                        value = TRUE ), "'",
+                                        value = TRUE ),
+                             "?", runif( 1 ), "'",
                              collapse = ", " ),
         template[ grep( "%imgLocSc", template ) ] )
   template[ grep( "%imgLocSh", template ) ] <-
     sub( "%imgLocSh", paste0( "'", grep( "loc.sh", files.all,
-                                        value = TRUE ), "'",
+                                        value = TRUE ),
+                             "?", runif( 1 ), "'",
                              collapse = ", " ),
         template[ grep( "%imgLocSh", template ) ] )
   template[ grep( "%imgScSh", template ) ] <-
     sub( "%imgScSh", paste0( "'", grep( "sc.sh", files.all,
-                                       value = TRUE ), "'",
+                                       value = TRUE ), 
+                             "?", runif( 1 ), "'",
                             collapse = ", " ),
         template[ grep( "%imgScSh", template ) ] )
   ## So unfortunately the ggsave function does not accept width
