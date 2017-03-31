@@ -19,9 +19,10 @@ sidebarDataBaseInput <- function(){
 ##' choose:the input provided when calling climex::climex() on localhost
 ##' or a file loaded via the sidebar, the station data of the German
 ##' weather service (DWD) and artificial data sampled from a GEV
-##' distribution. Beware: it's not a true module! Using the namespaces
-##' does not really make sense because it has to be accessed from outside
-##' of this context.
+##' distribution. When the climex app is used with the shiny-server, the
+##' input option will be disabled. Beware: it's not a true module! Using
+##' the namespaces does not really make sense because it has to be
+##' accessed from outside of this context.
 ##'
 ##' @import shiny
 ##'
@@ -30,11 +31,21 @@ sidebarDataBaseInput <- function(){
 ##' @return renderMenu
 ##' @author Philipp Mueller 
 sidebarDataBase <- function(){
-  renderMenu( {
-    selectInput( "selectDataBase", "Data base",
-                choices = c( "input", "DWD", "artificial data" ),
-                selected = "DWD" )
+  ## Disable the input option for the shiny server
+  if ( session$clientData$url_hostname == "localhost" ||
+       session$clientData$url_hostname == "127.0.0.1"  ){
+    renderMenu( {
+      selectInput( "selectDataBase", "Data base",
+                  choices = c( "input", "DWD", "artificial data" ),
+                  selected = "DWD" )
     } )
+  } else {
+    renderMenu( {
+      selectInput( "selectDataBase", "Data base",
+                  choices = c( "DWD", "artificial data" ),
+                  selected = "DWD" )
+    } )
+  }
 }
 
 ##' @title Sidebar menu selection
