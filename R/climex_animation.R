@@ -317,7 +317,7 @@ likelihoodAnimation <- function( input, output, session,
     ## the drawCallback ensures that the width of the parent table
     ## is not set to a specific pixel number but to 100% percent.
     ## This ensures its correct rendering on mobile devices
-    options = list( dom = 't', pageLength = 5,
+    options = list( dom = 't', 
                    drawCallback = I( "function( settings )
             {document.getElementById( 'animation-tableInitialPoints' ).style.width = '100%';}") ) )
   ## Displaying of the heuristic estimates for a wiser picking of
