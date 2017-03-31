@@ -508,7 +508,7 @@ data.chosen <- function( selectDataBase, sliderYears, selectDataType,
       positions.all <- station.positions
     } else if ( selectDataBase() == "input" ){
       x.input <- reactive.loading()
-      if ( is.null( aux ) ){
+      if ( is.null( x.input ) ){
         return( NULL )
       }
       if ( any( class( x.input ) == "xts" ) ){
