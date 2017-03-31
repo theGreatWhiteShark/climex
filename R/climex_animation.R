@@ -41,12 +41,12 @@ likelihoodAnimationUI <- function( id ){
           checkboxInput( "checkboxRerun",
                         "Rerun the optimization", value = TRUE ),
           sliderInput( ns( "sliderNumberInitialPoints" ),
-                      "Number of initial points", 1, 20, 5 ),
+                      "Number of trajectories", 1, 20, 5 ),
           uiOutput( ns( "menuSliderLocationLim" ) ),
           uiOutput( ns( "menuSliderScaleLim" ) ),
           uiOutput( ns( "menuSliderShapeLim" ) ),
           sliderInput( ns( "sliderOptimizationSteps" ),
-                      "Which optimization steps", 0, 1, c( .1, .5 ) ),
+                      "Optimization steps to animate", 0, 1, c( .1, .5 ) ),
           actionButton( ns( "buttonDrawAnimation" ), "Start animation" ),
           actionButton( ns( "tableDrawPoints" ), "Reset" ) )
   )
@@ -716,8 +716,7 @@ plot.animation <- function( time.series, starting.points,
           breaks = c( min( plane$likelihood, na.rm = TRUE ),
                      max( plane$likelihood, na.rm = TRUE ) ),
           label = function( x ) {
-            options( digits = 2 );
-            format( x, scientific = TRUE ) } ) +
+            format( x, scientific = TRUE, digits = 2 ) } ) +
       theme_bw() +
       theme( axis.title = element_text( size = 15, colour = "#191970" ),
             axis.text = element_text( size = 12, colour = "#191970" ),
