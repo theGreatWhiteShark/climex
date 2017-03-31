@@ -327,6 +327,20 @@ table {
 }
 
 
+/* Alignment of the boxes in the General tab on big screens */
+#boxPlotFit {
+  width: 66.666666% !important;
+}
+#boxGevStatistics {
+  width: 33.333333% !important;
+}
+#boxTimeSeries {
+  width: 70% !important;
+}
+#boxGevResults {
+  width: 30% !important;
+}
+
 @media screen and (max-width: 1400px){
     /* design for my Aspire S3 */
     #boxPlotFit {
