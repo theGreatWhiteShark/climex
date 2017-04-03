@@ -139,7 +139,7 @@ leafletClimexUI <- function( id ){
 ##' of the first run again to escape local minima.
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -367,7 +367,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
       return( NULL )
     ## If the artificial data was chosen as source, do not display
     ## anything.
-    if ( selectDataBase() == "artificial data" ){
+    if ( selectDataBase() == "Artificial data" ){
       return( NULL )
     }
     selected.station <- data.selected[[ 2 ]][
@@ -467,7 +467,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
 ##'
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -502,7 +502,7 @@ data.chosen <- function( selectDataBase, sliderYears, selectDataType,
       return( NULL )
     ## The generation of the artificial data is handled in the
     ## data.selection reactive function
-    if ( selectDataBase() == "artificial data" ){
+    if ( selectDataBase() == "Artificial data" ){
       return( list( stations.temp.max, station.positions ) )
     }
     if ( selectDataBase() == "DWD" ){
@@ -514,7 +514,7 @@ data.chosen <- function( selectDataBase, sliderYears, selectDataType,
                                "Daily precipitation" = stations.prec )
       ## to also cope the possibility of importing such position data
       positions.all <- station.positions
-    } else if ( selectDataBase() == "input" ){
+    } else if ( selectDataBase() == "Input" ){
       x.input <- reactive.loading()
       if ( is.null( x.input ) ){
         return( NULL )

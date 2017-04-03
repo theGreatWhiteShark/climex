@@ -7,7 +7,7 @@
 ##'
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -27,7 +27,7 @@
 function.get.y.label <- function( selectDataBase, selectDataType ){
     if ( is.null( selectDataBase() ) ){
       y.label <- expression( paste( "temperature in ", "", degree, "C" ) )            
-    } else if ( selectDataBase() == "artificial data" ){
+    } else if ( selectDataBase() == "Artificial data" ){
       y.label <- "EVD sample"
     } else if ( selectDataBase() == "DWD" ){
       if ( is.null( selectDataType() ) ){
@@ -37,8 +37,8 @@ function.get.y.label <- function( selectDataBase, selectDataType ){
       } else {
         y.label <- expression( paste( "temperature in ", "", degree, "C" ) )
       }
-    } else if ( selectDataBase() == "input" ){
-      y.label <- "input"
+    } else if ( selectDataBase() == "Input" ){
+      y.label <- "Input"
     }
     return( y.label )
 }
@@ -96,7 +96,7 @@ generalTimeSeriesPlotOutput <- function( id ){
 ##' as class 'xts'.
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -316,7 +316,7 @@ generalFitPlotOutput <- function( id ){
 ##' becomes way more easy to customize.
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows

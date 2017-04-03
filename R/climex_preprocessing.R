@@ -36,7 +36,7 @@ generalExtremeExtractionInput <- function(){
 ##' leaflet map. \code{\link{data.selection}}
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -165,7 +165,7 @@ deseasonalizeInput <- function(){
 ##' \code{\link{deseasonalizeInput}}
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -185,7 +185,7 @@ deseasonalize.interactive <- function( x.xts, selectDeseasonalize,
       ## longer
       return( NULL )
     }
-    if ( selectDataBase() == "artificial data" ){
+    if ( selectDataBase() == "Artificial data" ){
       ## For the artificial data there is no need for deseasonalization.
       return( x.xts )
     }
@@ -349,7 +349,7 @@ extremes.interactive <- function( x.xts, buttonMinMax,
 ##' \code{\link{deseasonalizeInput}}
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -396,7 +396,7 @@ data.extremes <- function( reactive.selection, radioEvdStatistics,
     ## When using artificial data there is not point in doing
     ## cleaning, deseasonalization, or blocking. Instead, just
     ## return the same time series three times.
-    if ( selectDataBase() == "artificial data" ){
+    if ( selectDataBase() == "Artificial data" ){
       return( list( blocked.data = x.xts,
                    deseasonalized.data = x.xts, pure.data = x.xts ) )
     }
