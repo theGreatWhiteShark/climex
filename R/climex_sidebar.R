@@ -290,7 +290,7 @@ sidebarLoading <- function( session, selectDataBase,
 ##' @return menuItemOutput
 ##' @author Philipp Mueller 
 sidebarCleaningInput <- function(){
-  menuItemOutput( "sidebarCleaning" )
+  uiOutput( "sidebarCleaning" )
 }
 
 ##' @title Toggling the cleaning of the time series
@@ -303,6 +303,15 @@ sidebarCleaningInput <- function(){
 ##' @param radioEvdStatistics Character (radio) input determining whether
 ##' the GEV or GP distribution shall be fitted to the data. Choices:
 ##' c( "GEV", "GP" ), default = "GEV".
+##' @param selectDataBase Character (select) input to determine the data
+##' source. In the default installation there are three options:
+##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' provided as an argument to the call of the \code{\link{climex}}
+##' function. The second one uses the database of the German weather
+##' service (see \code{link{download.data.dwd}}). The third one allows
+##' the user to produce random numbers distributed according to the GEV
+##' or GP distribution. Determined by menuSelectDataBase.
+##' Default = "DWD".
 ##' 
 ##' @import shiny
 ##'
@@ -310,24 +319,31 @@ sidebarCleaningInput <- function(){
 ##'
 ##' @return renderMenu
 ##' @author Philipp Mueller
-sidebarCleaning <- function( radioEvdStatistics ){
-  renderMenu( {
+sidebarCleaning <- function( radioEvdStatistics, selectDataBase ){
+  renderUI( {
     ## When applying the blocking method incomplete years distort
     ## the time series and have to be excluded. When using the
     ## threshold method on the other hand clusters are most likely
     ## to occure due to short range correlations. This has to be
     ## avoided by using declustering algorithms (which mainly picks
     ## the maximum of a specific cluster)
-    if ( is.null( radioEvdStatistics() ) ||
-         radioEvdStatistics() == "GEV" ){
-      checkboxInput( "checkboxIncompleteYears",
-                    "Remove incomplete years", TRUE )
+    if ( is.null( selectDataBase() ) ||
+         selectDataBase() != "artificial data" ){
+      if ( is.null( radioEvdStatistics() ) ||
+           radioEvdStatistics() == "GEV" ){
+        checkboxInput( "checkboxIncompleteYears",
+                      "Remove incomplete years", TRUE )
+      } else {
+        checkboxInput( "checkboxDecluster",
+                      "Declustering of the data", TRUE )
+      }
     } else {
-      checkboxInput( "checkboxDecluster",
-                    "Declustering of the data", TRUE )
+      ## When working with artificial data cleaning does not make
+      ## sense. Instead we need to resample the time series.
+      actionButton( "buttonDrawTS", "Draw" )
     }
-  } )
-}
+  })
+  }
 
 ##' @title Reactive value selecting an individual time series.
 ##' @details According to the choice in input$selectDataBase an
@@ -375,6 +391,9 @@ sidebarCleaning <- function( radioEvdStatistics ){
 ##' providing the shape parameter to generate an artificial time
 ##' series. For input$selectDataBase
 ##' != "artificial data" this argument will be NULL.
+##' @param buttonDrawTS Action button used to draw a time series when
+##' 'artificial data' is chosen in selectDataBase(). If not chosen,
+##' this button will not be defined.
 ##'
 ##' @family sidebar
 ##'
@@ -388,7 +407,15 @@ data.selection <- function( reactive.chosen, selectDataSource,
                            radioEvdStatistics,
                            sliderArtificialDataLocation,
                            sliderArtificialDataScale,
-                           sliderArtificialDataShape ){
+                           sliderArtificialDataShape, buttonDrawTS ){
+  observe( {
+    ## Redraw the time series using a button in the sidebar
+    if( !is.null( buttonDrawTS() ) ){
+      buttonDrawTS()
+      print( "I'm working" )
+    }
+      
+  } )
   reactive( {
     ## Selecting the data out of a pool of different possibilities
     ## or generate them artificially
@@ -407,7 +434,7 @@ data.selection <- function( reactive.chosen, selectDataSource,
            is.null( sliderArtificialDataScale() ) ||
            is.null( sliderArtificialDataShape() ) ){
         return( NULL )
-      }           
+      }
       ## The length of the artificial time series is determined by
       ## the number of years chosen via the input$sliderYears slider
       ## in the leaflet tab

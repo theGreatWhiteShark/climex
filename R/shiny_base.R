@@ -153,7 +153,8 @@ climex.server <- function( input, output, session ){
                             reactive( input$radioEvdStatistics ) )
   ## Removing incomplete years (GEV) or clusters (GP)
   output$sidebarCleaning <-
-    climex:::sidebarCleaning( reactive( input$radioEvdStatistics ) )
+    climex:::sidebarCleaning( reactive( input$radioEvdStatistics ),
+                             reactive( input$selectDataBase ) )
   ## Displaying a loading gif whenever the app is busy
   callModule( climex:::sidebarLoadingGif, "busy" )
   ## Reactive value listening for file input
@@ -178,7 +179,8 @@ climex.server <- function( input, output, session ){
                  reactive( input$radioEvdStatistics ),
                  reactive( input$sliderArtificialDataLocation ),
                  reactive( input$sliderArtificialDataScale ),
-                 reactive( input$sliderArtificialDataShape ) )
+                 reactive( input$sliderArtificialDataShape ),
+                 reactive( input$buttonDrawTS ) )
 ########################################################################
   
 ########################################################################
