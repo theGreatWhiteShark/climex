@@ -408,14 +408,6 @@ data.selection <- function( reactive.chosen, selectDataSource,
                            sliderArtificialDataLocation,
                            sliderArtificialDataScale,
                            sliderArtificialDataShape, buttonDrawTS ){
-  observe( {
-    ## Redraw the time series using a button in the sidebar
-    if( !is.null( buttonDrawTS() ) ){
-      buttonDrawTS()
-      print( "I'm working" )
-    }
-      
-  } )
   reactive( {
     ## Selecting the data out of a pool of different possibilities
     ## or generate them artificially
@@ -434,6 +426,10 @@ data.selection <- function( reactive.chosen, selectDataSource,
            is.null( sliderArtificialDataScale() ) ||
            is.null( sliderArtificialDataShape() ) ){
         return( NULL )
+      }
+      ## Redraw the time series using a button in the sidebar
+      if( !is.null( buttonDrawTS() ) ){
+        buttonDrawTS()
       }
       ## The length of the artificial time series is determined by
       ## the number of years chosen via the input$sliderYears slider
