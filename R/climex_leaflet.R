@@ -365,6 +365,11 @@ leafletClimex <- function( input, output, session, reactive.chosen,
          is.null( input$map_marker_click ) && # dirty flag on changing
          is.null( selectDataSource() ) ) ) # dirty flag on changing
       return( NULL )
+    ## If the artificial data was chosen as source, do not display
+    ## anything.
+    if ( selectDataBase() == "artificial data" ){
+      return( NULL )
+    }
     selected.station <- data.selected[[ 2 ]][
         which( data.selected[[ 2 ]]$name == station.name ), ]
     leafletProxy( session$ns( "map" ) ) %>%
@@ -498,7 +503,7 @@ data.chosen <- function( selectDataBase, sliderYears, selectDataType,
     ## The generation of the artificial data is handled in the
     ## data.selection reactive function
     if ( selectDataBase() == "artificial data" ){
-      return( 0 )
+      return( list( stations.temp.max, station.positions ) )
     }
     if ( selectDataBase() == "DWD" ){
       if ( is.null( selectDataType() ) )

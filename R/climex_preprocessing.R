@@ -393,6 +393,13 @@ data.extremes <- function( reactive.selection, radioEvdStatistics,
       return( NULL )
     }
     x.xts <- reactive.selection()
+    ## When using artificial data there is not point in doing
+    ## cleaning, deseasonalization, or blocking. Instead, just
+    ## return the same time series three times.
+    if ( selectDataBase() == "artificial data" ){
+      return( list( blocked.data = x.xts,
+                   deseasonalized.data = x.xts, pure.data = x.xts ) )
+    }
     if ( ( is.null( radioEvdStatistics() ) ||
            radioEvdStatistics() == "GEV" ) &&
          ( is.null( checkboxIncompleteYears() ) ||
