@@ -413,9 +413,16 @@ data.selection <- function( reactive.chosen, selectDataSource,
       ## in the leaflet tab
       ## Using the Potsdam time series from Germany as reference
       data( temp.potsdam, package = "climex" )
-      p.l <- length( temp.potsdam )
+      annual.potsdam <- block( temp.potsdam )
+      p.l <- length( annual.potsdam )
       ## Length of the time series
       x.length <- sliderYears()
+      if ( x.length > p.l ){
+        ## The artificial time series must not be longer than the
+        ## Potsdam one. Else the indexing of the time series (which
+        ## is happening in about 20 lines) will not work properly.
+        x.length <- p.l
+      }
       ## Whether to use GEV or GPD data
       if ( is.null( radioEvdStatistics() ) ||
           radioEvdStatistics() == "GEV" ){
@@ -430,7 +437,7 @@ data.selection <- function( reactive.chosen, selectDataSource,
                         shape = sliderArtificialDataShape(),
                         model = model, silent = TRUE,
                         threshold = sliderThreshold()),
-          order.by = index( temp.potsdam )[
+          order.by = index( annual.potsdam )[
             ( p.l - x.length + 1 ) : p.l ] )
     } else {
       ## In all other cases the possible choices are contained in
