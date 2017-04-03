@@ -32,25 +32,25 @@ h3 small {
     font-size: 115%; !important;
 }
 .main-sidebar .selectize-control, .main-sidebar .selectize-input.full, .main-sidebar .selectize-dropdown {
-    color: #FFFFFF !important;
+    color: #b8c7ce !important;
     background-color: #222D32 !important;
 }
 .main-sidebar .selectize-control.single {
     border-color: #222D32;
 }
 .main-sidebar .selectize-input {
-    border: 1px solid #FFFFFF !important;
+    border: 1px solid #b8c7ce !important;
 }
 .main-sidebar .selectize-input, .main-sidebar .selectize-input.input-active, .main-sidebar dropdown-active {
     background-color: #222D32 !important;
-    color: #FFFFFF !important;			  
+    color: #b8c7ce !important;			  
 }
 .main-sidebar dropdown-active {
-    color: #FFFFFF !important;
+    color: #b8c7ce !important;
     background: #222D32 !important;
 }
 .main-sidebar .selectize-input::after, .main-sidebar .selectize-control.single  {
-    border-color: #FFFFFF transparent transparent !important;
+    border-color: #b8c7ce transparent transparent !important;
 }
 .content .selectize-dropdown, .content .selectize-input.full, .content .selectize-control {
     color: #191970 !important;
@@ -63,7 +63,7 @@ h3 small {
     font-size: 150%; !important;
 }
 /* I want the colorful part of the slider to have the same color as the bars in the histogram */
-.irs-bar, .irs-bar-edge {
+.content .irs-bar, .content .irs-bar-edge {
     background-color: #191970 !important;
     border-bottom-color: #2525a7 !important;
     border-top-color: #2525a7 !important;
@@ -82,20 +82,23 @@ h3 small {
 .nav-tabs-custom {
     box-shadow: 0 2px 2px #191970 !important;
 }
-.irs-line {
+.content .irs-line {
     border: 1px solid #AAAAAA !important;
     border-top: 1px solid #AAAAAA !important;
 }
-.irs-min, .irs-max, .irs-grid-text {
+.content .irs-min, .content .irs-max,
+.content .irs-grid-text {
     color: #191970 !important;
     background: transparent !important;
     font-size: 12px !important;
     line-height: 12px !important;
 }
-.irs-from, .irs-to, .irs-single, .irs-grid-pol, .irs-grid-pol.small {
+.content .irs-from, .content .irs-to,
+.content .irs-single, .content .irs-grid-pol,
+.content .irs-grid-pol.small {
     background: #191970 !important;
 }
-.irs.slider {
+.content .irs.slider {
     border: 1px solid #AAAAAA !important;
     background: #FFFFFF !important;
 }
@@ -326,7 +329,45 @@ table {
   text-align: center !important;
 }
 
-
+/* Styling the redraw button and sliders related to
+   the artificial time series. */
+#buttonDrawTS {
+  width: 100%;
+  font-size: 100% !important;
+  border-radius: 5px;
+  color: #b8c7ce !important;
+  border-color: #b8c7ce !important;
+  background-color: #222D32 !important;
+}
+/* The sliders bar */
+.main-sidebar .irs-bar, .main-sidebar .irs-bar-edge {
+  background-color: #3e525b !important;
+  border-bottom-color: #3e525b !important;
+  border-top-color: #3e525b !important;
+  border-left-color: #3e525b !important;
+  border-right-color: #3e525b !important;
+}
+/* The sliders values */
+.main-sidebar .irs-single, .main-sidebar .irs-min,
+.main-sidebar .irs-max, .main-sidebar .irs-grid-text{
+  background: none !important;
+  color: #b8c7ce !important;
+  font-size: 12px !important;
+  line-height: 12px !important;
+}
+.main-sidebar .irs-single {
+  color: #fff !important;
+}
+/* The sliders ticks */
+.main-sidebar .irs-from, .main-sidebar .irs-to,
+.main-sidebar .irs-grid-pol, .main-sidebar .irs-grid-pol.small,
+.main-sidebar .irs-with-grid, .main-sidebar .irs-grid {
+  color: #b8c7ce !important;
+  background: none !important;
+  font-size: 12px !important;
+  line-height: 12px !important;
+}
+  
 /* Alignment of the boxes in the General tab on big screens */
 #boxPlotFit {
   width: 66.666666% !important;

@@ -108,11 +108,11 @@ sidebarDataSource <- function( selectDataBase, radioEvdStatistics,
            radioEvdStatistics() == "GEV" ){
         ## For GEV data
         sliderInput( "sliderArtificialDataLocation",
-                    "location", -30, 30, 1, round = 15 )
+                    "Location", -30, 30, 1, round = 0 )
       } else {
         ## For GP data just skip the slider for the location parameter
         sliderInput( "sliderArtificialDataScale",
-                    "scale", 0, 4, .8, round = -2 )
+                    "Scale", 0, 4, .8, round = 0, step = .1 )
       }
     } else {
       ## In case of the DWD data, just show the stations which amount of
@@ -201,12 +201,12 @@ sidebarDataType <- function( selectDataBase, radioEvdStatistics ){
       } else if ( selectDataBase() == "artificial data" ){
         if ( is.null( radioEvdStatistics() ) ||
              radioEvdStatistics() == "GEV" ){
-          sliderInput( "sliderArtificialDataScale", "scale", 0, 4,
-                      0.8, round = -2 )
+          sliderInput( "sliderArtificialDataScale", "Scale", 0, 4,
+                      0.8, round = 0, step = .1 )
         } else {
           ## For GP distributed data
-          sliderInput( "sliderArtificialDataShape", "shape", -1.5, 1.5,
-                      -.25, round = -2 )
+          sliderInput( "sliderArtificialDataShape", "Shape", -1.5, 1.5,
+                      -.25, round = -2, step = .1 )
         }
       } else if ( selectDataBase() == "input" ){
         NULL
@@ -266,8 +266,8 @@ sidebarLoading <- function( session, selectDataBase,
     if ( selectDataBase() == "artificial data" &&
          ( is.null( radioEvdStatistics() ) ||
            radioEvdStatistics() == "GEV" ) ){
-      sliderInput( "sliderArtificialDataShape", "shape", -1.5, 1.5,
-                  -0.25, round = -2 )
+      sliderInput( "sliderArtificialDataShape", "Shape", -1.5, 1.5,
+                  -0.25, round = -2, step = .1 )
     } else if ( selectDataBase() == "input" && (
       session$clientData$url_hostname == "localhost" ||
       session$clientData$url_hostname == "127.0.0.1"  ) ){
@@ -290,7 +290,7 @@ sidebarLoading <- function( session, selectDataBase,
 ##' @return menuItemOutput
 ##' @author Philipp Mueller 
 sidebarCleaningInput <- function(){
-  uiOutput( "sidebarCleaning" )
+  uiOutput( "sidebarCleaning", style = "padding: 12px 15px 0px 12px;"  )
 }
 
 ##' @title Toggling the cleaning of the time series
