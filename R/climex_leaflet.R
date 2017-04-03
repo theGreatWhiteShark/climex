@@ -495,8 +495,11 @@ data.chosen <- function( selectDataBase, sliderYears, selectDataType,
     if ( is.null( selectDataBase() ) ||
          is.null( sliderYears() ) )
       return( NULL )
-    ## the generation of the artificial data is handled in the
+    ## The generation of the artificial data is handled in the
     ## data.selection reactive function
+    if ( selectDataBase() == "artificial data" ){
+      return( 0 )
+    }
     if ( selectDataBase() == "DWD" ){
       if ( is.null( selectDataType() ) )
         return( NULL )

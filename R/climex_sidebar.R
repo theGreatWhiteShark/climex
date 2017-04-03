@@ -401,6 +401,13 @@ data.selection <- function( reactive.chosen, selectDataSource,
       return( NULL )
     }
     if( selectDataBase() == "artificial data" ){
+      ## Wait for the sidebar to initials the sliders of the GEV
+      ## parameters.
+      if ( is.null( sliderArtificialDataLocation() ) ||
+           is.null( sliderArtificialDataScale() ) ||
+           is.null( sliderArtificialDataShape() ) ){
+        return( NULL )
+      }           
       ## The length of the artificial time series is determined by
       ## the number of years chosen via the input$sliderYears slider
       ## in the leaflet tab
