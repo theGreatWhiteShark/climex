@@ -396,7 +396,7 @@ plot.climex.fit.gpd <- function( x, bin.factor = NULL ){
   ## of the density function. But this will fail for
   ## distributions with bigger absolute shape value.
   ## Instead I will use the range of the supplied data
-  plot.range <- seq( x.lim[ 1 ] - x$par[ 1 ]* 10,
+  plot.range <- seq( x.lim[ 1 ] - bin.width,
                         x.lim[ 2 ] + x$par[ 1 ]* 10, 0.01 )
   plot.data <- data.frame(
       x.plot = plot.range,
