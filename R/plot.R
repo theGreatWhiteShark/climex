@@ -275,15 +275,57 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL  ){
   }
   bin.width <- ( ( max( x.data ) - min( x.data ) )/
                  ( bin.factor * length( x.data ) ) )* 1.1
-  x.lim <- c( max( x.data, na.rm = TRUE ),
-             min( x.data, na.rm = TRUE ) )
-  threshold.pdf.plot <- 5E-4
-  plot.gev.range <- seq( x$par[ 1 ] - x$par[ 2 ]* 10,
-                        x$par[ 1 ] + x$par[ 2 ]* 10, 0.01 )
+  ## Range of the supplied data
+  x.lim <- c( min( x.data, na.rm = TRUE ),
+             max( x.data, na.rm = TRUE ) )
+  ## The the calculated density falls below this threshold
+  ## it won't get plotted anymore.
+  threshold.pdf.plot <- 1E-4
+  ## In the beginning I used the coefficients of the GEV
+  ## distribution to determine the range of evaluation
+  ## of the density function. But this will fail for
+  ## distributions with bigger absolute shape value.
+  ## Instead I will use the range of the supplied data
+  plot.gev.range <- seq( x.lim[ 1 ] - x$par[ 2 ]* 10,
+                        x.lim[ 2 ] + x$par[ 2 ]* 10, 0.01 )
   plot.gev.data <- data.frame(
       x.plot = plot.gev.range,
       y.plot = climex:::gev.density( x$par,
                                     plot.gev.range ) )
+  ## Removing all NaN to have less points and warnings
+  plot.gev.data <- plot.gev.data[
+      !is.nan( plot.gev.data$y.plot ), ]
+  ## Cutting of the density at values below the threshold
+  ## in the tails
+  ## Lower tail
+  plot.gev.data <- plot.gev.data[
+      ( plot.gev.data$x.plot >
+        plot.gev.data$x.plot[ which.max( plot.gev.data$y.plot ) ]
+      ) | ( plot.gev.data$y.plot > threshold.pdf.plot ),  ]
+  ## Upper tail
+  plot.gev.data <- plot.gev.data[
+      ( plot.gev.data$x.plot <
+        plot.gev.data$x.plot[ which.max( plot.gev.data$y.plot ) ]
+      ) | ( plot.gev.data$y.plot > threshold.pdf.plot ),  ]
+  ## If the first and last entry is not a zero, add one!
+  ## Else the density won't look like a density at all.
+  if ( plot.gev.data$y.plot[ 1 ] > 0 ){
+    plot.gev.data <- data.frame(
+        x.plot = c( 2* plot.gev.data$x.plot[ 1 ] -
+                    plot.gev.data$x.plot[ 2 ],
+                   plot.gev.data$x.plot ),
+        y.plot = c( 0, plot.gev.data$y.plot ) )
+  }
+  if ( plot.gev.data$y.plot[ nrow( plot.gev.data ) ] > 0 ){
+    plot.gev.data[ nrow( plot.gev.data ) + 1, ] <-
+      c( 2* plot.gev.data$x.plot[ nrow( plot.gev.data ) ] -
+         plot.gev.data$x.plot[ nrow( plot.gev.data ) - 1 ],
+        0 )
+  }
+  plot.gev.lim <- c( min( plot.gev.data$x.plot ),
+                    max( plot.gev.data$x.plot ) )
+  ## Using the threshold value defined above the range of
+  ## the density plot will be determined
   plot.gev.lim <- c( plot.gev.data[[ 1 ]][
       which.min( abs( plot.gev.data[[ 2 ]][
           1 : which.max( plot.gev.data[[ 2 ]] ) ] -
@@ -293,6 +335,7 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL  ){
                              : length( plot.gev.data[[ 2 ]] ) ] -
         threshold.pdf.plot ) ) +
         which.max( plot.gev.data[[ 2 ]] ) - 1 ] )
+  ## Determining the limits of the actual plot
   if ( plot.gev.lim[ 1 ] > x.lim[ 1 ] )
     plot.gev.lim[ 1 ] <- x.lim[ 1 ] - abs( x.lim[ 1 ] )* 0.05 
   if ( plot.gev.lim[ 2 ] < x.lim[ 2 ] )
