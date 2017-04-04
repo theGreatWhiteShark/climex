@@ -604,6 +604,8 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       plot.data <-  data.frame(
           x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
           y = sort( as.numeric( x.kept + sliderThreshold() ) ) )
+      plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
+                         max( x.confidence.intervals[ , 3 ] ) )
     }
     if ( is.null( x.confidence.intervals ) ){
       ## Plot without confidence intervals

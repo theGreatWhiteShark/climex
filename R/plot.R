@@ -378,7 +378,7 @@ plot.climex.fit.gpd <- function( x, bin.factor = NULL ){
   if ( is.null( x$threshold ) ){
     stop( "Please provide a threshold argument to fit.gpd() in order to plot the result" )
   }
-  x.data <- x$x + x$threshold
+  x.data <- as.numeric( x$x + x$threshold )
   if ( is.null( bin.factor ) ){
     bin.factor <- ( ( ( length( x.data ) - 1 )*100/
                       length( x.data ) )  %/% 5 )* 0.025
@@ -460,7 +460,6 @@ plot.climex.fit.gpd <- function( x, bin.factor = NULL ){
   } else {
     y.lim <- NULL
   }
-  
   ggplot() + geom_histogram(
                  data = data.frame( x = x.data ),
                  colour = grDevices::rgb( .098, .098, .44 ),
