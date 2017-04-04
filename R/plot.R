@@ -324,26 +324,21 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL  ){
   }
   plot.gev.lim <- c( min( plot.gev.data$x.plot ),
                     max( plot.gev.data$x.plot ) )
-  ## Using the threshold value defined above the range of
-  ## the density plot will be determined
-  plot.gev.lim <- c( plot.gev.data[[ 1 ]][
-      which.min( abs( plot.gev.data[[ 2 ]][
-          1 : which.max( plot.gev.data[[ 2 ]] ) ] -
-          threshold.pdf.plot ) ) ],
-      plot.gev.data[[ 1 ]][ which.min( (
-        plot.gev.data[[ 2 ]][ which.max( plot.gev.data[[ 2 ]] )
-                             : length( plot.gev.data[[ 2 ]] ) ] -
-        threshold.pdf.plot ) ) +
-        which.max( plot.gev.data[[ 2 ]] ) - 1 ] )
   ## Determining the limits of the actual plot
   if ( plot.gev.lim[ 1 ] > x.lim[ 1 ] )
     plot.gev.lim[ 1 ] <- x.lim[ 1 ] - abs( x.lim[ 1 ] )* 0.05 
   if ( plot.gev.lim[ 2 ] < x.lim[ 2 ] )
     plot.gev.lim[ 2 ] <- x.lim[ 2 ] + abs( x.lim[ 2 ] )* 0.05
-      plot.lim <- c( min( plot.gev.lim[ 1 ],
-                         min( x.data ) - bin.width ),
-                    max( plot.gev.lim[ 2 ],
-                        max( x.data) + bin.width ) )
+  plot.lim <- c( min( plot.gev.lim[ 1 ],
+                     min( x.data ) - bin.width ),
+                max( plot.gev.lim[ 2 ],
+                    max( x.data) + bin.width ) )
+  ## Whenever the density gets bigger than one, cut it
+  if ( max( plot.data$y.plot ) > 1 ){
+    y.lim <- c( 0, ( max( density( x.data )$y )* 1.5 ) )
+  } else {
+    y.lim <- NULL
+  }
   
   ggplot() + geom_histogram(
                  data = data.frame( x = x.data ),
@@ -359,7 +354,8 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL  ){
     scale_fill_manual( values = c( "#7171EC",
                                   grDevices::rgb( 1, .55, 0 ) ),
                       labels = c( "Histogram", "Fitted GEV"  ) ) +
-    theme_bw() + xlim( plot.gev.lim ) + ylab( "Density" ) +
+    theme_bw() + ylab( "Density" ) +
+    coord_cartesian( xlim = plot.lim, ylim = y.lim ) +
     theme( legend.title = element_blank() )
   return( last_plot() )
 }
@@ -389,22 +385,82 @@ plot.climex.fit.gpd <- function( x, bin.factor = NULL ){
   }
   bin.width <- ( ( max( x.data ) - min( x.data ) )/
                  ( bin.factor * length( x.data ) ) )* 1.1
-  x.lim <- c( max( x.data, na.rm = TRUE ),
-             min( x.data, na.rm = TRUE ) )
-  threshold.pdf.plot <- 5E-4
-  plot.range <- seq( x.lim[ 2 ], x.lim[ 1 ]* 1.1, 0.01 )
+  ## Range of the supplied data
+  x.lim <- c( min( x.data, na.rm = TRUE ),
+             max( x.data, na.rm = TRUE ) )
+  ## The the calculated density falls below this threshold
+  ## it won't get plotted anymore.
+  threshold.pdf.plot <- 1E-4
+  ## In the beginning I used the coefficients of the GEV
+  ## distribution to determine the range of evaluation
+  ## of the density function. But this will fail for
+  ## distributions with bigger absolute shape value.
+  ## Instead I will use the range of the supplied data
+  plot.range <- seq( x.lim[ 1 ] - x$par[ 1 ]* 10,
+                        x.lim[ 2 ] + x$par[ 1 ]* 10, 0.01 )
   plot.data <- data.frame(
-      x = plot.range,
-      y = climex:::gpd.density( x$par, x$threshold,
+      x.plot = plot.range,
+      y.plot = climex:::gpd.density( x$par, x$threshold,
                                plot.range ) )
-  plot.data <- plot.data[ !is.na( plot.data[[ 2 ]] ), ]
-      plot.data[ nrow( plot.data ) + 1, ] <- c(
-          plot.data[[ 1 ]][ 1 ],
-          plot.data[[ 2 ]][ nrow( plot.data ) ] )
-  plot.lim <- c( min( min( plot.range ),
+  ## Removing all NaN to have less points and warnings
+  plot.data <- plot.data[
+      !is.nan( plot.data$y.plot ), ]
+  ## Cutting of the density at values below the threshold
+  ## in the tails
+  ## Lower tail
+  plot.data <- plot.data[
+      ( plot.data$x.plot >
+        plot.data$x.plot[ which.max( plot.data$y.plot ) ]
+      ) | ( plot.data$y.plot > threshold.pdf.plot ),  ]
+  ## Upper tail
+  plot.data <- plot.data[
+      ( plot.data$x.plot <
+        plot.data$x.plot[ which.max( plot.data$y.plot ) ]
+      ) | ( plot.data$y.plot > threshold.pdf.plot ),  ]
+  ## If the first and last entry is not a zero, add one!
+  ## Else the density won't look like a density at all.
+  if ( plot.data$y.plot[ 1 ] > 0 ){
+    plot.data <- data.frame(
+        x.plot = c( 2* plot.data$x.plot[ 1 ] -
+                    plot.data$x.plot[ 2 ],
+                   plot.data$x.plot ),
+        y.plot = c( 0, plot.data$y.plot ) )
+  }
+  if ( plot.data$y.plot[ nrow( plot.data ) ] > 0 ){
+    plot.data[ nrow( plot.data ) + 1, ] <-
+      c( 2* plot.data$x.plot[ nrow( plot.data ) ] -
+         plot.data$x.plot[ nrow( plot.data ) - 1 ],
+        0 )
+  }
+  plot.lim <- c( min( plot.data$x.plot ),
+                    max( plot.data$x.plot ) )
+  ## Using the threshold value defined above the range of
+  ## the density plot will be determined
+  plot.lim <- c( plot.data[[ 1 ]][
+      which.min( abs( plot.data[[ 2 ]][
+          1 : which.max( plot.data[[ 2 ]] ) ] -
+          threshold.pdf.plot ) ) ],
+      plot.data[[ 1 ]][ which.min( (
+        plot.data[[ 2 ]][ which.max( plot.data[[ 2 ]] )
+                             : length( plot.data[[ 2 ]] ) ] -
+        threshold.pdf.plot ) ) +
+        which.max( plot.data[[ 2 ]] ) - 1 ] )
+  ## Determining the limits of the actual plot
+  if ( plot.lim[ 1 ] > x.lim[ 1 ] )
+    plot.lim[ 1 ] <- x.lim[ 1 ] - abs( x.lim[ 1 ] )* 0.05 
+  if ( plot.lim[ 2 ] < x.lim[ 2 ] )
+    plot.lim[ 2 ] <- x.lim[ 2 ] + abs( x.lim[ 2 ] )* 0.05
+  plot.lim <- c( min( plot.lim[ 1 ],
                      min( x.data ) - bin.width ),
-                max( max( plot.range ),
-                    max( x.data ) + bin.width ) )  
+                max( plot.lim[ 2 ],
+                    max( x.data) + bin.width ) )
+  ## Whenever the density gets bigger than one, cut it
+  if ( max( plot.data$y.plot ) > 1 ){
+    y.lim <- c( 0, ( max( density( x.data )$y )* 1.5 ) )
+  } else {
+    y.lim <- NULL
+  }
+  
   ggplot() + geom_histogram(
                  data = data.frame( x = x.data ),
                  colour = grDevices::rgb( .098, .098, .44 ),
@@ -414,12 +470,13 @@ plot.climex.fit.gpd <- function( x, bin.factor = NULL ){
                      fill = "#7171EC" ) ) +
   geom_polygon( data = plot.data, alpha = 0.7,
                colour = grDevices::rgb( .098, .098, .44 ),
-               aes( x = x, y = y,
+               aes( x = x.plot, y = y.plot,
                    fill = grDevices::rgb( 1, .55, 0 ) ) ) +            
     scale_fill_manual( values = c( "#7171EC",
                                   grDevices::rgb( 1, .55, 0 ) ),
                       labels = c( "Histogram", "Fitted GP"  ) ) +
-    theme_bw() + xlim( plot.lim ) + ylab( "Density" ) +
+    theme_bw() + ylab( "Density" ) +
+    coord_cartesian( xlim = plot.lim, ylim = y.lim ) +
     theme( legend.title = element_blank() )
   return( last_plot() )
 }

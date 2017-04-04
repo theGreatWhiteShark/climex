@@ -354,7 +354,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
   ## Wait for proper initialization
   observe( {
     if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) ||
-        is.null( reactive.rows ) ){
+         is.null( reactive.rows ) ){
       return( NULL )
     }
   }, priority = 1 )
@@ -573,16 +573,25 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
                              total.length = length( x.data[[ 3 ]] ),
                              model = model )
     }
-    if ( buttonMinMax() == "Min" && radioEvdStatistics() == "GEV" ){
-      x.confidence.intervals.aux$return.levels <-
-        x.confidence.intervals.aux$return.levels* ( -1 )
+    if ( class( x.confidence.intervals.aux ) != "list" ) {
+      ## The confidence intervals couldn't be calculated for using
+      ## the MLE approach. This can happen for quite low shape
+      ## parameter (< -1). Since the calculations involving those
+      ## are already quite time consuming, I will just don't use
+      ## any confidence intervals at all.
+      x.confidence.intervals <- NULL
+    } else{
+      if ( buttonMinMax() == "Min" && radioEvdStatistics() == "GEV" ){
+        x.confidence.intervals.aux$return.levels <-
+          x.confidence.intervals.aux$return.levels* ( -1 )
+      }
+      x.confidence.intervals <- data.frame(
+          ci.low = x.confidence.intervals.aux$return.levels -
+            as.numeric( x.confidence.intervals.aux$errors ),
+          level = x.confidence.intervals.aux$return.levels,
+          ci.high = x.confidence.intervals.aux$return.levels +
+            as.numeric( x.confidence.intervals.aux$errors ) )
     }
-    x.confidence.intervals <- data.frame(
-        ci.low = x.confidence.intervals.aux$return.levels -
-          as.numeric( x.confidence.intervals.aux$errors ),
-        level = x.confidence.intervals.aux$return.levels,
-        ci.high = x.confidence.intervals.aux$return.levels +
-          as.numeric( x.confidence.intervals.aux$errors ) )
     if ( radioEvdStatistics() == "GEV" ){
       if ( buttonMinMax() == "Min" ){
         plot.data <- data.frame(
@@ -599,31 +608,46 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
           x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
           y = sort( as.numeric( x.kept + sliderThreshold() ) ) )
     }
-    plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
-                       max( x.confidence.intervals[ , 3 ] ) )
-    plot.statistics <- data.frame(
-        period = -1/ ( log( 1 - 1/ x.period ) ),
-        level = as.numeric( x.confidence.intervals[ , 2 ] ),
-        ci.low = as.numeric( x.confidence.intervals[ , 1 ] ), 
-        ci.high = as.numeric( x.confidence.intervals[ , 3 ] ) )
-    gg.rl <- ggplot() +
-      geom_point( data = plot.data, aes( x = x, y = y ), colour = colour.ts,
-                 shape = 1, size = 2, alpha = 0.8, na.rm = TRUE ) +
-      geom_line( data = plot.statistics, aes( x = period, y = level ),
-                colour = colour.extremes, na.rm = TRUE ) +
-      geom_line( data = plot.statistics, aes( x = period, y = ci.low ),
-                linetype = 2, colour = colour.extremes, na.rm = TRUE ) +
-      geom_line( data = plot.statistics, aes( x = period, y = ci.high ),
-                linetype = 2, colour = colour.extremes, na.rm = TRUE ) +
-      xlab( "return period" ) + ylab( "return level" ) +
-      theme_bw() + scale_x_log10( limits = c( 1, 1000 ) ) +
-      theme( axis.title = element_text( size = 15, colour = colour.ts ),
-            axis.text = element_text( size = 12, colour = colour.ts ) )
+    if ( is.null( x.confidence.intervals ) ){
+      ## Plot without confidence intervals
+      gg.rl <- ggplot() +
+        geom_point( data = plot.data, aes( x = x, y = y ), colour = colour.ts,
+                   shape = 1, size = 2, alpha = 0.8, na.rm = TRUE ) +
+        xlab( "return period" ) + ylab( "return level" ) +
+        theme_bw() + scale_x_log10() +
+        theme( axis.title = element_text( size = 15, colour = colour.ts ),
+              axis.text = element_text( size = 12, colour = colour.ts ) )
+      plot.y.limits <- NULL
+    } else {
+      ## Plot with confidence intervals
+      plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
+                         max( x.confidence.intervals[ , 3 ] ) )
+      plot.statistics <- data.frame(
+          period = -1/ ( log( 1 - 1/ x.period ) ),
+          level = as.numeric( x.confidence.intervals[ , 2 ] ),
+          ci.low = as.numeric( x.confidence.intervals[ , 1 ] ), 
+          ci.high = as.numeric( x.confidence.intervals[ , 3 ] ) )
+      gg.rl <- ggplot() +
+        geom_point( data = plot.data, aes( x = x, y = y ), colour = colour.ts,
+                   shape = 1, size = 2, alpha = 0.8, na.rm = TRUE ) +
+        geom_line( data = plot.statistics, aes( x = period, y = level ),
+                  colour = colour.extremes, na.rm = TRUE ) +
+        geom_line( data = plot.statistics, aes( x = period, y = ci.low ),
+                  linetype = 2, colour = colour.extremes, na.rm = TRUE ) +
+        geom_line( data = plot.statistics, aes( x = period, y = ci.high ),
+                  linetype = 2, colour = colour.extremes, na.rm = TRUE ) +
+        xlab( "return period" ) + ylab( "return level" ) +
+        theme_bw() + scale_x_log10( limits = c( 1, 1000 ) ) +
+        theme( axis.title = element_text( size = 15, colour = colour.ts ),
+              axis.text = element_text( size = 12, colour = colour.ts ) )
+    }
     if ( !is.null( buttonMinMax() ) ){
       if ( buttonMinMax() == "Min" && radioEvdStatistics() == "GEV" ){
         gg.rl <- gg.rl + scale_y_reverse() 
-      } else
-        gg.rl <- gg.rl + ylim( plot.y.limits )
+      } else {
+        if ( !is.null( plot.y.limits ) )
+          gg.rl <- gg.rl + ylim( plot.y.limits )
+      }
     }
-    return( gg.rl )  })
+    return( gg.rl ) } )
 }
