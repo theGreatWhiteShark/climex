@@ -209,7 +209,7 @@ sidebarDataType <- function( selectDataBase, radioEvdStatistics ){
                       -.25, round = -2, step = .1 )
         }
       } else if ( selectDataBase() == "Input" ){
-        NULL
+        div( id = "aux-placeholder", style = "height: 0px;" )
       }
     } else
       NULL } )
@@ -275,7 +275,7 @@ sidebarLoading <- function( session, selectDataBase,
       ## localhost
       fileInput( "fileInputSelection", "Choose a .RData file" )
     } else
-      return( NULL )
+      return( div( id = "aux-placeholder", style = "height: 0px;" ) )
   } )
 }
 
