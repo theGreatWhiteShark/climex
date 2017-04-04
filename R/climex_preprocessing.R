@@ -83,12 +83,14 @@ generalExtremeExtraction <- function( radioEvdStatistics,
         sliderInput( "sliderThreshold", "Threshold:",
                     round( min( x.deseasonalized, na.rm = TRUE ) ),
                     round( max( x.deseasonalized, na.rm = TRUE ) ),
-                    round( 0.8* max( x.deseasonalized, na.rm = TRUE ) ) )
+                    round( 0.8* max( x.deseasonalized, na.rm = TRUE ) ),
+                    step = 0.1 )
       } else {
         sliderInput( "sliderThreshold", "Threshold:",
                     round( min( x.deseasonalized, na.rm = TRUE ) ),
                     round( max( x.deseasonalized, na.rm = TRUE ) ),
-                    round( 0.8* min( x.deseasonalized, na.rm = TRUE ) ) )
+                    round( 0.8* min( x.deseasonalized, na.rm = TRUE ) ),
+                    step = 0.1 )
       }
     }
   } )
