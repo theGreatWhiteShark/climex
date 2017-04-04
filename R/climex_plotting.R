@@ -537,7 +537,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       ## used. It underestimates the error but is way faster than
       ## the Monte Carlo alternative.
       fit.aux$par[ 1 ] <- fit.aux$par[ 1 ]* ( -1 )
-      fit.aux$x <- fit.aux$x* ( -1 ) 
+      fit.aux$x <- fit.aux$x* ( -1 )
       if ( is.nan( climex::likelihood( fit.aux$par, fit.aux$x ) ) ){
         ## Just multiplying by -1 does not always work since
         ## the processes in the real world are rarely symmetric
@@ -597,10 +597,14 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
         plot.data <- data.frame(
             x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
             y = -1* sort( as.numeric( x.kept* -1 ) ) )
+        plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
+                           min( x.confidence.intervals[ , 3 ] ) )
       } else {
         plot.data <- data.frame(
             x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
             y = sort( as.numeric( x.kept ) ) )
+        plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
+                           max( x.confidence.intervals[ , 3 ] ) )
       } 
     } else {
       ## GP
@@ -620,8 +624,6 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       plot.y.limits <- NULL
     } else {
       ## Plot with confidence intervals
-      plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
-                         max( x.confidence.intervals[ , 3 ] ) )
       plot.statistics <- data.frame(
           period = -1/ ( log( 1 - 1/ x.period ) ),
           level = as.numeric( x.confidence.intervals[ , 2 ] ),
@@ -643,7 +645,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
     }
     if ( !is.null( buttonMinMax() ) ){
       if ( buttonMinMax() == "Min" && radioEvdStatistics() == "GEV" ){
-        gg.rl <- gg.rl + scale_y_reverse() 
+        gg.rl <- gg.rl + scale_y_reverse( limits = plot.y.limits )
       } else {
         if ( !is.null( plot.y.limits ) )
           gg.rl <- gg.rl + ylim( plot.y.limits )
