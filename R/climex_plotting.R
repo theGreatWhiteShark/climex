@@ -370,13 +370,6 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
     x.extreme <- reactive.extreme()[[ 1 ]]
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
     x.fit.evd <- reactive.fitting()
-    if ( buttonMinMax() == "Min" && radioEvdStatistics() == "GEV" ){
-      x.kept <- x.kept* ( -1 )
-      x.fit.evd$par[ 1 ] <- x.fit.evd$par[ 1 ]* -1
-      shinytoastr::toastr_info( "Since the minimal extremes are chosen the GEV distribution <br/> will be fitted to the negated time series",
-                               preventDuplicates = TRUE )
-    }
-    x.lim <- c( max( x.kept ), min( x.kept ) )
     ## The amount of bins is changing whenever a single event
     ## is toggled. This is distracting only if a certain amount
     ## of points are toggled (5%) a different number of bins shall
