@@ -74,6 +74,12 @@ generalExtremeExtraction <- function( radioEvdStatistics,
       ## little longer
       return( NULL )
     }
+    if ( selectDataBase() == "Artificial data" ){
+      ## Since the artificial data will be sampled directly from a
+      ## GEV/GP distribution, there is no point for blocking or
+      ## thresholding
+      return( div( id = "aux-placeholder", style = "height: 0px;" ) )
+    }
     if ( radioEvdStatistics() == "GEV" ){
       sliderInput( "sliderBlockLength", "Box length in days", 1,
                   365*3, 365 )
@@ -142,19 +148,53 @@ cleaning.interactive <- function( x.xts, checkboxIncompleteYears,
 
 ##' @title Removing the seasonality.
 ##' @details Not a real shiny module, since I have to use this select
+##' input outside its namespace. Provides the
+##' shinydashboard::menuItemOutput for \code{\link{
+##' deseasonalizeSelection}}
+##' 
+##' @importFrom shinydashboard menuItemOutput
+##'
+##' @family preprocessing
+##'
+##' @return menuItemOutput
+##' @author Philipp Mueller 
+deseasonalizeSelectionInput <- function(){
+  menuItemOutput( "deseasonalizeSelection" )
+}
+
+##' @title Removing the seasonality.
+##' @details Not a real shiny module, since I have to use this select
 ##' input outside its namespace.
 ##'
+##' @param selectDataBase Character (select) input to determine the data
+##' source. In the default installation there are three options:
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
+##' provided as an argument to the call of the \code{\link{climex}}
+##' function. The second one uses the database of the German weather
+##' service (see \code{link{download.data.dwd}}). The third one allows
+##' the user to produce random numbers distributed according to the GEV
+##' or GP distribution. Determined by menuSelectDataBase.
+##' Default = "DWD".
+##' 
 ##' @import shiny
 ##'
 ##' @family preprocessing
 ##'
 ##' @return selectInput
 ##' @author Philipp Mueller 
-deseasonalizeInput <- function(){
-  selectInput( "selectDeseasonalize", "Deseasonalization method",
-              choices = c( "Anomalies", "stl", "decompose",
-                          "deseasonalize::ds", "none" ),
-              selected = "Anomalies" )
+deseasonalizeSelection <- function( selectDataBase ){
+  renderMenu({
+    ## if ( selectDataBase() == "Artificial data" ){
+    ##   ## Since the artificial data will be sampled directly from a
+    ##   ## GEV/GP distribution, there is no point for blocking or
+    ##   ## thresholding
+    ##   return( div( id = "aux-placeholder", style = "height: 0px;" ) )
+    ## }
+    selectInput( "selectDeseasonalize", "Deseasonalization method",
+                choices = c( "Anomalies", "stl", "decompose",
+                            "deseasonalize::ds", "none" ),
+                selected = "Anomalies" )
+  })
 }
 
 ##' @title Function for removing the seasonality of a given time series
@@ -164,7 +204,8 @@ deseasonalizeInput <- function(){
 ##' @param selectDeseasonalize Character (select) input determining which
 ##' deseasonalization method should be used to remove the short-range
 ##' correlations from the provided time series.
-##' \code{\link{deseasonalizeInput}}
+##' \code{\link{deseasonalizeInput}}. If NULL climex::anomalies will be
+##' used.
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
@@ -181,7 +222,7 @@ deseasonalizeInput <- function(){
 ##' @author Philipp Mueller 
 deseasonalize.interactive <- function( x.xts, selectDeseasonalize,
                                       selectDataBase ){
-    if ( is.null( x.xts ) || is.null( selectDeseasonalize() ) ||
+    if ( is.null( x.xts ) ||
          is.null( selectDataBase() ) ){
       ## if the initialization has not finished yet just wait a little
       ## longer
@@ -199,8 +240,17 @@ deseasonalize.interactive <- function( x.xts, selectDeseasonalize,
     } else {
       x.no.nan <- x.xts
     }
+    ## Since the selectDeseasonalize input will be now powered by the
+    ## server side, it will have the value NULL until the user reaches
+    ## the General tab. In this case use the "Anomalies" method as
+    ## default.
+    if ( is.null( selectDeseasonalize() ) ){
+      selected.method <- "Anomalies"
+    } else {
+      selected.method <- selectDeseasonalize()
+    }
     x.deseasonalized <- switch(
-        selectDeseasonalize(),
+        selected.method,
         "Anomalies" = climex::anomalies( x.xts ),
         "decompose" = {
           x.decomposed <-
@@ -421,7 +471,7 @@ data.extremes <- function( reactive.selection, radioEvdStatistics,
                                       function(){ return( FALSE ) },
                                       function(){ return( NULL ) },
                                       sliderThreshold )
-    }        
+    }
     x.deseasonalized <- deseasonalize.interactive(
         x.clean, selectDeseasonalize, selectDataBase )
     if ( !is.null( radioEvdStatistics() ) &&

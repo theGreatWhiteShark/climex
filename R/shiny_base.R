@@ -155,6 +155,11 @@ climex.server <- function( input, output, session ){
   output$sidebarCleaning <-
     climex:::sidebarCleaning( reactive( input$radioEvdStatistics ),
                              reactive( input$selectDataBase ) )
+  ## Introducing a dropdown menu for the deseasonalization in the Options
+  ## box in the General tab.
+  output$deseasonalizeSelection <-
+    climex:::deseasonalizeSelection(
+                 reactive( input$selectDataBase ) )
   ## Displaying a loading gif whenever the app is busy
   callModule( climex:::sidebarLoadingGif, "busy" )
   ## Reactive value listening for file input
@@ -401,7 +406,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                            inline = TRUE,
                            choices = c( "Max", "Min" ),
                            selected = "Max" ),
-              climex:::deseasonalizeInput(),
+              climex:::deseasonalizeSelectionInput(),
               climex:::generalFittingRoutineInput() ) ),
           fluidRow(
               climex:::generalFitStatisticsTable(),
