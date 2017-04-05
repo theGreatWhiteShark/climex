@@ -493,7 +493,7 @@ data.extremes <- function( reactive.selection, radioEvdStatistics,
     x.extreme <- extremes.interactive(
         x.deseasonalized, buttonMinMax, radioEvdStatistics,
         sliderBlockLength, sliderThreshold, checkboxDecluster )
-    if ( length( x.extreme ) < 30 ){
+    if ( !is.null( x.extreme ) && length( x.extreme ) < 30 ){
       shinytoastr::toastr_error( "Too few data points! Please check your threshold or block size",
                                 preventDuplicates = TRUE )
       return( NULL )
