@@ -6,7 +6,8 @@
 \usage{
 data.selection(reactive.chosen, selectDataSource, selectDataBase, sliderYears,
   sliderThreshold, radioEvdStatistics, sliderArtificialDataLocation,
-  sliderArtificialDataScale, sliderArtificialDataShape, buttonDrawTS)
+  sliderArtificialDataScale, sliderArtificialDataShape, buttonDrawTS,
+  sliderSeriesLength)
 }
 \arguments{
 \item{reactive.chosen}{Reactive value containing a list of the list
@@ -59,6 +60,10 @@ series. For input$selectDataBase
 \item{buttonDrawTS}{Action button used to draw a time series when
 'artificial data' is chosen in selectDataBase(). If not chosen,
 this button will not be defined.}
+
+\item{sliderSeriesLength}{Numerical slider determining the length
+of an artificial time series. This one will only be present when
+selectDataBase is set to "Artificial data"}
 }
 \value{
 Reactive value containing a 'xts' class time series.
@@ -84,7 +89,9 @@ Other sidebar: \code{\link{file.loading}},
   \code{\link{sidebarLoadingGifOutput}},
   \code{\link{sidebarLoadingGif}},
   \code{\link{sidebarLoadingInput}},
-  \code{\link{sidebarLoading}}
+  \code{\link{sidebarLoading}},
+  \code{\link{sidebarSeriesLengthInput}},
+  \code{\link{sidebarSeriesLength}}
 }
 \author{
 Philipp Mueller
