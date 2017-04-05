@@ -161,6 +161,12 @@ tfoot {
 .bg-orange .table > tbody > tr > ts {
   border-bottom: 1px solid #FFFFFF !important;
 }
+/* Disabling the li marker point for the 
+   deseasonalization dropdown menu */
+#deseasonalizeSelection {
+  list-style-type: none;
+}
+
 /* make the popup table transparent as well */
 #tableMap, #tableMap > table > thead > tr {
   background-color: transparent !important;
