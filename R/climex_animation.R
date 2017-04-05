@@ -120,7 +120,8 @@ likelihoodAnimation <- function( input, output, session,
                 round( x.fit.evd$par[ 1 ], 1 ) - 10,
                 round( x.fit.evd$par[ 1 ] + 10, 1 ),
                 c( round( x.fit.evd$par[ 1 ], 1 ) - 5,
-                  round( x.fit.evd$par[ 1 ], 1 ) + 5 ) ) } )
+                  round( x.fit.evd$par[ 1 ], 1 ) + 5 ),
+                round = 0, step = .1 ) } )
   output$menuSliderScaleLim <- renderMenu( {
     x.fit.evd <- reactive.fitting()
     if ( is.null( x.fit.evd ) )
@@ -141,7 +142,8 @@ likelihoodAnimation <- function( input, output, session,
                 round( max( 0, x.fit.evd.scale  - 10 ), 1 ),
                 round( x.fit.evd.scale + 10, 1 ),
                 c( round( max( 0, x.fit.evd.scale - 5 ), 1 ),
-                  round( x.fit.evd.scale, 1 ) + 5 ) ) } )
+                  round( x.fit.evd.scale, 1 ) + 5 ),
+                round = 0, step = .1 ) } )
   output$menuSliderShapeLim <- renderMenu( {
     x.fit.evd <- reactive.fitting()
     if ( is.null( x.fit.evd ) )
@@ -162,7 +164,8 @@ likelihoodAnimation <- function( input, output, session,
                 round( x.fit.evd.shape - 1, 1 ),
                 round( x.fit.evd.shape + 1, 1 ),
                 c( round( x.fit.evd.shape, 1 ) - .3,
-                  round( x.fit.evd.shape, 1 ) + .3  ) ) } )
+                  round( x.fit.evd.shape, 1 ) + .3  ),
+                round = 0, step = .1 ) } )
   ## To enable the user to input her/his own custom initialization
   ## points for the optimization it needs two things: 
   ## numerical inputs chosing the climex::likelihood.initials as
