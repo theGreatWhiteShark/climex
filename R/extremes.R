@@ -772,10 +772,18 @@ revd <- function ( n, location = NULL, scale = NULL, shape = NULL,
       location <- threshold
     z <- runif( n )
   }
-  ## allocating memory
-  result <- numeric( n ) + NA
-  result <- as.numeric( location ) + as.numeric( scale )*
-    ( z^( -as.numeric( shape ) ) - 1 )/ as.numeric( shape )
+  if ( as.numeric( shape ) != 0 ){
+    result <- as.numeric( location ) + as.numeric( scale )*
+      ( z^( -as.numeric( shape ) ) - 1 )/ as.numeric( shape )
+  } else {
+    if ( model == "gev" ){
+      result <- as.numeric( location ) - as.numeric( scale )*
+        log( z )
+    } else {
+      result <- as.numeric( location ) +
+        rexp( n, rate = 1/ as.numeric( scale ) )
+    }
+  }
   return( result )
 }
 
