@@ -384,8 +384,13 @@ sidebarSeriesLength <- function( selectDataBase ){
   renderMenu({
     if ( !is.null( selectDataBase() ) &&
          selectDataBase() == "Artificial data" ){
-      sliderInput( "sliderSeriesLength", "Length", 30, 1000,
-                  100, round = 0, step = 1 )
+      ## In order to display the return levels on a
+      ## logarithmic scale, the exponent will be
+      ## chosen via the slider and its transformation
+      ## to 10^x is done in the script and inside a
+      ## JavaScript function 
+      sliderInput( "sliderSeriesLength", "Length", 1.477121, 3,
+                  2, round = 1, step = .1 )
     } else {
       div( id = "aux-placeholder", style = "height: 0px" )
     }
@@ -481,7 +486,10 @@ data.selection <- function( reactive.chosen, selectDataSource,
       ## stamp will be used and moved to 1900. All following
       ## points will be future years from this point on. This
       ## keeps the idea of annual block maxima
-      series.length <- sliderSeriesLength()
+      ## Since the slider just determines the exponent to the
+      ## base of 10 in order to display it in a logarithmic awy
+      ## I have to transform the input
+      series.length <- 10^sliderSeriesLength()
       dates <- rep( lubridate::now(), series.length )
       lubridate::year( dates ) <- 1900 +
         seq( 1, series.length )
