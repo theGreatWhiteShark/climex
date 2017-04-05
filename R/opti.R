@@ -105,7 +105,7 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE,
   if ( is.null( initial ) )
     initial <- likelihood.initials( x )
   if ( is.null( error.estimation ) )
-    error.estimation <- "none"
+    error.estimation <- "MLE"
   error.estimation <- match.arg( error.estimation )
   ## if the error.estimation is not required, do not calculate the
   ## hessian
@@ -403,7 +403,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
   if ( is.null( initial ) )
     initial <- likelihood.initials( x, model = "gpd" )
   if ( is.null( error.estimation ) )
-    error.estimation <- "none"
+    error.estimation <- "MLE"
   error.estimation <- match.arg( error.estimation )
   ## if the error.estimation is not required, do not calculate the
   ## hessian
@@ -414,11 +414,29 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
   ## Optimization
   if ( method %in% c( "Nelder-Mead", "BFGS", "CG" ) ){
     suppressWarnings(
-        res.optim <- stats::optim( initial, optim.function,
-                                  gr = gradient.function, x = x,
-                                  hessian = hessian.calculate,
-                                  method = method,
-                                  model = "gpd", ... ) )
+        res.optim <- try(
+            stats::optim( initial, optim.function,
+                         gr = gradient.function, x = x,
+                         hessian = hessian.calculate,
+                         method = method,
+                         model = "gpd", ... ),
+            silent = TRUE ) )
+    if ( class( res.optim ) == "try-error" ){
+      ## Sometimes (e.g. for absurdly low thresholds) the optimization
+      ## fails due to the calculation of the hessian. In this case reset
+      ## the error estimation and return missing errors
+      error.estimation <- "none"
+      hessian.calculate <- FALSE
+      suppressWarnings(
+          res.optim <- stats::optim( initial, optim.function,
+                                    gr = gradient.function, x = x,
+                                    hessian = hessian.calculate,
+                                    method = method,
+                                    model = "gpd", ... ) )
+      res.optim$errors <- rep( NaN, 3 + length( return.period ) )
+      names( res.optim$errors ) <- c( "scale", "shape",
+                                     paste0( return.period, ".rlevel" ) )
+    }
   } else if ( method == "SANN" ){
     ## Since this implementation didn't yielded nice results I switch
     ## to another package

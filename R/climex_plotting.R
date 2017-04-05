@@ -581,14 +581,15 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
                              total.length = length( x.data[[ 3 ]] ),
                              model = model )
     }
-    if ( class( x.confidence.intervals.aux ) != "list" ) {
+    if ( class( x.confidence.intervals.aux ) != "list" ||
+        any( is.nan( x.confidence.intervals.aux$errors[ , 1 ] ) ) ) {
       ## The confidence intervals couldn't be calculated for using
       ## the MLE approach. This can happen for quite low shape
       ## parameter (< -1). Since the calculations involving those
       ## are already quite time consuming, I will just don't use
       ## any confidence intervals at all.
       x.confidence.intervals <- NULL
-    } else{
+    } else {
       if ( buttonMinMax() == "Min" && radioEvdStatistics() == "GEV" ){
         x.confidence.intervals.aux$return.levels <-
           x.confidence.intervals.aux$return.levels* ( -1 )

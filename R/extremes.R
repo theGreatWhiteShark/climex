@@ -517,7 +517,8 @@ return.level <- function( x, return.period = 100,
                              total.length = total.length )$hessian
       }
     }
-    if ( any( is.nan( x$hessian ) ) ){
+    if ( is.null( x$hessian ) ||
+         any( is.nan( x$hessian ) ) ){
       ## If there are NaN in the hessian, the return levels
       ## can not be calculated. So try the numDeriv instead.
       x$hessian <- numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
