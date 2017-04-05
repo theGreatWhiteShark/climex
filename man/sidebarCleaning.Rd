@@ -4,12 +4,22 @@
 \alias{sidebarCleaning}
 \title{Toggling the cleaning of the time series}
 \usage{
-sidebarCleaning(radioEvdStatistics)
+sidebarCleaning(radioEvdStatistics, selectDataBase)
 }
 \arguments{
 \item{radioEvdStatistics}{Character (radio) input determining whether
 the GEV or GP distribution shall be fitted to the data. Choices:
 c( "GEV", "GP" ), default = "GEV".}
+
+\item{selectDataBase}{Character (select) input to determine the data
+source. In the default installation there are three options:
+c( "Input", "DWD", "Artificial data" ). The first one uses the data
+provided as an argument to the call of the \code{\link{climex}}
+function. The second one uses the database of the German weather
+service (see \code{link{download.data.dwd}}). The third one allows
+the user to produce random numbers distributed according to the GEV
+or GP distribution. Determined by menuSelectDataBase.
+Default = "DWD".}
 }
 \value{
 renderMenu
