@@ -4,7 +4,7 @@
 \alias{data.selection}
 \title{Reactive value selecting an individual time series.}
 \usage{
-data.selection(reactive.chosen, selectDataSource, selectDataBase, sliderYears,
+data.selection(reactive.chosen, selectDataSource, selectDataBase,
   sliderThreshold, radioEvdStatistics, sliderArtificialDataLocation,
   sliderArtificialDataScale, sliderArtificialDataShape, buttonDrawTS,
   sliderSeriesLength)
@@ -27,11 +27,6 @@ service (see \code{link{download.data.dwd}}). The third one allows
 the user to produce random numbers distributed according to the GEV
 or GP distribution. Determined by menuSelectDataBase.
 Default = "DWD".}
-
-\item{sliderYears}{Numerical (slider) input to determine the minimal
-length (in years) of the time series to be displayed. Minimal value
-is 0 and maximal is 155 (longest one in the DWD database), the
-default value is 65 and the step width is 1.}
 
 \item{sliderThreshold}{Numerical (slider) input determining the
 threshold used within the GP fit and the extraction of the extreme
@@ -73,8 +68,8 @@ According to the choice in input$selectDataBase an
 artificial time series will be sampled or one from a database will be
 selected. For the latter one the reactive value
 \code{\link{climex:::data.chosen}} will be constulted. The length of
-the generated time series is determined by the input$sliderYears
-slider in the top right part of the leaflet tab.
+the generated time series is determined by the
+input$sliderSeriesLength.
 }
 \seealso{
 Other sidebar: \code{\link{file.loading}},

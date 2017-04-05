@@ -181,7 +181,6 @@ climex.server <- function( input, output, session ){
     climex:::data.selection(
                  reactive.chosen, reactive( input$selectDataSource ),
                  reactive( input$selectDataBase ),
-                 reactive( input$sliderYears ),
                  reactive( input$sliderThreshold ),
                  reactive( input$radioEvdStatistics ),
                  reactive( input$sliderArtificialDataLocation ),

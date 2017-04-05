@@ -397,8 +397,8 @@ sidebarSeriesLength <- function( selectDataBase ){
 ##' artificial time series will be sampled or one from a database will be
 ##' selected. For the latter one the reactive value
 ##' \code{\link{climex:::data.chosen}} will be constulted. The length of
-##' the generated time series is determined by the input$sliderYears
-##' slider in the top right part of the leaflet tab.
+##' the generated time series is determined by the
+##' input$sliderSeriesLength.
 ##'
 ##' @param reactive.chosen Reactive value containing a list of the list
 ##' of all provided stations and a data.frame containing the meta data.
@@ -415,10 +415,6 @@ sidebarSeriesLength <- function( selectDataBase ){
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
-##' @param sliderYears Numerical (slider) input to determine the minimal
-##' length (in years) of the time series to be displayed. Minimal value
-##' is 0 and maximal is 155 (longest one in the DWD database), the
-##' default value is 65 and the step width is 1.
 ##' @param sliderThreshold Numerical (slider) input determining the
 ##' threshold used within the GP fit and the extraction of the extreme
 ##' events. Boundaries: minimal and maximal value of the deseasonalized
@@ -453,7 +449,7 @@ sidebarSeriesLength <- function( selectDataBase ){
 ##' @return Reactive value containing a 'xts' class time series.
 ##' @author Philipp Mueller 
 data.selection <- function( reactive.chosen, selectDataSource,
-                           selectDataBase, sliderYears, sliderThreshold,
+                           selectDataBase, sliderThreshold,
                            radioEvdStatistics,
                            sliderArtificialDataLocation,
                            sliderArtificialDataScale,
@@ -466,7 +462,6 @@ data.selection <- function( reactive.chosen, selectDataSource,
     if ( is.null( data.selected ) ||
          is.null( selectDataSource() ) ||
          is.null( selectDataBase() ) ||
-         is.null( sliderYears() ) ||
          ( selectDataBase() == "GP" && is.null( sliderThreshold() ) ) ){
       return( NULL )
     }
@@ -482,21 +477,14 @@ data.selection <- function( reactive.chosen, selectDataSource,
       if( !is.null( buttonDrawTS() ) ){
         buttonDrawTS()
       }
-      ## The length of the artificial time series is determined by
-      ## the number of years chosen via the input$sliderYears slider
-      ## in the leaflet tab
-      ## Using the Potsdam time series from Germany as reference
-      data( temp.potsdam, package = "climex" )
-      annual.potsdam <- block( temp.potsdam )
-      p.l <- length( annual.potsdam )
-      ## Length of the time series
-      x.length <- sliderSeriesLength()
-      if ( x.length > p.l ){
-        ## The artificial time series must not be longer than the
-        ## Potsdam one. Else the indexing of the time series (which
-        ## is happening in about 20 lines) will not work properly.
-        x.length <- p.l
-      }
+      ## To transform the artificial time series today's time
+      ## stamp will be used and moved to 1900. All following
+      ## points will be future years from this point on. This
+      ## keeps the idea of annual block maxima
+      series.length <- sliderSeriesLength()
+      dates <- rep( lubridate::now(), series.length )
+      lubridate::year( dates ) <- 1900 +
+        seq( 1, series.length )
       ## Whether to use GEV or GPD data
       if ( is.null( radioEvdStatistics() ) ||
           radioEvdStatistics() == "GEV" ){
@@ -505,14 +493,13 @@ data.selection <- function( reactive.chosen, selectDataSource,
         model <- "gpd"
       }
       x.xts <- xts(
-          climex:::revd( n = sliderSeriesLength(),
+          climex:::revd( n = series.length,
                         location = sliderArtificialDataLocation(),
                         scale = sliderArtificialDataScale(),
                         shape = sliderArtificialDataShape(),
                         model = model, silent = TRUE,
                         threshold = 0 ),
-          order.by = index( annual.potsdam )[
-            ( p.l - x.length + 1 ) : p.l ] )
+          order.by = dates )
     } else {
       ## In all other cases the possible choices are contained in
       ## the data.selected object and are agnostic of the data base
