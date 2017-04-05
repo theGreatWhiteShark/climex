@@ -361,6 +361,13 @@ extremes.interactive <- function( x.xts, buttonMinMax,
     if ( is.null( sliderThreshold() ) ){
       return( NULL )
     }
+    ## Check if at least two data points are above the threshold
+    if ( sum( as.numeric( x.xts ) > sliderThreshold() ) < 2 ){
+      shinytoastr::toastr_error(
+                       "Threshold is set way to high!",
+                       preventDuplicates = TRUE )
+      return( NULL )
+    }
     x.extreme <- climex::threshold( x.xts,
                                  threshold = sliderThreshold(),
                                  decluster = checkboxDecluster(),
@@ -474,6 +481,7 @@ data.extremes <- function( reactive.selection, radioEvdStatistics,
     }
     x.deseasonalized <- deseasonalize.interactive(
         x.clean, selectDeseasonalize, selectDataBase )
+    
     if ( !is.null( radioEvdStatistics() ) &&
          !is.null( sliderThreshold() ) && radioEvdStatistics() == "GP" &&
          max( x.deseasonalized ) < sliderThreshold() ){
@@ -485,6 +493,11 @@ data.extremes <- function( reactive.selection, radioEvdStatistics,
     x.extreme <- extremes.interactive(
         x.deseasonalized, buttonMinMax, radioEvdStatistics,
         sliderBlockLength, sliderThreshold, checkboxDecluster )
+    if ( length( x.extreme ) < 30 ){
+      shinytoastr::toastr_error( "Too few data points! Please check your threshold or block size",
+                                preventDuplicates = TRUE )
+      return( NULL )
+    }
     return( list( blocked.data = x.extreme,
                  deseasonalized.data = x.deseasonalized,
                  pure.data = x.xts ) )
