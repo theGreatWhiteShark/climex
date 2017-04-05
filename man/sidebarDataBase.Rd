@@ -4,7 +4,10 @@
 \alias{sidebarDataBase}
 \title{Selecting the database}
 \usage{
-sidebarDataBase()
+sidebarDataBase(hostname)
+}
+\arguments{
+\item{hostname}{Global variable containing the hostname or IP.}
 }
 \value{
 renderMenu
