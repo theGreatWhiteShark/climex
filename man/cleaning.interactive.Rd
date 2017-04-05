@@ -39,7 +39,8 @@ the corresponding checkbox is checked.
 \seealso{
 Other preprocessing: \code{\link{data.extremes}},
   \code{\link{deseasonalize.interactive}},
-  \code{\link{deseasonalizeInput}},
+  \code{\link{deseasonalizeSelectionInput}},
+  \code{\link{deseasonalizeSelection}},
   \code{\link{extremes.interactive}},
   \code{\link{generalExtremeExtractionInput}},
   \code{\link{generalExtremeExtraction}}
