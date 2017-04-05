@@ -9,7 +9,7 @@ sidebarDataType(selectDataBase, radioEvdStatistics)
 \arguments{
 \item{selectDataBase}{Character (select) input to determine the data
 source. In the default installation there are three options:
-c( "input", "DWD", "artificial data" ). The first one uses the data
+c( "Input", "DWD", "Artificial data" ). The first one uses the data
 provided as an argument to the call of the \code{\link{climex}}
 function. The second one uses the database of the German weather
 service (see \code{link{download.data.dwd}}). The third one allows
@@ -27,7 +27,7 @@ renderMenu
 \details{
 Provides the third selection menu in the sidebar.
 If input$selectDataBase, provided by \code{\link{sidebarDataBase}},
-was set to "artificial data", the menu will be a numerical input
+was set to "Artificial data", the menu will be a numerical input
 slider to provide the scale parameter for the GEV or shape
 parameter for the GP distribution. Else it will be a drop down menu
 listing the different types of data available at the chosen station.

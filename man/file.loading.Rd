@@ -18,7 +18,7 @@ named stations in those list.
 }
 \details{
 To use this function input$selectDataBase has to be set to
-"input".
+"Input".
 }
 \seealso{
 Other sidebar: \code{\link{data.selection}},
