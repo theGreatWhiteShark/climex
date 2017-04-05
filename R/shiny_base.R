@@ -155,6 +155,9 @@ climex.server <- function( input, output, session ){
   output$sidebarCleaning <-
     climex:::sidebarCleaning( reactive( input$radioEvdStatistics ),
                              reactive( input$selectDataBase ) )
+  ## Slider for choosing the length of the artificial time series
+  output$sidebarSeriesLength <-
+    climex:::sidebarSeriesLength( reactive( input$selectDataBase ) )
   ## Introducing a dropdown menu for the deseasonalization in the Options
   ## box in the General tab.
   output$deseasonalizeSelection <-
@@ -179,13 +182,13 @@ climex.server <- function( input, output, session ){
                  reactive.chosen, reactive( input$selectDataSource ),
                  reactive( input$selectDataBase ),
                  reactive( input$sliderYears ),
-
                  reactive( input$sliderThreshold ),
                  reactive( input$radioEvdStatistics ),
                  reactive( input$sliderArtificialDataLocation ),
                  reactive( input$sliderArtificialDataScale ),
                  reactive( input$sliderArtificialDataShape ),
-                 reactive( input$buttonDrawTS ) )
+                 reactive( input$buttonDrawTS ),
+                 reactive( input$sliderSeriesLength ) )
 ########################################################################
   
 ########################################################################
@@ -368,6 +371,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
         climex:::sidebarDataSourceInput(),
         climex:::sidebarDataTypeInput(),
         climex:::sidebarLoadingInput(),
+        climex:::sidebarSeriesLengthInput(),
         climex:::sidebarCleaningInput(),
         climex:::sidebarLoadingGifOutput( "busy" ) ) ),
     body = dashboardBody(

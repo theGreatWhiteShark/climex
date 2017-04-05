@@ -346,6 +346,52 @@ sidebarCleaning <- function( radioEvdStatistics, selectDataBase ){
   })
 }
 
+##' @title Slider to determine the length of an artificial time series
+##' @details Provides the shinydashboard::menuItemOutput for \code{\link{
+##' sidebarSeriesLength}}. See the later one for details
+##'
+##' @importFrom shinydashboard menuItemOutput
+##'
+##' @family sidebar
+##'
+##' @return menuItemOutput
+##' @author Philipp Mueller 
+sidebarSeriesLengthInput <- function(){
+  menuItemOutput( "sidebarSeriesLength" )
+}
+
+##' @title Slider to determine the length of an artificial time series
+##' @details Numerical slider which will only be displayed when
+##' "Artificial data" is selected in input$selectDataBase
+##' 
+##' @param selectDataBase Character (select) input to determine the data
+##' source. In the default installation there are three options:
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
+##' provided as an argument to the call of the \code{\link{climex}}
+##' function. The second one uses the database of the German weather
+##' service (see \code{link{download.data.dwd}}). The third one allows
+##' the user to produce random numbers distributed according to the GEV
+##' or GP distribution. Determined by menuSelectDataBase.
+##' Default = "DWD".
+##' 
+##' @import shiny
+##'
+##' @family sidebar
+##'
+##' @return menuItemOutput
+##' @author Philipp Mueller 
+sidebarSeriesLength <- function( selectDataBase ){
+  renderMenu({
+    if ( !is.null( selectDataBase() ) &&
+         selectDataBase() == "Artificial data" ){
+      sliderInput( "sliderSeriesLength", "Length", 30, 1000,
+                  100, round = 0, step = 1 )
+    } else {
+      div( id = "aux-placeholder", style = "height: 0px" )
+    }
+  })
+}
+
 ##' @title Reactive value selecting an individual time series.
 ##' @details According to the choice in input$selectDataBase an
 ##' artificial time series will be sampled or one from a database will be
@@ -395,6 +441,9 @@ sidebarCleaning <- function( radioEvdStatistics, selectDataBase ){
 ##' @param buttonDrawTS Action button used to draw a time series when
 ##' 'artificial data' is chosen in selectDataBase(). If not chosen,
 ##' this button will not be defined.
+##' @param sliderSeriesLength Numerical slider determining the length
+##' of an artificial time series. This one will only be present when
+##' selectDataBase is set to "Artificial data"
 ##'
 ##' @family sidebar
 ##'
@@ -408,7 +457,8 @@ data.selection <- function( reactive.chosen, selectDataSource,
                            radioEvdStatistics,
                            sliderArtificialDataLocation,
                            sliderArtificialDataScale,
-                           sliderArtificialDataShape, buttonDrawTS ){
+                           sliderArtificialDataShape, buttonDrawTS,
+                           sliderSeriesLength ){
   reactive( {
     ## Selecting the data out of a pool of different possibilities
     ## or generate them artificially
@@ -440,7 +490,7 @@ data.selection <- function( reactive.chosen, selectDataSource,
       annual.potsdam <- block( temp.potsdam )
       p.l <- length( annual.potsdam )
       ## Length of the time series
-      x.length <- sliderYears()
+      x.length <- sliderSeriesLength()
       if ( x.length > p.l ){
         ## The artificial time series must not be longer than the
         ## Potsdam one. Else the indexing of the time series (which
@@ -455,7 +505,7 @@ data.selection <- function( reactive.chosen, selectDataSource,
         model <- "gpd"
       }
       x.xts <- xts(
-          climex:::revd( n = x.length,
+          climex:::revd( n = sliderSeriesLength(),
                         location = sliderArtificialDataLocation(),
                         scale = sliderArtificialDataScale(),
                         shape = sliderArtificialDataShape(),
