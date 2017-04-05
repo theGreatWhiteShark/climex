@@ -501,7 +501,6 @@ data.selection <- function( reactive.chosen, selectDataSource,
       } else {
         model <- "gpd"
       }
-      browser()
       x.xts <- xts(
           climex:::revd( n = series.length,
                         location = sliderArtificialDataLocation(),

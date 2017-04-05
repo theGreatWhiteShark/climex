@@ -196,8 +196,11 @@ leafletClimex <- function( input, output, session, reactive.chosen,
   ## added on top of it.
   output$map <- renderLeaflet( {
     leaflet() %>% fitBounds( 5, 46, 13, 55 ) %>%
-      addTiles( "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-               attribution = '<code> Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a> </code>)' ) } )
+      ## Unfortunately OpenTopoMaps seems to stop working (5.4.17)
+      ## addTiles( "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+      ##          attribution = '<code> Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a> </code>)' )
+      addTiles()
+    } )
   
   ## Depending on the number of minimal years and the selected data
   ## source markers will be placed at the geo-coordinates of the
