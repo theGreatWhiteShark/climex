@@ -703,15 +703,26 @@ likelihood <- function( parameters = NULL, x.in,
   z <- 1 + y* gamma
 
   if ( model == "gev" ){
-    suppressWarnings( {
-      negloglikelihood <- length( x.in )* log( scale ) +
-        alpha* sum( log( z ) ) + sum( z^{ -1/ shape } )
-    } )
+    if ( shape == 0 ){
+      ## Using the Gumbel distribution. But only when the shape parameter
+      ## is exactly 0
+      negloglikelihood <- length( x.in )*log( scale ) +
+        sum( y )/ scale + sum( exp( -y/ scale ) )
+    } else {
+      suppressWarnings( {
+        negloglikelihood <- length( x.in )* log( scale ) +
+          alpha* sum( log( z ) ) + sum( z^{ -1/ shape } )
+      } )
+    }
   } else {
-    suppressWarnings( {
+    if ( shape == 0 ){
+      ## Again: just for a shape exactly equal to 0
+      negloglikelihood <- length( x.in )* log( scale ) +
+        sum( y )/scale 
+    } else {
       negloglikelihood <- length( x.in )* log( scale ) +
         alpha* sum( log( z ) )
-    } )
+    }
   }
   names( negloglikelihood ) <- NULL
   return( negloglikelihood )
