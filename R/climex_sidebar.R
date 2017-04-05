@@ -206,7 +206,7 @@ sidebarDataType <- function( selectDataBase, radioEvdStatistics ){
                       0.8, round = 0, step = .1 )
         } else {
           ## For GP distributed data
-          sliderInput( "sliderArtificialDataShape", "Shape", -1.5, 1.5,
+          sliderInput( "sliderArtificialDataShape", "Shape", -.7, .7,
                       -.25, round = -2, step = .1 )
         }
       } else if ( selectDataBase() == "Input" ){
@@ -267,7 +267,7 @@ sidebarLoading <- function( session, selectDataBase,
     if ( selectDataBase() == "Artificial data" &&
          ( is.null( radioEvdStatistics() ) ||
            radioEvdStatistics() == "GEV" ) ){
-      sliderInput( "sliderArtificialDataShape", "Shape", -1.5, 1.5,
+      sliderInput( "sliderArtificialDataShape", "Shape", -.7, .7,
                   -0.25, round = -2, step = .1 )
     } else if ( selectDataBase() == "Input" && (
       session$clientData$url_hostname == "localhost" ||
@@ -501,6 +501,7 @@ data.selection <- function( reactive.chosen, selectDataSource,
       } else {
         model <- "gpd"
       }
+      browser()
       x.xts <- xts(
           climex:::revd( n = series.length,
                         location = sliderArtificialDataLocation(),
