@@ -137,7 +137,7 @@ climex.server <- function( input, output, session ){
   ## why do I use the camel case thisIsAName for the shiny objects?
   ## Well, since CSS file do not support the point separator.
   ## Type of database (input, DWD, artificial data)
-  output$sidebarDataBase <- climex:::sidebarDataBase( hostname )
+  output$sidebarDataBase <- climex:::sidebarDataBase( session )
   ## Individual station or location (GEV)/scale(GP) for artificial data
   output$sidebarDataSource <-
     climex:::sidebarDataSource( reactive( input$selectDataBase ),

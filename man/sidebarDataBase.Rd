@@ -4,10 +4,11 @@
 \alias{sidebarDataBase}
 \title{Selecting the database}
 \usage{
-sidebarDataBase(hostname)
+sidebarDataBase(session)
 }
 \arguments{
-\item{hostname}{Global variable containing the hostname or IP.}
+\item{session}{Namespace session. For details check out
+\link{ \url{ http://shiny.rstudio.com/articles/modules.html}}}
 }
 \value{
 renderMenu

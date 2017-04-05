@@ -15,7 +15,6 @@ sidebarDataBaseInput <- function(){
 }
 
 ##' @title Selecting the database
-##' @param hostname Global variable containing the hostname or IP.
 ##' @details For now there are three different data sources you can
 ##' choose:the input provided when calling climex::climex() on localhost
 ##' or a file loaded via the sidebar, the station data of the German
@@ -25,27 +24,29 @@ sidebarDataBaseInput <- function(){
 ##' the namespaces does not really make sense because it has to be
 ##' accessed from outside of this context.
 ##'
+##' @param session Namespace session. For details check out
+##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html}}
+##' 
 ##' @import shiny
 ##'
 ##' @family sidebar
 ##'
 ##' @return renderMenu
 ##' @author Philipp Mueller 
-sidebarDataBase <- function( hostname ){
+sidebarDataBase <- function( session ){
   ## Disable the input option for the shiny server
-  if ( hostname == "localhost" || hostname == "127.0.0.1"  ){
-    renderMenu( {
+  renderMenu( {
+    if ( session$clientData$url_hostname == "localhost" ||
+         session$clientData$url_hostname == "127.0.0.1" ){
       selectInput( "selectDataBase", "Data base",
                   choices = c( "Input", "DWD", "Artificial data" ),
                   selected = "DWD" )
-    } )
-  } else {
-    renderMenu( {
+    } else {
       selectInput( "selectDataBase", "Data base",
                   choices = c( "DWD", "Artificial data" ),
                   selected = "DWD" )
-    } )
-  }
+    }
+  } )
 }
 
 ##' @title Sidebar menu selection
