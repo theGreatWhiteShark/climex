@@ -5,7 +5,8 @@
 \title{Function to perform the GEV/GP fit within the Climex app.}
 \usage{
 fit.interactive(x.kept, x.initial = NULL, radioEvdStatistics,
-  selectOptimization, buttonMinMax, checkboxRerun, sliderThreshold)
+  selectOptimization, buttonMinMax, checkboxRerun, sliderThreshold,
+  selectDataBase)
 }
 \arguments{
 \item{x.kept}{Time series of class 'xts'. Removing clicked or brushed
@@ -36,6 +37,16 @@ of the first run again to escape local minima.}
 threshold used within the GP fit and the extraction of the extreme
 events. Boundaries: minimal and maximal value of the deseasonalized
 time series (rounded). Default: 0.8* the upper end point.}
+
+\item{selectDataBase}{Character (select) input to determine the data
+source. In the default installation there are three options:
+c( "Input", "DWD", "Artificial data" ). The first one uses the data
+provided as an argument to the call of the \code{\link{climex}}
+function. The second one uses the database of the German weather
+service (see \code{link{download.data.dwd}}). The third one allows
+the user to produce random numbers distributed according to the GEV
+or GP distribution. Determined by menuSelectDataBase.
+Default = "DWD".}
 }
 \value{
 Object of class 'climex.fit.gev' or 'climex.fit.gpd', depending

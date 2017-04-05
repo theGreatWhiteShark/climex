@@ -234,7 +234,8 @@ climex.server <- function( input, output, session ){
                                    reactive( input$selectOptimization ),
                                    reactive( input$buttonMinMax ),
                                    reactive( input$checkboxRerun ),
-                                   reactive( input$sliderThreshold ) )
+                                   reactive( input$sliderThreshold ),
+                                   reactive( input$selectDataBase ) )
 ########################################################################
   
 ########################################################################

@@ -44,6 +44,15 @@ generalFittingRoutineInput <- function(){
 ##' threshold used within the GP fit and the extraction of the extreme
 ##' events. Boundaries: minimal and maximal value of the deseasonalized
 ##' time series (rounded). Default: 0.8* the upper end point.
+##' @param selectDataBase Character (select) input to determine the data
+##' source. In the default installation there are three options:
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
+##' provided as an argument to the call of the \code{\link{climex}}
+##' function. The second one uses the database of the German weather
+##' service (see \code{link{download.data.dwd}}). The third one allows
+##' the user to produce random numbers distributed according to the GEV
+##' or GP distribution. Determined by menuSelectDataBase.
+##' Default = "DWD".
 ##'
 ##' @family climex-fitting
 ##'
@@ -52,7 +61,8 @@ generalFittingRoutineInput <- function(){
 ##' @author Philipp Mueller 
 fit.interactive <- function( x.kept, x.initial = NULL,
                             radioEvdStatistics, selectOptimization,
-                            buttonMinMax, checkboxRerun, sliderThreshold ){
+                            buttonMinMax, checkboxRerun, sliderThreshold,
+                            selectDataBase ){
   ## Don't wait for initialization here or the summary statistic table in
   ## the leaflet tab will be only available after switching to the General
   ## tab and back.
@@ -123,7 +133,12 @@ fit.interactive <- function( x.kept, x.initial = NULL,
                                error.estimation = "none" ) ) ) 
   } else {
     ## Fits of GPD parameters to blocked data set
-    if ( is.null( sliderThreshold() ) ){
+    if ( selectDataBase() == "Artificial data" ){
+      ## For the artificial data the sliderThreshold will not be rendered
+      ## and thus be NULL all the time. This is because there is no need
+      ## for a constant offset and it will be set to 0.
+      threshold <- 0
+    } else if ( is.null( sliderThreshold() ) ){
       threshold <- max( x.kept )* .8
     } else {
       threshold <- sliderThreshold()
@@ -211,6 +226,15 @@ fit.interactive <- function( x.kept, x.initial = NULL,
 ##' threshold used within the GP fit and the extraction of the extreme
 ##' events. Boundaries: minimal and maximal value of the deseasonalized
 ##' time series (rounded). Default: 0.8* the upper end point.
+##' @param selectDataBase Character (select) input to determine the data
+##' source. In the default installation there are three options:
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
+##' provided as an argument to the call of the \code{\link{climex}}
+##' function. The second one uses the database of the German weather
+##' service (see \code{link{download.data.dwd}}). The third one allows
+##' the user to produce random numbers distributed according to the GEV
+##' or GP distribution. Determined by menuSelectDataBase.
+##' Default = "DWD".
 ##' 
 ##' @import shiny
 ##'
@@ -223,7 +247,8 @@ fit.interactive <- function( x.kept, x.initial = NULL,
 data.fitting <- function( reactive.extreme, reactive.initials,
                          reactive.rows, fit.interactive,
                          radioEvdStatistics, selectOptimization,
-                         buttonMinMax, checkboxRerun, sliderThreshold ){
+                         buttonMinMax, checkboxRerun, sliderThreshold,
+                         selectDataBase ){
   reactive( {
     if ( is.null( reactive.extreme() ) ||
          is.null( reactive.initials() ) ||
@@ -246,8 +271,8 @@ data.fitting <- function( reactive.extreme, reactive.initials,
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
     return( fit.interactive( x.kept, x.initial, radioEvdStatistics,
                             selectOptimization, buttonMinMax,
-                            checkboxRerun,
-                            sliderThreshold ) )
+                            checkboxRerun, sliderThreshold,
+                            selectDataBase ) )
   } )
 }
 
