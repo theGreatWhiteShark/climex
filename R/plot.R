@@ -334,7 +334,7 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL  ){
                 max( plot.gev.lim[ 2 ],
                     max( x.data) + bin.width ) )
   ## Whenever the density gets bigger than one, cut it
-  if ( max( plot.data$y.plot ) > 1 ){
+  if ( max( plot.gev.data$y.plot ) > 1 ){
     y.lim <- c( 0, ( max( density( x.data )$y )* 1.5 ) )
   } else {
     y.lim <- NULL
