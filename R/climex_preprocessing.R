@@ -184,12 +184,12 @@ deseasonalizeSelectionInput <- function(){
 ##' @author Philipp Mueller 
 deseasonalizeSelection <- function( selectDataBase ){
   renderMenu({
-    ## if ( selectDataBase() == "Artificial data" ){
-    ##   ## Since the artificial data will be sampled directly from a
-    ##   ## GEV/GP distribution, there is no point for blocking or
-    ##   ## thresholding
-    ##   return( div( id = "aux-placeholder", style = "height: 0px;" ) )
-    ## }
+    if ( selectDataBase() == "Artificial data" ){
+      ## Since the artificial data will be sampled directly from a
+      ## GEV/GP distribution, there is no point for blocking or
+      ## thresholding
+      return( div( id = "aux-placeholder", style = "height: 0px;" ) )
+    }
     selectInput( "selectDeseasonalize", "Deseasonalization method",
                 choices = c( "Anomalies", "stl", "decompose",
                             "deseasonalize::ds", "none" ),

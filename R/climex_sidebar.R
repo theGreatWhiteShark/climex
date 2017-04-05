@@ -459,7 +459,7 @@ data.selection <- function( reactive.chosen, selectDataSource,
                         scale = sliderArtificialDataScale(),
                         shape = sliderArtificialDataShape(),
                         model = model, silent = TRUE,
-                        threshold = sliderThreshold()),
+                        threshold = 0 ),
           order.by = index( annual.potsdam )[
             ( p.l - x.length + 1 ) : p.l ] )
     } else {

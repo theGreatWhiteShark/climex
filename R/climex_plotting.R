@@ -235,7 +235,8 @@ generalTimeSeriesPlot <- function( input, output, session,
     ## In general just checking for the input$sliderThreshold to be not NULL
     ## would be sufficient and there is no real need for
     ## input$radioEvdStatistics. But why outsmart ourselves?
-    if ( radioEvdStatistics() == "GP" && !is.null( sliderThreshold() ) ){
+    if ( radioEvdStatistics() == "GP" && !is.null( sliderThreshold() ) &&
+        selectDataBase() != "Artificial data" ){
       x.extreme <- x.extreme + sliderThreshold()
     }
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
@@ -410,14 +411,21 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       plot.data <- data.frame( model = model, empirical = empirical )
     } else {
       ## radioEvdStatistics() == "GP"
+      if ( selectDataBase() == "Artificial data" ){
+        ## Since I right now don't see the point of introducing constant
+        ## threshold in the artificial data, it will be set to zero.
+        threshold <- 0
+      } else {
+        threshold <- sliderThreshold()
+      }
       plot.data <- data.frame(
           model = sort( climex:::qevd( p = stats::ppoints( length( x.kept ),
                                                           0 ),
                                       scale = x.fit.evd$par[ 1 ], 
                                       shape = x.fit.evd$par[ 2 ],
                                       model = "gpd", silent = TRUE,
-                                      threshold = sliderThreshold() ) ),
-          empirical = sort( as.numeric( x.kept ) ) + sliderThreshold() )
+                                      threshold = threshold ) ),
+          empirical = sort( as.numeric( x.kept ) ) + threshold )
     }
     plot.fit <- stats::lm( empirical ~ model, plot.data )[[ 1 ]]
     gg.pp <- ggplot() +
@@ -455,12 +463,19 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
         empirical <- sort( as.numeric( x.kept ) )
       }
     } else {
+      if ( selectDataBase() == "Artificial data" ){
+        ## Since I right now don't see the point of introducing constant
+        ## threshold in the artificial data, it will be set to zero.
+        threshold <- 0
+      } else {
+        threshold <- sliderThreshold()
+      }
       sampled <- sort( climex:::revd( n = length( x.kept ),
                                      scale = x.fit.evd$par[ 1 ],
                                      shape = x.fit.evd$par[ 2 ],
                                      silent = TRUE, model = "gpd",
-                                     threshold = sliderThreshold() ) )
-      empirical <- sort( as.numeric( x.kept ) + sliderThreshold() )
+                                     threshold = threshold ) )
+      empirical <- sort( as.numeric( x.kept ) + threshold )
     }
     length.e <- length( empirical )
     length.s <- length( sampled )
@@ -601,9 +616,16 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       } 
     } else {
       ## GP
+      if ( selectDataBase() == "Artificial data" ){
+        ## Since I right now don't see the point of introducing constant
+        ## threshold in the artificial data, it will be set to zero.
+        threshold <- 0
+      } else {
+        threshold <- sliderThreshold()
+      }
       plot.data <-  data.frame(
           x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
-          y = sort( as.numeric( x.kept + sliderThreshold() ) ) )
+          y = sort( as.numeric( x.kept + threshold ) ) )
       plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
                          max( x.confidence.intervals[ , 3 ] ) )
     }
