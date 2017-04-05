@@ -259,8 +259,9 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                                   selectDeseasonalize, selectDataBase )
     ## block them
     data.blocked <- lapply( data.deseasonalized, extremes.interactive,
-                           radioEvdStatistics, sliderBlockLength,
-                           sliderThreshold, checkboxDecluster )
+                           buttonMinMax, radioEvdStatistics,
+                           sliderBlockLength, sliderThreshold,
+                           checkboxDecluster )
     ## choose whether to calculate the GEV or GP parameters
     if ( is.null( radioEvdStatistics() ) ||
          radioEvdStatistics() == "GEV" ){
@@ -286,7 +287,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                              total.length = length(
                                  data.selected[[ 1 ]][[ rr ]] ),
                              threshold = threshold )
-      }
+    }
     data.selected[[ 2 ]]$return.level <- return.level.vector
     return( data.selected[[ 2 ]] )
   } ) 
