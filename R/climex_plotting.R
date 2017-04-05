@@ -371,6 +371,14 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
     x.extreme <- reactive.extreme()[[ 1 ]]
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
     x.fit.evd <- reactive.fitting()
+    if ( buttonMinMax() == "Min" ){
+      ## To just perform an ordinary plot is not sufficient when working
+      ## with minimal extremes. Since the GEV is fitted to the negated
+      ## time series the whole density has to be multiplied by -1 instead
+      ## of just moving it with -1*location
+      x.fit.evd$x <- x.fit.evd$x* -1
+      x.fit.evd$par[ 1 ] <- x.fit.evd$par[ 1 ]* -1
+    }
     ## The amount of bins is changing whenever a single event
     ## is toggled. This is distracting only if a certain amount
     ## of points are toggled (5%) a different number of bins shall
@@ -380,10 +388,14 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
     gg1.bins <- ( ( ( length( x.kept ) - 1 )*100/
                     length( x.extreme ) )  %/% 5 )* 0.025
     x.label <- function.get.y.label( selectDataBase, selectDataType )
-    plot( x.fit.evd, bin.factor = gg1.bins ) + ylab( "density" ) +
+    gg.evd <- plot( x.fit.evd, bin.factor = gg1.bins ) + ylab( "density" ) +
       xlab( x.label ) + theme( legend.position = "none" ) +
       theme( axis.title = element_text( size = 17, colour = colour.ts ),
             axis.text = element_text( size = 13, colour = colour.ts ) )
+    if ( buttonMinMax() == "Min" ){
+      gg.evd <- gg.evd + scale_x_reverse()
+    }
+    return( gg.evd )
   } )
   ## PP plot for fit statistics
   output$plotFitPP <- renderPlot( {
