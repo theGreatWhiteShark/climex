@@ -290,7 +290,7 @@ sidebarLoading <- function( session, selectDataBase,
 ##' @return menuItemOutput
 ##' @author Philipp Mueller 
 sidebarCleaningInput <- function(){
-  uiOutput( "sidebarCleaning", style = "padding: 12px 15px 0px 12px;"  )
+  uiOutput( "sidebarCleaning" )
 }
 
 ##' @title Toggling the cleaning of the time series
@@ -320,7 +320,7 @@ sidebarCleaningInput <- function(){
 ##' @return renderMenu
 ##' @author Philipp Mueller
 sidebarCleaning <- function( radioEvdStatistics, selectDataBase ){
-  renderUI( {
+  renderUI({
     ## When applying the blocking method incomplete years distort
     ## the time series and have to be excluded. When using the
     ## threshold method on the other hand clusters are most likely
@@ -340,10 +340,11 @@ sidebarCleaning <- function( radioEvdStatistics, selectDataBase ){
     } else {
       ## When working with artificial data cleaning does not make
       ## sense. Instead we need to resample the time series.
-      actionButton( "buttonDrawTS", "Draw" )
+      div( actionButton( "buttonDrawTS", "Draw" ),
+          style = "padding: 12px 15px 0px 12px;" )
     }
   })
-  }
+}
 
 ##' @title Reactive value selecting an individual time series.
 ##' @details According to the choice in input$selectDataBase an
