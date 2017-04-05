@@ -30,7 +30,7 @@ leaflet map. \code{\link{data.selection}}}
 
 \item{selectDataBase}{Character (select) input to determine the data
 source. In the default installation there are three options:
-c( "input", "DWD", "artificial data" ). The first one uses the data
+c( "Input", "DWD", "Artificial data" ). The first one uses the data
 provided as an argument to the call of the \code{\link{climex}}
 function. The second one uses the database of the German weather
 service (see \code{link{download.data.dwd}}). The third one allows
@@ -49,7 +49,8 @@ Provides a slider input to determine either the block length
 Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{data.extremes}},
   \code{\link{deseasonalize.interactive}},
-  \code{\link{deseasonalizeInput}},
+  \code{\link{deseasonalizeSelectionInput}},
+  \code{\link{deseasonalizeSelection}},
   \code{\link{extremes.interactive}},
   \code{\link{generalExtremeExtractionInput}}
 }

@@ -17,7 +17,8 @@ generalExtremeExtraction}}. See the later one for details.
 Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{data.extremes}},
   \code{\link{deseasonalize.interactive}},
-  \code{\link{deseasonalizeInput}},
+  \code{\link{deseasonalizeSelectionInput}},
+  \code{\link{deseasonalizeSelection}},
   \code{\link{extremes.interactive}},
   \code{\link{generalExtremeExtraction}}
 }

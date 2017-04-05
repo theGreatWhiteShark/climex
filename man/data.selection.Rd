@@ -6,7 +6,7 @@
 \usage{
 data.selection(reactive.chosen, selectDataSource, selectDataBase, sliderYears,
   sliderThreshold, radioEvdStatistics, sliderArtificialDataLocation,
-  sliderArtificialDataScale, sliderArtificialDataShape)
+  sliderArtificialDataScale, sliderArtificialDataShape, buttonDrawTS)
 }
 \arguments{
 \item{reactive.chosen}{Reactive value containing a list of the list
@@ -19,7 +19,7 @@ station's name.}
 
 \item{selectDataBase}{Character (select) input to determine the data
 source. In the default installation there are three options:
-c( "input", "DWD", "artificial data" ). The first one uses the data
+c( "Input", "DWD", "Artificial data" ). The first one uses the data
 provided as an argument to the call of the \code{\link{climex}}
 function. The second one uses the database of the German weather
 service (see \code{link{download.data.dwd}}). The third one allows
@@ -44,17 +44,21 @@ c( "GEV", "GP" ), default = "GEV".}
 \item{sliderArtificialDataLocation}{Numerical (slider) input
 providing the location parameter to generate an artificial time
 series. For input$radioEvdStatistics == "GP" or input$selectDataBase
-!= "artificial data" this argument will be NULL.}
+!= "Artificial data" this argument will be NULL.}
 
 \item{sliderArtificialDataScale}{Numerical (slider) input
 providing the scale parameter to generate an artificial time
 series. For input$selectDataBase
-!= "artificial data" this argument will be NULL.}
+!= "Artificial data" this argument will be NULL.}
 
 \item{sliderArtificialDataShape}{Numerical (slider) input
 providing the shape parameter to generate an artificial time
 series. For input$selectDataBase
-!= "artificial data" this argument will be NULL.}
+!= "Artificial data" this argument will be NULL.}
+
+\item{buttonDrawTS}{Action button used to draw a time series when
+'artificial data' is chosen in selectDataBase(). If not chosen,
+this button will not be defined.}
 }
 \value{
 Reactive value containing a 'xts' class time series.

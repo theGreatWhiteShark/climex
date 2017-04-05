@@ -44,7 +44,8 @@ values above a certain threshold will be extracted.
 Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{data.extremes}},
   \code{\link{deseasonalize.interactive}},
-  \code{\link{deseasonalizeInput}},
+  \code{\link{deseasonalizeSelectionInput}},
+  \code{\link{deseasonalizeSelection}},
   \code{\link{generalExtremeExtractionInput}},
   \code{\link{generalExtremeExtraction}}
 }

@@ -10,7 +10,7 @@ data.chosen(selectDataBase, sliderYears, selectDataType, reactive.loading)
 \arguments{
 \item{selectDataBase}{Character (select) input to determine the data
 source. In the default installation there are three options:
-c( "input", "DWD", "artificial data" ). The first one uses the data
+c( "Input", "DWD", "Artificial data" ). The first one uses the data
 provided as an argument to the call of the \code{\link{climex}}
 function. The second one uses the database of the German weather
 service (see \code{link{download.data.dwd}}). The third one allows
