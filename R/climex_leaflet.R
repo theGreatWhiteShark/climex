@@ -318,7 +318,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
         ## according to the current screen width (CSS3 magic)
         isolate( 
             map.width <-
-              session$clientData[[ 'output_placeholder_width' ]]
+              session$clientData[[ 'output_leaflet-placeholder_width' ]]
         )
         if ( is.null( map.width ) )
           warning( "The placeholder magic in the leaflet tab went wrong!" )
