@@ -20,6 +20,8 @@ Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{deseasonalizeSelectionInput}},
   \code{\link{deseasonalizeSelection}},
   \code{\link{extremes.interactive}},
+  \code{\link{generalButtonMinMaxInput}},
+  \code{\link{generalButtonMinMax}},
   \code{\link{generalExtremeExtraction}}
 }
 \author{

@@ -46,6 +46,8 @@ Other preprocessing: \code{\link{cleaning.interactive}},
   \code{\link{deseasonalize.interactive}},
   \code{\link{deseasonalizeSelectionInput}},
   \code{\link{deseasonalizeSelection}},
+  \code{\link{generalButtonMinMaxInput}},
+  \code{\link{generalButtonMinMax}},
   \code{\link{generalExtremeExtractionInput}},
   \code{\link{generalExtremeExtraction}}
 }

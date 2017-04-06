@@ -42,6 +42,8 @@ Other preprocessing: \code{\link{data.extremes}},
   \code{\link{deseasonalizeSelectionInput}},
   \code{\link{deseasonalizeSelection}},
   \code{\link{extremes.interactive}},
+  \code{\link{generalButtonMinMaxInput}},
+  \code{\link{generalButtonMinMax}},
   \code{\link{generalExtremeExtractionInput}},
   \code{\link{generalExtremeExtraction}}
 }
