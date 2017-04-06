@@ -6,7 +6,8 @@
 series as well as one of all its extreme events.}
 \usage{
 generalTimeSeriesPlot(input, output, session, reactive.extreme, selectDataBase,
-  selectDataType, function.get.y.label, radioEvdStatistics, sliderThreshold)
+  selectDataType, function.get.y.label, radioEvdStatistics, sliderThreshold,
+  buttonMinMax)
 }
 \arguments{
 \item{input}{Namespace input. For more details check out
@@ -51,6 +52,10 @@ c( "GEV", "GP" ), default = "GEV".}
 threshold used within the GP fit and the extraction of the extreme
 events. Boundaries: minimal and maximal value of the deseasonalized
 time series (rounded). Default: 0.8* the upper end point.}
+
+\item{buttonMinMax}{Character (radio) input determining whether
+the GEV/GP distribution shall be fitted to the smallest or biggest
+vales. Choices: c( "Max", "Min ), default = "Max".}
 }
 \value{
 Reactive value holding a logical vector indicating which values
