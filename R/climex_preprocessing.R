@@ -160,6 +160,11 @@ generalButtonMinMaxInput <- function(){
 ##' @param radioEvdStatistics Character (radio) input determining whether
 ##' the GEV or GP distribution shall be fitted to the data. Choices:
 ##' c( "GEV", "GP" ), default = "GEV".
+##' @param selectDataType Character (select) input to determine which set
+##' measurements should be used for the selected station. In case of the
+##' default import of the DWD data, there are three options:
+##' c( "Daily max. temp", "Daily min. temp", "Daily precipitation" ).
+##' Determined by menuSelectDataType.
 ##' 
 ##' @importFrom shinydashboard menuItemOutput
 ##'
@@ -167,20 +172,28 @@ generalButtonMinMaxInput <- function(){
 ##'
 ##' @return menuItemOutput
 ##' @author Philipp Mueller 
-generalButtonMinMax <- function( radioEvdStatistics ){
+generalButtonMinMax <- function( radioEvdStatistics, selectDataType ){
   renderUI({
     ## The minimal extremes are only available when using the GEV
     ## distribution
     if ( is.null( radioEvdStatistics() ) ||
          radioEvdStatistics() == "GEV" ){
+      if ( is.null( selectDataType() ) ||
+           selectDataType() != "Daily precipitation" ){
+        radioButtons( inputId = "buttonMinMax", "Type of extreme",
+                     inline = TRUE, choices = c( "Max", "Min" ),
+                     selected = "Max" )
+      } else {
+        ## For the precipitation it does not make any sense at all
+        ## to calculate the minimal extremes.
       radioButtons( inputId = "buttonMinMax", "Type of extreme",
-                   inline = TRUE, choices = c( "Max", "Min" ),
-                   selected = "Max" )
+                   inline = TRUE, choices = "Max" )
+      }
     } else {
       radioButtons( inputId = "buttonMinMax", "Type of extreme",
                    inline = TRUE, choices = "Max" )
     }
-  })
+  } )
 }
 
 ##' @title Removing the seasonality.
@@ -375,6 +388,13 @@ deseasonalize.interactive <- function( x.xts, selectDeseasonalize,
 extremes.interactive <- function( x.xts, buttonMinMax,
                                  radioEvdStatistics, sliderBlockLength,
                                  sliderThreshold, checkboxDecluster ){
+  if ( is.null( buttonMinMax() ) &&
+       ( !is.null( sliderBlockLength() ) ||
+         !is.null( sliderThreshold() ) ) ){
+    ## Those amigos are in the same windows and should be initialized
+    ## together
+    return( NULL )
+  }    
   ## Toggle if maxima of minima are going to be used
   if ( is.null( buttonMinMax() ) || buttonMinMax() == "Max" ){
     block.mode <- "max"

@@ -164,7 +164,8 @@ climex.server <- function( input, output, session ){
   ## maximal extremes
   output$generalButtonMinMax <-
     climex:::generalButtonMinMax(
-                 reactive( input$radioEvdStatistics ) )
+                 reactive( input$radioEvdStatistics ),
+                 reactive( input$selectDataType ) )
   ## Displaying a loading gif whenever the app is busy
   callModule( climex:::sidebarLoadingGif, "busy" )
   ## Reactive value listening for file input
