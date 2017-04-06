@@ -160,6 +160,11 @@ climex.server <- function( input, output, session ){
   output$deseasonalizeSelection <-
     climex:::deseasonalizeSelection(
                  reactive( input$selectDataBase ) )
+  ## A radioButton to determine whether to calculate the minimal or
+  ## maximal extremes
+  output$generalButtonMinMax <-
+    climex:::generalButtonMinMax(
+                 reactive( input$radioEvdStatistics ) )
   ## Displaying a loading gif whenever the app is busy
   callModule( climex:::sidebarLoadingGif, "busy" )
   ## Reactive value listening for file input
@@ -403,10 +408,7 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                            choices = c( "GEV", "GP" ),
                            selected = "GEV" ),
               climex:::generalExtremeExtractionInput(),
-              radioButtons( "buttonMinMax", "Type of extreme",
-                           inline = TRUE,
-                           choices = c( "Max", "Min" ),
-                           selected = "Max" ),
+              climex:::generalButtonMinMaxInput(),
               climex:::deseasonalizeSelectionInput(),
               climex:::generalFittingRoutineInput() ) ),
           fluidRow(

@@ -146,6 +146,51 @@ cleaning.interactive <- function( x.xts, checkboxIncompleteYears,
     return( x.xts )
 }
 
+##' @title Whether to determine the minimal or maximal extremes.
+##' @details Not a real shiny module, since I have to use this select
+##' input outside its namespace. Provides the
+##' shinydashboard::menuItemOutput for \code{\link{
+##' generalButtonMinMaxInput}}
+##' 
+##' @importFrom shinydashboard menuItemOutput
+##'
+##' @family preprocessing
+##'
+##' @return menuItemOutput
+##' @author Philipp Mueller 
+generalButtonMinMaxInput <- function(){
+  menuItemOutput( "generalButtonMinMax" )
+}
+##' @title Whether to determine the minimal or maximal extremes.
+##' @details Not a real shiny module, since I have to use this select
+##' input outside its namespace. Only when input$radioEvdStatistics
+##' is set of "GEV" the minimal extremes scan be used.
+##' 
+##' @param radioEvdStatistics Character (radio) input determining whether
+##' the GEV or GP distribution shall be fitted to the data. Choices:
+##' c( "GEV", "GP" ), default = "GEV".
+##' 
+##' @importFrom shinydashboard menuItemOutput
+##'
+##' @family preprocessing
+##'
+##' @return menuItemOutput
+##' @author Philipp Mueller 
+generalButtonMinMax <- function( radioEvdStatistics ){
+  renderMenu({
+    ## The minimal extremes are only available when using the GEV
+    ## distribution
+    if ( radioEvdStatistics() == "GEV" ){
+      radioButtons( "buttonMinMax", "Type of extreme",
+                   inline = TRUE, choices = c( "Max", "Min" ),
+                   selected = "Max" )
+    } else {
+      radioButtons( "buttonMinMax", "Type of extreme",
+                   inline = TRUE, choices = "Max" )
+    }
+  })
+}
+
 ##' @title Removing the seasonality.
 ##' @details Not a real shiny module, since I have to use this select
 ##' input outside its namespace. Provides the
