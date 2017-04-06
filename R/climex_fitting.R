@@ -258,8 +258,8 @@ data.fitting <- function( reactive.extreme, reactive.initials,
     x.data <- reactive.extreme()
     ## Since I'm dealing with daily data right now, the user must have
     ## set the threshold/block length way too low when the number of the
-    ## extremes exceeds 20% of the number of original data points.
-    if ( length( x.data[[ 1 ]] )/ length( x.data[[ 3 ]] ) > .2 ){
+    ## extremes exceeds 5% of the number of original data points.
+    if ( length( x.data[[ 1 ]] )/ length( x.data[[ 3 ]] ) > .05 ){
       shinytoastr::toastr_error( "Too much data. The threshold/block length is set way too low!",
                                 preventDuplicates = TRUE )
       return( NULL )
