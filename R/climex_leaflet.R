@@ -318,7 +318,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
         ## according to the current screen width (CSS3 magic)
         isolate( 
             map.width <-
-              session$clientData[[ 'output_leaflet-placeholder_width' ]]
+              session$clientData[[ 'output_placeholder_width' ]]
         )
         if ( is.null( map.width ) )
           warning( "The placeholder magic in the leaflet tab went wrong!" )
@@ -392,7 +392,8 @@ leafletClimex <- function( input, output, session, reactive.chosen,
     } else {
       model <- "gpd"
     }
-    if ( buttonMinMax() == "Max" || model == "gpd" ){
+    if ( is.null( buttonMinMax() ) || buttonMinMax() == "Max" ||
+         model == "gpd" ){
       x.return.level <- climex::return.level(
                                     x.fit.gev,
                                     return.period = c( 100, 50, 20 ),

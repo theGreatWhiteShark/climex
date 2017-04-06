@@ -159,7 +159,7 @@ cleaning.interactive <- function( x.xts, checkboxIncompleteYears,
 ##' @return menuItemOutput
 ##' @author Philipp Mueller 
 generalButtonMinMaxInput <- function(){
-  menuItemOutput( "generalButtonMinMax" )
+  uiOutput( "generalButtonMinMax" )
 }
 ##' @title Whether to determine the minimal or maximal extremes.
 ##' @details Not a real shiny module, since I have to use this select
@@ -177,15 +177,16 @@ generalButtonMinMaxInput <- function(){
 ##' @return menuItemOutput
 ##' @author Philipp Mueller 
 generalButtonMinMax <- function( radioEvdStatistics ){
-  renderMenu({
+  renderUI({
     ## The minimal extremes are only available when using the GEV
     ## distribution
-    if ( radioEvdStatistics() == "GEV" ){
-      radioButtons( "buttonMinMax", "Type of extreme",
+    if ( is.null( radioEvdStatistics() ) ||
+         radioEvdStatistics() == "GEV" ){
+      radioButtons( inputId = "buttonMinMax", "Type of extreme",
                    inline = TRUE, choices = c( "Max", "Min" ),
                    selected = "Max" )
     } else {
-      radioButtons( "buttonMinMax", "Type of extreme",
+      radioButtons( inputId = "buttonMinMax", "Type of extreme",
                    inline = TRUE, choices = "Max" )
     }
   })

@@ -371,7 +371,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
     x.extreme <- reactive.extreme()[[ 1 ]]
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
     x.fit.evd <- reactive.fitting()
-    if ( buttonMinMax() == "Min" ){
+    if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" ){
       ## To just perform an ordinary plot is not sufficient when working
       ## with minimal extremes. Since the GEV is fitted to the negated
       ## time series the whole density has to be multiplied by -1 instead
@@ -392,7 +392,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       xlab( x.label ) + theme( legend.position = "none" ) +
       theme( axis.title = element_text( size = 17, colour = colour.ts ),
             axis.text = element_text( size = 13, colour = colour.ts ) )
-    if ( buttonMinMax() == "Min" ){
+    if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" ){
       gg.evd <- gg.evd + scale_x_reverse()
     }
     return( gg.evd )
@@ -546,7 +546,8 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
     ## return level myself! The confidence level will be set to
     ## one standard deviation.
     fit.aux <- x.fit.evd
-    if ( buttonMinMax() == "Min" && radioEvdStatistics() == "GEV" ){
+    if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" &&
+         radioEvdStatistics() == "GEV" ){
       ## For calculating the return level of the minimum extremes,
       ## one has to multiply the time series with (-1), fit the
       ## data using standard GEV, calculate the return level using
@@ -602,7 +603,8 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       ## any confidence intervals at all.
       x.confidence.intervals <- NULL
     } else {
-      if ( buttonMinMax() == "Min" && radioEvdStatistics() == "GEV" ){
+      if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" &&
+           radioEvdStatistics() == "GEV" ){
         x.confidence.intervals.aux$return.levels <-
           x.confidence.intervals.aux$return.levels* ( -1 )
       }
@@ -614,7 +616,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
             as.numeric( x.confidence.intervals.aux$errors ) )
     }
     if ( radioEvdStatistics() == "GEV" ){
-      if ( buttonMinMax() == "Min" ){
+      if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" ){
         plot.data <- data.frame(
             x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
             y = -1* sort( as.numeric( x.kept* -1 ) ) )
