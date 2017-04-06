@@ -84,20 +84,11 @@ generalExtremeExtraction <- function( radioEvdStatistics,
       sliderInput( "sliderBlockLength", "Box length in days", 1,
                   365*3, 365 )
     } else {
-      if ( is.null( buttonMinMax() ) ||
-           buttonMinMax() == "Max" ){
-        sliderInput( "sliderThreshold", "Threshold:",
-                    round( min( x.deseasonalized, na.rm = TRUE ) ),
-                    round( max( x.deseasonalized, na.rm = TRUE ) ),
-                    round( 0.8* max( x.deseasonalized, na.rm = TRUE ) ),
-                    step = 0.1 )
-      } else {
-        sliderInput( "sliderThreshold", "Threshold:",
-                    round( min( x.deseasonalized, na.rm = TRUE ) ),
-                    round( max( x.deseasonalized, na.rm = TRUE ) ),
-                    round( 0.8* min( x.deseasonalized, na.rm = TRUE ) ),
-                    step = 0.1 )
-      }
+      sliderInput( "sliderThreshold", "Threshold:",
+                  round( min( x.deseasonalized, na.rm = TRUE ) ),
+                  round( max( x.deseasonalized, na.rm = TRUE ) ),
+                  round( 0.8* max( x.deseasonalized, na.rm = TRUE ) ),
+                  step = 0.1 )
     }
   } )
 }
@@ -495,6 +486,15 @@ data.extremes <- function( reactive.selection, radioEvdStatistics,
          is.null( radioEvdStatistics() ) ){
       ## if the initialization has not finished yet just wait a
       ## little longer
+      return( NULL )
+    }
+    if ( ( radioEvdStatistics() == "GEV" &&
+           is.null( sliderBlockLength() ) ) ||
+         ( radioEvdStatistics() == "GP" &&
+           is.null( sliderThreshold() ) ) ||
+         ( radioEvdStatistics() == "GP" &&
+           buttonMinMax() == "Min" ) ){
+      ## Let's wait till the transition is completed
       return( NULL )
     }
     x.xts <- reactive.selection()
