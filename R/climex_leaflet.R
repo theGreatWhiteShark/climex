@@ -510,6 +510,12 @@ data.chosen <- function( selectDataBase, sliderYears, selectDataType,
     if ( selectDataBase() == "Artificial data" ){
       return( list( stations.temp.max, station.positions ) )
     }
+    if ( sliderYears() < 20 ){
+      ## Display a warning and return for a slider value lesser than 20.
+      shinytoastr::toastr_info( "There are loads of data in the database and we are done extreme value analysis. Please select longer time series!",
+                                  preventDuplicates = TRUE )
+      return( NULL )
+    }
     if ( selectDataBase() == "DWD" ){
       if ( is.null( selectDataType() ) )
         return( NULL )
