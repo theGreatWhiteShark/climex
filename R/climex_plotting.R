@@ -120,6 +120,9 @@ generalTimeSeriesPlotOutput <- function( id ){
 ##' threshold used within the GP fit and the extraction of the extreme
 ##' events. Boundaries: minimal and maximal value of the deseasonalized
 ##' time series (rounded). Default: 0.8* the upper end point.
+##' @param buttonMinMax Character (radio) input determining whether
+##' the GEV/GP distribution shall be fitted to the smallest or biggest
+##' vales. Choices: c( "Max", "Min ), default = "Max".
 ##'
 ##' @family climex-plot
 ##'
@@ -134,7 +137,8 @@ generalTimeSeriesPlotOutput <- function( id ){
 generalTimeSeriesPlot <- function( input, output, session,
                                   reactive.extreme, selectDataBase,
                                   selectDataType, function.get.y.label,
-                                  radioEvdStatistics, sliderThreshold ){
+                                  radioEvdStatistics, sliderThreshold,
+                                  buttonMinMax ){
   observe({
     if ( is.null( reactive.extreme() ) ){
       return( NULL )
@@ -185,8 +189,10 @@ generalTimeSeriesPlot <- function( input, output, session,
   
   ## Pure time series 
   output$plotTimeSeries <- renderDygraph( {
-    if ( is.null( reactive.extreme() ) || is.null( reactive.rows ) )
+    if ( is.null( reactive.extreme() ) || is.null( reactive.rows ) ||
+        is.null( buttonMinMax() ) ){
       return( NULL )
+    }
     x.data <- reactive.extreme( )
     x.extreme <- x.data[[ 3 ]][ which( index( x.data[[ 3 ]] ) %in%
                                        index( x.data[[ 1 ]] ) ) ]
@@ -206,8 +212,10 @@ generalTimeSeriesPlot <- function( input, output, session,
                strokeWidth = 0, pointSize = 2 ) } )
   ## deseasonalized time series
   output$plotDeseasonalized <- renderDygraph( {
-    if ( is.null( reactive.extreme() ) || is.null( reactive.rows ) )
+    if ( is.null( reactive.extreme() ) || is.null( reactive.rows ) ||
+        is.null( buttonMinMax() ) ){
       return( NULL )
+    }
     x.data <- reactive.extreme()
     x.extreme <- x.data[[ 2 ]][ which( index( x.data[[ 2 ]] ) %in%
                                        index( x.data[[ 1 ]] ) ) ]
@@ -229,8 +237,10 @@ generalTimeSeriesPlot <- function( input, output, session,
                strokeWidth = 0, pointSize = 2 ) } )
   ## Using ggplot2 for an interactive excluding of points in x.block.
   output$plotBlocked <- renderPlot( {
-    if ( is.null( reactive.extreme() ) || is.null( reactive.rows ) )
+    if ( is.null( reactive.extreme() ) || is.null( reactive.rows ) ||
+        is.null( buttonMinMax() ) ){
       return( NULL )
+    }
     x.extreme <- reactive.extreme()[[ 1 ]]
     ## In general just checking for the input$sliderThreshold to be not NULL
     ## would be sufficient and there is no real need for
@@ -366,8 +376,10 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
   colour.extremes.light <- grDevices::rgb( 1, 0.9, 0.8 )
   ## Plots the result of the fitted GEV
   output$plotFitEvd <- renderPlot( {
-    if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) )
+    if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) ||
+        is.null( buttonMinMax() ) ){
       return( NULL )
+    }
     x.extreme <- reactive.extreme()[[ 1 ]]
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
     x.fit.evd <- reactive.fitting()
@@ -399,8 +411,10 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
   } )
   ## PP plot for fit statistics
   output$plotFitPP <- renderPlot( {
-    if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) )
+    if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) ||
+        is.null( buttonMinMax() ) ){
       return( NULL )
+    }
     x.extreme <- reactive.extreme()[[ 1 ]]
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
     x.fit.evd <- reactive.fitting()
@@ -453,8 +467,10 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
   ## Quantile-quantile plot for fit statistics with samples
   ## drawn from the fitted distribution
   output$plotFitQQ <- renderPlot( {
-    if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) )
+    if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) ||
+        is.null( buttonMinMax() ) ){
       return( NULL )
+    }
     x.extreme <- reactive.extreme()[[ 1 ]]
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
     x.fit.evd <- reactive.fitting()
@@ -533,8 +549,10 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
     return( gg.qq )        
   } )
   output$plotFitReturnLevel <- renderPlot( {
-    if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) )
+    if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) ||
+        is.null( buttonMinMax() ) ){
       return( NULL )
+    }
     x.data <- reactive.extreme()
     x.extreme <- x.data[[ 1 ]]
     x.kept <- x.extreme[ reactive.rows$keep.rows ]

@@ -489,9 +489,11 @@ data.extremes <- function( reactive.selection, radioEvdStatistics,
       return( NULL )
     }
     if ( ( radioEvdStatistics() == "GEV" &&
+           !is.null( sliderThreshold() ) &&
            is.null( sliderBlockLength() ) ) ||
          ( radioEvdStatistics() == "GP" &&
-           is.null( sliderThreshold() ) ) ||
+           !is.null( sliderBlockLength() ) &&
+           is.null( sliderThreshold ) ) ||
          ( radioEvdStatistics() == "GP" &&
            buttonMinMax() == "Min" ) ){
       ## Let's wait till the transition is completed

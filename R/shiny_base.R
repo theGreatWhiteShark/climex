@@ -257,7 +257,8 @@ climex.server <- function( input, output, session ){
                               reactive( input$selectDataType ),
                               climex:::function.get.y.label,
                               reactive( input$radioEvdStatistics ),
-                              reactive( input$sliderThreshold ) )
+                              reactive( input$sliderThreshold ),
+                              reactive( input$buttonMinMax ) )
   ## Plotting of the fitted distribution and the corresponding PP, QQ
   ## and return level goodness-of-fit plots.
   callModule( climex:::generalFitPlot, "fit", reactive.extreme,
