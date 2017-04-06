@@ -203,10 +203,10 @@ likelihoodAnimation <- function( input, output, session,
       div( p( "actual initials", id = "tableInitialDescription",
              style = "width: 40% !important;" ),
           numericInput( "initialScale", "", width = "30%",
-                       value = round( parameter.default[ 2 ], 4 ),
+                       value = round( parameter.default[ 1 ], 4 ),
                        min = 0 ),
           numericInput( "initialShape", "", width = "30%",
-                       value = round( parameter.default[ 3 ], 4 ) ),
+                       value = round( parameter.default[ 2 ], 4 ) ),
           id = "initialTable" )
     } } )
   cached.table.init <- NULL
@@ -259,12 +259,12 @@ likelihoodAnimation <- function( input, output, session,
       table.init <- data.frame( Location = location,
                                Scale = scale, Shape = shape )
     } else {
-      scale <- c( x.initial[ 2 ],
+      scale <- c( round( x.initial[ 1 ], 4 ),
                  round( stats::runif( (
                    input$sliderNumberInitialPoints - 1 ),
                    input$sliderScaleLim[ 1 ],
                    input$sliderScaleLim[ 2 ] ), 4 ) )
-      shape <- c( x.initial[ 3 ],
+      shape <- c( round( x.initial[ 2 ], 4 ),
                  round( stats::runif( (
                    input$sliderNumberInitialPoints - 1 ),
                    input$sliderShapeLim[ 1 ],
@@ -386,7 +386,9 @@ likelihoodAnimation <- function( input, output, session,
     }
     ## This feature is not ready yet
     if ( radioEvdStatistics() == "GP" ){
-      shinytoastr::toastr_error( "The animation is not implemented for the GP method yet!" )
+      shinytoastr::toastr_error( "The animation is not implemented for the GP method yet!",
+                                position = "top-center", timeOut = 8000,
+                                preventDuplicates = TRUE )
       return( NULL )
     }
     isolate( { x.block <- reactive.extreme()[[ 1 ]]
