@@ -166,6 +166,9 @@ tfoot {
 #deseasonalizeSelection {
   list-style-type: none;
 }
+#buttonMinMax {
+  list-style-type: none;
+}
 
 /* make the popup table transparent as well */
 #tableMap, #tableMap > table > thead > tr {
