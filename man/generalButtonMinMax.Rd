@@ -4,12 +4,18 @@
 \alias{generalButtonMinMax}
 \title{Whether to determine the minimal or maximal extremes.}
 \usage{
-generalButtonMinMax(radioEvdStatistics)
+generalButtonMinMax(radioEvdStatistics, selectDataType)
 }
 \arguments{
 \item{radioEvdStatistics}{Character (radio) input determining whether
 the GEV or GP distribution shall be fitted to the data. Choices:
 c( "GEV", "GP" ), default = "GEV".}
+
+\item{selectDataType}{Character (select) input to determine which set
+measurements should be used for the selected station. In case of the
+default import of the DWD data, there are three options:
+c( "Daily max. temp", "Daily min. temp", "Daily precipitation" ).
+Determined by menuSelectDataType.}
 }
 \value{
 menuItemOutput
