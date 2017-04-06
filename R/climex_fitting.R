@@ -255,7 +255,16 @@ data.fitting <- function( reactive.extreme, reactive.initials,
          is.null( reactive.rows$keep.rows ) ){
       return( NULL )
     }
-    x.extreme <- reactive.extreme()[[ 1 ]]
+    x.data <- reactive.extreme()
+    ## Since I'm dealing with daily data right now, the user must have
+    ## set the threshold/block length way too low when the number of the
+    ## extremes exceeds 20% of the number of original data points.
+    if ( length( x.data[[ 1 ]] )/ length( x.data[[ 3 ]] ) > .2 ){
+      shinytoastr::toastr_error( "Too much data. The threshold/block length is set way too low!",
+                                preventDuplicates = TRUE )
+      return( NULL )
+    }
+    x.extreme <- x.data[[ 1 ]]
     x.initial <- reactive.initials()
     ## Removing all points marked by clicking or brushing in the ggplot2
     ## plot of the extreme events in the bottom right box in the General
