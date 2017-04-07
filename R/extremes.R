@@ -576,15 +576,17 @@ return.level <- function( x, return.period = 100,
         climex:::revd( length( x$x ), parameter.estimate[ 1 ],
                       parameter.estimate[ 2 ],
                       parameter.estimate[ 3 ], model = "gev" ) )
-    } else 
+    } else { 
       samples.list <- lapply( 1 : monte.carlo.sample.size, function( y )
         climex:::revd( length( x$x ), scale = parameter.estimate[ 1 ],
                       shape = parameter.estimate[ 2 ], silent = TRUE,
                       threshold = threshold, model = "gpd" ) )
+    }
     samples.fit <- lapply( samples.list, function( y )
-      stats::optim( likelihood.initials( y, model = model ),
-                   likelihood, x = y, method = "Nelder-Mead",
-                   model = model )$par )
+      suppressWarnings(
+          stats::optim( likelihood.initials( y, model = model ),
+                       likelihood, x = y, method = "Nelder-Mead",
+                       model = model )$par ) )
     errors <- data.frame( a = 0 )
     if ( model == "gev" ){
       r.period <- return.period
