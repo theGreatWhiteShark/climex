@@ -577,7 +577,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
                              error.estimation = "none", model = "gpd",
                              threshold = threshold,
                              total.length = total.length,
-                             original.time.series = x,
+                             thresholded.time.series = x,
                              silent = silent )
                 ) ) ) ) )
       }
