@@ -85,7 +85,7 @@ test_that( "return.level of fit results and GEV/GP parameters as input", {
                tolerance = 1E-6 )
   expect_equal( climex::return.level( x.thresh.fit$par, model = "gpd",
                                      threshold = 29,
-                                     original.time.series = x.thresh ),
+                                     thresholded.time.series = x.thresh ),
                38.1902, tolerance = 1E-4 )
   expect_equal( climex::return.level( x.thresh.fit, model = "gpd" ),
                38.1902, tolerance = 1E-4 )
