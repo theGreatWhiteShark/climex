@@ -29,8 +29,8 @@ test_that( "the sample tried in the next step is actually a .zip file too", {
 })
 
 ## download a sample
-dir.create( "./download-test-funny-name-noboy-would-choose" )
-setwd( "./download-test-funny-name-noboy-would-choose" )
+dir.create( "./download-test-funny-name-nobody-would-choose" )
+setwd( "./download-test-funny-name-nobody-would-choose" )
 utils::download.file( paste0( url.recent,
                              files.recent[[ 1 ]][ files.recent.length ] ),
                      destfile = "test.zip", quiet = TRUE )
@@ -96,5 +96,5 @@ test_that( "the last entry is an actual character string", {
 })
 ## cleanup
 setwd( ".." )
-unlink( "./download-test-funny-name-noboy-would-choose",
+unlink( "./download-test-funny-name-nobody-would-choose",
        recursive = TRUE )
