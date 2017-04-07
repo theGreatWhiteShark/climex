@@ -440,9 +440,10 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
   } else if ( method == "SANN" ){
     ## Since this implementation didn't yielded nice results I switch
     ## to another package
-    aux <- GenSA::GenSA( as.numeric( initial ), optim.function,
-                        lower = c( 0, -Inf ), upper = c( Inf, Inf ),
-                        x = x, model = "gpd", ... )
+    aux <- suppressWarnings(
+        GenSA::GenSA( as.numeric( initial ), optim.function,
+                     lower = c( 0, -Inf ), upper = c( Inf, Inf ),
+                     x = x, model = "gpd", ... ) )
     ## return a NaN when not optimizing instead of the initial parameters
     if ( sum( aux$par %in% initial ) > 1 ){
       ## more than one parameter value remained unchanged
@@ -462,9 +463,10 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
     ## in R. So I could easily modify it and display the progress of
     ## the optimization.
     ## In principle I would recommend using the default optim procedures.
-    aux <- dfoptim::nmk( par = initial, fn = likelihood, x = x,
-                        MODIFIED = TRUE, WARNINGS = FALSE,
-                        model = "gpd", ... )
+    aux <- suppressWarnings(
+        dfoptim::nmk( par = initial, fn = likelihood, x = x,
+                     MODIFIED = TRUE, WARNINGS = FALSE,
+                     model = "gpd", ... ) )
     res.optim <- list( par = aux$par, value = aux$value,
                       counts = aux$feval, convergence = 0,
                       message = NULL, updates = aux$x.updates,
@@ -489,9 +491,10 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
                            hessian = hessian.calculate, method = method,
                            model = "gpd", ... ), silent = TRUE ) )
     } else if ( method == "nmk" ){
-      aux <- dfoptim::nmk( par = res.optim$par, fn = likelihood, x = x,
-                          MODIFIED = TRUE,
-                          WARNINGS = FALSE, model = "gpd", ... )
+      aux <- suppressWarnings(
+          dfoptim::nmk( par = res.optim$par, fn = likelihood, x = x,
+                       MODIFIED = TRUE, WARNINGS = FALSE,
+                       model = "gpd", ... ) )
       res.optim.rerun <- list( par = aux$par, value = aux$value,
                               counts = aux$feval,
                               convergence = 0, message = NULL,
