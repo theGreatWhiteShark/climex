@@ -419,13 +419,18 @@ likelihoodAnimation <- function( input, output, session,
         unlink( image.folder, recursive = TRUE )
       }
       ## if the shiny server is running on localhost it is run in
-      ## the CLIMEX.PATH folder and the folder containing the images
+      ## the climex.path folder and the folder containing the images
       ## is constantly overwritten to prevent the script from
       ## occupying to much space. Due to a setwd in the climex()
       ## wrapper we are already in this folder
       if ( session$clientData$url_hostname == "localhost" ||
            session$clientData$url_hostname == "127.0.0.1"  ){
-        working.folder <- paste0( CLIMEX.PATH, "app/www" )
+        ## The folder to put all the temporary files of the climex
+        ## package in is set in the options(). To modify it,
+        ## overwrite the options( climex.path ) in the .Rprofile
+        ## file in your home directory
+        climex.path <- getOption( "climex.path" )
+        working.folder <- paste0( climex.path, "app/www" )
         ## in case of the local session the variable image.folder
         ## was already set in the wrapper climex::climex()
       } else {
@@ -995,8 +1000,14 @@ animation.wrapper <- function( time.series, starting.points,
     ## able to see the folders using the full path
     files.all <- sub( "/srv/shiny-server/assets/tmp", "/assets/tmp",
                      files.all )
-  } else
-    files.all <- sub( paste0( CLIMEX.PATH, "app/www/" ), "", files.all )
+  } else {
+    ## The folder to put all the temporary files of the climex
+    ## package in is set in the options(). To modify it,
+    ## overwrite the options( climex.path ) in the .Rprofile
+    ## file in your home directory
+    climex.path <- getOption( "climex.path" )
+    files.all <- sub( paste0( climex.path, "app/www/" ), "", files.all )
+  }
   template[ grep( "%imgLocSc", template ) ] <-
     sub( "%imgLocSc", paste0( "'", grep( "loc.sc", files.all,
                                         value = TRUE ),
@@ -1012,7 +1023,7 @@ animation.wrapper <- function( time.series, starting.points,
   template[ grep( "%imgScSh", template ) ] <-
     sub( "%imgScSh", paste0( "'", grep( "sc.sh", files.all,
                                        value = TRUE ), 
-                             "?", runif( 1 ), "'",
+                            "?", runif( 1 ), "'",
                             collapse = ", " ),
         template[ grep( "%imgScSh", template ) ] )
   ## So unfortunately the ggsave function does not accept width

@@ -5,8 +5,8 @@
 ##' a list of elements of this type. This app need the its own css file.
 ##' This function will be exclusively called when the climex app is run
 ##' on localhost. In order to assure its correct behavior the necessary
-##' file/folder structure in the CLIMEX.PATH (global variable which has
-##' to be set beforehand; see vignette for details) will be check and
+##' file/folder structure in the climex.path (R option which has
+##' to be set beforehand; "~/R/climex/" on default) will be check and
 ##' if necesary generated. The input time series is accepted in three
 ##' different formats
 ##' \enumerate{
@@ -29,54 +29,27 @@
 ##' @author Philipp Mueller 
 climex <- function(){
   source.data( pick.default = TRUE, import = "global" )
-  ## if ( missing( x.input ) ){
-  ##   ## since we define this amigo global we also have to set it to
-  ##   ## NULL by hand when not providing it to this function
-  ##   x.input <<- NULL
-  ## }
-  ## if ( !is.null( x.input ) ){
-  ##   ## checking for the right format of the input series
-  ##   if ( any( class( x.input ) == "xts" ) ){
-  ##     ## global because the other functions have to have access to it
-  ##     x.input <<- x.input
-  ##   } else if ( class( x.input ) == "list" ){
-  ##     if ( all( Reduce( c, lapply( x.input, function ( y )
-  ##       any( class( x ) == "xts" ) ) ) ) || (
-  ##         length( x.input ) == 2 &&
-  ##         "list" %in% Reduce( c, lapply( x.input, class ) ) &&
-  ##         "data.frame" %in% Reduce( c, lapply( x.input, class ) ) ) ) {
-  ##       x.input <<- x.input
-  ##     } else {
-  ##       x.input <<- NULL
-  ##       stop( "the input time series has the wrong format!" )
-  ##     }
-  ##   } else {
-  ##     x.input <<- NULL
-  ##     stop( "the input time series has the wrong format!" )
-  ##   }
-  ## }
-  if ( !"CLIMEX.PATH" %in% ls( envir = .GlobalEnv ) )
-    stop( "Please define a global variable named CLIMEX.PATH (storing of the DWD data and the app interna) (see vignette for details)!" )
+  climex.path <- getOption( "climex.path" )
   ## will contain the folder in which the images of the animation
   ## can be found
-  image.folder <<- paste0( CLIMEX.PATH, "app/www/images" )
+  image.folder <<- paste0( climex.path, "app/www/images" )
   ## this is unfortunately necessary since some JavaScript scripts
   ## are written out and some images are plotted which have to be
   ## accessible within the shiny app.
   ## If there are not the appropriate files present to run the shiny
   ## app, the apps as well as the folder structure has to be generated
-  if ( !dir.exists( paste0( CLIMEX.PATH, "app" ) ) )
-    dir.create( paste0( CLIMEX.PATH, "app" ) )
-  if ( !dir.exists( paste0( CLIMEX.PATH, "app/www" ) ) )
-    dir.create( paste0( CLIMEX.PATH, "app/www" ) )
+  if ( !dir.exists( paste0( climex.path, "app" ) ) )
+    dir.create( paste0( climex.path, "app" ) )
+  if ( !dir.exists( paste0( climex.path, "app/www" ) ) )
+    dir.create( paste0( climex.path, "app/www" ) )
   ## In order to display the animation the app needs the jquery
   ## scianimator. Since it is not able to access a system file on
   ## its own the wrapper climex() will copy it to the apps folder
-  if ( !dir.exists( paste0( CLIMEX.PATH,
+  if ( !dir.exists( paste0( climex.path,
                            "app/www/jquery.scianimator.min.js" ) ) ){
     file.copy( paste0( system.file( "climex_app", package = "climex" ),
                       "/js/jquery.scianimator.min.js" ),
-              to = paste0( CLIMEX.PATH,
+              to = paste0( climex.path,
                           "app/www/jquery.scianimator.min.js" ),
               overwrite = TRUE )
   }
@@ -85,23 +58,23 @@ climex <- function(){
   ## any problems http://imgur.com/tos
   file.copy( paste0( system.file( "climex_app", package = "climex" ),
                     "/js/loadingGif.js" ),
-            to = paste0( CLIMEX.PATH, "app/www/loadingGif.js" ),
+            to = paste0( climex.path, "app/www/loadingGif.js" ),
             overwrite = TRUE ) 
   file.copy( paste0( system.file( "climex_app", package = "climex" ),
                     "/res/loading.gif" ),
-            to = paste0( CLIMEX.PATH, "app/www/loading.gif" ) )      
-  writeLines( "shinyUI( climex.ui() )", con = paste0( CLIMEX.PATH,
+            to = paste0( climex.path, "app/www/loading.gif" ) )      
+  writeLines( "shinyUI( climex.ui() )", con = paste0( climex.path,
                                                      "app/ui.R" ) )
   writeLines( "shinyServer( climex.server )",
-             con = paste0( CLIMEX.PATH, "app/server.R" ) )
+             con = paste0( climex.path, "app/server.R" ) )
   ## If one or more time series without any map information are
   ## provided as input arguments, start the app in the "General" tab
   ## right away
   ## if ( !is.null( x.input ) && length( x.input ) != 2 ){ 
   ##   writeLines( "shinyUI( climex.ui( selected = 'General' ) )",
-  ##              con = paste0( CLIMEX.PATH, "app/ui.R" ) )
+  ##              con = paste0( climex.path, "app/ui.R" ) )
   ## }
-  runApp( paste0( CLIMEX.PATH, "app" ) )
+  runApp( paste0( climex.path, "app" ) )
 }
 
 
