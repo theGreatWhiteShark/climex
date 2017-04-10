@@ -197,9 +197,11 @@ leafletClimex <- function( input, output, session, reactive.chosen,
   output$map <- renderLeaflet( {
     leaflet() %>% fitBounds( 5, 46, 13, 55 ) %>%
       ## Unfortunately OpenTopoMaps seems to stop working (5.4.17)
-      ## addTiles( "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-      ##          attribution = '<code> Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a> </code>)' )
-      addTiles()
+      ## Okay, it works again. Whenever it does not, just comment
+      ## the next and uncomment the next next line.
+      addTiles( "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+               attribution = '<code> Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a> </code>)' )
+      ## addTiles()
     } )
   
   ## Depending on the number of minimal years and the selected data
@@ -234,7 +236,9 @@ leafletClimex <- function( input, output, session, reactive.chosen,
     ## just take way to long. Zooming is not helping
     max.number.of.stations <- 30
     data.selected <- reactive.chosen()
-    if ( length( data.selected[[ 1 ]] ) > max.number.of.stations ){
+    if ( session$clientData$url_hostname != "localhost" &&
+         session$clientData$url_hostname != "127.0.0.1" && 
+         length( data.selected[[ 1 ]] ) > max.number.of.stations ){
       shinytoastr::toastr_error( "<center>Please select less stations using the 'Minimal length' slider! <br/>The calculation of the return level takes a lot of time.</center>",
                    title = "<center>Too many stations selected!</center>",
                    position = "top-center",
