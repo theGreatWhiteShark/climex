@@ -1,7 +1,10 @@
-# climex 0.8.2
+# v1.0.0
+Major changes in the climex app. Among others modularization, numerous bug fixes, and disabling of features not implemented yet (e.g. the animation of GP fits). Removal of the global CLIMEX.PATH variable in favor of a option called "climex.path". Fixing of the likelihood and return level calculation of the shape parameter == 0. Introduction of tests. 
+I will note down new features more properly in the future. Up to now I (theGreatWhiteShark) was the only one using this app.
+# v0.8.2
 ## With new version of the climex app
 Now featuring a map to choose the individual stations and to show some summary statistics.
-# climex 0.8.1
+# v0.8.1
 ## updating namespacing
 Previously I wrote the NAMESPACE by hand. But since there was a problem with the exporting of the
 box() function from the *shinydashboard* package breaking my app I decided to redo stuff.
