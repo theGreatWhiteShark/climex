@@ -3,6 +3,9 @@
 ![leaflet map to handle a lot of station data](res/climex_map.png)
 ![control all the different steps involved in the extreme value analysis](res/climex_time-series.png)
 ![verify the results using an animation of the fitting procedure](res/climex_animation.png)
+
+---
+
 ![map-icon](res/glyphicons-2-leaf.png)
 - You can perform extreme value analysis on a large number of
   climate time series from different stations.
@@ -27,17 +30,17 @@
 - Using a set of different starting points, you also check for local minima.
   If all of them result in the same parameter combination, everything is worked.
 
-## Robust and optimized fitting functions for stationary GEV and GP distributions.
+## Robust and sophisticated optimization
 
 When searching for the best candidate to use among all the different extreme value packages in R, I noticed that almost all of them just called the stats::optim function with its default arguments. None of them thought about how to perform the actual fit as good as possible. The only exception (in summer 2016) was the **extRemes** package which uses a more sophisticated heuristics to determine the starting points of the optimization and the *BFGS* algorithm. But the later one does make the fitting numerically unstable.
 
 In addition I found it quite hard to apply the **ismev** or **extRemes** to a large amount of time series in parallel. Both of them tend to throw errors quite frequently. The former one because it fails to invert the calculated hessian to estimate variance of the parameters and the later one due to the instability of the BFGS algorithm.
 
-To overcome these two problems, I decided to write my own version of the GEV/GP fitting with a more sophisticated best practice in the optimization (paper in submission) and an extended error handling.
+To overcome these two problems, I decided to write my own version of the stationary GEV/GP fitting with a more sophisticated best practice in the optimization (paper in submission) and an extended error handling.
 
-## Convenient access to the station data of the German weather service (DWD)
+## Convenient access to station data of the DWD
 
-In order to obtain loads of data to perform my analysis on and to power the web application, I wrote some functions scrapping the web side of the DWD. Even if you don't want to use this package, you can still use either the .Rdata objects containing all these time series (of class *xts*) or the exported .csv version of the individual stations.
+In order to obtain loads of data to perform my analysis on and to power the web application, I wrote some functions scrapping the web side of the German weather service (DWD). Even if you don't want to use this package, you can still use either the .Rdata objects containing all these time series (of class *xts*) or the exported .csv version of the individual stations.
 
 # Installation
 
@@ -61,7 +64,7 @@ Even if you do not intend to use the full capabilities of the package but just p
 
 You are new to **R**? Then check out the [compiled list of resources](https://www.rstudio.com/online-learning/#R) from RStudio or the [official introduction](https://cran.r-project.org/doc/manuals/R-intro.pdf).
 
-An in-depth introduction to the [general usage](vignettes/data_dwd_and_usage.Rmd) of the package and the shiny-based [web application](vignettes/climex_app.Rmd) can be found in the package's vignettes.
+An in-depth introduction to the [general usage](vignettes/data_dwd_and_usage.Rmd) of the package and the shiny-based [web application](vignettes/climex_app.Rmd) can be found in the package's [vignettes](vignettes/).
 
 When using this package in your own analysis, keep in mind that its functions expect your time series to be of class **xts** and not numeric!
 
