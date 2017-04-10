@@ -1,10 +1,9 @@
 # Features
-## An interactive web app
 ![leaflet map to handle a lot of station data](res/climex_map.png)
 ![control all the different steps involved in the extreme value analysis](res/climex_time-series.png)
 ![verify the results using an animation of the fitting procedure](res/climex_animation.png)
 
----
+## An interactive web app
 
 ![map-icon](res/glyphicons-2-leaf.png)
 - You can perform extreme value analysis on a large number of
