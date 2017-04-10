@@ -15,8 +15,8 @@ It possible to provide a time series of type \pkg{xts} to
 a list of elements of this type. This app need the its own css file.
 This function will be exclusively called when the climex app is run
 on localhost. In order to assure its correct behavior the necessary
-file/folder structure in the CLIMEX.PATH (global variable which has
-to be set beforehand; see vignette for details) will be check and
+file/folder structure in the climex.path (R option which has
+to be set beforehand; "~/R/climex/" on default) will be check and
 if necesary generated. The input time series is accepted in three
 different formats
 \enumerate{
