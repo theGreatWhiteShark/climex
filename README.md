@@ -71,7 +71,7 @@ You are new to **R**? Then check out the [compiled list of resources](https://ww
 
 An in-depth introduction to the [general usage](vignettes/data_dwd_and_usage.Rmd) of the package and the shiny-based [web application](vignettes/climex_app.Rmd) can be found in the package's [vignettes](vignettes/).
 
-When using this package in your own analysis, keep in mind that its functions expect your time series to be of class **xts** and not numeric!
+When using this package in your own analysis, keep in mind that its functions expect your time series to be of class [xts](https://cran.r-project.org/web/packages/xts/index.html) and not numeric!
 
 ---
 
