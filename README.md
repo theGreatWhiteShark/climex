@@ -57,7 +57,11 @@ install.packages( "devtools" )
 devtools::install_github( "theGreatWhiteShark/climex" )
 ```
 
-This will install the climex package residing on the **master** branch of this git repository. If you instead want to download and install a different version of the package, use the *href* argument to specify it. E.g. `devtools::install_github( "theGreatWhiteShark/climex", href = "release-1.0.0" )`.
+This will install the climex package residing on the **master** branch of this git repository. If you instead want to download and install a different version of the package, use the *ref* argument to specify it. E.g. 
+
+```
+devtools::install_github( "theGreatWhiteShark/climex", ref = "release-1.0.0" )
+```
 
 Even if you do not intend to use the full capabilities of the package but just parts like the download of the DWD data, be sure to nevertheless install the whole package via the above commands. It just uses 1.4 MB of space and you this way you ensure that all required packages will be installed and all environmental variables will be set.
 
