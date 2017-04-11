@@ -639,3 +639,47 @@ sidebarLoadingGif <- function( input, output, session ){
                     ) ) ) )
   } )
 }
+
+##' @title Linking the imprint of the climex application
+##' @details Whenever the web app is run using shiny-server a link to
+##' an arbitrary HTML page (preferably an imprint) will be rendered.
+##' Else just an empty div will be added.
+##' Rendering of \code{link{sidebarImprint}}.
+##'
+##' @family sidebar
+##'
+##' @importFrom shinydashboard menuItemOutput
+##'
+##' @return menuItemOutput
+##' @author Philipp Mueller 
+sidebarImprintInput <- function(){
+  menuItemOutput( "sidebarImprint" )
+}
+
+##' @title Linking the imprint of the climex application
+##' @details Whenever the web app is run using shiny-server a link to
+##' an arbitrary HTML page (preferably an imprint) will be rendered.
+##' Else just an empty div will be added.
+##'
+##' @param session Namespace session. For details check out
+##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html}} 
+##'
+##' @family sidebar
+##'
+##' @import shiny
+##'
+##' @return div
+##' @author Philipp Mueller 
+sidebarImprint <- function( session ){
+  renderMenu({
+    ## Only display the imprint in the shiny-server and not on
+    ## localhost
+    if ( session$clientData$url_hostname == "localhost" ||
+         session$clientData$url_hostname == "127.0.0.1" ){
+      div( id = "aux-placeholder", style = "height: 0px;" )
+    } else {
+      div( a( "Imprint", href = "/imprint.html",
+             id = "climexImprint" ) )
+    }
+  })
+} 
