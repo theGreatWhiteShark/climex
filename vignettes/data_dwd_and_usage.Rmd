@@ -241,4 +241,4 @@ multiplot( plotlist = list( ttplot( temp.potsdam.declustered ),
           main = "Declustered daily maximum temperature and its GP fit" )
 ```
 
-![potsdam-plot-blocked](../res/vignette-potsdam-fit-gpd.png)
+![potsdam-plot-blocked](../res/vignette-potsdam-plot-fit-gpd.png)
