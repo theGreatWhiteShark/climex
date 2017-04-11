@@ -377,6 +377,22 @@ table {
   line-height: 12px !important;
 }
 
+/* Adjusting the style of the link to the imprint of the map 
+   (only present when running the app using shiny-server) */
+#climexImprint {
+  font-size: 130%;
+  color: #FF8C00;
+  padding: 10px 10px 10px 10px;
+  width: 100%;
+  color: #b8c7ce;
+  text-align: center;
+}
+#sidebarImprint {
+  position: absolute !important;
+  bottom: 0px;
+  width: 100%;
+}
+
 /* Alignment of the boxes in the General tab on big screens */
 #boxPlotFit {
   width: 66.666666% !important;
