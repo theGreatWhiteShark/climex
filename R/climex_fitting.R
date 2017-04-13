@@ -414,13 +414,26 @@ generalFitStatistics <- function( reactive.fitting, reactive.extreme,
     x.data <- reactive.extreme()
     x.extreme <- x.data[[ 1 ]]
     if ( radioEvdStatistics() == "GEV" ){
-      current <- c( x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
-                   x.fit.evd$par[ 3 ],
-                   x.fit.evd$value, climex:::aic( x.fit.evd ),
-                   climex:::bic( x.fit.evd ),
-                   climex::return.level( x.fit.evd$par,
-                                        error.estimation = "none",
-                                        model = "gev" ) )
+      ## Negating the location parameter for the minimal extremes
+      if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" ){
+        current <- c( x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
+                     x.fit.evd$par[ 3 ],
+                     x.fit.evd$value, climex:::aic( x.fit.evd ),
+                     climex:::bic( x.fit.evd ),
+                     climex::return.level( c( x.fit.evd$par[ 1 ]* -1,
+                                             x.fit.evd$par[ 2 ],
+                                             x.fit.evd$par[ 3 ] ),
+                                          error.estimation = "none",
+                                          model = "gev" ) )
+      } else {
+        current <- c( x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
+                     x.fit.evd$par[ 3 ],
+                     x.fit.evd$value, climex:::aic( x.fit.evd ),
+                     climex:::bic( x.fit.evd ),
+                     climex::return.level( x.fit.evd$par,
+                                          error.estimation = "none",
+                                          model = "gev" ) )
+      }
     } else {
       current <- c( 0, x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
                    x.fit.evd$value, climex:::aic( x.fit.evd ),
@@ -435,7 +448,7 @@ generalFitStatistics <- function( reactive.fitting, reactive.extreme,
     ## the minimum
     if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" &&
          radioEvdStatistics() == "GEV" ){
-        current[ 7 ] <- ( -1 )* current[ 7 ]
+      current[ 7 ] <- ( -1 )* current[ 7 ]
     }
     ## History of the statistics
     last.3 <<- last.2
