@@ -184,6 +184,7 @@ fit.interactive <- function( x.kept, x.initial = NULL,
        radioEvdStatistics() == "GEV" ){
     x.fit.evd$x <- x.fit.evd$x* ( -1 )
     x.fit.evd$par[ 1 ] <- x.fit.evd$par[ 1 ]* ( -1 )
+    x.fit.evd$return.level <- x.fit.evd$return.level* ( -1 )
   }
   return( x.fit.evd )
 }
