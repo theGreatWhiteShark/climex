@@ -856,7 +856,7 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
       ## When, for some reason, the time series consists of just a
       ## sequence of one unique number the calculation of the skewness
       ## returns NaN and the function throws an error
-      if ( is.na( x.skewness ) )
+      if ( is.nan( x.skewness ) )
         x.skewness <- 0
       if ( x.skewness >= .7 && x.skewness <= 1.6 ){
         sh.init <- 0.001
@@ -952,10 +952,12 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
       ## the sign of the shape (but unfortunately not the magnitude) can
       ## be estimated
       x.skewness <- moments::skewness( x )
-      if ( x.skewness >= 0 ){
-        sh.init <- .1
-      } else {
+      ## For series of absurdly high values (e.g. big shape and scale
+      ## parameters) the skewness function can return NaN
+      if ( !is.nan( x.skewness ) && x.skewness < 0 ){
         sh.init <- -.1
+      } else {
+        sh.init <- .1
       }
     } else {
       sh.init <- .1
