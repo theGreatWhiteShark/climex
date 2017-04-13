@@ -386,20 +386,19 @@ leafletClimex <- function( input, output, session, reactive.chosen,
       addMarkers( data = selected.station, group = "selected",
                  icon = red.icon, lng = ~longitude,
                  lat = ~latitude )
-    ## calculate the GEV fit and various return levels
-    x.fit.gev <- reactive.fitting()
+    ## calculate the GEV/GP fit and various return levels
+    x.fit.evd <- reactive.fitting()
     x.data <- reactive.extreme()
-    if ( is.null( x.fit.gev ) )
+    if ( is.null( x.fit.evd ) )
       return( NULL )
     if ( radioEvdStatistics() == "GEV" ){
       model <- "gev"
     } else {
       model <- "gpd"
     }
-    if ( is.null( buttonMinMax() ) || buttonMinMax() == "Max" ||
-         model == "gpd" ){
+    if ( is.null( buttonMinMax() ) || buttonMinMax() == "Max" ){
       x.return.level <- climex::return.level(
-                                    x.fit.gev,
+                                    x.fit.evd,
                                     return.period = c( 100, 50, 20 ),
                                     model = model,
                                     error.estimation = "none",
@@ -407,7 +406,9 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                                     total.length = x.data[[ 1 ]] )
     } else
       x.return.level <- ( -1 )* climex:::return.level(
-                                             x.fit.gev,
+                                             c( -1* x.fit.evd$par[ 1 ],
+                                               x.fit.evd$par[ 2 ],
+                                               x.fit.evd$par[ 3 ] ),
                                              return.period = c( 100,
                                                                50, 20 ),
                                              model = model,
