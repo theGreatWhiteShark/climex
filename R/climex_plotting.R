@@ -405,7 +405,8 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       theme( axis.title = element_text( size = 17, colour = colour.ts ),
             axis.text = element_text( size = 13, colour = colour.ts ) )
     if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" ){
-      gg.evd <- gg.evd + scale_x_reverse()
+      gg.evd <- gg.evd + scale_x_reverse(
+                             labels = function( lab ) return( -lab ) )
     }
     return( gg.evd )
   } )
