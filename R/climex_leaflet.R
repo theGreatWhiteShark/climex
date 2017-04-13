@@ -280,20 +280,42 @@ leafletClimex <- function( input, output, session, reactive.chosen,
     }
     ## calculate the return level and append it to the data.selected[[ 2 ]] data.frame
     return.level.vector <- rep( NaN, length( data.blocked ) )
-    for ( rr in 1 : length( data.blocked ) ){
-      return.level.vector[ rr ] <-
-        climex::return.level( fit.interactive( data.blocked[[ rr ]],
-                                              x.initial = NULL,
-                                              radioEvdStatistics,
-                                              selectOptimization,
-                                              buttonMinMax,
-                                              checkboxRerun,
-                                              sliderThreshold ),
-                             return.period = return.level.year,
-                             model = model, error.estimation = "none",
-                             total.length = length(
-                                 data.selected[[ 1 ]][[ rr ]] ),
-                             threshold = threshold )
+    if ( is.null( buttonMinMax() ) || buttonMinMax() == "Max" ){ 
+      for ( rr in 1 : length( data.blocked ) ){
+        return.level.vector[ rr ] <-
+          climex::return.level( fit.interactive( data.blocked[[ rr ]],
+                                                x.initial = NULL,
+                                                radioEvdStatistics,
+                                                selectOptimization,
+                                                buttonMinMax,
+                                                checkboxRerun,
+                                                sliderThreshold ),
+                               return.period = return.level.year,
+                               model = model, error.estimation = "none",
+                               total.length = length(
+                                   data.selected[[ 1 ]][[ rr ]] ),
+                               threshold = threshold )
+      }
+    } else {
+      ## Calculating the return levels for the minimal extremes
+      for ( rr in 1 : length( data.blocked ) ){
+        auxiliary.fit <- fit.interactive( data.blocked[[ rr ]],
+                                         x.initial = NULL,
+                                         radioEvdStatistics,
+                                         selectOptimization,
+                                         buttonMinMax,
+                                         checkboxRerun,
+                                         sliderThreshold )
+        return.level.vector[ rr ] <-
+          -1* climex::return.level( c( -1* auxiliary.fit$par[ 1 ],
+                                  auxiliary.fit$par[ 2 ],
+                                  auxiliary.fit$par[ 3 ] ),
+                               return.period = return.level.year,
+                               model = model, error.estimation = "none",
+                               total.length = length(
+                                   data.selected[[ 1 ]][[ rr ]] ),
+                               threshold = threshold )
+      }
     }
     data.selected[[ 2 ]]$return.level <- return.level.vector
     return( data.selected[[ 2 ]] )
