@@ -856,28 +856,32 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
       ## When, for some reason, the time series consists of just a
       ## sequence of one unique number the calculation of the skewness
       ## returns NaN and the function throws an error
-      if ( is.na( x.skewness ) )
-        x.skewness <- 0
-      if ( x.skewness >= .7 && x.skewness <= 1.6 ){
-        sh.init <- 0.001
-      } else if( x.skewness < .7 ){
-        sh.init <- -.1
-        if ( x.skewness < .1 ){
-          sh.init <- -.2775
-          if ( x.skewness < -.2 ){
-            sh.init <- -.4
-            if ( x.skewness < -1 )
-              ## Some arbitrary high value. Didn't checked it.
-              sh.init <- -1.5 
-          }
-        }
-      } else if ( x.skewness > 1.4 ){
-        sh.init <- .2
-        if ( x.skewness > 3.4 )
-          sh.init <- 1.5 # Some arbitrary high value. Didn't checked it.
+      if ( is.nan( x.skewness ) ){
+        ## If you can not calculate the skewness, set the shape parameter
+        ## to .001
+        x.skewness <- .8
       }
-    } else
-      sh.init <- 0.00001
+      if ( x.skewness > 4 ){
+        sh.init <- .75
+      } else if ( x.skewness > 2.5 ){
+        sh.init <- .6
+      } else if ( x.skewness > 1.6 ){
+        sh.init <- .35
+      } else if ( x.skewness > .7 ){
+        sh.init <- .001
+      } else if( x.skewness > .1 ){
+        sh.init <- -.1
+      } else if ( x.skewness > -.2 ){
+        sh.init <- -.2775
+      } else  if ( x.skewness > -1 ){
+        sh.init <- -.4
+      } else {
+        sh.init <- -.75
+      }
+    } else {
+      ## No modification with respect to the ismev package
+      sh.init <- .1
+    }
     if ( type == "mom" )
       return( c( loc.init, sc.init, sh.init ) )    
     ## Approximationg using the Lmoments method of Hosking, Wallis
@@ -899,19 +903,16 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
     }
     if ( type == "lmom" )
       return( initial.lmom )
-
-    initial.gum1 <- c( loc.init, sc.init, sh.init )   
-    initial.gum2 <- c( loc.init, sc.init, sh.init +
-                                          stats::rnorm( 1, sd = 0.5 ) ) 
-    initial.gum3 <- c( loc.init, sc.init, sh.init +
-                                          stats::rnorm( 1, sd = 0.5 ) ) 
-    initial.default1 <- c( loc.init, sc.init, 0.1 )
-    initial.default2 <- c( loc.init, sc.init, 1E-8 )
     ## Instead of taking just a default shape parameter, pick a bunch
     ## of them and query for the one resulting in the lowest negative
-    ## log-likelihood
-    sh.init.vector <- c( sh.init + stats::rnorm( 100, sd = .5 ), .1,
-                        1e-8, sh.init )
+    ## log-likelihood. In addition to the range of different shape
+    ## parameter the determined estimate from before as well as the
+    ## heuristics of the extRemes (1e-8) and ismev (.1) package are
+    ## evaluated as well.
+    number.init.parameters <- 30
+    sh.init.vector <- c( seq( sh.init - .3, sh.init + .3, ,
+                             number.init.parameters - 3 ),
+                        sh.init, 1e-8, .1 )
     parameter.vector <- rbind(
         data.frame( location = rep( loc.init, length( sh.init.vector ) ),
                    scale = rep( sc.init, length( sh.init.vector ) ),
@@ -952,10 +953,27 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
       ## the sign of the shape (but unfortunately not the magnitude) can
       ## be estimated
       x.skewness <- moments::skewness( x )
-      if ( x.skewness >= 0 ){
-        sh.init <- .1
+      ## For series of absurdly high values (e.g. big shape and scale
+      ## parameters) the skewness function can return NaN
+      if ( !is.nan( x.skewness ) && x.skewness < 0 ){
+        x.skewness <- 1.5
+      }
+      if ( x.skewness > 4.5 ){
+        sh.init <- .75
+      } else if ( x.skewness > 2.5 ){
+        sh.init <- .5
+      } else if ( x.skewness > 1.8 ){
+        sh.init <- .25
+      } else if ( x.skewness > 1.5 ){
+        sh.init <- .05
+      } else if ( x.skewness > 1.2 ){
+        sh.init <- -.05
+      } else if ( x.skewness > .8 ){
+        sh.init <- -.25
+      } else if ( x.skewness > .2 ){
+        sh.init <- -.5
       } else {
-        sh.init <- -.1
+        sh.init <- -.75
       }
     } else {
       sh.init <- .1
@@ -965,9 +983,14 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
 
     ## Instead of taking just a default shape parameter, pick a bunch
     ## of them and query for the one resulting in the lowest negative
-    ## log-likelihood
-    sh.init.vector <- c( sh.init + stats::rnorm( 100, sd = .5 ), .1,
-                        1e-8, sh.init )
+    ## log-likelihood. In addition to the range of different shape
+    ## parameter the determined estimate from before as well as the
+    ## heuristics of the extRemes (1e-8) and ismev (.1) package are
+    ## evaluated as well.
+    number.init.parameters <- 30
+    sh.init.vector <- c( seq( sh.init - .3, sh.init + .3, ,
+                             number.init.parameters - 3 ),
+                        sh.init, 1e-8, .1 )
     parameter.vector <- rbind(
         data.frame( scale = rep( sc.init, length( sh.init.vector ) ),
                    shape = sh.init.vector ),
@@ -977,7 +1000,6 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
                             climex::likelihood( c( ss[ 1 ], ss[ 2 ] ),
                                                x.in = x,
                                                model = "gpd" ) ) )
-
   }
   if ( !all( is.nan( as.numeric( initials.likelihood ) ) ) ){
     ## Returning the set of initial parameters which is yielding the

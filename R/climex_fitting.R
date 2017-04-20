@@ -184,6 +184,7 @@ fit.interactive <- function( x.kept, x.initial = NULL,
        radioEvdStatistics() == "GEV" ){
     x.fit.evd$x <- x.fit.evd$x* ( -1 )
     x.fit.evd$par[ 1 ] <- x.fit.evd$par[ 1 ]* ( -1 )
+    x.fit.evd$return.level <- x.fit.evd$return.level* ( -1 )
   }
   return( x.fit.evd )
 }
@@ -259,7 +260,8 @@ data.fitting <- function( reactive.extreme, reactive.initials,
     ## Since I'm dealing with daily data right now, the user must have
     ## set the threshold/block length way too low when the number of the
     ## extremes exceeds 5% of the number of original data points.
-    if ( length( x.data[[ 1 ]] )/ length( x.data[[ 3 ]] ) > .05 ){
+    if ( length( x.data[[ 1 ]] )/ length( x.data[[ 3 ]] ) > .05 &&
+        selectDataBase() != "Artificial data" ){
       shinytoastr::toastr_error( "Too much data. The threshold/block length is set way too low!",
                                 preventDuplicates = TRUE )
       return( NULL )
@@ -412,13 +414,26 @@ generalFitStatistics <- function( reactive.fitting, reactive.extreme,
     x.data <- reactive.extreme()
     x.extreme <- x.data[[ 1 ]]
     if ( radioEvdStatistics() == "GEV" ){
-      current <- c( x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
-                   x.fit.evd$par[ 3 ],
-                   x.fit.evd$value, climex:::aic( x.fit.evd ),
-                   climex:::bic( x.fit.evd ),
-                   climex::return.level( x.fit.evd$par,
-                                        error.estimation = "none",
-                                        model = "gev" ) )
+      ## Negating the location parameter for the minimal extremes
+      if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" ){
+        current <- c( x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
+                     x.fit.evd$par[ 3 ],
+                     x.fit.evd$value, climex:::aic( x.fit.evd ),
+                     climex:::bic( x.fit.evd ),
+                     climex::return.level( c( x.fit.evd$par[ 1 ]* -1,
+                                             x.fit.evd$par[ 2 ],
+                                             x.fit.evd$par[ 3 ] ),
+                                          error.estimation = "none",
+                                          model = "gev" ) )
+      } else {
+        current <- c( x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
+                     x.fit.evd$par[ 3 ],
+                     x.fit.evd$value, climex:::aic( x.fit.evd ),
+                     climex:::bic( x.fit.evd ),
+                     climex::return.level( x.fit.evd$par,
+                                          error.estimation = "none",
+                                          model = "gev" ) )
+      }
     } else {
       current <- c( 0, x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
                    x.fit.evd$value, climex:::aic( x.fit.evd ),
@@ -433,7 +448,7 @@ generalFitStatistics <- function( reactive.fitting, reactive.extreme,
     ## the minimum
     if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" &&
          radioEvdStatistics() == "GEV" ){
-        current[ 7 ] <- ( -1 )* current[ 7 ]
+      current[ 7 ] <- ( -1 )* current[ 7 ]
     }
     ## History of the statistics
     last.3 <<- last.2

@@ -1,5 +1,5 @@
 .gitignore
 ^.git$
-NEWS.md
-TODO.md
+^NEWS.md$
 ^res$
+^README.md$

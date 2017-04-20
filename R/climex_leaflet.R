@@ -197,9 +197,11 @@ leafletClimex <- function( input, output, session, reactive.chosen,
   output$map <- renderLeaflet( {
     leaflet() %>% fitBounds( 5, 46, 13, 55 ) %>%
       ## Unfortunately OpenTopoMaps seems to stop working (5.4.17)
-      ## addTiles( "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-      ##          attribution = '<code> Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a> </code>)' )
-      addTiles()
+      ## Okay, it works again. Whenever it does not, just comment
+      ## the next and uncomment the next next line.
+      addTiles( "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+               attribution = '<code> Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a> </code>)' )
+      ## addTiles()
     } )
   
   ## Depending on the number of minimal years and the selected data
@@ -234,7 +236,9 @@ leafletClimex <- function( input, output, session, reactive.chosen,
     ## just take way to long. Zooming is not helping
     max.number.of.stations <- 30
     data.selected <- reactive.chosen()
-    if ( length( data.selected[[ 1 ]] ) > max.number.of.stations ){
+    if ( session$clientData$url_hostname != "localhost" &&
+         session$clientData$url_hostname != "127.0.0.1" && 
+         length( data.selected[[ 1 ]] ) > max.number.of.stations ){
       shinytoastr::toastr_error( "<center>Please select less stations using the 'Minimal length' slider! <br/>The calculation of the return level takes a lot of time.</center>",
                    title = "<center>Too many stations selected!</center>",
                    position = "top-center",
@@ -276,20 +280,42 @@ leafletClimex <- function( input, output, session, reactive.chosen,
     }
     ## calculate the return level and append it to the data.selected[[ 2 ]] data.frame
     return.level.vector <- rep( NaN, length( data.blocked ) )
-    for ( rr in 1 : length( data.blocked ) ){
-      return.level.vector[ rr ] <-
-        climex::return.level( fit.interactive( data.blocked[[ rr ]],
-                                              x.initial = NULL,
-                                              radioEvdStatistics,
-                                              selectOptimization,
-                                              buttonMinMax,
-                                              checkboxRerun,
-                                              sliderThreshold ),
-                             return.period = return.level.year,
-                             model = model, error.estimation = "none",
-                             total.length = length(
-                                 data.selected[[ 1 ]][[ rr ]] ),
-                             threshold = threshold )
+    if ( is.null( buttonMinMax() ) || buttonMinMax() == "Max" ){ 
+      for ( rr in 1 : length( data.blocked ) ){
+        return.level.vector[ rr ] <-
+          climex::return.level( fit.interactive( data.blocked[[ rr ]],
+                                                x.initial = NULL,
+                                                radioEvdStatistics,
+                                                selectOptimization,
+                                                buttonMinMax,
+                                                checkboxRerun,
+                                                sliderThreshold ),
+                               return.period = return.level.year,
+                               model = model, error.estimation = "none",
+                               total.length = length(
+                                   data.selected[[ 1 ]][[ rr ]] ),
+                               threshold = threshold )
+      }
+    } else {
+      ## Calculating the return levels for the minimal extremes
+      for ( rr in 1 : length( data.blocked ) ){
+        auxiliary.fit <- fit.interactive( data.blocked[[ rr ]],
+                                         x.initial = NULL,
+                                         radioEvdStatistics,
+                                         selectOptimization,
+                                         buttonMinMax,
+                                         checkboxRerun,
+                                         sliderThreshold )
+        return.level.vector[ rr ] <-
+          -1* climex::return.level( c( -1* auxiliary.fit$par[ 1 ],
+                                  auxiliary.fit$par[ 2 ],
+                                  auxiliary.fit$par[ 3 ] ),
+                               return.period = return.level.year,
+                               model = model, error.estimation = "none",
+                               total.length = length(
+                                   data.selected[[ 1 ]][[ rr ]] ),
+                               threshold = threshold )
+      }
     }
     data.selected[[ 2 ]]$return.level <- return.level.vector
     return( data.selected[[ 2 ]] )
@@ -382,20 +408,19 @@ leafletClimex <- function( input, output, session, reactive.chosen,
       addMarkers( data = selected.station, group = "selected",
                  icon = red.icon, lng = ~longitude,
                  lat = ~latitude )
-    ## calculate the GEV fit and various return levels
-    x.fit.gev <- reactive.fitting()
+    ## calculate the GEV/GP fit and various return levels
+    x.fit.evd <- reactive.fitting()
     x.data <- reactive.extreme()
-    if ( is.null( x.fit.gev ) )
+    if ( is.null( x.fit.evd ) )
       return( NULL )
     if ( radioEvdStatistics() == "GEV" ){
       model <- "gev"
     } else {
       model <- "gpd"
     }
-    if ( is.null( buttonMinMax() ) || buttonMinMax() == "Max" ||
-         model == "gpd" ){
+    if ( is.null( buttonMinMax() ) || buttonMinMax() == "Max" ){
       x.return.level <- climex::return.level(
-                                    x.fit.gev,
+                                    x.fit.evd,
                                     return.period = c( 100, 50, 20 ),
                                     model = model,
                                     error.estimation = "none",
@@ -403,7 +428,9 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                                     total.length = x.data[[ 1 ]] )
     } else
       x.return.level <- ( -1 )* climex:::return.level(
-                                             x.fit.gev,
+                                             c( -1* x.fit.evd$par[ 1 ],
+                                               x.fit.evd$par[ 2 ],
+                                               x.fit.evd$par[ 3 ] ),
                                              return.period = c( 100,
                                                                50, 20 ),
                                              model = model,

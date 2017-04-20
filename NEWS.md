@@ -1,7 +1,12 @@
-# climex 0.8.2
+# v1.0.1
+Improved heuristics for the estimation of the initial GEV and GP parameters used during the optimization. The likelihood.initials function now uses a more fine grained precision tree for deciding about the initial value of the shape parameter for both the GEV and GP distribution. Beforehand this function also featured a stochastic component drawing random shape parameter around the estimate and searching for the best possible. This was replaced by a sequence function to make the fit deterministic and hence reproducible. In addition a number of fixes and improvement in the documentation and the vignettes were performed.
+# v1.0.0
+Major changes in the climex app. Among others modularization, numerous bug fixes, and disabling of features not implemented yet (e.g. the animation of GP fits). Removal of the global CLIMEX.PATH variable in favor of a option called "climex.path". Fixing of the likelihood and return level calculation of the shape parameter == 0. Introduction of tests. 
+I will note down new features more properly in the future. Up to now I (theGreatWhiteShark) was the only one using this app.
+# v0.8.2
 ## With new version of the climex app
 Now featuring a map to choose the individual stations and to show some summary statistics.
-# climex 0.8.1
+# v0.8.1
 ## updating namespacing
 Previously I wrote the NAMESPACE by hand. But since there was a problem with the exporting of the
 box() function from the *shinydashboard* package breaking my app I decided to redo stuff.

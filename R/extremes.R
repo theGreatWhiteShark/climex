@@ -654,7 +654,7 @@ rlevd <- function ( period, location = NULL, scale = NULL, shape = NULL, thresho
     stop( "rlevd: invalid period argument.  Must be greater than 1." )
   
   if ( model == "gev" ) {   
-    res <- climex:::qevd( p = 1/period, location = location, scale = scale,
+    res <- climex:::qevd( p = ( 1 - 1/period ), location = location, scale = scale,
                     shape = shape, model = "gev", lower.tail = TRUE,
                     silent = silent )
   } else {
@@ -718,7 +718,7 @@ qevd <- function ( p, location = NULL, scale = NULL, shape = NULL,
   if ( !lower.tail )
     p <- 1 - p
   if ( model == "gev" ) {
-    p.rescaled <- -log( 1 - p )
+    p.rescaled <- -log( p )
     if ( shape == 0 ){
       ## Only for a perfect 0
       q <- location - scale* log( p.rescaled )

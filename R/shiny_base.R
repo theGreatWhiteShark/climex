@@ -141,6 +141,9 @@ climex.server <- function( input, output, session ){
                  reactive( input$selectDataType ) )
   ## Displaying a loading gif whenever the app is busy
   callModule( climex:::sidebarLoadingGif, "busy" )
+  ## Display a link to the app's imprint whenever it is run using
+  ## shiny-server
+  output$sidebarImprint <- climex:::sidebarImprint( session )
   ## Reactive value listening for file input
   reactive.loading <- climex:::file.loading(
                                    reactive( input$fileInputSelection ) )
@@ -349,7 +352,8 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
         climex:::sidebarLoadingInput(),
         climex:::sidebarSeriesLengthInput(),
         climex:::sidebarCleaningInput(),
-        climex:::sidebarLoadingGifOutput( "busy" ) ) ),
+        climex:::sidebarLoadingGifOutput( "busy" ),
+        climex:::sidebarImprintInput() ) ),
     body = dashboardBody(
       ## shinyjs::useShinyjs(),
       includeCSS( paste0( system.file( "climex_app", package = "climex" ),

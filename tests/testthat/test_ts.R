@@ -9,18 +9,14 @@ x.thresh.fit <- climex::fit.gpd( x.thresh,
                                 total.length = length( temp.potsdam ) )
 
 test_that( "aic accepts the right input and produces the right output", {
-  expect_equal( climex:::aic( x.block.fit ), 447.2131,
-               tolerance = 1e-4 )
-  expect_equal( climex:::aic( x.thresh.fit ), 1454.037,
-               tolerance = 1e-4 )
+  expect_equal( climex:::aic( x.block.fit ), 447.2131 - 3.67e-05 )
+  expect_equal( climex:::aic( x.thresh.fit ), 1454.037 - 0.000463 )
   expect_error( climex:::aic( x.block ) )
   expect_error( climex:::aic( as.numeric( x.block ) ) )
 })
 test_that( "bic accepts the right input and produces the right output", {
-  expect_equal( climex:::bic( x.block.fit ), 455.6739,
-               tolerance = 1e-4 )
-  expect_equal( climex:::bic( x.thresh.fit ), 1461.792,
-               tolerance = 1e-4 )
+  expect_equal( climex:::bic( x.block.fit ), 455.6739 + 7.95e-06 )
+  expect_equal( climex:::bic( x.thresh.fit ), 1461.792 )
   expect_error( climex:::bic( x.block ) )
   expect_error( climex:::bic( as.numeric( x.block ) ) )
 })
@@ -43,15 +39,14 @@ test_that( "remove.incomplete.years get's rid of -999 in time series (like in th
 })
 
 test_that( "mode is working", {
-  expect_equal( climex:::mode( temp.potsdam ), 19.7559,
-               tolerance = 1e-4 )
+  expect_equal( climex:::mode( temp.potsdam ), 19.7559 - 2.08e-06 )
 })
 
 test_that( "anomalies get its job done", {
   expect_true( is.xts( climex::anomalies( temp.potsdam ) ) )
   expect_error( climex::anomalies( as.numeric( temp.potsdam ) ) )
-  expect_equal( max( climex::anomalies( temp.potsdam ) ), 16.32177,
-               tolerance = 1e-4 )
-  expect_equal( min( climex::anomalies( temp.potsdam ) ), -19.12258,
-               tolerance = 1e-4 )
+  expect_equal( max( climex::anomalies( temp.potsdam ) ),
+               16.32177 + 4.19e-06 )
+  expect_equal( min( climex::anomalies( temp.potsdam ) ),
+               -19.12258 - 6.45e-07 )
 })

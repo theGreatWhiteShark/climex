@@ -442,11 +442,19 @@ download.data.dwd <- function( save.downloads = TRUE,
       latitude = station.positions.aux[ , 2 ],
       altitude = station.positions.aux[ , 3 ],
       name = station.names )
+  ## Ordering the stations according to their names in alphabetical
+  ## order
+  station.positions <- station.positions[ order( station.names ), ]
   ## assigning the names of the stations.
   ## this new assignment take in the order of 25ms in total
   for ( ss in paste0( "stations.", data.type ) ){
+    ## Get the variable of the string ss, do a operation on it and
+    ## reassign it to the same name
     tmp <- get( ss )
     names( tmp ) <- station.names
+    ## Ordering the stations according to their names in alphabetical
+    ## order
+    tmp <- tmp[ order( station.names ) ]
     assign( ss, tmp )
   }
   ## writing the data to dat files
