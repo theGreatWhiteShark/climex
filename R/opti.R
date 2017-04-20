@@ -878,6 +878,9 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
       } else {
         sh.init <- -.75
       }
+    } else {
+      ## No modification with respect to the ismev package
+      sh.init <- .1
     }
     if ( type == "mom" )
       return( c( loc.init, sc.init, sh.init ) )    
