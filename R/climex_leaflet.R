@@ -47,9 +47,15 @@ leafletClimexUI <- function( id ){
       ## card licensing
       absolutePanel( bottom = 32, right = 0,
                     id = ns( "markerBox" ),
+                    ## In order to display the return levels on a
+                    ## logarithmic scale, the exponent will be
+                    ## chosen via the slider and its transformation
+                    ## to 10^x is done in the script and inside a
+                    ## JavaScript function 
                     sliderInput( ns( "sliderReturnLevel" ),
                                 "Return level [years]",
-                                30, 1000, value = 100 ),
+                                1, 3, step = .1, round = 0,
+                                value = 2 ),
                     actionButton( ns( "buttonDrawMarkers" ),
                                  "Calculate return levels" ) ) )
 }
@@ -133,7 +139,7 @@ leafletClimexUI <- function( id ){
 ##' of the first run again to escape local minima.
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -190,8 +196,13 @@ leafletClimex <- function( input, output, session, reactive.chosen,
   ## added on top of it.
   output$map <- renderLeaflet( {
     leaflet() %>% fitBounds( 5, 46, 13, 55 ) %>%
+      ## Unfortunately OpenTopoMaps seems to stop working (5.4.17)
+      ## Okay, it works again. Whenever it does not, just comment
+      ## the next and uncomment the next next line.
       addTiles( "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-               attribution = '<code> Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a> </code>)' ) } )
+               attribution = '<code> Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a> </code>)' )
+      ## addTiles()
+    } )
   
   ## Depending on the number of minimal years and the selected data
   ## source markers will be placed at the geo-coordinates of the
@@ -220,10 +231,22 @@ leafletClimex <- function( input, output, session, reactive.chosen,
   ## This will be calculated on demand (as soon as the user clicks
   ## the corresponding form)
   calculate.chosen.return.levels <- reactive( {
+    ## Do not calculate the return level for more than
+    ## max.number.of.stations stations. Else the calculation would
+    ## just take way to long. Zooming is not helping
+    max.number.of.stations <- 30
     data.selected <- reactive.chosen()
-    print( "return" )
-    ## selected return level
-    return.level.year <- input$sliderReturnLevel 
+    if ( session$clientData$url_hostname != "localhost" &&
+         session$clientData$url_hostname != "127.0.0.1" && 
+         length( data.selected[[ 1 ]] ) > max.number.of.stations ){
+      shinytoastr::toastr_error( "<center>Please select less stations using the 'Minimal length' slider! <br/>The calculation of the return level takes a lot of time.</center>",
+                   title = "<center>Too many stations selected!</center>",
+                   position = "top-center",
+                   timeOut = 8000 )
+      return( NULL )
+    }
+    ## selected return level and transform it to years
+    return.level.year <- 10^input$sliderReturnLevel
     ## wait for initialization
     if ( is.null( input$sliderReturnLevel ) ||
          is.null( data.selected ) )
@@ -243,8 +266,9 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                                   selectDeseasonalize, selectDataBase )
     ## block them
     data.blocked <- lapply( data.deseasonalized, extremes.interactive,
-                           radioEvdStatistics, sliderBlockLength,
-                           sliderThreshold, checkboxDecluster )
+                           buttonMinMax, radioEvdStatistics,
+                           sliderBlockLength, sliderThreshold,
+                           checkboxDecluster )
     ## choose whether to calculate the GEV or GP parameters
     if ( is.null( radioEvdStatistics() ) ||
          radioEvdStatistics() == "GEV" ){
@@ -256,21 +280,43 @@ leafletClimex <- function( input, output, session, reactive.chosen,
     }
     ## calculate the return level and append it to the data.selected[[ 2 ]] data.frame
     return.level.vector <- rep( NaN, length( data.blocked ) )
-    for ( rr in 1 : length( data.blocked ) ){
-      return.level.vector[ rr ] <-
-        climex::return.level( fit.interactive( data.blocked[[ rr ]],
-                                              x.initial = NULL,
-                                              radioEvdStatistics,
-                                              selectOptimization,
-                                              buttonMinMax,
-                                              checkboxRerun,
-                                              sliderThreshold ),
-                             return.period = return.level.year,
-                             model = model, error.estimation = "none",
-                             total.length = length(
-                                 data.selected[[ 1 ]][[ rr ]] ),
-                             threshold = threshold )
+    if ( is.null( buttonMinMax() ) || buttonMinMax() == "Max" ){ 
+      for ( rr in 1 : length( data.blocked ) ){
+        return.level.vector[ rr ] <-
+          climex::return.level( fit.interactive( data.blocked[[ rr ]],
+                                                x.initial = NULL,
+                                                radioEvdStatistics,
+                                                selectOptimization,
+                                                buttonMinMax,
+                                                checkboxRerun,
+                                                sliderThreshold ),
+                               return.period = return.level.year,
+                               model = model, error.estimation = "none",
+                               total.length = length(
+                                   data.selected[[ 1 ]][[ rr ]] ),
+                               threshold = threshold )
       }
+    } else {
+      ## Calculating the return levels for the minimal extremes
+      for ( rr in 1 : length( data.blocked ) ){
+        auxiliary.fit <- fit.interactive( data.blocked[[ rr ]],
+                                         x.initial = NULL,
+                                         radioEvdStatistics,
+                                         selectOptimization,
+                                         buttonMinMax,
+                                         checkboxRerun,
+                                         sliderThreshold )
+        return.level.vector[ rr ] <-
+          -1* climex::return.level( c( -1* auxiliary.fit$par[ 1 ],
+                                  auxiliary.fit$par[ 2 ],
+                                  auxiliary.fit$par[ 3 ] ),
+                               return.period = return.level.year,
+                               model = model, error.estimation = "none",
+                               total.length = length(
+                                   data.selected[[ 1 ]][[ rr ]] ),
+                               threshold = threshold )
+      }
+    }
     data.selected[[ 2 ]]$return.level <- return.level.vector
     return( data.selected[[ 2 ]] )
   } ) 
@@ -349,6 +395,11 @@ leafletClimex <- function( input, output, session, reactive.chosen,
          is.null( input$map_marker_click ) && # dirty flag on changing
          is.null( selectDataSource() ) ) ) # dirty flag on changing
       return( NULL )
+    ## If the artificial data was chosen as source, do not display
+    ## anything.
+    if ( selectDataBase() == "Artificial data" ){
+      return( NULL )
+    }
     selected.station <- data.selected[[ 2 ]][
         which( data.selected[[ 2 ]]$name == station.name ), ]
     leafletProxy( session$ns( "map" ) ) %>%
@@ -357,19 +408,19 @@ leafletClimex <- function( input, output, session, reactive.chosen,
       addMarkers( data = selected.station, group = "selected",
                  icon = red.icon, lng = ~longitude,
                  lat = ~latitude )
-    ## calculate the GEV fit and various return levels
-    x.fit.gev <- reactive.fitting()
+    ## calculate the GEV/GP fit and various return levels
+    x.fit.evd <- reactive.fitting()
     x.data <- reactive.extreme()
-    if ( is.null( x.fit.gev ) )
+    if ( is.null( x.fit.evd ) )
       return( NULL )
     if ( radioEvdStatistics() == "GEV" ){
       model <- "gev"
     } else {
       model <- "gpd"
     }
-    if ( buttonMinMax() == "Max" || model == "gpd" ){
+    if ( is.null( buttonMinMax() ) || buttonMinMax() == "Max" ){
       x.return.level <- climex::return.level(
-                                    x.fit.gev,
+                                    x.fit.evd,
                                     return.period = c( 100, 50, 20 ),
                                     model = model,
                                     error.estimation = "none",
@@ -377,7 +428,9 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                                     total.length = x.data[[ 1 ]] )
     } else
       x.return.level <- ( -1 )* climex:::return.level(
-                                             x.fit.gev,
+                                             c( -1* x.fit.evd$par[ 1 ],
+                                               x.fit.evd$par[ 2 ],
+                                               x.fit.evd$par[ 3 ] ),
                                              return.period = c( 100,
                                                                50, 20 ),
                                              model = model,
@@ -446,7 +499,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
 ##'
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -479,8 +532,17 @@ data.chosen <- function( selectDataBase, sliderYears, selectDataType,
     if ( is.null( selectDataBase() ) ||
          is.null( sliderYears() ) )
       return( NULL )
-    ## the generation of the artificial data is handled in the
+    ## The generation of the artificial data is handled in the
     ## data.selection reactive function
+    if ( selectDataBase() == "Artificial data" ){
+      return( list( stations.temp.max, station.positions ) )
+    }
+    if ( sliderYears() < 20 ){
+      ## Display a warning and return for a slider value lesser than 20.
+      shinytoastr::toastr_info( "There are loads of data in the database and we are done extreme value analysis. Please select longer time series!",
+                                  preventDuplicates = TRUE )
+      return( NULL )
+    }
     if ( selectDataBase() == "DWD" ){
       if ( is.null( selectDataType() ) )
         return( NULL )
@@ -490,9 +552,9 @@ data.chosen <- function( selectDataBase, sliderYears, selectDataType,
                                "Daily precipitation" = stations.prec )
       ## to also cope the possibility of importing such position data
       positions.all <- station.positions
-    } else if ( selectDataBase() == "input" ){
+    } else if ( selectDataBase() == "Input" ){
       x.input <- reactive.loading()
-      if ( is.null( aux ) ){
+      if ( is.null( x.input ) ){
         return( NULL )
       }
       if ( any( class( x.input ) == "xts" ) ){

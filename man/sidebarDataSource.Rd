@@ -10,7 +10,7 @@ sidebarDataSource(selectDataBase, radioEvdStatistics, reactive.chosen,
 \arguments{
 \item{selectDataBase}{Character (select) input to determine the data
 source. In the default installation there are three options:
-c( "input", "DWD", "artificial data" ). The first one uses the data
+c( "Input", "DWD", "Artificial data" ). The first one uses the data
 provided as an argument to the call of the \code{\link{climex}}
 function. The second one uses the database of the German weather
 service (see \code{link{download.data.dwd}}). The third one allows
@@ -36,7 +36,7 @@ renderMenu
 \details{
 Provides the second selection menu in the sidebar.
 If input$selectDataBase, provided by \code{\link{sidebarDataBase}},
-was set to "artificial data", the menu will be a numerical input
+was set to "Artificial data", the menu will be a numerical input
 slider to provide the location parameter for the GEV or scale
 parameter for the GP distribution. Else it will be a drop down menu
 listing the names of all available stations (see \code{\link{
@@ -52,10 +52,14 @@ Other sidebar: \code{\link{data.selection}},
   \code{\link{sidebarDataSourceInput}},
   \code{\link{sidebarDataTypeInput}},
   \code{\link{sidebarDataType}},
+  \code{\link{sidebarImprintInput}},
+  \code{\link{sidebarImprint}},
   \code{\link{sidebarLoadingGifOutput}},
   \code{\link{sidebarLoadingGif}},
   \code{\link{sidebarLoadingInput}},
-  \code{\link{sidebarLoading}}
+  \code{\link{sidebarLoading}},
+  \code{\link{sidebarSeriesLengthInput}},
+  \code{\link{sidebarSeriesLength}}
 }
 \author{
 Philipp Mueller

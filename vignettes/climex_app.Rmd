@@ -10,73 +10,92 @@ vignette: >
 ---
 
 # About
-This vignette describes the basic functions of the package's web application. Its main purposes are
-- To allow the user to interactively and persistently alter the default preprocessing and fitting options for the maximum likelihood fit of the generalized extreme value (GEV) distribution.
-- To apply it consistently to many different time series.
-- To verify the validity of the optimization procedure using a variety of goodness of fit plots and an animation of the actual optimization procedure.
+This vignette provides an introduction the climex package's web application. It will guide you through both its setup and usage as well as all the steps to set up a shiny server running it yourself.
 
 
 # Prerequisites
-First of all the global variable **CLIMEX.PATH** has to be set. Just add the following lines to ~/.Rprofile
 
-```{r prerequisites, cache = TRUE}
-CLIMEX.PATH <<- "~/R/climex/"
-if ( !dir.exists( CLIMEX.PATH ) )
-    dir.create( CLIMEX.PATH, recursive = TRUE )
+The climex web app needs several files to power it and all of them will be stored in *~/R/climex/* folder. If your are fine with this default behavior, feel free to skip the next three paragraphs.
+
+A web app, like the shiny-based one provided by this package, needs loads of different files to power it: css files to shape and beautify its appearance, js files enabling the app to perform logic and calculations within your browser to provide further customization and a more natural interaction, all the different displayed images, gifs, and movies etc. etc.
+
+Fortunately you don't have to care about all these files since the wrapper function `climex()` will take them from the package's installation path and group them all in a certain folder the app will be run in. The only thing you have to care about is *where* all these things happen.
+
+By default all the app's resources, including the images create during the animation of the optimization path (see Animation tab), will be stored in your home in folder called *~/R/climex/*. To change its path, add the following lines to the R configuration file *~/.Rprofile* in your home.
+
+```{r configuration, eval=FALSE}
+## Replace PATH by the directory you want to store all files related to the climex app into
+options( climex.path = "PATH" )
 ```
 
-Afterwards the web app is invoked locally by calling the *climex()*
-function and browsing to the shown IP address (e.g. `firefox http://127.0.0.1:3838`)
+After setting the *climex.path* option, you need to download the daily station data [provided by the German weather service (DWD)](ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/) to power the leaflet map in the first tab. Just open a R shell in your terminal and enter the following commands
+
+```{r DWD, eval=FALSE}
+## Loading the climex package
+library( climex )
+## Downloading the data of the DWD. Be sure to don't specify the data.type argument or use
+## data.type = "default" in here. The app is just tested of max/min temperature and precipitation yet.
+download.data.dwd()
+```
+
+For a more thorough explanation of the web scrapping and downloading capabilities of this package please refer to the **Downloading and formatting of the station data of the DWD** section in the package's second [vignette](https://github.com/theGreatWhiteShark/climex/blob/release-1.0.0/vignettes/data_dwd_and_usage.Rmd).
+
+With all the DWD data at hand, you are free to lunch the climex app.
+
 ```{r wrapper, eval = FALSE, dependson = "prerequisites"}
-require( climex )
+library( climex )
+## Lunching the climex app. Note: sometimes only the heading of the app
+## is displayed when running it for the first time. In this case just
+## close the app and start it again. Not quite sure why this is happening.
 climex()
 ```
-This function will copy several assets into the **CLIMEX.PATH** folder which will also contain the images necessary to create the animations.
+
+Now your R shell will open a server on your computer and the climex app will be started in a new tab of your default web browser (Firefox preferred).
+
+To **stop the app** just go to your R shell and press Ctrl-c two times in a row.
 
 # ![map-icon](../res/glyphicons-2-leaf.png) Map tab
 
 ![map-screenshot](../res/climex_map.png)
 
-This leaflet-based tab is the default entry point of the climex app and its main
-purpose is the navigation between different time series. 
+This [leaflet](https://github.com/theGreatWhiteShark/leaflet)-based tab is the default entry point of the climex app and its main purpose is to provide a convenient way of navigation between the different station data. 
 
 While working with tens or hundreds of time series from different
-geographical sites it is always hard to keep their spatial relations
-like the distance between the stations or their individual altitude in
-mind. To overcome this problem I introduced a map-based selection
+geographical sites, it is always hard to keep their spatial relations,
+like the distance between the stations or their individual altitude, in
+mind. To overcome this problem, I introduced a map-based selection
 interface in addition to the *Station* selector in the sidebar.
 
-Whenever you supply a list containing both a named list of time
-series of
-class [xts](https://cran.r-project.org/web/packages/xts/index.html)
-and a data.frame with the columns *longitude*, 
-*latitude*, *altitude*(not used at this current stage) and *name* of
-the individual stations their positions will be marked in the
-**Map**-tab.
+Apart from being a selection interface for the station data the Map tab features the following functions:
 
-Alternatively one can also choose to work with artificial data by
-setting the *Data base* selector in the sidebar accordingly or to provide a single
-**xts** time series as the input of the climex() function call.
-
-In addition this tab offers several other features:
-
-- Via the *Minimal length* slider only those time series containing more
+- Via the **Minimal length** slider only those time series containing more
   years than the chosen value will be shown on the map. This feature
   is extremely useful for finding long time series in the vastness of
   all your provided station data.
 - When selecting a station via mouse click a summary statistic containing the
   station's name as well as its 20, 50 and 100 year return level will
   be displayed in the upper right corner of the map.
-- Using the *Return level* slider the chosen return level will be
-  calculated for all shown stations and displayed using colored circle
-  markers. But beware: this can take up to several minutes depending
-  an the number of stations displayed!
-  
+- Using the **Return level** slider and the attached **Return level** slider 
+  the chosen return level will be calculated for all shown stations. 
+  After the calculation finished (the cat in the wheel disappeared), a select appears where you can switch between displaying the stations as blue markers (*stations*) or their return level as colored cirlces (*returns*).
+  But beware: this can take up to several minutes depending
+  an the number of stations displayed! Since all stations selected via the Minimal length slider will be considered in the calculation and not just the ones displayed after zooming in, only a limited amount of stations is supported when running the climex app within a shiny server.
+
 ![map-heatmap-screenshot](../res/climex_heat-map.png)
 
 All the changes to the preprocessing and fitting setting in the
 **General** tab will be considered while calculating the summary
 statistics and the return level of all displayed stations.
+  
+NOTE: The map is based on my fork of the leaflet package instead of the original one since the developer seem to dislike my [pull request](https://github.com/rstudio/leaflet/pull/342) for horizontal and sizable legends. Without this the legend of the colored return level markers would look just to weird and misplaced.
+
+# The sidebar
+
+All the different stations you select either via the Map tab or the **Station** drop-down menu come in three different flavors: as daily maximal and minimal temperature and as daily precipitation data. Which of them to use can be selected through the **Measured variable** drop-down menu.
+
+Right below all these drop-down menus there is a very important radio button: the **Remove incomplete years** or **Declustering of the data** button (depending of the choice of the extreme value distribution in the **Options** box in the General tab). This button will ensure your time series is getting cleaned and short-range correlations as well as artifacts are getting removed. So disable it just if you really know what you are doing!
+
+Apart from the time series provided by the German weather service (DWD) you can also perform the analysis on artificial data by selecting *Artificial data* in the **Data base** drop-down menu. Once selected, your time series will be sampled from either the generalized extreme value (GEV) or generalized Pareto (GP) distribution (as chosen within the **Options** box in the General tab). You can control the sampling process by adjusting the **Location**, **Scale**, and **Shape** slider for the distribution's parameters and the **Length** one for the number of points to sample from the distribution. Every time you update one of these sliders the time series is getting redrawn. Instead you can also use **Draw** button.
 
 # ![general-icon](../res/glyphicons-42-charts.png) General tab
 
@@ -84,26 +103,7 @@ statistics and the return level of all displayed stations.
 
 This tab provides both an interface to change the preprocessing and
 fitting options used throughout the whole application as well as a
-variety of tools to analyze an individual time series.
-
-### *Time series* box
-
-In the *Pure* tab you can view the raw and unprocessed
-time series. The *Deseasonalized* tab uses the former series and
-applies the function specified in the *Deseasonalization method*
-selector of the **Options** box to it. Both plots contain the
-extracted extreme events as additional orange points and are generated
-using the [dygraphs](https://cran.r-project.org/web/packages/dygraphs/index.html) library. That's why you are also able so zoom
-into specific regions using your mouse.
-
-The *Remaining* tab contains all the events in your time series which
-are extracted by the blocking or point of threshold method. Those can
-be considered as the extreme events of the series. Since it is
-sometimes quite interesting to see what will happen to your fitted GEV
-parameters when discarding individual events (like the most extreme
-ones) you can toggle all the points by clicking on them or brush them
-using your mouse. When deactivated they do not contribute to the GEV
-fitting anymore.
+variety of tools to analyze an individual time series. Keep in mind: whenever you change an option within this tab it will affect all the optimization performed in the entire app (e.g. in the calculation of the return level in the Map tab or the animation of the optimization path in the Likelihood tab). 
 
 ### *GEV fit* box
 
@@ -113,7 +113,7 @@ This box contain four different plots:
   extreme events of the time series and the orange-colored GEV density
   function constructed using the fitted parameters.
 - Three goodness-of-fit plots highlighting the quality of the
-  individual fit. From top to bottom: p-p plot, q-q plot, return level plot.
+  individual fit. From top to bottom: a [p-p plot](https://en.wikipedia.org/wiki/P%E2%80%93P_plot), a [q-q plot](https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot), and a return level plot (see Stuart Coles, 2001, p. 58).
 
 ### *Options* box
 
@@ -121,132 +121,118 @@ Via the settings in this box all the preprocessing and fitting
 parameters are controlled throughout the
 app.
 
-#### Blocks vs. Threshold
+#### Limiting distribution
 
-This radio button controls whether to fit the generalized extreme value
-(GEV) distribution (*Blocks*) or the generalized Pareto (GP) one.
+This radio buttons control whether to fit the generalized extreme value
+(*GEV*) distribution or the generalized Pareto (*GP*) one.
 
 #### Box length in days | Threshold
 
-The actual meaning of this slider is determined by the previous
-*Blocks vs. Threshold* radio button. If set to *Blocks* it will be
-called *Box length in days* and determines the number of days of a time
-series which constitute a block in the GEV approach. The default value
-of one year is recommended especially since the user can change the
-deseasonalization method and may end up with seasonal correlations in
+Via this slider the extreme events will be obtained from your time series. Depending on the chosen limiting distribution it will either determines the number of days of a time
+series constituting a block in the GEV approach or determines the height of the
+threshold above which all event will be considered to be extreme
+events. The default value of one year for the block method is recommended especially since the user can change the deseasonalization method and may end up with seasonal correlations in
 the data.
 
-If set to *Threshold* the slider determines the height of the
-threshold above which all event will be considered to be extreme
-events.
-
-Remember: the approximation of the histogram using both the GEV and
+Remember: The approximation of the histogram using both the GEV and
 the GP distribution is only valid for asymptotic block length and
 threshold height. So don't pick to low values!
 
-Worth mentioning: there is also the *Removing incomplete years* or
-*Declustering of the data* radio button in the sidebar (depending of
-the choice at *Blocks vs. Threshold*) which becomes very handy
-when dealing with real world data.
-
 #### Type of extreme
 
-If set to *Min* the most lowest values of each block or all events
-below a certain threshold will be considered extreme events. 
+If set to *Min*, the GEV distribution will be fitted to the minimal extremes. In this approach only the most lowest value in each block of the time series will be extracted.
 
 #### Deseasonalization method
 
-Using this selector you can choose if and how to get rid off the
+Using this selector you can choose if and how to get rid of the
 short-range correlations in your time series introduced by the annual
-cycle. Per default the anomalies will be calculated. But you can also
-pick another R based implementation. For the description of these
-methods please refer to their individual documentation.
+cycle. Per default the [anomalies](https://en.wikipedia.org/wiki/Anomaly_(natural_sciences)#Atmospheric_sciences) will be calculated. But you can also
+pick other R-based implementations like [stl](https://stat.ethz.ch/R-manual/R-patched/library/stats/html/stl.html), [decompose](https://stat.ethz.ch/R-manual/R-patched/library/stats/html/decompose.html), and the **ds** function from the [deseasonalize](https://cran.r-project.org/web/packages/deseasonalize/deseasonalize.pdf) package.
 
 #### Fitting routine
 
 It is recommended not to touch this selector unless you really know
-what you are doing. After some careful analysis the author showed the
-*Nelder-Mead* algorithm to be the best method for fit the GEV
-parameters.
+what you are doing. After some careful analysis I found the
+[Nelder-Mead](https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method) algorithm in its [implementation in the stats::optim function](https://stat.ethz.ch/R-manual/R-patched/library/stats/html/optim.html) to be the numerically most stable method for fit the GEV/GP parameters. In addition you can also use the [BFGS](https://en.wikipedia.org/wiki/Broyden%E2%80%93Fletcher%E2%80%93Goldfarb%E2%80%93Shanno_algorithm) algorithm and the [conjugate gradient (CG)](https://en.wikipedia.org/wiki/Conjugate_gradient_method) from the stats::optim function, a [simulated annealing (SANN)](https://en.wikipedia.org/wiki/Simulated_annealing) function from the [GenSA](https://cran.r-project.org/web/packages/GenSA/index.html) package, and the Nelder-Mead implementation from the [dfoptim](https://cran.r-project.org/web/packages/dfoptim/index.html) package.
+
+NOTE: Since the artificial data are getting sampled directly from either the GEV or GP distribution there is no point in cleaning, deseasonalizing or blocking/thresholding them. That's why those menu items will be disabled and remove as soon as you pick *Artificial data* in the **Data base** drop-down menu in the sidebar.
 
 ### *Results* box
 
 This table displays several details of the GEV fitting procedure:
 
-- The three GEV parameters *location*, *scale* and *shape*
+- The GEV/GP parameters *location*, *scale* and *shape*
 - The negative log-likelihood (*nllh*) of the fit as well as the
-  Akaike and Bayesian Information criterion
+  [Akaike](https://en.wikipedia.org/wiki/Akaike_information_criterion) and [Bayesian Information criterion](https://en.wikipedia.org/wiki/Bayesian_information_criterion)
 - The 100 year return level
 
-For location, scale, shape and return level a small change while
+For the distribution's parameter and the return level a small change while
 varying the preprocessing or fitting parameters does suggest the stability
-of the fitting procedure and a high quality of the time series. This
+of the fitting procedure and thus a high quality of the time series. This
 will be indicated by green colors whereas large changes are indicated
-by the color red. For the nllh, AIC and BIC the values should be as low as
+by the color red. For the nllh, AIC, and BIC the values should be as low as
 possible. That's why all decreases are marked green and all increases
 red.
 
 To better review the influence of the individual parameter changes not
 just the current results and statistics but also the ones from the
-three last fits (in the *h_1*, *h_2* and *h_3* column) are contained
+three last fits (in the *hist_1*, *hist_2* and *hist_3* column) are contained
 in the table.
+
+### *Time series* box
+
+In the *Pure* tab you can view the raw and unprocessed
+time series. The *Deseasonalized* tab uses the former series and
+applies the function specified in the *Deseasonalization method*
+drop-down menu of the **Options** box to it. Both plots contain the
+extracted extreme events as additional orange points and are generated
+using the [dygraphs](https://cran.r-project.org/web/packages/dygraphs/index.html) library. That's why you are also able so zoom
+into specific regions using your mouse.
+
+The *Remaining* tab contains all the events in your time series which
+are extracted by the blocking or thresholding. Those can
+be considered as the extreme events of the series. Since it is
+sometimes quite interesting to see what will happen to your fitted
+parameters when discarding individual events (like the most extreme
+ones), you can toggle all the points by clicking them or brush them
+using your mouse. When deactivated they do not contribute to the
+fitting anymore and the optimization is being redone instantly.
 
 # ![likelihood-icon](../res/glyphicons-199-ok-circle.png) Likelihood tab
 
 ![likelihood-screenshot](../res/climex_animation.png)
 
 It is not uncommon for the fitting procedure to get stuck in some
-local minimum during optimization and because of this leading to
-insufficient GEV parameter approximations. To circumvent this problem
-the climex app will start the optimization at five different sites and
-displays their path in the 3D parameters space of the GEV
-distribution. The first path (colored in black) is always the one
-actually taken during optimization. Using this approach you can
-visually verify if the optimization got stucked at a different location
-compared to the other routes or if all of them lead to the same
-result.
+local minimum during optimization and thus leading to
+insufficient parameter approximations (paper under submission). The most nagging facet of this issue is that you just don't know when this may is happening. 
 
-### Staring points of the optimization routine
+To circumvent this problem the climex app will start the optimization at a number of different sites (specified by the **Number of trajectories** slider) and
+displays their path in the 3D parameters space of the **GEV**
+distribution. The **GP** counterpart is not implemented yet but may follow at a later point in time.
+The first path (colored in black) is always the one
+actually taken during optimization. All the other starting points are uniformly sampled within the **Location/Scale/Shape sampling limits** and can be redrawn using the **Reset** button. 
 
-As the name suggests this table holds the initial positions the
-optimization is started from in the animation. The first one will be
-painted black and the IDs correspond to the ones color-coded in the
-animation.
+If all those different optimization paths lead to the same result you can be sure the optimization worked and returned the parameters corresponding to the global minimum. When it does not work and the black trajectory ends up in a different spot then most of the others, you can adjust in **actual initials** in the bottom of the table at in the **Options** box. The major reason for the optimization to get stuck in a local minimum is a too big distance between the starting points and the global minimum. 
 
-### Options
+So whenever your optimization didn't worked, don't lose heart yet! You can manually adjust the starting points, carefully watch the trajectories and the resulting fit statistics and using this approach even fit very dirty and "extreme" time series (with a big absolute value in the shape parameter).
 
-In the table on top of the **Options** box you can see the initial
-parameters suggested by an heuristic used in the optimization
-procedure, the fitted parameter combination and the ones actually used
-to initialize the optimization. The later ones you can modify too. By
-doing so you will also affect all other components depending on the fit
-of the individual time series you are working on.
+The button **Rerun the optimization** is restarting the optimization from the fitted values obtained by the first run (this won't affect the optimization when simulated annealing was chosen). This way the Nelder-Mead method is able to escape local minima it got trapped in. I highly recommend to enable this option during your analysis.
 
-Using the variety of sliders below the table you can change the number
-of paths you want to have in your animation, the parameter range the
-initial parameters are drawn from and the part of the optimization you
-want to have presented in the animation. Since it is quite common for
-a fitting routine to do a lot of minor updates in the end you should
-not view the whole optimization.
-
-The *Reset* button will draw a new set of initial points while the
-*Start animation* button renders the plots for the animation. The
-later task can last up to several minutes.
-
+You might wonder why the button creating the images is called **Start animation**. When using the *dfoptim::nmk* option in the **Fitting routine** drop-down menu in the General tab not just single images for the slices through the GEV parameter space but a whole animation of the optimization trajectory will be displayed. By default the optimization routines are not returning all updates but the just the final results. While it was not that complicated to modify the source code of the nmk function in my fork of the [dfoptim](https://github.com/theGreatWhiteShark/dfoptim) package, changing the source code of the called C libraries of the stats::optim function is a completely different level. That's why there will be most probably now animation of those fitting routines integrated into this application.
 
 # Deploying the app on server side
 
-When you want to not just locally use this app but also provide it as
-a server you have to install and
+One of the major driving forces behind the development of the climex web application was also to be able to share the whole extreme value analysis on climate data with people lacking either the necessary R/programming skills or the time introducing themselves into the framework of extreme value analysis properly.
+
+If you want to not just locally use this app but also provide it as
+a server, you have to install and
 configure [Shiny-Server](http://docs.rstudio.com/shiny-server/).
 
 Then you have to copy all files from *res/shiny-server/climex* to
-*/srv/shiny-server/climex* and all files from
-*res/shiny-server/assets* to */srv/shiny-server/assets*. 
+*/srv/shiny-server/climex*, all files from
+*res/shiny-server/assets* to */srv/shiny-server/assets* and the *res/shiny-server/.Rprofile* into the home of the shiny user on your machine.. 
 
-If you in addition want to provide the station data of the German
-weather service downloaded in the [other](./data_dwd_and_usage.Rmd) vignette of this package you
-have to copy its download directory to */srv/shiny-server/assets/downloads_dwd*.
+You can of course incorporate other station data than the one provided by the DWD. If you have any problems integrating them, feel free to raise an issue or contact me or other contributors of this package.
 
 ---
 Icons: © [Glyphicon](http://glyphicons.com/) [CC-By-SA](https://creativecommons.org/licenses/by-sa/3.0/)

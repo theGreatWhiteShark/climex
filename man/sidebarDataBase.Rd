@@ -4,7 +4,11 @@
 \alias{sidebarDataBase}
 \title{Selecting the database}
 \usage{
-sidebarDataBase()
+sidebarDataBase(session)
+}
+\arguments{
+\item{session}{Namespace session. For details check out
+\link{ \url{ http://shiny.rstudio.com/articles/modules.html}}}
 }
 \value{
 renderMenu
@@ -14,9 +18,10 @@ For now there are three different data sources you can
 choose:the input provided when calling climex::climex() on localhost
 or a file loaded via the sidebar, the station data of the German
 weather service (DWD) and artificial data sampled from a GEV
-distribution. Beware: it's not a true module! Using the namespaces
-does not really make sense because it has to be accessed from outside
-of this context.
+distribution. When the climex app is used with the shiny-server, the
+input option will be disabled. Beware: it's not a true module! Using
+the namespaces does not really make sense because it has to be
+accessed from outside of this context.
 }
 \seealso{
 Other sidebar: \code{\link{data.selection}},
@@ -28,10 +33,14 @@ Other sidebar: \code{\link{data.selection}},
   \code{\link{sidebarDataSource}},
   \code{\link{sidebarDataTypeInput}},
   \code{\link{sidebarDataType}},
+  \code{\link{sidebarImprintInput}},
+  \code{\link{sidebarImprint}},
   \code{\link{sidebarLoadingGifOutput}},
   \code{\link{sidebarLoadingGif}},
   \code{\link{sidebarLoadingInput}},
-  \code{\link{sidebarLoading}}
+  \code{\link{sidebarLoading}},
+  \code{\link{sidebarSeriesLengthInput}},
+  \code{\link{sidebarSeriesLength}}
 }
 \author{
 Philipp Mueller

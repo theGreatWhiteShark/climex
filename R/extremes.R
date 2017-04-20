@@ -399,14 +399,14 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
 ##' This argument is needed to calculate the standard error of the
 ##' return level via the delta method of the MLE in the GPD model.
 ##' Default = NULL.
-##' @param original.time.series Time series used with \code{link{fit.gpd}}
+##' @param thresholded.time.series Time series used with \code{link{fit.gpd}}
 ##' on which already a threshold (the one supplied here as well) was
 ##' applied. Necessary to transform the return level for numerical input
 ##' and the GPD model from m-th observation return level to annual return
 ##' level. If omitted the return level will be per observation.
 ##' Default = NULL.
 ##' @param silent Throws an warning whenever the "gpd" model is used and
-##' the original.time.series is not supplied. Since this can be annoying
+##' the thresholded.time.series is not supplied. Since this can be annoying
 ##' one can also disable it. Default = FALSE.
 ##'
 ##' @return If error.estimation == "none" a numerical vector containing
@@ -427,7 +427,7 @@ return.level <- function( x, return.period = 100,
                          model = c( "gev", "gpd" ),
                          monte.carlo.sample.size = 1000,
                          threshold = NULL, total.length = NULL,
-                         original.time.series = NULL, silent = FALSE ){
+                         thresholded.time.series = NULL, silent = FALSE ){
   if ( any( class( x ) == "climex.fit.gev" ) ){
     model <- "gev"
     return.levels <- Reduce( c, lapply( return.period, function( y )
@@ -475,9 +475,9 @@ return.level <- function( x, return.period = 100,
       ## exceedance per year. This way the unit of the provided return
       ## level and its error are  not 'per observation' but 'per year'.
       ## In this step we harness the power of the 'xts' package
-      if ( !is.null( original.time.series ) ){
+      if ( !is.null( thresholded.time.series ) ){
         m <- return.period* mean( apply.yearly(
-                                original.time.series,
+                                thresholded.time.series,
                                 function( y ) length( y ) ) )
       } else {
         if ( !silent )
@@ -517,7 +517,8 @@ return.level <- function( x, return.period = 100,
                              total.length = total.length )$hessian
       }
     }
-    if ( any( is.nan( x$hessian ) ) ){
+    if ( is.null( x$hessian ) ||
+         any( is.nan( x$hessian ) ) ){
       ## If there are NaN in the hessian, the return levels
       ## can not be calculated. So try the numDeriv instead.
       x$hessian <- numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
@@ -575,15 +576,17 @@ return.level <- function( x, return.period = 100,
         climex:::revd( length( x$x ), parameter.estimate[ 1 ],
                       parameter.estimate[ 2 ],
                       parameter.estimate[ 3 ], model = "gev" ) )
-    } else 
+    } else { 
       samples.list <- lapply( 1 : monte.carlo.sample.size, function( y )
         climex:::revd( length( x$x ), scale = parameter.estimate[ 1 ],
                       shape = parameter.estimate[ 2 ], silent = TRUE,
                       threshold = threshold, model = "gpd" ) )
+    }
     samples.fit <- lapply( samples.list, function( y )
-      stats::optim( likelihood.initials( y, model = model ),
-                   likelihood, x = y, method = "Nelder-Mead",
-                   model = model )$par )
+      suppressWarnings(
+          stats::optim( likelihood.initials( y, model = model ),
+                       likelihood, x = y, method = "Nelder-Mead",
+                       model = model )$par ) )
     errors <- data.frame( a = 0 )
     if ( model == "gev" ){
       r.period <- return.period
@@ -650,14 +653,15 @@ rlevd <- function ( period, location = NULL, scale = NULL, shape = NULL, thresho
   if ( any( period <= 1 ) ) 
     stop( "rlevd: invalid period argument.  Must be greater than 1." )
   
-  if ( model == "gev" ) {
-    p <- 1 - 1/ period
-    res <- climex:::qevd( p = p, location = location, scale = scale,
-                         shape = shape, model = "gev", lower.tail = TRUE,
+  if ( model == "gev" ) {   
+    res <- climex:::qevd( p = ( 1 - 1/period ), location = location, scale = scale,
+                    shape = shape, model = "gev", lower.tail = TRUE,
+                    silent = silent )
+  } else {
+    res <- climex:::qevd( p = 1/period, location = NULL, scale = scale,
+                         shape = shape, threshold = threshold,
+                         model = "gpd", lower.tail = TRUE,
                          silent = silent )
-  }
-  else {
-    res <- location + ( scale/ shape ) * ( period^shape - 1 )
   }
   names( res ) <- as.character( period )
   return( res )
@@ -714,10 +718,22 @@ qevd <- function ( p, location = NULL, scale = NULL, shape = NULL,
   if ( !lower.tail )
     p <- 1 - p
   if ( model == "gev" ) {
-    q <- location + scale * ( ( -log( p ) )^( -shape ) - 1 )/ shape
+    p.rescaled <- -log( p )
+    if ( shape == 0 ){
+      ## Only for a perfect 0
+      q <- location - scale* log( p.rescaled )
+    } else {
+      q <- location + scale * (
+        ( p.rescaled )^( -shape ) - 1 )/ shape
+    }
   }
   else {
-    q <- location + scale * ( p^( -shape ) - 1 )/ shape
+    if ( shape != 0 ){
+      ## Only for a perfect 0
+      q <- location + scale * ( ( 1/p )^( shape ) - 1 )/ shape
+    } else {
+      q <- location + scale* log( 1/p )
+    }
   }
   return( q )
 }
@@ -771,10 +787,18 @@ revd <- function ( n, location = NULL, scale = NULL, shape = NULL,
       location <- threshold
     z <- runif( n )
   }
-  ## allocating memory
-  result <- numeric( n ) + NA
-  result <- as.numeric( location ) + as.numeric( scale )*
-    ( z^( -as.numeric( shape ) ) - 1 )/ as.numeric( shape )
+  if ( as.numeric( shape ) != 0 ){
+    result <- as.numeric( location ) + as.numeric( scale )*
+      ( z^( -as.numeric( shape ) ) - 1 )/ as.numeric( shape )
+  } else {
+    if ( model == "gev" ){
+      result <- as.numeric( location ) - as.numeric( scale )*
+        log( z )
+    } else {
+      result <- as.numeric( location ) +
+        rexp( n, rate = 1/ as.numeric( scale ) )
+    }
+  }
   return( result )
 }
 

@@ -4,9 +4,10 @@
 \alias{data.selection}
 \title{Reactive value selecting an individual time series.}
 \usage{
-data.selection(reactive.chosen, selectDataSource, selectDataBase, sliderYears,
+data.selection(reactive.chosen, selectDataSource, selectDataBase,
   sliderThreshold, radioEvdStatistics, sliderArtificialDataLocation,
-  sliderArtificialDataScale, sliderArtificialDataShape)
+  sliderArtificialDataScale, sliderArtificialDataShape, buttonDrawTS,
+  sliderSeriesLength)
 }
 \arguments{
 \item{reactive.chosen}{Reactive value containing a list of the list
@@ -19,18 +20,13 @@ station's name.}
 
 \item{selectDataBase}{Character (select) input to determine the data
 source. In the default installation there are three options:
-c( "input", "DWD", "artificial data" ). The first one uses the data
+c( "Input", "DWD", "Artificial data" ). The first one uses the data
 provided as an argument to the call of the \code{\link{climex}}
 function. The second one uses the database of the German weather
 service (see \code{link{download.data.dwd}}). The third one allows
 the user to produce random numbers distributed according to the GEV
 or GP distribution. Determined by menuSelectDataBase.
 Default = "DWD".}
-
-\item{sliderYears}{Numerical (slider) input to determine the minimal
-length (in years) of the time series to be displayed. Minimal value
-is 0 and maximal is 155 (longest one in the DWD database), the
-default value is 65 and the step width is 1.}
 
 \item{sliderThreshold}{Numerical (slider) input determining the
 threshold used within the GP fit and the extraction of the extreme
@@ -44,17 +40,25 @@ c( "GEV", "GP" ), default = "GEV".}
 \item{sliderArtificialDataLocation}{Numerical (slider) input
 providing the location parameter to generate an artificial time
 series. For input$radioEvdStatistics == "GP" or input$selectDataBase
-!= "artificial data" this argument will be NULL.}
+!= "Artificial data" this argument will be NULL.}
 
 \item{sliderArtificialDataScale}{Numerical (slider) input
 providing the scale parameter to generate an artificial time
 series. For input$selectDataBase
-!= "artificial data" this argument will be NULL.}
+!= "Artificial data" this argument will be NULL.}
 
 \item{sliderArtificialDataShape}{Numerical (slider) input
 providing the shape parameter to generate an artificial time
 series. For input$selectDataBase
-!= "artificial data" this argument will be NULL.}
+!= "Artificial data" this argument will be NULL.}
+
+\item{buttonDrawTS}{Action button used to draw a time series when
+'artificial data' is chosen in selectDataBase(). If not chosen,
+this button will not be defined.}
+
+\item{sliderSeriesLength}{Numerical slider determining the length
+of an artificial time series. This one will only be present when
+selectDataBase is set to "Artificial data"}
 }
 \value{
 Reactive value containing a 'xts' class time series.
@@ -64,8 +68,8 @@ According to the choice in input$selectDataBase an
 artificial time series will be sampled or one from a database will be
 selected. For the latter one the reactive value
 \code{\link{climex:::data.chosen}} will be constulted. The length of
-the generated time series is determined by the input$sliderYears
-slider in the top right part of the leaflet tab.
+the generated time series is determined by the
+input$sliderSeriesLength.
 }
 \seealso{
 Other sidebar: \code{\link{file.loading}},
@@ -77,10 +81,14 @@ Other sidebar: \code{\link{file.loading}},
   \code{\link{sidebarDataSource}},
   \code{\link{sidebarDataTypeInput}},
   \code{\link{sidebarDataType}},
+  \code{\link{sidebarImprintInput}},
+  \code{\link{sidebarImprint}},
   \code{\link{sidebarLoadingGifOutput}},
   \code{\link{sidebarLoadingGif}},
   \code{\link{sidebarLoadingInput}},
-  \code{\link{sidebarLoading}}
+  \code{\link{sidebarLoading}},
+  \code{\link{sidebarSeriesLengthInput}},
+  \code{\link{sidebarSeriesLength}}
 }
 \author{
 Philipp Mueller

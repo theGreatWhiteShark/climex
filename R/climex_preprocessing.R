@@ -36,7 +36,7 @@ generalExtremeExtractionInput <- function(){
 ##' leaflet map. \code{\link{data.selection}}
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -74,22 +74,21 @@ generalExtremeExtraction <- function( radioEvdStatistics,
       ## little longer
       return( NULL )
     }
+    if ( selectDataBase() == "Artificial data" ){
+      ## Since the artificial data will be sampled directly from a
+      ## GEV/GP distribution, there is no point for blocking or
+      ## thresholding
+      return( div( id = "aux-placeholder", style = "height: 0px;" ) )
+    }
     if ( radioEvdStatistics() == "GEV" ){
       sliderInput( "sliderBlockLength", "Box length in days", 1,
                   365*3, 365 )
     } else {
-      if ( is.null( buttonMinMax() ) ||
-           buttonMinMax() == "Max" ){
-        sliderInput( "sliderThreshold", "Threshold:",
-                    round( min( x.deseasonalized, na.rm = TRUE ) ),
-                    round( max( x.deseasonalized, na.rm = TRUE ) ),
-                    round( 0.8* max( x.deseasonalized, na.rm = TRUE ) ) )
-      } else {
-        sliderInput( "sliderThreshold", "Threshold:",
-                    round( min( x.deseasonalized, na.rm = TRUE ) ),
-                    round( max( x.deseasonalized, na.rm = TRUE ) ),
-                    round( 0.8* min( x.deseasonalized, na.rm = TRUE ) ) )
-      }
+      sliderInput( "sliderThreshold", "Threshold:",
+                  round( min( x.deseasonalized, na.rm = TRUE ) ),
+                  round( max( x.deseasonalized, na.rm = TRUE ) ),
+                  round( 0.8* max( x.deseasonalized, na.rm = TRUE ) ),
+                  step = 0.1 )
     }
   } )
 }
@@ -134,26 +133,118 @@ cleaning.interactive <- function( x.xts, checkboxIncompleteYears,
       x.xts <- climex::decluster( x.xts, sliderThreshold() )
     }
     if ( any( is.nan( x.xts ) ) )
-      shinytoastr::toastr_warning(
-                       "The current time series contains missing values. Please be sure to check 'Remove incomplete years' in the sidebar to avoid wrong results!" )
+      print( "The current time series contains missing values. Please be sure to check 'Remove incomplete years' in the sidebar to avoid wrong results!" )
     return( x.xts )
+}
+
+##' @title Whether to determine the minimal or maximal extremes.
+##' @details Not a real shiny module, since I have to use this select
+##' input outside its namespace. Provides the
+##' shinydashboard::menuItemOutput for \code{\link{
+##' generalButtonMinMaxInput}}
+##' 
+##' @importFrom shinydashboard menuItemOutput
+##'
+##' @family preprocessing
+##'
+##' @return menuItemOutput
+##' @author Philipp Mueller 
+generalButtonMinMaxInput <- function(){
+  uiOutput( "generalButtonMinMax" )
+}
+##' @title Whether to determine the minimal or maximal extremes.
+##' @details Not a real shiny module, since I have to use this select
+##' input outside its namespace. Only when input$radioEvdStatistics
+##' is set of "GEV" the minimal extremes scan be used.
+##' 
+##' @param radioEvdStatistics Character (radio) input determining whether
+##' the GEV or GP distribution shall be fitted to the data. Choices:
+##' c( "GEV", "GP" ), default = "GEV".
+##' @param selectDataType Character (select) input to determine which set
+##' measurements should be used for the selected station. In case of the
+##' default import of the DWD data, there are three options:
+##' c( "Daily max. temp", "Daily min. temp", "Daily precipitation" ).
+##' Determined by menuSelectDataType.
+##' 
+##' @importFrom shinydashboard menuItemOutput
+##'
+##' @family preprocessing
+##'
+##' @return menuItemOutput
+##' @author Philipp Mueller 
+generalButtonMinMax <- function( radioEvdStatistics, selectDataType ){
+  renderUI({
+    ## The minimal extremes are only available when using the GEV
+    ## distribution
+    if ( is.null( radioEvdStatistics() ) ||
+         radioEvdStatistics() == "GEV" ){
+      if ( is.null( selectDataType() ) ||
+           selectDataType() != "Daily precipitation" ){
+        radioButtons( inputId = "buttonMinMax", "Type of extreme",
+                     inline = TRUE, choices = c( "Max", "Min" ),
+                     selected = "Max" )
+      } else {
+        ## For the precipitation it does not make any sense at all
+        ## to calculate the minimal extremes.
+      radioButtons( inputId = "buttonMinMax", "Type of extreme",
+                   inline = TRUE, choices = "Max" )
+      }
+    } else {
+      radioButtons( inputId = "buttonMinMax", "Type of extreme",
+                   inline = TRUE, choices = "Max" )
+    }
+  } )
+}
+
+##' @title Removing the seasonality.
+##' @details Not a real shiny module, since I have to use this select
+##' input outside its namespace. Provides the
+##' shinydashboard::menuItemOutput for \code{\link{
+##' deseasonalizeSelection}}
+##' 
+##' @importFrom shinydashboard menuItemOutput
+##'
+##' @family preprocessing
+##'
+##' @return menuItemOutput
+##' @author Philipp Mueller 
+deseasonalizeSelectionInput <- function(){
+  menuItemOutput( "deseasonalizeSelection" )
 }
 
 ##' @title Removing the seasonality.
 ##' @details Not a real shiny module, since I have to use this select
 ##' input outside its namespace.
 ##'
+##' @param selectDataBase Character (select) input to determine the data
+##' source. In the default installation there are three options:
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
+##' provided as an argument to the call of the \code{\link{climex}}
+##' function. The second one uses the database of the German weather
+##' service (see \code{link{download.data.dwd}}). The third one allows
+##' the user to produce random numbers distributed according to the GEV
+##' or GP distribution. Determined by menuSelectDataBase.
+##' Default = "DWD".
+##' 
 ##' @import shiny
 ##'
 ##' @family preprocessing
 ##'
 ##' @return selectInput
 ##' @author Philipp Mueller 
-deseasonalizeInput <- function(){
-  selectInput( "selectDeseasonalize", "Deseasonalization method",
-              choices = c( "Anomalies", "stl", "decompose",
-                          "deseasonalize::ds", "none" ),
-              selected = "Anomalies" )
+deseasonalizeSelection <- function( selectDataBase ){
+  renderMenu({
+    if ( selectDataBase() == "Artificial data" ){
+      ## Since the artificial data will be sampled directly from a
+      ## GEV/GP distribution, there is no point for blocking or
+      ## thresholding
+      return( div( id = "aux-placeholder", style = "height: 0px;" ) )
+    }
+    selectInput( "selectDeseasonalize", "Deseasonalization method",
+                choices = c( "Anomalies", "stl", "decompose",
+                            "deseasonalize::ds", "none" ),
+                selected = "Anomalies" )
+  })
 }
 
 ##' @title Function for removing the seasonality of a given time series
@@ -163,10 +254,11 @@ deseasonalizeInput <- function(){
 ##' @param selectDeseasonalize Character (select) input determining which
 ##' deseasonalization method should be used to remove the short-range
 ##' correlations from the provided time series.
-##' \code{\link{deseasonalizeInput}}
+##' \code{\link{deseasonalizeInput}}. If NULL climex::anomalies will be
+##' used.
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -180,15 +272,14 @@ deseasonalizeInput <- function(){
 ##' @author Philipp Mueller 
 deseasonalize.interactive <- function( x.xts, selectDeseasonalize,
                                       selectDataBase ){
-    if ( is.null( x.xts ) || is.null( selectDeseasonalize() ) ||
+    if ( is.null( x.xts ) ||
          is.null( selectDataBase() ) ){
       ## if the initialization has not finished yet just wait a little
       ## longer
       return( NULL )
     }
-    if ( selectDataBase() == "artificial data" ){
-      ## For the artificial data there is no need for deseasonalization
-      shinytoastr::toastr_info( "Since there is no seasonality in the artificial time series, the choice of deseasonalization method won't affect them at all." )
+    if ( selectDataBase() == "Artificial data" ){
+      ## For the artificial data there is no need for deseasonalization.
       return( x.xts )
     }
     ## Removing all NaN or most algorithms won't work. But anyway. Just
@@ -199,8 +290,17 @@ deseasonalize.interactive <- function( x.xts, selectDeseasonalize,
     } else {
       x.no.nan <- x.xts
     }
+    ## Since the selectDeseasonalize input will be now powered by the
+    ## server side, it will have the value NULL until the user reaches
+    ## the General tab. In this case use the "Anomalies" method as
+    ## default.
+    if ( is.null( selectDeseasonalize() ) ){
+      selected.method <- "Anomalies"
+    } else {
+      selected.method <- selectDeseasonalize()
+    }
     x.deseasonalized <- switch(
-        selectDeseasonalize(),
+        selected.method,
         "Anomalies" = climex::anomalies( x.xts ),
         "decompose" = {
           x.decomposed <-
@@ -252,8 +352,7 @@ deseasonalize.interactive <- function( x.xts, selectDeseasonalize,
       ## dirty solution, but just omitting them and informing the user
       ## will work for now.
       x.deseasonalized <- na.omit( x.deseasonalized )
-      shinytoastr::toastr_error(
-                       "NaNs produced during the deseasonalization." )
+      print( "NaNs produced during the deseasonalization." )
     }
     return( x.deseasonalized )
 }
@@ -289,6 +388,13 @@ deseasonalize.interactive <- function( x.xts, selectDeseasonalize,
 extremes.interactive <- function( x.xts, buttonMinMax,
                                  radioEvdStatistics, sliderBlockLength,
                                  sliderThreshold, checkboxDecluster ){
+  if ( is.null( buttonMinMax() ) &&
+       ( !is.null( sliderBlockLength() ) ||
+         !is.null( sliderThreshold() ) ) ){
+    ## Those amigos are in the same windows and should be initialized
+    ## together
+    return( NULL )
+  }    
   ## Toggle if maxima of minima are going to be used
   if ( is.null( buttonMinMax() ) || buttonMinMax() == "Max" ){
     block.mode <- "max"
@@ -310,6 +416,13 @@ extremes.interactive <- function( x.xts, buttonMinMax,
     ## input$sliderThreshold has to be initialized eventually. Just have
     ## some more patience and throw a NULL
     if ( is.null( sliderThreshold() ) ){
+      return( NULL )
+    }
+    ## Check if at least two data points are above the threshold
+    if ( sum( as.numeric( x.xts ) > sliderThreshold() ) < 2 ){
+      shinytoastr::toastr_error(
+                       "Threshold is set way to high!",
+                       preventDuplicates = TRUE )
       return( NULL )
     }
     x.extreme <- climex::threshold( x.xts,
@@ -352,7 +465,7 @@ extremes.interactive <- function( x.xts, buttonMinMax,
 ##' \code{\link{deseasonalizeInput}}
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -395,7 +508,25 @@ data.extremes <- function( reactive.selection, radioEvdStatistics,
       ## little longer
       return( NULL )
     }
+    if ( ( radioEvdStatistics() == "GEV" &&
+           !is.null( sliderThreshold() ) &&
+           is.null( sliderBlockLength() ) ) ||
+         ( radioEvdStatistics() == "GP" &&
+           !is.null( sliderBlockLength() ) &&
+           is.null( sliderThreshold ) ) ||
+         ( radioEvdStatistics() == "GP" &&
+           buttonMinMax() == "Min" ) ){
+      ## Let's wait till the transition is completed
+      return( NULL )
+    }
     x.xts <- reactive.selection()
+    ## When using artificial data there is not point in doing
+    ## cleaning, deseasonalization, or blocking. Instead, just
+    ## return the same time series three times.
+    if ( selectDataBase() == "Artificial data" ){
+      return( list( blocked.data = x.xts,
+                   deseasonalized.data = x.xts, pure.data = x.xts ) )
+    }
     if ( ( is.null( radioEvdStatistics() ) ||
            radioEvdStatistics() == "GEV" ) &&
          ( is.null( checkboxIncompleteYears() ) ||
@@ -415,9 +546,10 @@ data.extremes <- function( reactive.selection, radioEvdStatistics,
                                       function(){ return( FALSE ) },
                                       function(){ return( NULL ) },
                                       sliderThreshold )
-    }        
+    }
     x.deseasonalized <- deseasonalize.interactive(
         x.clean, selectDeseasonalize, selectDataBase )
+    
     if ( !is.null( radioEvdStatistics() ) &&
          !is.null( sliderThreshold() ) && radioEvdStatistics() == "GP" &&
          max( x.deseasonalized ) < sliderThreshold() ){
@@ -429,6 +561,11 @@ data.extremes <- function( reactive.selection, radioEvdStatistics,
     x.extreme <- extremes.interactive(
         x.deseasonalized, buttonMinMax, radioEvdStatistics,
         sliderBlockLength, sliderThreshold, checkboxDecluster )
+    if ( !is.null( x.extreme ) && length( x.extreme ) < 30 ){
+      shinytoastr::toastr_error( "Too few data points! Please check your threshold or block size",
+                                preventDuplicates = TRUE )
+      return( NULL )
+    }
     return( list( blocked.data = x.extreme,
                  deseasonalized.data = x.deseasonalized,
                  pure.data = x.xts ) )

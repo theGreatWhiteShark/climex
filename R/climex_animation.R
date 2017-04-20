@@ -33,20 +33,20 @@ likelihoodAnimationUI <- function( id ){
       box( title = h2( "Options" ), width = 4,
           background = "orange", id = "boxHeuristic",
           dataTableOutput( ns( "tableHeuristicEstimates" ) ),
-          div( p( "actual initials", id = "tableInitialDescription" ),
-              uiOutput( ns( "inputInitialLocation" ) ),
-              uiOutput( ns( "inputInitialScale" ) ),
-              uiOutput( ns( "inputInitialShape" ) ),
-              id = "initialTable" ),
+          uiOutput( ns( "tableInputInitials" ) ),
+          ## In order to make the inputs of the initial points and the
+          ## table above matching in size (probably relative).
+          plotOutput( ns( "placeholderTable" ), height = 0,
+                     width = '100%' ),
           checkboxInput( "checkboxRerun",
                         "Rerun the optimization", value = TRUE ),
           sliderInput( ns( "sliderNumberInitialPoints" ),
-                      "Number of initial points", 1, 20, 5 ),
+                      "Number of trajectories", 1, 20, 5 ),
           uiOutput( ns( "menuSliderLocationLim" ) ),
           uiOutput( ns( "menuSliderScaleLim" ) ),
           uiOutput( ns( "menuSliderShapeLim" ) ),
           sliderInput( ns( "sliderOptimizationSteps" ),
-                      "Which optimization steps", 0, 1, c( .1, .5 ) ),
+                      "Optimization steps to animate", 0, 1, c( .1, .5 ) ),
           actionButton( ns( "buttonDrawAnimation" ), "Start animation" ),
           actionButton( ns( "tableDrawPoints" ), "Reset" ) )
   )
@@ -120,7 +120,8 @@ likelihoodAnimation <- function( input, output, session,
                 round( x.fit.evd$par[ 1 ], 1 ) - 10,
                 round( x.fit.evd$par[ 1 ] + 10, 1 ),
                 c( round( x.fit.evd$par[ 1 ], 1 ) - 5,
-                  round( x.fit.evd$par[ 1 ], 1 ) + 5 ) ) } )
+                  round( x.fit.evd$par[ 1 ], 1 ) + 5 ),
+                round = 0, step = .1 ) } )
   output$menuSliderScaleLim <- renderMenu( {
     x.fit.evd <- reactive.fitting()
     if ( is.null( x.fit.evd ) )
@@ -141,7 +142,8 @@ likelihoodAnimation <- function( input, output, session,
                 round( max( 0, x.fit.evd.scale  - 10 ), 1 ),
                 round( x.fit.evd.scale + 10, 1 ),
                 c( round( max( 0, x.fit.evd.scale - 5 ), 1 ),
-                  round( x.fit.evd.scale, 1 ) + 5 ) ) } )
+                  round( x.fit.evd.scale, 1 ) + 5 ),
+                round = 0, step = .1 ) } )
   output$menuSliderShapeLim <- renderMenu( {
     x.fit.evd <- reactive.fitting()
     if ( is.null( x.fit.evd ) )
@@ -162,12 +164,13 @@ likelihoodAnimation <- function( input, output, session,
                 round( x.fit.evd.shape - 1, 1 ),
                 round( x.fit.evd.shape + 1, 1 ),
                 c( round( x.fit.evd.shape, 1 ) - .3,
-                  round( x.fit.evd.shape, 1 ) + .3  ) ) } )
+                  round( x.fit.evd.shape, 1 ) + .3  ),
+                round = 0, step = .1 ) } )
   ## To enable the user to input her/his own custom initialization
-  ## points for the optimization it needs two things: three
+  ## points for the optimization it needs two things: 
   ## numerical inputs chosing the climex::likelihood.initials as
   ## default and a reactive vector gluing all together
-  output$inputInitialLocation <- renderMenu( {
+  output$tableInputInitials <- renderUI({
     x.block <- reactive.extreme()[[ 1 ]]
     if ( is.null( x.block ) || is.null( radioEvdStatistics() ) ){
       ## if the initialization has not finished yet just wait a
@@ -185,49 +188,27 @@ likelihoodAnimation <- function( input, output, session,
     }
     parameter.default <- climex::likelihood.initials( x.block,
                                                      model = model )
-    numericInput( "initialLocation", "",
-                 value = round( parameter.default[ 1 ], 4 ) ) } )
-  output$inputInitialScale <- renderMenu( {
-    x.block <- reactive.extreme()[[ 1 ]]
-    if ( is.null( x.block ) || is.null( radioEvdStatistics() ) ){
-      ## if the initialization has not finished yet just wait a
-      ## little longer
-      return( NULL )
-    }
     if ( radioEvdStatistics() == "GEV" ){
-      model <- "gev"
-      ## In order to fit the minimal extremes
-      if ( ( !is.null( buttonMinMax() ) ) &&
-           ( buttonMinMax() == "Min" ) )
-        x.block <- x.block*( -1 )
+      div( p( "actual initials", id = "tableInitialDescription",
+             style = "width: 34% !important;" ),
+          numericInput( "initialLocation", "", width = "22%",
+                       value = round( parameter.default[ 1 ], 4 ) ),
+          numericInput( "initialScale", "", width = "22%",
+                       value = round( parameter.default[ 2 ], 4 ),
+                       min = 0 ),
+          numericInput( "initialShape", "", width = "22%",
+                       value = round( parameter.default[ 3 ], 4 ) ),
+          id = "initialTable" )
     } else {
-      model <- "gpd"
-    }
-    parameter.default <- climex::likelihood.initials( x.block,
-                                                     model = model )
-    numericInput( "initialScale", "",
-                 value = round( parameter.default[ 2 ], 4 ),
-                 min = 0 ) } )
-  output$inputInitialShape <- renderMenu( {
-    x.block <- reactive.extreme()[[ 1 ]]
-    if ( is.null( x.block ) || is.null( radioEvdStatistics() ) ){
-      ## if the initialization has not finished yet just wait a
-      ## little longer
-      return( NULL )
-    }
-    if ( radioEvdStatistics() == "GEV" ){
-      model <- "gev"
-      ## In order to fit the minimal extremes
-      if ( ( !is.null( buttonMinMax() ) ) &&
-           ( buttonMinMax() == "Min" ) )
-        x.block <- x.block*( -1 )
-    } else {
-      model <- "gpd"
-    }
-    parameter.default <- climex::likelihood.initials( x.block,
-                                                     model = model )
-    numericInput( "initialShape", "",
-                 value = round( parameter.default[ 3 ], 4 ) ) } )
+      div( p( "actual initials", id = "tableInitialDescription",
+             style = "width: 40% !important;" ),
+          numericInput( "initialScale", "", width = "30%",
+                       value = round( parameter.default[ 1 ], 4 ),
+                       min = 0 ),
+          numericInput( "initialShape", "", width = "30%",
+                       value = round( parameter.default[ 2 ], 4 ) ),
+          id = "initialTable" )
+    } } )
   cached.table.init <- NULL
   initial.parameters.likelihood <- reactive( {
     x.block <- reactive.extreme()[[ 1 ]]
@@ -236,6 +217,8 @@ likelihoodAnimation <- function( input, output, session,
       ## little longer
       return( NULL )
     }
+    ## Redraw the initials every time the reset button is used
+    input$tableDrawPoints
     x.initial <- reactive.initials()
     x.fit.evd <- reactive.fitting()
     par.init <- x.fit.evd$par
@@ -273,20 +256,20 @@ likelihoodAnimation <- function( input, output, session,
                    input$sliderNumberInitialPoints - 1 ),
                    input$sliderShapeLim[ 1 ],
                    input$sliderShapeLim[ 2 ] ), 4 ) )
-      table.init <- data.frame( location = location,
-                               scale = scale, shape = shape )
+      table.init <- data.frame( Location = location,
+                               Scale = scale, Shape = shape )
     } else {
-      scale <- c( x.initial[ 2 ],
+      scale <- c( round( x.initial[ 1 ], 4 ),
                  round( stats::runif( (
                    input$sliderNumberInitialPoints - 1 ),
                    input$sliderScaleLim[ 1 ],
                    input$sliderScaleLim[ 2 ] ), 4 ) )
-      shape <- c( x.initial[ 3 ],
+      shape <- c( round( x.initial[ 2 ], 4 ),
                  round( stats::runif( (
                    input$sliderNumberInitialPoints - 1 ),
                    input$sliderShapeLim[ 1 ],
                    input$sliderShapeLim[ 2 ] ), 4 ) )
-      table.init <- data.frame( scale = scale, shape = shape )
+      table.init <- data.frame( Scale = scale, Shape = shape )
     }
     ## but we only want to have starting points which do not
     ## result in a NA
@@ -337,9 +320,9 @@ likelihoodAnimation <- function( input, output, session,
     ## the drawCallback ensures that the width of the parent table
     ## is not set to a specific pixel number but to 100% percent.
     ## This ensures its correct rendering on mobile devices
-    options = list( dom = 't', pageLength = 5,
+    options = list( dom = 't', 
                    drawCallback = I( "function( settings )
-            {document.getElementById( 'tableInitialPoints' ).style.width = '100%';}") ) )
+            {document.getElementById( 'animation-tableInitialPoints' ).style.width = '100%';}") ) )
   ## Displaying of the heuristic estimates for a wiser picking of
   ## the limits
   output$tableHeuristicEstimates <- renderDataTable( {
@@ -359,29 +342,41 @@ likelihoodAnimation <- function( input, output, session,
     x.initial <- reactive.initials()
     x.suggested <- climex::likelihood.initials( x.block, model = model )
     if ( radioEvdStatistics() == "GEV" ){
-      x.df <- data.frame( parameter = c( "fitting results",
+      x.df <- data.frame( Parameter = c( "fitting results",
                                         "suggested initials" ),
-                         location = c( round( x.mle.par[ 1 ], 4 ),
+                         Location = c( round( x.mle.par[ 1 ], 4 ),
                                       round( x.suggested[ 1 ], 4 ) ),
-                         scale = c( round( x.mle.par[ 2 ], 4 ),
+                         Scale = c( round( x.mle.par[ 2 ], 4 ),
                                    round( x.suggested[ 2 ], 4 ) ),
-                         shape = c( round( x.mle.par[ 3 ], 4 ),
+                         Shape = c( round( x.mle.par[ 3 ], 4 ),
                                    round( x.suggested[ 3 ], 4 ) ) )
     } else {
-      x.df <- data.frame( parameter = c( "fitting results",
+      x.df <- data.frame( Parameter = c( "fitting results",
                                         "suggested initials" ),
-                         scale = c( round( x.mle.par[ 1 ], 4 ),
+                         Scale = c( round( x.mle.par[ 1 ], 4 ),
                                    round( x.suggested[ 1 ], 4 ) ),
-                         shape = c( round( x.mle.par[ 2 ], 4 ),
+                         Shape = c( round( x.mle.par[ 2 ], 4 ),
                                    round( x.suggested[ 2 ], 4 ) ) )
-    }            
+    }
     return( x.df ) },
-    options = list( dom = 't',
+    options = list( dom = 't', autoWidth = FALSE,
+                   columnDefs = if ( radioEvdStatistics() == "GEV" ){
+                                  list( list( width = '22%',
+                                             targets = c( 1, 2, 3 ) ),
+                                       list( width = '34%',
+                                            targets = 0 ) )
+                                } else {
+                                  list( list( width = '30%',
+                                             targets = c( 1, 2 ) ),
+                                       list( width = '40%',
+                                            targets = 0 ) ) },
                    drawCallback = I( "function( settings )
-            {document.getElementById( 'tableHeuristicEstimates' ).style.width = '100%';}") ) )
+            {document.getElementById( 'animation-tableHeuristicEstimates' ).style.width = '100%';}") ) )
   ## the two dummies to get the current width of the screen
   output$placeholder <- renderPlot({
-    ttplot( x.block ) }, type = "cairo" )
+    ttplot( x.block ) } )
+  output$placeholderTable <- renderPlot({
+    ttplot( x.block ) } )
   output$drawLikelihoodAnimation <- renderUI( {
     ## This reactive content only depends on the action button
     ## because of the use of the isolate() functions.        
@@ -391,7 +386,9 @@ likelihoodAnimation <- function( input, output, session,
     }
     ## This feature is not ready yet
     if ( radioEvdStatistics() == "GP" ){
-      shinytoastr::toastr_error( "The animation is not implemented for the GP method yet!" )
+      shinytoastr::toastr_error( "The animation is not implemented for the GP method yet!",
+                                position = "top-center", timeOut = 8000,
+                                preventDuplicates = TRUE )
       return( NULL )
     }
     isolate( { x.block <- reactive.extreme()[[ 1 ]]
@@ -400,7 +397,7 @@ likelihoodAnimation <- function( input, output, session,
         ## little longer
         return( NULL )
       } } )
-    isolate( reactive.initials <- initial.parameters.likelihood() )
+    isolate( reactive.initials.values <- initial.parameters.likelihood() )
     isolate( {
       if ( selectOptimization() == "dfoptim::nmk" ){
         optimization.method <- "nmk"
@@ -422,13 +419,18 @@ likelihoodAnimation <- function( input, output, session,
         unlink( image.folder, recursive = TRUE )
       }
       ## if the shiny server is running on localhost it is run in
-      ## the CLIMEX.PATH folder and the folder containing the images
+      ## the climex.path folder and the folder containing the images
       ## is constantly overwritten to prevent the script from
       ## occupying to much space. Due to a setwd in the climex()
       ## wrapper we are already in this folder
       if ( session$clientData$url_hostname == "localhost" ||
            session$clientData$url_hostname == "127.0.0.1"  ){
-        working.folder <- paste0( CLIMEX.PATH, "app/www" )
+        ## The folder to put all the temporary files of the climex
+        ## package in is set in the options(). To modify it,
+        ## overwrite the options( climex.path ) in the .Rprofile
+        ## file in your home directory
+        climex.path <- getOption( "climex.path" )
+        working.folder <- paste0( climex.path, "app/www" )
         ## in case of the local session the variable image.folder
         ## was already set in the wrapper climex::climex()
       } else {
@@ -450,7 +452,7 @@ likelihoodAnimation <- function( input, output, session,
       }
       climex:::animation.wrapper(
                    time.series = x.block,
-                   starting.points = reactive.initials,
+                   starting.points = reactive.initials.values,
                    location.lim = location.lim,
                    scale.lim = isolate( input$sliderScaleLim ),
                    shape.lim = isolate( input$sliderShapeLim ),
@@ -586,10 +588,16 @@ plot.animation <- function( time.series, starting.points,
     shape.lim <- c( time.series.par[ 3 ] - .7,
                    time.series.par[ 3 ] + .7 )
   calculate.plane <- function( var1.lim, var2.lim, const,
-                              const.position ){
-    ## only likelihoods which are not plane.threshold values bigger
-    ## than the minimum will be displayed
-    threshold <- 1E3
+                              const.position, starting.points ){
+    ## Even on a logarithmic scale the negative log-likelihood will
+    ## saturate quite quickly. Therefore the range will be restricted
+    ## from the minimal point to either maximal nllh of all starting
+    ## points or range.maximum
+    starting.points.max <- max( apply( starting.points, 1,
+                                      climex::likelihood,
+                                      x.in = time.series ) )
+    range.maximum <- 5E2
+    threshold <- min( starting.points.max, range.maximum )
     var1.range <- seq( var1.lim[ 1 ], var1.lim[ 2 ],, number.of.points )
     var2.range <- seq( var2.lim[ 1 ], var2.lim[ 2 ],, number.of.points )
     plane.aux <- expand.grid( var1.range, var2.range )
@@ -616,11 +624,14 @@ plot.animation <- function( time.series, starting.points,
     return( plane )
   }
   plane.loc.sc <- calculate.plane( location.lim, scale.lim,
-                                  time.series.par[ 3 ], 3 )
+                                  time.series.par[ 3 ], 3,
+                                  starting.points )
   plane.loc.sh <- calculate.plane( location.lim, shape.lim,
-                                  time.series.par[ 2 ], 2 )
+                                  time.series.par[ 2 ], 2,
+                                  starting.points )
   plane.sc.sh <- calculate.plane( scale.lim, shape.lim,
-                                 time.series.par[ 1 ], 1 )
+                                 time.series.par[ 1 ], 1,
+                                 starting.points )
   ## Every element of this list contains one trajetory of the
   ## optimization.
   suppressWarnings(
@@ -655,23 +666,23 @@ plot.animation <- function( time.series, starting.points,
     ## Plotting the trajectory by adding new layers to the plot
     segments.plot <- data.frame(
         path = Reduce( rbind, list.segments ),
-        id = factor( Reduce(
+        ID = factor( Reduce(
             c, lapply( seq( 1, nrow( starting.points ) ), function( x )
               rep( x, nrow( list.segments[[ x ]] ) ) ) ) ) )
     ## it is not really useful to see individual trajectories
     ## disappearing. So the NA in segments.plot will be replaced by
     ## the last finite value.
-    for ( ii in as.numeric( unique( segments.plot$id ) ) ){
+    for ( ii in as.numeric( unique( segments.plot$ID ) ) ){
       if ( any( Reduce(
-          c, lapply( segments.plot[ segments.plot$id == ii, ],
+          c, lapply( segments.plot[ segments.plot$ID == ii, ],
                     is.na ) ) ) ){
-        segments.values <- segments.plot[ segments.plot$id == ii, ]
+        segments.values <- segments.plot[ segments.plot$ID == ii, ]
         ## the following variable contains the content of the last
         ## row without any NA
         segments.last.values <- as.numeric( segments.plot[
             segments.plot$path.step == (
-              max( segments.plot$path.step[ segments.plot$id == ii ],
-                  na.rm = TRUE ) - 1 ) & segments.plot$id == ii &
+              max( segments.plot$path.step[ segments.plot$ID == ii ],
+                  na.rm = TRUE ) - 1 ) & segments.plot$ID == ii &
               !is.na( segments.plot$path.step ), ] )
         ## filling all NA
         for ( rr in 1 : nrow( segments.values ) ){
@@ -683,7 +694,7 @@ plot.animation <- function( time.series, starting.points,
             min( segments.values$path.step ),
             nrow( segments.values) - 1 +
             min( segments.values$path.step ) )
-        segments.plot[ segments.plot$id == ii, ] <- segments.values
+        segments.plot[ segments.plot$ID == ii, ] <- segments.values
       }
     }
   } else {
@@ -695,7 +706,7 @@ plot.animation <- function( time.series, starting.points,
                  scale.end = x$scale[ 2 ],
                  shape.start = x$shape[ 1 ],
                  shape.end = x$shape[ 2 ] ) ) )
-    segments.plot$id <- factor( seq( 1, length( trajectories ) ) )
+    segments.plot$ID <- factor( seq( 1, length( trajectories ) ) )
   }
   ## New approach: just displaying specific number of points every
   ## time with a opacity increasing with the time that pasted.
@@ -709,12 +720,13 @@ plot.animation <- function( time.series, starting.points,
                    na.rm = TRUE, aes_string( x = names( plane[ col1 ] ),
                                             y = names( plane )[ col2 ],
                                             z = "likelihood.lower" ) ) +
-      scale_fill_gradient2( low = colors$plane.low,
-                           high = colors$plane.high,
-                           na.value = "white", trans = "log",
-                           label = function( x ) {
-                             options( digits = 2 );
-                             format( x, scientific = TRUE ) } ) +
+      scale_fill_gradient2(
+          low = colors$plane.low, high = colors$plane.high,
+          na.value = "white", trans = "log",
+          breaks = c( min( plane$likelihood, na.rm = TRUE ),
+                     max( plane$likelihood, na.rm = TRUE ) ),
+          label = function( x ) {
+            format( x, scientific = TRUE, digits = 2 ) } ) +
       theme_bw() +
       theme( axis.title = element_text( size = 15, colour = "#191970" ),
             axis.text = element_text( size = 12, colour = "#191970" ),
@@ -760,7 +772,8 @@ plot.animation <- function( time.series, starting.points,
         height.plot <- height
       grDevices::png( filename = paste0( image.folder, "/plane_",
                                         plane.name, id, ".png" ),
-                     width = width, height = height.plot,  type = "cairo" )
+                     width = width, height = height.plot,
+                     type = "cairo" )
       ## here I assume that the entries in segment are ordered
       ## according to their id
       gg.plot <- gg.plane +
@@ -771,14 +784,14 @@ plot.animation <- function( time.series, starting.points,
                        alpha = "path.step",
                        y = names( segment )[ col2* 2 - 1 ],
                        yend = names( segment )[ col2* 2 ],
-                       colour = "id" ),
+                       colour = "ID" ),
             arrow = arrow( length = unit( 0.3, "cm" ) ) ) +
         ## for better highlighting of the positions
         geom_point( data = segment,
                    aes_string( x = names( segment )[ col1* 2 - 1 ],
                               alpha = "path.step",
                               y = names( segment )[ col2* 2 - 1 ],
-                              colour = "id" ) ) +
+                              colour = "ID" ) ) +
         ## true end point
         geom_point( data = true.end, size = 2, shape = 21,
                    aes_string( x = names( true.end )[ col1 ],
@@ -786,8 +799,8 @@ plot.animation <- function( time.series, starting.points,
         xlim( x.lim ) + ylim( y.lim ) + scale_alpha( guide = FALSE ) +
         scale_colour_manual( values = color.points ) +
         theme( legend.box = "vertical", legend.box.just = "bottom" ) +
-        guides( fill = guide_legend( title = "Likelihood",
-                                    title.position = "top" ) )
+        guides( fill = guide_legend( title = "likelihood",
+                                    title.position = "left" ) )
       ## depending on the position there is a different legend shown
       ## or none (where the navigation tool resides)
       if ( plot.legend == 0 ){
@@ -835,7 +848,8 @@ plot.animation <- function( time.series, starting.points,
       height.plot <- height
     grDevices::png( filename = paste0( image.folder, "/plane_",
                                       plane.name, ".png" ),
-                   width = width, height = height.plot, type = "cairo" )
+                   width = width, height = height.plot,
+                   type = "cairo" )
     ## here I assume that the entries in segment are ordered according
     ## to their id
     gg.plot <- gg.plane +
@@ -845,18 +859,18 @@ plot.animation <- function( time.series, starting.points,
                      xend = names( segments )[ col1* 2 ], 
                      y = names( segments )[ col2* 2 - 1 ],
                      yend = names( segments )[ col2* 2 ],
-                     colour = "id" ),
+                     colour = "ID" ),
           arrow = arrow( length = unit( 0.3, "cm" ) ) ) +
       ## for better highlighting of the positions
       geom_point( data = segments, shape = 1, size = 3,
                  aes_string( x = names( segments )[ col1* 2 - 1 ],
                             y = names( segments )[ col2* 2 - 1 ],
-                            colour = "id" ) ) +
+                            colour = "ID" ) ) +
       xlim( x.lim ) + ylim( y.lim ) +
       scale_colour_manual( values = color.points ) +
       theme( legend.box = "vertical", legend.box.just = "bottom" ) +
-      guides( fill = guide_legend( title = "Likelihood",
-                                  title.position = "top" ) )
+      guides( fill = guide_legend( title = "likelihood",
+                                  title.position = "left" ) )
     ## depending on the position there is a different legend shown
     ## or none (where the navigation tool resides)
     if ( plot.legend == 0 ){
@@ -986,24 +1000,32 @@ animation.wrapper <- function( time.series, starting.points,
     ## able to see the folders using the full path
     files.all <- sub( "/srv/shiny-server/assets/tmp", "/assets/tmp",
                      files.all )
-  } else
-    files.all <- sub( paste0( CLIMEX.PATH, "app/www/" ), "", files.all )
+  } else {
+    ## The folder to put all the temporary files of the climex
+    ## package in is set in the options(). To modify it,
+    ## overwrite the options( climex.path ) in the .Rprofile
+    ## file in your home directory
+    climex.path <- getOption( "climex.path" )
+    files.all <- sub( paste0( climex.path, "app/www/" ), "", files.all )
+  }
   template[ grep( "%imgLocSc", template ) ] <-
     sub( "%imgLocSc", paste0( "'", grep( "loc.sc", files.all,
-                                        value = TRUE ), "'",
+                                        value = TRUE ),
+                             "?", runif( 1 ), "'",
                              collapse = ", " ),
         template[ grep( "%imgLocSc", template ) ] )
   template[ grep( "%imgLocSh", template ) ] <-
     sub( "%imgLocSh", paste0( "'", grep( "loc.sh", files.all,
-                                        value = TRUE ), "'",
+                                        value = TRUE ),
+                             "?", runif( 1 ), "'",
                              collapse = ", " ),
         template[ grep( "%imgLocSh", template ) ] )
   template[ grep( "%imgScSh", template ) ] <-
     sub( "%imgScSh", paste0( "'", grep( "sc.sh", files.all,
-                                       value = TRUE ), "'",
+                                       value = TRUE ), 
+                            "?", runif( 1 ), "'",
                             collapse = ", " ),
         template[ grep( "%imgScSh", template ) ] )
-  ## write the other parameters to the template too
   ## So unfortunately the ggsave function does not accept width
   ## values of the unit "pixel" so I have to hard code this fellow
   ## here
@@ -1013,6 +1035,23 @@ animation.wrapper <- function( time.series, starting.points,
       "%delay", delay, template[ grep( "%delay", template ) ] )
   template[ grep( "%loop", template ) ] <- sub(
       "%loop", loopMode, template[ grep( "%loop", template ) ] )
+  ## For the optimization routines, which do not provide the whole
+  ## optimization path, it does not make sense to have an animation.
+  ## The images will only flicker, what's quite annoying. Therefore
+  ## I will disable the controls and stop the animation for them
+  if ( optimization.method == "nmk" ){
+    template[ grep( "%initControl", template ) ] <- sub(
+        "%initControl", "[ 'first', 'play', 'last' ]",
+        template[ grep( "%initControl", template ) ] )
+    template[ grep( "%initStatus", template ) ] <- sub(
+        "%initStatus", "'play'", template[ grep( "%initStatus", template ) ] )
+  } else {
+    template[ grep( "%initControl", template ) ] <- sub(
+        "%initControl", "'NONE'",
+        template[ grep( "%initControl", template ) ] )
+    template[ grep( "%initStatus", template ) ] <- sub(
+        "%initStatus", "'stop'", template[ grep( "%initStatus", template ) ] )
+  }
   ## write the results to a JavaScript file
   writeLines( template, con = paste0( working.folder, "/animation.js" ) )
   invisible( template )

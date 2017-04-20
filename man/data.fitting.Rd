@@ -6,7 +6,7 @@
 \usage{
 data.fitting(reactive.extreme, reactive.initials, reactive.rows,
   fit.interactive, radioEvdStatistics, selectOptimization, buttonMinMax,
-  checkboxRerun, sliderThreshold)
+  checkboxRerun, sliderThreshold, selectDataBase)
 }
 \arguments{
 \item{reactive.extreme}{Reactive value returning a list containing
@@ -42,6 +42,16 @@ of the first run again to escape local minima.}
 threshold used within the GP fit and the extraction of the extreme
 events. Boundaries: minimal and maximal value of the deseasonalized
 time series (rounded). Default: 0.8* the upper end point.}
+
+\item{selectDataBase}{Character (select) input to determine the data
+source. In the default installation there are three options:
+c( "Input", "DWD", "Artificial data" ). The first one uses the data
+provided as an argument to the call of the \code{\link{climex}}
+function. The second one uses the database of the German weather
+service (see \code{link{download.data.dwd}}). The third one allows
+the user to produce random numbers distributed according to the GEV
+or GP distribution. Determined by menuSelectDataBase.
+Default = "DWD".}
 
 \item{reactive.initial}{Reactive value holding the initial parameters
 to start the time series fit at. \code{\link{data.initials}}. Those can

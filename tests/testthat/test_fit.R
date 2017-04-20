@@ -65,13 +65,11 @@ test_that( "fit.gev's error estimation works", {
   expect_equal( as.numeric( climex::fit.gev( x.block,
                                             error.estimation = "MLE" )$se
                            ),
-               c( 0.1389792, 0.09613785, 0.04381064, 0.06443386 ),
-               tolerance = 1E-6 )
+               c( 0.13897923, 0.09613785, 0.04381064, 0.06443386 ) )
   expect_equal( as.numeric( climex::fit.gev( x.block,
                                             error.estimation = "MC",
                                             monte.carlo.sample.size = 100
-                                            )$se
-                           ),
+                                            )$se ),
                c( 0.13479560, 0.09901418, 0.05845571, 0.30624937 ),
                tolerance = 4E-2 )
 })
@@ -95,29 +93,26 @@ test_that( "fit.gpd's rerun works", {
   expect_equal( as.numeric( climex::fit.gpd( x.thresh, rerun = FALSE,
                                             total.length = length(
                                                 temp.potsdam )  )$par ),
-               c( 4.2830168, -0.4237549 ), tolerance = 1e-3 )
+               c( 4.2829825, -0.4237584 ) )
   expect_equal( as.numeric( climex::fit.gpd( x.thresh, rerun = TRUE,
                                             total.length = length(
                                                 temp.potsdam )  )$par ),
-               c( 4.2828058, -0.4237436 ), tolerance = 1e-3 )
+               c( 4.2829825, -0.4237584 ) )
 })
 test_that( "fit.gpd's actual fitting works for all methods", {
-  ## I picked such a big tolerance since the initial parameters are
-  ## somewhat drawn randomly (using the type = 'best' argument) and
-  ## the fitting results are quite sensitive in their respect
   expect_equal( as.numeric( climex::fit.gpd( x.thresh,
                                             method = "Nelder-Mead",
                                             total.length = length(
                                                 temp.potsdam )  )$par ),
-               c( 4.2828058, -0.4237436 ), tolerance = 8E-4 )
+               c( 4.2829825, -0.4237584 ) )
   expect_equal( as.numeric( climex::fit.gpd( x.thresh, method = "BFGS",
                                             total.length = length(
                                                 temp.potsdam )  )$par ),
-               c( 4.2828058, -0.4237436 ), tolerance = 6E-4 )
+               c( 4.2821876, -0.4236399 ) )
   expect_equal( as.numeric( climex::fit.gpd( x.thresh, method = "CG",
                                             total.length = length(
-                                                temp.potsdam )  )$par ),
-               c( 4.2625695, -0.4210565 ), tolerance = 6E-2 )
+                                                temp.potsdam ) )$par ),
+               c( 4.2416588 + 4.29e-08 , -0.4182942 - 3.95e-08 ) )
   expect_equal( as.numeric( climex::fit.gpd( x.thresh, method = "SANN",
                                             total.length = length(
                                                 temp.potsdam )  )$par ),
@@ -125,7 +120,7 @@ test_that( "fit.gpd's actual fitting works for all methods", {
   expect_equal( as.numeric( climex::fit.gpd( x.thresh, method = "nmk",
                                             total.length = length(
                                                 temp.potsdam ) )$par ),
-                c( 4.2825927, -0.4236907 ), tolerance = 6E-4 )
+                c( 4.2829218, -0.4237466 ) )
 })
 test_that( "the handing over of initial parameters works", {
   expect_equal( as.numeric(
@@ -133,7 +128,7 @@ test_that( "the handing over of initial parameters works", {
                       initial = climex::likelihood.initials(
                                             x.thresh, model = "gpd" ),
                       total.length = length( temp.potsdam )  )$par ),
-      c( 4.2828058, -0.4237436 ), tolerance = 5e-4 )
+      c( 4.2829825, -0.4237584 ) )
   expect_equal( as.numeric(
       climex::fit.gpd( x.thresh, initial = c( 3, -.3 ),
                       total.length = length( temp.potsdam )  )$par ),
@@ -147,7 +142,7 @@ test_that( "fit.gpd's error estimation works", {
   expect_equal( as.numeric(
       climex::fit.gpd( x.thresh, error.estimation = "MLE",
                       total.length = length( temp.potsdam )  )$se ),
-      c( 0.25730911, 0.03625289, 0.04537997 ), tolerance = 1E-4 )
+      c( 0.25733083, 0.03623488, 0.04538729 ) )
   expect_equal( as.numeric(
       climex::fit.gpd( x.thresh, error.estimation = "MC",
                       total.length = length( temp.potsdam ),
@@ -162,5 +157,5 @@ test_that( "fit.gpd's threshold argument affect the result the way it is suppose
   expect_equal( as.numeric(
       climex::fit.gpd( x.thresh, threshold = 29,
                       total.length = length( temp.potsdam )
-                      )$return.level ), 38.18987, tolerance = 1e-4 )
+                      )$return.level ), 38.18985 + 3.46e-06 )
 })

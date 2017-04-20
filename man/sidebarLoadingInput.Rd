@@ -24,9 +24,13 @@ Other sidebar: \code{\link{data.selection}},
   \code{\link{sidebarDataSource}},
   \code{\link{sidebarDataTypeInput}},
   \code{\link{sidebarDataType}},
+  \code{\link{sidebarImprintInput}},
+  \code{\link{sidebarImprint}},
   \code{\link{sidebarLoadingGifOutput}},
   \code{\link{sidebarLoadingGif}},
-  \code{\link{sidebarLoading}}
+  \code{\link{sidebarLoading}},
+  \code{\link{sidebarSeriesLengthInput}},
+  \code{\link{sidebarSeriesLength}}
 }
 \author{
 Philipp Mueller

@@ -7,7 +7,7 @@
 ##'
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -26,18 +26,19 @@
 ##' @author Philipp Mueller 
 function.get.y.label <- function( selectDataBase, selectDataType ){
     if ( is.null( selectDataBase() ) ){
-      y.label <- "temperature in °C"            
-    } else if ( selectDataBase() == "artificial data" ){
+      y.label <- expression( paste( "temperature in ", "", degree, "C" ) )            
+    } else if ( selectDataBase() == "Artificial data" ){
       y.label <- "EVD sample"
     } else if ( selectDataBase() == "DWD" ){
       if ( is.null( selectDataType() ) ){
-        y.label <- "temperature in °C"
+        y.label <- expression( paste( "temperature in ", "", degree, "C" ) ) 
       } else if ( selectDataType() == "Daily precipitation" ){
         y.label <- "precipitation in mm"
       } else {
-        y.label <- "temperature in °C" }
-    } else if ( selectDataBase() == "input" ){
-      y.label <- "input"
+        y.label <- expression( paste( "temperature in ", "", degree, "C" ) )
+      }
+    } else if ( selectDataBase() == "Input" ){
+      y.label <- "Input"
     }
     return( y.label )
 }
@@ -73,7 +74,8 @@ generalTimeSeriesPlotOutput <- function( id ){
                   click = ns( "plotBlockedClick" ),
                   brush = brushOpts( id = ns( "plotBlockedBrush" ) ) ),
                 actionButton( ns( "excludeBlockedReset" ), "Reset" ),
-                actionButton( ns( "excludeBlockedToggle" ), "Brush" ) ) )
+                actionButton( ns( "excludeBlockedToggle" ), "Brush" ) ),
+         height = 370 )
 }
 
 ##' @title TabBox containing a plot of the pure and deseasonalized time
@@ -94,7 +96,7 @@ generalTimeSeriesPlotOutput <- function( id ){
 ##' as class 'xts'.
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -118,6 +120,9 @@ generalTimeSeriesPlotOutput <- function( id ){
 ##' threshold used within the GP fit and the extraction of the extreme
 ##' events. Boundaries: minimal and maximal value of the deseasonalized
 ##' time series (rounded). Default: 0.8* the upper end point.
+##' @param buttonMinMax Character (radio) input determining whether
+##' the GEV/GP distribution shall be fitted to the smallest or biggest
+##' vales. Choices: c( "Max", "Min ), default = "Max".
 ##'
 ##' @family climex-plot
 ##'
@@ -132,7 +137,8 @@ generalTimeSeriesPlotOutput <- function( id ){
 generalTimeSeriesPlot <- function( input, output, session,
                                   reactive.extreme, selectDataBase,
                                   selectDataType, function.get.y.label,
-                                  radioEvdStatistics, sliderThreshold ){
+                                  radioEvdStatistics, sliderThreshold,
+                                  buttonMinMax ){
   observe({
     if ( is.null( reactive.extreme() ) ){
       return( NULL )
@@ -183,8 +189,10 @@ generalTimeSeriesPlot <- function( input, output, session,
   
   ## Pure time series 
   output$plotTimeSeries <- renderDygraph( {
-    if ( is.null( reactive.extreme() ) || is.null( reactive.rows ) )
+    if ( is.null( reactive.extreme() ) || is.null( reactive.rows ) ||
+        is.null( buttonMinMax() ) ){
       return( NULL )
+    }
     x.data <- reactive.extreme( )
     x.extreme <- x.data[[ 3 ]][ which( index( x.data[[ 3 ]] ) %in%
                                        index( x.data[[ 1 ]] ) ) ]
@@ -192,7 +200,11 @@ generalTimeSeriesPlot <- function( input, output, session,
     plot.extremes[ !index( x.data[[ 3 ]] ) %in% index( x.extreme ) ] <- NA
     y.label <- function.get.y.label( selectDataBase, selectDataType )
     bind.dy <- cbind( x.data[[ 3 ]], plot.extremes )
-    names( bind.dy ) <- c( "pure ts", "annual maxima" )        
+    names( bind.dy ) <- c( "pure ts", "annual maxima" )
+    if ( class( y.label ) == "expression" ){
+      ## dygraphs is not able to handle neither expressions nor MathJax
+      y.label <- "temperature in &deg;C"
+    }
     dygraph( bind.dy, ylab = y.label ) %>%
       dySeries( "pure ts", color = colour.ts ) %>%
       dySeries( "annual maxima", color = colour.extremes,
@@ -200,8 +212,10 @@ generalTimeSeriesPlot <- function( input, output, session,
                strokeWidth = 0, pointSize = 2 ) } )
   ## deseasonalized time series
   output$plotDeseasonalized <- renderDygraph( {
-    if ( is.null( reactive.extreme() ) || is.null( reactive.rows ) )
+    if ( is.null( reactive.extreme() ) || is.null( reactive.rows ) ||
+        is.null( buttonMinMax() ) ){
       return( NULL )
+    }
     x.data <- reactive.extreme()
     x.extreme <- x.data[[ 2 ]][ which( index( x.data[[ 2 ]] ) %in%
                                        index( x.data[[ 1 ]] ) ) ]
@@ -210,7 +224,12 @@ generalTimeSeriesPlot <- function( input, output, session,
                   index( x.extreme ) ] <- NA
     y.label <- function.get.y.label( selectDataBase, selectDataType )
     bind.dy <- cbind( x.data[[ 2 ]], plot.extremes )
-    names( bind.dy ) <- c( "deseasonalized ts", "annual maxima" )        
+    names( bind.dy ) <- c( "deseasonalized ts", "annual maxima" )
+    print( y.label )
+    if ( class( y.label ) == "expression" ){
+      ## dygraphs is not able to handle neither expressions nor MathJax
+      y.label <- "temperature in &deg;C"
+    }
     dygraph( bind.dy, ylab = y.label ) %>%
       dySeries( "deseasonalized ts", color = colour.ts ) %>%
       dySeries( "annual maxima", color = colour.extremes,
@@ -218,13 +237,16 @@ generalTimeSeriesPlot <- function( input, output, session,
                strokeWidth = 0, pointSize = 2 ) } )
   ## Using ggplot2 for an interactive excluding of points in x.block.
   output$plotBlocked <- renderPlot( {
-    if ( is.null( reactive.extreme() ) || is.null( reactive.rows ) )
+    if ( is.null( reactive.extreme() ) || is.null( reactive.rows ) ||
+        is.null( buttonMinMax() ) ){
       return( NULL )
+    }
     x.extreme <- reactive.extreme()[[ 1 ]]
     ## In general just checking for the input$sliderThreshold to be not NULL
     ## would be sufficient and there is no real need for
     ## input$radioEvdStatistics. But why outsmart ourselves?
-    if ( radioEvdStatistics() == "GP" && !is.null( sliderThreshold() ) ){
+    if ( radioEvdStatistics() == "GP" && !is.null( sliderThreshold() ) &&
+        selectDataBase() != "Artificial data" ){
       x.extreme <- x.extreme + sliderThreshold()
     }
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
@@ -245,7 +267,7 @@ generalTimeSeriesPlot <- function( input, output, session,
       ylab( y.label ) + theme_bw() +
       theme( axis.title = element_text( size = 17, colour = colour.ts ),
             axis.text = element_text( size = 13, colour = colour.ts ) )
-  }, type = "cairo" )
+  } )
   return( reactive.rows )
 }
 
@@ -269,7 +291,7 @@ generalTimeSeriesPlot <- function( input, output, session,
 generalFitPlotOutput <- function( id ){
   # Create a namespace function using the provided id
   ns <- NS( id )
-  box( title = h2( "GEV fit" ), status = "primary", 
+  box( title = h2( "GEV fit" ), status = "primary", height = 505,
       solidheader = TRUE, width = 8, id = "boxPlotFit",
       column( 9, plotOutput( ns( "plotFitEvd" ) ) ),
       column( 3, plotOutput( ns( "plotFitPP" ), height = 140 ),
@@ -305,7 +327,7 @@ generalFitPlotOutput <- function( id ){
 ##' becomes way more easy to customize.
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -343,7 +365,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
   ## Wait for proper initialization
   observe( {
     if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) ||
-        is.null( reactive.rows ) ){
+         is.null( reactive.rows ) ){
       return( NULL )
     }
   }, priority = 1 )
@@ -354,17 +376,21 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
   colour.extremes.light <- grDevices::rgb( 1, 0.9, 0.8 )
   ## Plots the result of the fitted GEV
   output$plotFitEvd <- renderPlot( {
-    if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) )
+    if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) ||
+        is.null( buttonMinMax() ) ){
       return( NULL )
+    }
     x.extreme <- reactive.extreme()[[ 1 ]]
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
     x.fit.evd <- reactive.fitting()
-    if ( buttonMinMax() == "Min" && radioEvdStatistics() == "GEV" ){
-      x.kept <- x.kept* ( -1 )
+    if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" ){
+      ## To just perform an ordinary plot is not sufficient when working
+      ## with minimal extremes. Since the GEV is fitted to the negated
+      ## time series the whole density has to be multiplied by -1 instead
+      ## of just moving it with -1*location
+      x.fit.evd$x <- x.fit.evd$x* -1
       x.fit.evd$par[ 1 ] <- x.fit.evd$par[ 1 ]* -1
-      shinytoastr::toastr_info( "Since the minimal extremes are chosen the GEV distribution \n will be fitted to the negated time series" )
     }
-    x.lim <- c( max( x.kept ), min( x.kept ) )
     ## The amount of bins is changing whenever a single event
     ## is toggled. This is distracting only if a certain amount
     ## of points are toggled (5%) a different number of bins shall
@@ -374,15 +400,22 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
     gg1.bins <- ( ( ( length( x.kept ) - 1 )*100/
                     length( x.extreme ) )  %/% 5 )* 0.025
     x.label <- function.get.y.label( selectDataBase, selectDataType )
-    plot( x.fit.evd, bin.factor = gg1.bins ) +
+    gg.evd <- plot( x.fit.evd, bin.factor = gg1.bins ) + ylab( "density" ) +
       xlab( x.label ) + theme( legend.position = "none" ) +
       theme( axis.title = element_text( size = 17, colour = colour.ts ),
             axis.text = element_text( size = 13, colour = colour.ts ) )
-  }, type = "cairo" )
+    if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" ){
+      gg.evd <- gg.evd + scale_x_reverse(
+                             labels = function( lab ) return( -lab ) )
+    }
+    return( gg.evd )
+  } )
   ## PP plot for fit statistics
   output$plotFitPP <- renderPlot( {
-    if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) )
+    if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) ||
+        is.null( buttonMinMax() ) ){
       return( NULL )
+    }
     x.extreme <- reactive.extreme()[[ 1 ]]
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
     x.fit.evd <- reactive.fitting()
@@ -405,14 +438,21 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       plot.data <- data.frame( model = model, empirical = empirical )
     } else {
       ## radioEvdStatistics() == "GP"
+      if ( selectDataBase() == "Artificial data" ){
+        ## Since I right now don't see the point of introducing constant
+        ## threshold in the artificial data, it will be set to zero.
+        threshold <- 0
+      } else {
+        threshold <- sliderThreshold()
+      }
       plot.data <- data.frame(
           model = sort( climex:::qevd( p = stats::ppoints( length( x.kept ),
                                                           0 ),
                                       scale = x.fit.evd$par[ 1 ], 
                                       shape = x.fit.evd$par[ 2 ],
                                       model = "gpd", silent = TRUE,
-                                      threshold = sliderThreshold() ) ),
-          empirical = sort( as.numeric( x.kept ) ) + sliderThreshold() )
+                                      threshold = threshold ) ),
+          empirical = sort( as.numeric( x.kept ) ) + threshold )
     }
     plot.fit <- stats::lm( empirical ~ model, plot.data )[[ 1 ]]
     gg.pp <- ggplot() +
@@ -424,12 +464,14 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       theme_bw() +
       theme( axis.title = element_text( size = 15, colour = colour.ts ),
             axis.text = element_text( size = 12, colour = colour.ts ) )
-    return( gg.pp ) }, type = "cairo" )
+    return( gg.pp ) } )
   ## Quantile-quantile plot for fit statistics with samples
   ## drawn from the fitted distribution
   output$plotFitQQ <- renderPlot( {
-    if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) )
+    if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) ||
+        is.null( buttonMinMax() ) ){
       return( NULL )
+    }
     x.extreme <- reactive.extreme()[[ 1 ]]
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
     x.fit.evd <- reactive.fitting()
@@ -450,12 +492,19 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
         empirical <- sort( as.numeric( x.kept ) )
       }
     } else {
+      if ( selectDataBase() == "Artificial data" ){
+        ## Since I right now don't see the point of introducing constant
+        ## threshold in the artificial data, it will be set to zero.
+        threshold <- 0
+      } else {
+        threshold <- sliderThreshold()
+      }
       sampled <- sort( climex:::revd( n = length( x.kept ),
                                      scale = x.fit.evd$par[ 1 ],
                                      shape = x.fit.evd$par[ 2 ],
                                      silent = TRUE, model = "gpd",
-                                     threshold = sliderThreshold() ) )
-      empirical <- sort( as.numeric( x.kept ) + sliderThreshold() )
+                                     threshold = threshold ) )
+      empirical <- sort( as.numeric( x.kept ) + threshold )
     }
     length.e <- length( empirical )
     length.s <- length( sampled )
@@ -499,10 +548,12 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       theme( axis.title = element_text( size = 15, colour = colour.ts ),
             axis.text = element_text( size = 12, colour = colour.ts ) )
     return( gg.qq )        
-  }, type = "cairo" )
+  } )
   output$plotFitReturnLevel <- renderPlot( {
-    if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) )
+    if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) ||
+        is.null( buttonMinMax() ) ){
       return( NULL )
+    }
     x.data <- reactive.extreme()
     x.extreme <- x.data[[ 1 ]]
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
@@ -514,7 +565,8 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
     ## return level myself! The confidence level will be set to
     ## one standard deviation.
     fit.aux <- x.fit.evd
-    if ( buttonMinMax() == "Min" && radioEvdStatistics() == "GEV" ){
+    if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" &&
+         radioEvdStatistics() == "GEV" ){
       ## For calculating the return level of the minimum extremes,
       ## one has to multiply the time series with (-1), fit the
       ## data using standard GEV, calculate the return level using
@@ -525,7 +577,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       ## used. It underestimates the error but is way faster than
       ## the Monte Carlo alternative.
       fit.aux$par[ 1 ] <- fit.aux$par[ 1 ]* ( -1 )
-      fit.aux$x <- fit.aux$x* ( -1 ) 
+      fit.aux$x <- fit.aux$x* ( -1 )
       if ( is.nan( climex::likelihood( fit.aux$par, fit.aux$x ) ) ){
         ## Just multiplying by -1 does not always work since
         ## the processes in the real world are rarely symmetric
@@ -561,57 +613,94 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
                              total.length = length( x.data[[ 3 ]] ),
                              model = model )
     }
-    if ( buttonMinMax() == "Min" && radioEvdStatistics() == "GEV" ){
-      x.confidence.intervals.aux$return.levels <-
-        x.confidence.intervals.aux$return.levels* ( -1 )
+    if ( class( x.confidence.intervals.aux ) != "list" ||
+        any( is.nan( x.confidence.intervals.aux$errors[ , 1 ] ) ) ) {
+      ## The confidence intervals couldn't be calculated for using
+      ## the MLE approach. This can happen for quite low shape
+      ## parameter (< -1). Since the calculations involving those
+      ## are already quite time consuming, I will just don't use
+      ## any confidence intervals at all.
+      x.confidence.intervals <- NULL
+    } else {
+      if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" &&
+           radioEvdStatistics() == "GEV" ){
+        x.confidence.intervals.aux$return.levels <-
+          x.confidence.intervals.aux$return.levels* ( -1 )
+      }
+      x.confidence.intervals <- data.frame(
+          ci.low = x.confidence.intervals.aux$return.levels -
+            as.numeric( x.confidence.intervals.aux$errors ),
+          level = x.confidence.intervals.aux$return.levels,
+          ci.high = x.confidence.intervals.aux$return.levels +
+            as.numeric( x.confidence.intervals.aux$errors ) )
     }
-    x.confidence.intervals <- data.frame(
-        ci.low = x.confidence.intervals.aux$return.levels -
-          as.numeric( x.confidence.intervals.aux$errors ),
-        level = x.confidence.intervals.aux$return.levels,
-        ci.high = x.confidence.intervals.aux$return.levels +
-          as.numeric( x.confidence.intervals.aux$errors ) )
     if ( radioEvdStatistics() == "GEV" ){
-      if ( buttonMinMax() == "Min" ){
+      if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" ){
         plot.data <- data.frame(
             x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
             y = -1* sort( as.numeric( x.kept* -1 ) ) )
+        plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
+                           min( x.confidence.intervals[ , 3 ] ) )
       } else {
         plot.data <- data.frame(
             x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
             y = sort( as.numeric( x.kept ) ) )
+        plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
+                           max( x.confidence.intervals[ , 3 ] ) )
       } 
     } else {
       ## GP
+      if ( selectDataBase() == "Artificial data" ){
+        ## Since I right now don't see the point of introducing constant
+        ## threshold in the artificial data, it will be set to zero.
+        threshold <- 0
+      } else {
+        threshold <- sliderThreshold()
+      }
       plot.data <-  data.frame(
           x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
-          y = sort( as.numeric( x.kept + sliderThreshold() ) ) )
+          y = sort( as.numeric( x.kept + threshold ) ) )
+      plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
+                         max( x.confidence.intervals[ , 3 ] ) )
     }
-    plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
-                       max( x.confidence.intervals[ , 3 ] ) )
-    plot.statistics <- data.frame(
-        period = -1/ ( log( 1 - 1/ x.period ) ),
-        level = as.numeric( x.confidence.intervals[ , 2 ] ),
-        ci.low = as.numeric( x.confidence.intervals[ , 1 ] ), 
-        ci.high = as.numeric( x.confidence.intervals[ , 3 ] ) )
-    gg.rl <- ggplot() +
-      geom_point( data = plot.data, aes( x = x, y = y ), colour = colour.ts,
-                 shape = 1, size = 2, alpha = 0.8, na.rm = TRUE ) +
-      geom_line( data = plot.statistics, aes( x = period, y = level ),
-                colour = colour.extremes, na.rm = TRUE ) +
-      geom_line( data = plot.statistics, aes( x = period, y = ci.low ),
-                linetype = 2, colour = colour.extremes, na.rm = TRUE ) +
-      geom_line( data = plot.statistics, aes( x = period, y = ci.high ),
-                linetype = 2, colour = colour.extremes, na.rm = TRUE ) +
-      xlab( "return period" ) + ylab( "return level" ) +
-      theme_bw() + scale_x_log10( limits = c( 1, 1000 ) ) +
-      theme( axis.title = element_text( size = 15, colour = colour.ts ),
-            axis.text = element_text( size = 12, colour = colour.ts ) )
+    if ( is.null( x.confidence.intervals ) ){
+      ## Plot without confidence intervals
+      gg.rl <- ggplot() +
+        geom_point( data = plot.data, aes( x = x, y = y ), colour = colour.ts,
+                   shape = 1, size = 2, alpha = 0.8, na.rm = TRUE ) +
+        xlab( "return period" ) + ylab( "return level" ) +
+        theme_bw() + scale_x_log10() +
+        theme( axis.title = element_text( size = 15, colour = colour.ts ),
+              axis.text = element_text( size = 12, colour = colour.ts ) )
+      plot.y.limits <- NULL
+    } else {
+      ## Plot with confidence intervals
+      plot.statistics <- data.frame(
+          period = -1/ ( log( 1 - 1/ x.period ) ),
+          level = as.numeric( x.confidence.intervals[ , 2 ] ),
+          ci.low = as.numeric( x.confidence.intervals[ , 1 ] ), 
+          ci.high = as.numeric( x.confidence.intervals[ , 3 ] ) )
+      gg.rl <- ggplot() +
+        geom_point( data = plot.data, aes( x = x, y = y ), colour = colour.ts,
+                   shape = 1, size = 2, alpha = 0.8, na.rm = TRUE ) +
+        geom_line( data = plot.statistics, aes( x = period, y = level ),
+                  colour = colour.extremes, na.rm = TRUE ) +
+        geom_line( data = plot.statistics, aes( x = period, y = ci.low ),
+                  linetype = 2, colour = colour.extremes, na.rm = TRUE ) +
+        geom_line( data = plot.statistics, aes( x = period, y = ci.high ),
+                  linetype = 2, colour = colour.extremes, na.rm = TRUE ) +
+        xlab( "return period" ) + ylab( "return level" ) +
+        theme_bw() + scale_x_log10( limits = c( 1, 1000 ) ) +
+        theme( axis.title = element_text( size = 15, colour = colour.ts ),
+              axis.text = element_text( size = 12, colour = colour.ts ) )
+    }
     if ( !is.null( buttonMinMax() ) ){
       if ( buttonMinMax() == "Min" && radioEvdStatistics() == "GEV" ){
-        gg.rl <- gg.rl + scale_y_reverse() 
-      } else
-        gg.rl <- gg.rl + ylim( plot.y.limits )
+        gg.rl <- gg.rl + scale_y_reverse( limits = plot.y.limits )
+      } else {
+        if ( !is.null( plot.y.limits ) )
+          gg.rl <- gg.rl + ylim( plot.y.limits )
+      }
     }
-    return( gg.rl )  }, type = "cairo" )
+    return( gg.rl ) } )
 }

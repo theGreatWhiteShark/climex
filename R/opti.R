@@ -105,7 +105,7 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE,
   if ( is.null( initial ) )
     initial <- likelihood.initials( x )
   if ( is.null( error.estimation ) )
-    error.estimation <- "none"
+    error.estimation <- "MLE"
   error.estimation <- match.arg( error.estimation )
   ## if the error.estimation is not required, do not calculate the
   ## hessian
@@ -403,7 +403,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
   if ( is.null( initial ) )
     initial <- likelihood.initials( x, model = "gpd" )
   if ( is.null( error.estimation ) )
-    error.estimation <- "none"
+    error.estimation <- "MLE"
   error.estimation <- match.arg( error.estimation )
   ## if the error.estimation is not required, do not calculate the
   ## hessian
@@ -414,17 +414,36 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
   ## Optimization
   if ( method %in% c( "Nelder-Mead", "BFGS", "CG" ) ){
     suppressWarnings(
-        res.optim <- stats::optim( initial, optim.function,
-                                  gr = gradient.function, x = x,
-                                  hessian = hessian.calculate,
-                                  method = method,
-                                  model = "gpd", ... ) )
+        res.optim <- try(
+            stats::optim( initial, optim.function,
+                         gr = gradient.function, x = x,
+                         hessian = hessian.calculate,
+                         method = method,
+                         model = "gpd", ... ),
+            silent = TRUE ) )
+    if ( class( res.optim ) == "try-error" ){
+      ## Sometimes (e.g. for absurdly low thresholds) the optimization
+      ## fails due to the calculation of the hessian. In this case reset
+      ## the error estimation and return missing errors
+      error.estimation <- "none"
+      hessian.calculate <- FALSE
+      suppressWarnings(
+          res.optim <- stats::optim( initial, optim.function,
+                                    gr = gradient.function, x = x,
+                                    hessian = hessian.calculate,
+                                    method = method,
+                                    model = "gpd", ... ) )
+      res.optim$errors <- rep( NaN, 3 + length( return.period ) )
+      names( res.optim$errors ) <- c( "scale", "shape",
+                                     paste0( return.period, ".rlevel" ) )
+    }
   } else if ( method == "SANN" ){
     ## Since this implementation didn't yielded nice results I switch
     ## to another package
-    aux <- GenSA::GenSA( as.numeric( initial ), optim.function,
-                        lower = c( 0, -Inf ), upper = c( Inf, Inf ),
-                        x = x, model = "gpd", ... )
+    aux <- suppressWarnings(
+        GenSA::GenSA( as.numeric( initial ), optim.function,
+                     lower = c( 0, -Inf ), upper = c( Inf, Inf ),
+                     x = x, model = "gpd", ... ) )
     ## return a NaN when not optimizing instead of the initial parameters
     if ( sum( aux$par %in% initial ) > 1 ){
       ## more than one parameter value remained unchanged
@@ -444,9 +463,10 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
     ## in R. So I could easily modify it and display the progress of
     ## the optimization.
     ## In principle I would recommend using the default optim procedures.
-    aux <- dfoptim::nmk( par = initial, fn = likelihood, x = x,
-                        MODIFIED = TRUE, WARNINGS = FALSE,
-                        model = "gpd", ... )
+    aux <- suppressWarnings(
+        dfoptim::nmk( par = initial, fn = likelihood, x = x,
+                     MODIFIED = TRUE, WARNINGS = FALSE,
+                     model = "gpd", ... ) )
     res.optim <- list( par = aux$par, value = aux$value,
                       counts = aux$feval, convergence = 0,
                       message = NULL, updates = aux$x.updates,
@@ -471,9 +491,10 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
                            hessian = hessian.calculate, method = method,
                            model = "gpd", ... ), silent = TRUE ) )
     } else if ( method == "nmk" ){
-      aux <- dfoptim::nmk( par = res.optim$par, fn = likelihood, x = x,
-                          MODIFIED = TRUE,
-                          WARNINGS = FALSE, model = "gpd", ... )
+      aux <- suppressWarnings(
+          dfoptim::nmk( par = res.optim$par, fn = likelihood, x = x,
+                       MODIFIED = TRUE, WARNINGS = FALSE,
+                       model = "gpd", ... ) )
       res.optim.rerun <- list( par = aux$par, value = aux$value,
                               counts = aux$feval,
                               convergence = 0, message = NULL,
@@ -559,7 +580,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
                              error.estimation = "none", model = "gpd",
                              threshold = threshold,
                              total.length = total.length,
-                             original.time.series = x,
+                             thresholded.time.series = x,
                              silent = silent )
                 ) ) ) ) )
       }
@@ -685,15 +706,26 @@ likelihood <- function( parameters = NULL, x.in,
   z <- 1 + y* gamma
 
   if ( model == "gev" ){
-    suppressWarnings( {
-      negloglikelihood <- length( x.in )* log( scale ) +
-        alpha* sum( log( z ) ) + sum( z^{ -1/ shape } )
-    } )
+    if ( shape == 0 ){
+      ## Using the Gumbel distribution. But only when the shape parameter
+      ## is exactly 0
+      negloglikelihood <- length( x.in )*log( scale ) +
+        sum( y )/ scale + sum( exp( -y/ scale ) )
+    } else {
+      suppressWarnings( {
+        negloglikelihood <- length( x.in )* log( scale ) +
+          alpha* sum( log( z ) ) + sum( z^{ -1/ shape } )
+      } )
+    }
   } else {
-    suppressWarnings( {
+    if ( shape == 0 ){
+      ## Again: just for a shape exactly equal to 0
+      negloglikelihood <- length( x.in )* log( scale ) +
+        sum( y )/scale 
+    } else {
       negloglikelihood <- length( x.in )* log( scale ) +
         alpha* sum( log( z ) )
-    } )
+    }
   }
   names( negloglikelihood ) <- NULL
   return( negloglikelihood )
@@ -824,28 +856,32 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
       ## When, for some reason, the time series consists of just a
       ## sequence of one unique number the calculation of the skewness
       ## returns NaN and the function throws an error
-      if ( is.na( x.skewness ) )
-        x.skewness <- 0
-      if ( x.skewness >= .7 && x.skewness <= 1.6 ){
-        sh.init <- 0.001
-      } else if( x.skewness < .7 ){
-        sh.init <- -.1
-        if ( x.skewness < .1 ){
-          sh.init <- -.2775
-          if ( x.skewness < -.2 ){
-            sh.init <- -.4
-            if ( x.skewness < -1 )
-              ## Some arbitrary high value. Didn't checked it.
-              sh.init <- -1.5 
-          }
-        }
-      } else if ( x.skewness > 1.4 ){
-        sh.init <- .2
-        if ( x.skewness > 3.4 )
-          sh.init <- 1.5 # Some arbitrary high value. Didn't checked it.
+      if ( is.nan( x.skewness ) ){
+        ## If you can not calculate the skewness, set the shape parameter
+        ## to .001
+        x.skewness <- .8
       }
-    } else
-      sh.init <- 0.00001
+      if ( x.skewness > 4 ){
+        sh.init <- .75
+      } else if ( x.skewness > 2.5 ){
+        sh.init <- .6
+      } else if ( x.skewness > 1.6 ){
+        sh.init <- .35
+      } else if ( x.skewness > .7 ){
+        sh.init <- .001
+      } else if( x.skewness > .1 ){
+        sh.init <- -.1
+      } else if ( x.skewness > -.2 ){
+        sh.init <- -.2775
+      } else  if ( x.skewness > -1 ){
+        sh.init <- -.4
+      } else {
+        sh.init <- -.75
+      }
+    } else {
+      ## No modification with respect to the ismev package
+      sh.init <- .1
+    }
     if ( type == "mom" )
       return( c( loc.init, sc.init, sh.init ) )    
     ## Approximationg using the Lmoments method of Hosking, Wallis
@@ -867,19 +903,16 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
     }
     if ( type == "lmom" )
       return( initial.lmom )
-
-    initial.gum1 <- c( loc.init, sc.init, sh.init )   
-    initial.gum2 <- c( loc.init, sc.init, sh.init +
-                                          stats::rnorm( 1, sd = 0.5 ) ) 
-    initial.gum3 <- c( loc.init, sc.init, sh.init +
-                                          stats::rnorm( 1, sd = 0.5 ) ) 
-    initial.default1 <- c( loc.init, sc.init, 0.1 )
-    initial.default2 <- c( loc.init, sc.init, 1E-8 )
     ## Instead of taking just a default shape parameter, pick a bunch
     ## of them and query for the one resulting in the lowest negative
-    ## log-likelihood
-    sh.init.vector <- c( sh.init + stats::rnorm( 100, sd = .5 ), .1,
-                        1e-8, sh.init )
+    ## log-likelihood. In addition to the range of different shape
+    ## parameter the determined estimate from before as well as the
+    ## heuristics of the extRemes (1e-8) and ismev (.1) package are
+    ## evaluated as well.
+    number.init.parameters <- 30
+    sh.init.vector <- c( seq( sh.init - .3, sh.init + .3, ,
+                             number.init.parameters - 3 ),
+                        sh.init, 1e-8, .1 )
     parameter.vector <- rbind(
         data.frame( location = rep( loc.init, length( sh.init.vector ) ),
                    scale = rep( sc.init, length( sh.init.vector ) ),
@@ -920,10 +953,27 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
       ## the sign of the shape (but unfortunately not the magnitude) can
       ## be estimated
       x.skewness <- moments::skewness( x )
-      if ( x.skewness >= 0 ){
-        sh.init <- .1
+      ## For series of absurdly high values (e.g. big shape and scale
+      ## parameters) the skewness function can return NaN
+      if ( !is.nan( x.skewness ) && x.skewness < 0 ){
+        x.skewness <- 1.5
+      }
+      if ( x.skewness > 4.5 ){
+        sh.init <- .75
+      } else if ( x.skewness > 2.5 ){
+        sh.init <- .5
+      } else if ( x.skewness > 1.8 ){
+        sh.init <- .25
+      } else if ( x.skewness > 1.5 ){
+        sh.init <- .05
+      } else if ( x.skewness > 1.2 ){
+        sh.init <- -.05
+      } else if ( x.skewness > .8 ){
+        sh.init <- -.25
+      } else if ( x.skewness > .2 ){
+        sh.init <- -.5
       } else {
-        sh.init <- -.1
+        sh.init <- -.75
       }
     } else {
       sh.init <- .1
@@ -933,9 +983,14 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
 
     ## Instead of taking just a default shape parameter, pick a bunch
     ## of them and query for the one resulting in the lowest negative
-    ## log-likelihood
-    sh.init.vector <- c( sh.init + stats::rnorm( 100, sd = .5 ), .1,
-                        1e-8, sh.init )
+    ## log-likelihood. In addition to the range of different shape
+    ## parameter the determined estimate from before as well as the
+    ## heuristics of the extRemes (1e-8) and ismev (.1) package are
+    ## evaluated as well.
+    number.init.parameters <- 30
+    sh.init.vector <- c( seq( sh.init - .3, sh.init + .3, ,
+                             number.init.parameters - 3 ),
+                        sh.init, 1e-8, .1 )
     parameter.vector <- rbind(
         data.frame( scale = rep( sc.init, length( sh.init.vector ) ),
                    shape = sh.init.vector ),
@@ -945,7 +1000,6 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
                             climex::likelihood( c( ss[ 1 ], ss[ 2 ] ),
                                                x.in = x,
                                                model = "gpd" ) ) )
-
   }
   if ( !all( is.nan( as.numeric( initials.likelihood ) ) ) ){
     ## Returning the set of initial parameters which is yielding the

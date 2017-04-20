@@ -18,7 +18,7 @@ named stations in those list.
 }
 \details{
 To use this function input$selectDataBase has to be set to
-"input".
+"Input".
 }
 \seealso{
 Other sidebar: \code{\link{data.selection}},
@@ -30,10 +30,14 @@ Other sidebar: \code{\link{data.selection}},
   \code{\link{sidebarDataSource}},
   \code{\link{sidebarDataTypeInput}},
   \code{\link{sidebarDataType}},
+  \code{\link{sidebarImprintInput}},
+  \code{\link{sidebarImprint}},
   \code{\link{sidebarLoadingGifOutput}},
   \code{\link{sidebarLoadingGif}},
   \code{\link{sidebarLoadingInput}},
-  \code{\link{sidebarLoading}}
+  \code{\link{sidebarLoading}},
+  \code{\link{sidebarSeriesLengthInput}},
+  \code{\link{sidebarSeriesLength}}
 }
 \author{
 Philipp Mueller

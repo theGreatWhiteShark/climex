@@ -1,18 +1,46 @@
-##' @title Downloads daily weather data from observation stations in Germany and extracts minimum and maximum temperature as well as precipitation data.
+##' @title Downloads daily weather data from observation stations in
+##' Germany and extracts minimum and maximum temperature as well as
+##' precipitation data.
 ##'
-##' @details The download will be done using 'wget'. Per default the CLIMEX.PATH variable will be used to set the download path. Since this function will check the files already present it's strongly recommended to use the save.downloads options. Whenever this function is invoked again only updated files will be downloaded which saves a lot of traffic and time. The csv.export option can be used to export the time series into a data type file making it available outside of R too. In addition the geographic positions of the individual stations will be extracted and saved as well. They are needed for the leaflet module of the climex shiny app. CAUTION: since this procedure takes a while its run in parallel on all cores of your machine!
+##' @details The download will be done using 'wget'. Per default the
+##' climex.path variable from the getOption( "climex.path" ) will be
+##' used to set the download path. Since this function will check the
+##' files already present it's strongly recommended to use the
+##' save.downloads options. Whenever this function is invoked again only
+##' updated files will be downloaded which saves a lot of traffic and
+##' time. The csv.export option can be used to export the time series
+##' into a data type file making it available outside of R too. In
+##' addition the geographic positions of the individual stations will
+##' be extracted and saved as well. They are needed for the leaflet
+##' module of the climex shiny app. CAUTION: since this procedure takes
+##' a while its run in parallel on all cores of your machine!
 ##'
-##' @param save.downloads If TRUE the downloaded .zip files are stored in download.path/downloads_dwd. Else they will be deleted after the extracting. Default = TRUE.
-##' @param download.path Specifies the data will be stored and downloaded too. It is advised to store it using the global variable CLIMEX.PATH which is also used for importing the saved data.
-##' @param csv.export If TRUE creates an additional folder containing .csv files with the individual station data. Using this the data can be used outside of R too. Default = FALSE.
-##' @param data.type Specifies which kind of information from the downloaded files should be extracted. This input can be a character vector  The options are: temp.max, temp.min, prec, default (for both the daily maximum and minimum temperature and the precipitation), temp.mean, vapor.pressure, cloud.amount, air.pressure, relative.humidity, wind.speed, temp.min.at.ground, wind.speed.peak, prec.type (0 = no precipitation, 1 = only rain (before 1979), 2 = unknown, 4 = only rain (after 1979), 7 = only snow, 8 = snow or rain), sunshine.duration, snow.height. Default = default.
-##'
+##' @param save.downloads If TRUE the downloaded .zip files are stored
+##' in download.path/downloads_dwd. Else they will be deleted after the
+##' extracting. Default = TRUE.
+##' @param csv.export If TRUE creates an additional folder containing
+##' .csv files with the individual station data. Using this the data can
+##' be used outside of R too. Default = FALSE.
+##' @param data.type Specifies which kind of information from the
+##' downloaded files should be extracted. This input can be a character
+##' vector  The options are: temp.max, temp.min, prec, default (for both
+##' the daily maximum and minimum temperature and the precipitation),
+##' temp.mean, vapor.pressure, cloud.amount, air.pressure,
+##' relative.humidity, wind.speed, temp.min.at.ground, wind.speed.peak,
+##' prec.type (0 = no precipitation, 1 = only rain (before 1979), 2 =
+##' unknown, 4 = only rain (after 1979), 7 = only snow, 8 = snow or rain),
+##' sunshine.duration, snow.height. Default = default.
+##' @param download.path Specifies the data will be stored and downloaded
+##' too. It is advised to store it in the path stored in the options(
+##' "climex.path" ),  which is also used for importing the saved data. You
+##' can overwrite its default value of "~/R/climex/" by adding
+##' options( climex.path = "PATH" ) to your .Rprofile path in your home.
+##' 
 ##' @export
 ##' @import xts
 ##' @return invisible setwd()
 ##' @author Philipp Mueller 
 download.data.dwd <- function( save.downloads = TRUE,
-                              download.path = CLIMEX.PATH,
                               csv.export = FALSE,
                               data.type = c( "default", "temp.max",
                                             "temp.min", "prec",
@@ -26,11 +54,15 @@ download.data.dwd <- function( save.downloads = TRUE,
                                             "wind.speed.peak",
                                             "prec.type",
                                             "sunshine.duration",
-                                            "snow.height" ) ){
-  ## the CLIMEX.PATH is preferred but one can of course set a user
-  ## specific path
-  if ( missing( download.path ) && !exists( "CLIMEX.PATH" ) )
-    stop( "The variable CLIMEX.PATH has to be set in the ~/.Rprofile beforehand!" )
+                                            "snow.height" ),
+                              download.path = NULL ){
+  ## The folder to put all the temporary files of the climex
+  ## package in is set in the options(). To modify it,
+  ## overwrite the options( climex.path ) in the .Rprofile
+  ## file in your home directory
+  if ( is.null( download.path ) ){
+    download.path <- getOption( "climex.path" )
+  }
   old.dir <- getwd()
   setwd( download.path ) 
   ## paths on the DWD servers
@@ -410,11 +442,19 @@ download.data.dwd <- function( save.downloads = TRUE,
       latitude = station.positions.aux[ , 2 ],
       altitude = station.positions.aux[ , 3 ],
       name = station.names )
+  ## Ordering the stations according to their names in alphabetical
+  ## order
+  station.positions <- station.positions[ order( station.names ), ]
   ## assigning the names of the stations.
   ## this new assignment take in the order of 25ms in total
   for ( ss in paste0( "stations.", data.type ) ){
+    ## Get the variable of the string ss, do a operation on it and
+    ## reassign it to the same name
     tmp <- get( ss )
     names( tmp ) <- station.names
+    ## Ordering the stations according to their names in alphabetical
+    ## order
+    tmp <- tmp[ order( station.names ) ]
     assign( ss, tmp )
   }
   ## writing the data to dat files
@@ -458,20 +498,40 @@ download.data.dwd <- function( save.downloads = TRUE,
 
 
 ##' @title Access to the manually imported weather data.
-##' @details Load .RData file generated by \code{\link{download.data.dwd}}. This will be done interactively. First all .RData files present in the download folder will be printed. Than the user has to choose one of them by selecting its position in the presented character vector via a numeric value (e.g. 1 ). One can use the pick.default option to avoid the manual selecting.
+##' @details Load .RData file generated by
+##' \code{\link{download.data.dwd}}. This will be done interactively.
+##' First all .RData files present in the download folder will be
+##' printed. Than the user has to choose one of them by selecting its
+##' position in the presented character vector via a numeric value
+##' (e.g. 1 ). One can use the pick.default option to avoid the manual
+##' selecting.
 ##'
-##' @param download.path Specifies the data is stored.
-##' @param pick.default If TRUE it just search for the .RData file with "default" in it's name and skips the interactive picking
-##' @param import Specifies if the data should be attached to the environment the function is called from or to the global one. The latter is necessary for deploying the app in the shiny server. Default = "local".
-##'
+##' @param pick.default If TRUE it just search for the .RData file with
+##' "default" in it's name and skips the interactive picking
+##' @param import Specifies if the data should be attached to the
+##' environment the function is called from or to the global one. The
+##' latter is necessary for deploying the app in the shiny server.
+##' Default = "local".
+##' @param download.path Specifies the data will be stored and downloaded
+##' too. It is advised to store it in the path stored in the options(
+##' "climex.path" ),  which is also used for importing the saved data. You
+##' can overwrite its default value of "~/R/climex/" by adding
+##' options( climex.path = "PATH" ) to your .Rprofile path in your home.
 ##' @family import
 ##'  
 ##' @export
 ##' @return Has no specific output but attaches .RData file to search path.
 ##' @author Philipp Mueller
 source.data <- function( pick.default = TRUE,
-                        download.path = CLIMEX.PATH,
-                        import = c( "local", "global" ) ){
+                        import = c( "local", "global" ),
+                        download.path = NULL ){
+  ## The folder to put all the temporary files of the climex
+  ## package in is set in the options(). To modify it,
+  ## overwrite the options( climex.path ) in the .Rprofile
+  ## file in your home directory
+  if ( is.null( download.path ) ){
+    download.path <- getOption( "climex.path" )
+  }
   ## save the current path
   if ( missing( import ) )
     import <- "local"

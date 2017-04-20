@@ -44,6 +44,15 @@ generalFittingRoutineInput <- function(){
 ##' threshold used within the GP fit and the extraction of the extreme
 ##' events. Boundaries: minimal and maximal value of the deseasonalized
 ##' time series (rounded). Default: 0.8* the upper end point.
+##' @param selectDataBase Character (select) input to determine the data
+##' source. In the default installation there are three options:
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
+##' provided as an argument to the call of the \code{\link{climex}}
+##' function. The second one uses the database of the German weather
+##' service (see \code{link{download.data.dwd}}). The third one allows
+##' the user to produce random numbers distributed according to the GEV
+##' or GP distribution. Determined by menuSelectDataBase.
+##' Default = "DWD".
 ##'
 ##' @family climex-fitting
 ##'
@@ -52,7 +61,8 @@ generalFittingRoutineInput <- function(){
 ##' @author Philipp Mueller 
 fit.interactive <- function( x.kept, x.initial = NULL,
                             radioEvdStatistics, selectOptimization,
-                            buttonMinMax, checkboxRerun, sliderThreshold ){
+                            buttonMinMax, checkboxRerun, sliderThreshold,
+                            selectDataBase ){
   ## Don't wait for initialization here or the summary statistic table in
   ## the leaflet tab will be only available after switching to the General
   ## tab and back.
@@ -76,7 +86,8 @@ fit.interactive <- function( x.kept, x.initial = NULL,
     ## time series or minimal und maximal extremes.
     if ( is.nan( climex::likelihood( x.initial, x.kept, model = model ) ) ){
       shinytoastr::toastr_warning(
-                       "Initial parameters can not be evaluated. They have been reseted during the fitting procedure!" )
+                       "Initial parameters can not be evaluated. They have been reseted during the fitting procedure!",
+                       preventDuplicates = TRUE )
       x.initial <- NULL
     } 
     ## While changing the EVD statistics from "GEV" to "GP" the initial
@@ -122,7 +133,12 @@ fit.interactive <- function( x.kept, x.initial = NULL,
                                error.estimation = "none" ) ) ) 
   } else {
     ## Fits of GPD parameters to blocked data set
-    if ( is.null( sliderThreshold() ) ){
+    if ( selectDataBase() == "Artificial data" ){
+      ## For the artificial data the sliderThreshold will not be rendered
+      ## and thus be NULL all the time. This is because there is no need
+      ## for a constant offset and it will be set to 0.
+      threshold <- 0
+    } else if ( is.null( sliderThreshold() ) ){
       threshold <- max( x.kept )* .8
     } else {
       threshold <- sliderThreshold()
@@ -168,6 +184,7 @@ fit.interactive <- function( x.kept, x.initial = NULL,
        radioEvdStatistics() == "GEV" ){
     x.fit.evd$x <- x.fit.evd$x* ( -1 )
     x.fit.evd$par[ 1 ] <- x.fit.evd$par[ 1 ]* ( -1 )
+    x.fit.evd$return.level <- x.fit.evd$return.level* ( -1 )
   }
   return( x.fit.evd )
 }
@@ -210,6 +227,15 @@ fit.interactive <- function( x.kept, x.initial = NULL,
 ##' threshold used within the GP fit and the extraction of the extreme
 ##' events. Boundaries: minimal and maximal value of the deseasonalized
 ##' time series (rounded). Default: 0.8* the upper end point.
+##' @param selectDataBase Character (select) input to determine the data
+##' source. In the default installation there are three options:
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
+##' provided as an argument to the call of the \code{\link{climex}}
+##' function. The second one uses the database of the German weather
+##' service (see \code{link{download.data.dwd}}). The third one allows
+##' the user to produce random numbers distributed according to the GEV
+##' or GP distribution. Determined by menuSelectDataBase.
+##' Default = "DWD".
 ##' 
 ##' @import shiny
 ##'
@@ -222,14 +248,25 @@ fit.interactive <- function( x.kept, x.initial = NULL,
 data.fitting <- function( reactive.extreme, reactive.initials,
                          reactive.rows, fit.interactive,
                          radioEvdStatistics, selectOptimization,
-                         buttonMinMax, checkboxRerun, sliderThreshold ){
+                         buttonMinMax, checkboxRerun, sliderThreshold,
+                         selectDataBase ){
   reactive( {
     if ( is.null( reactive.extreme() ) ||
          is.null( reactive.initials() ) ||
          is.null( reactive.rows$keep.rows ) ){
       return( NULL )
     }
-    x.extreme <- reactive.extreme()[[ 1 ]]
+    x.data <- reactive.extreme()
+    ## Since I'm dealing with daily data right now, the user must have
+    ## set the threshold/block length way too low when the number of the
+    ## extremes exceeds 5% of the number of original data points.
+    if ( length( x.data[[ 1 ]] )/ length( x.data[[ 3 ]] ) > .05 &&
+        selectDataBase() != "Artificial data" ){
+      shinytoastr::toastr_error( "Too much data. The threshold/block length is set way too low!",
+                                preventDuplicates = TRUE )
+      return( NULL )
+    }
+    x.extreme <- x.data[[ 1 ]]
     x.initial <- reactive.initials()
     ## Removing all points marked by clicking or brushing in the ggplot2
     ## plot of the extreme events in the bottom right box in the General
@@ -245,8 +282,8 @@ data.fitting <- function( reactive.extreme, reactive.initials,
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
     return( fit.interactive( x.kept, x.initial, radioEvdStatistics,
                             selectOptimization, buttonMinMax,
-                            checkboxRerun,
-                            sliderThreshold ) )
+                            checkboxRerun, sliderThreshold,
+                            selectDataBase ) )
   } )
 }
 
@@ -320,7 +357,7 @@ data.initials <- function( initialLocation, initialScale, initialShape,
 ##' @return box
 ##' @author Philipp Mueller 
 generalFitStatisticsTable <- function(){
-  box( title = h2( "Results" ), width = 3,
+  box( title = h2( "Results" ), width = 3, height = 370,
       background = "orange", id = "boxGevResults",
       uiOutput( "generalFitStatistics", colHeaders = "provided" ) )
 }
@@ -377,13 +414,26 @@ generalFitStatistics <- function( reactive.fitting, reactive.extreme,
     x.data <- reactive.extreme()
     x.extreme <- x.data[[ 1 ]]
     if ( radioEvdStatistics() == "GEV" ){
-      current <- c( x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
-                   x.fit.evd$par[ 3 ],
-                   x.fit.evd$value, climex:::aic( x.fit.evd ),
-                   climex:::bic( x.fit.evd ),
-                   climex::return.level( x.fit.evd$par,
-                                        error.estimation = "none",
-                                        model = "gev" ) )
+      ## Negating the location parameter for the minimal extremes
+      if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" ){
+        current <- c( x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
+                     x.fit.evd$par[ 3 ],
+                     x.fit.evd$value, climex:::aic( x.fit.evd ),
+                     climex:::bic( x.fit.evd ),
+                     climex::return.level( c( x.fit.evd$par[ 1 ]* -1,
+                                             x.fit.evd$par[ 2 ],
+                                             x.fit.evd$par[ 3 ] ),
+                                          error.estimation = "none",
+                                          model = "gev" ) )
+      } else {
+        current <- c( x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
+                     x.fit.evd$par[ 3 ],
+                     x.fit.evd$value, climex:::aic( x.fit.evd ),
+                     climex:::bic( x.fit.evd ),
+                     climex::return.level( x.fit.evd$par,
+                                          error.estimation = "none",
+                                          model = "gev" ) )
+      }
     } else {
       current <- c( 0, x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
                    x.fit.evd$value, climex:::aic( x.fit.evd ),
@@ -398,7 +448,7 @@ generalFitStatistics <- function( reactive.fitting, reactive.extreme,
     ## the minimum
     if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" &&
          radioEvdStatistics() == "GEV" ){
-        current[ 7 ] <- ( -1 )* current[ 7 ]
+      current[ 7 ] <- ( -1 )* current[ 7 ]
     }
     ## History of the statistics
     last.3 <<- last.2
@@ -458,6 +508,11 @@ generalFitStatistics <- function( reactive.fitting, reactive.extreme,
                           row.names = c( "location", "scale",
                                         "shape", "nllh", "AIC",
                                         "BIC", "rlevel" ) )
+    colnames( x.table ) <- c( "current",
+                             '<math id="math-text" xmlns="http://www.w3.org/1998/Math/MathML"><msub><mtext>hist</mtext><mn>1</mn></msub></math>',
+                             '<math id="math-text" xmlns="http://www.w3.org/1998/Math/MathML"><msub><mtext>hist</mtext><mn>2</mn></msub></math>',
+                             '<math id="math-text" xmlns="http://www.w3.org/1998/Math/MathML"><msub><mtext>hist</mtext><mn>3</mn></msub></math>' )
+                             
     ## Generate a html table with the 'pander' and the 'markdown'
     ## package
     x.html.table <- markdown::markdownToHTML(

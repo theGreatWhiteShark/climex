@@ -20,10 +20,9 @@ test_that( "Input and output of likelihood are alright", {
 })
 test_that( "Likelihood spits the right vales", {
   expect_equal( climex::likelihood( c( 12, 1.4, -.3 ), x.block ),
-               222.9288, tolerance = 1e-4 )
+               222.9288 - 5.47e-06 )
   expect_equal( climex::likelihood( c( 1.4, -.1 ), x.thresh,
-                                   model = "gpd" ),
-               976.5173, tolerance = 1e-4 )
+                                   model = "gpd" ), 976.5173 )
 })
 
 test_that( "Input and output of likelihood.gradient are alright", {
@@ -48,10 +47,11 @@ test_that( "Input and output of likelihood.gradient are alright", {
 test_that( "Likelihood.gradient spits the right vales", {
   expect_equal( climex:::likelihood.gradient( c( 12, 1.4, -.3 ),
                                              x.block ),
-               c( 11.44009, -14.32531, -35.40255 ), tolerance = 1e-4 )
+               c( 11.44009 - 3.34e-06, -14.32531 - 8.14e-07,
+                 -35.40255 + 4.50e-06 ) )
   expect_equal( climex:::likelihood.gradient( c( 1.4, -.1 ), x.thresh,
                                              model = "gpd" ),
-               c( 525.510, 1411.622 ), tolerance = 1e-4 )
+               c( 525.510 + 4.68e-05, 1411.622 - 2.08e-04 ) )
 })
 
 test_that( "likelihood.initials' inputs and outputs are alright", {
@@ -67,31 +67,31 @@ test_that( "likelihood.initials' inputs and outputs are alright", {
 })
 test_that( "likelihood.initials' results are okay", {
   expect_equal( climex::likelihood.initials( x.block, model = "gev" ),
-               c( 11.7474404, 1.4419331, -0.2903362 ), tolerance = 1e-2 )
-  expect_equal( climex::likelihood.initials( x.block,
-                                            model = "gpd" )[ 1 ],
-               1.437634, tolerance = 1e-5 )
+               c( 11.7474404, 1.4419331, -0.2903362 ) )
+  expect_equal( climex::likelihood.initials( x.block, model = "gpd" ),
+               c( 1.437634 + 2.9e-07, .25 ) )
 })
 test_that( "likelihood.initials' type and modified argument work", {
   expect_equal( climex::likelihood.initials( x.block, model = "gev",
                                             type = "lmom" ),
-               c( 11.7474404, 1.4419331, -0.2903362 ), tolerance = 1e-5 )
+               c( 11.7474404, 1.4419331, -0.2903362 ) )
   expect_equal( climex::likelihood.initials( x.block, model = "gev",
                                             type = "mom" ),
-               c( 11.602097, 1.120919, -0.277500 ), tolerance = 1e-5 )
+               c( 11.602097 - 7.60e-08, 1.120919 - 1.42e-07,
+                 -0.277500 ) )
   expect_equal( climex::likelihood.initials( x.block, model = "gpd",
                                             type = "lmom" ),
-               c( 172.1049, -13.0504 ), tolerance = 1e-5 )
+               c( 172.1049 + 1.46e-05, -13.0504 + 2.67e-06 ) )
   expect_equal( climex::likelihood.initials( x.block, model = "gpd",
                                             type = "mom" ),
-               c( 1.437634, -0.1 ), tolerance = 1e-5 )
+               c( 1.437634 + 2.9e-07, -0.05 ) )
   expect_equal( climex::likelihood.initials( x.block, model = "gev",
                                             type = "mom",
                                             modified = FALSE ),
-               c( 11.602097, 1.120919, 0.000010 ), tolerance = 1e-5 )
+               c( 11.602097 - 7.60e-08, 1.120919 - 1.42e-07, 0.1 ) )
   expect_equal( climex::likelihood.initials( x.block, model = "gpd",
                                             type = "mom",
                                             modified = FALSE ),
-               c( 1.437634, 0.1 ), tolerance = 1e-5 )
+               c( 1.437634 + 2.9e-07, 0.1 ) )
 })
 

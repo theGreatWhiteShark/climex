@@ -6,7 +6,8 @@
 series as well as one of all its extreme events.}
 \usage{
 generalTimeSeriesPlot(input, output, session, reactive.extreme, selectDataBase,
-  selectDataType, function.get.y.label, radioEvdStatistics, sliderThreshold)
+  selectDataType, function.get.y.label, radioEvdStatistics, sliderThreshold,
+  buttonMinMax)
 }
 \arguments{
 \item{input}{Namespace input. For more details check out
@@ -23,7 +24,7 @@ as class 'xts'.}
 
 \item{selectDataBase}{Character (select) input to determine the data
 source. In the default installation there are three options:
-c( "input", "DWD", "artificial data" ). The first one uses the data
+c( "Input", "DWD", "Artificial data" ). The first one uses the data
 provided as an argument to the call of the \code{\link{climex}}
 function. The second one uses the database of the German weather
 service (see \code{link{download.data.dwd}}). The third one allows
@@ -51,6 +52,10 @@ c( "GEV", "GP" ), default = "GEV".}
 threshold used within the GP fit and the extraction of the extreme
 events. Boundaries: minimal and maximal value of the deseasonalized
 time series (rounded). Default: 0.8* the upper end point.}
+
+\item{buttonMinMax}{Character (radio) input determining whether
+the GEV/GP distribution shall be fitted to the smallest or biggest
+vales. Choices: c( "Max", "Min ), default = "Max".}
 }
 \value{
 Reactive value holding a logical vector indicating which values

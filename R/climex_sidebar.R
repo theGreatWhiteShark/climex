@@ -19,22 +19,34 @@ sidebarDataBaseInput <- function(){
 ##' choose:the input provided when calling climex::climex() on localhost
 ##' or a file loaded via the sidebar, the station data of the German
 ##' weather service (DWD) and artificial data sampled from a GEV
-##' distribution. Beware: it's not a true module! Using the namespaces
-##' does not really make sense because it has to be accessed from outside
-##' of this context.
+##' distribution. When the climex app is used with the shiny-server, the
+##' input option will be disabled. Beware: it's not a true module! Using
+##' the namespaces does not really make sense because it has to be
+##' accessed from outside of this context.
 ##'
+##' @param session Namespace session. For details check out
+##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html}}
+##' 
 ##' @import shiny
 ##'
 ##' @family sidebar
 ##'
 ##' @return renderMenu
 ##' @author Philipp Mueller 
-sidebarDataBase <- function(){
+sidebarDataBase <- function( session ){
+  ## Disable the input option for the shiny server
   renderMenu( {
-    selectInput( "selectDataBase", "Data base",
-                choices = c( "input", "DWD", "artificial data" ),
-                selected = "DWD" )
-    } )
+    if ( session$clientData$url_hostname == "localhost" ||
+         session$clientData$url_hostname == "127.0.0.1" ){
+      selectInput( "selectDataBase", "Data base",
+                  choices = c( "Input", "DWD", "Artificial data" ),
+                  selected = "DWD" )
+    } else {
+      selectInput( "selectDataBase", "Data base",
+                  choices = c( "DWD", "Artificial data" ),
+                  selected = "DWD" )
+    }
+  } )
 }
 
 ##' @title Sidebar menu selection
@@ -54,7 +66,7 @@ sidebarDataSourceInput <- function(){
 ##' @title Sidebar menu selection
 ##' @details Provides the second selection menu in the sidebar.
 ##' If input$selectDataBase, provided by \code{\link{sidebarDataBase}},
-##' was set to "artificial data", the menu will be a numerical input
+##' was set to "Artificial data", the menu will be a numerical input
 ##' slider to provide the location parameter for the GEV or scale
 ##' parameter for the GP distribution. Else it will be a drop down menu
 ##' listing the names of all available stations (see \code{\link{
@@ -62,7 +74,7 @@ sidebarDataSourceInput <- function(){
 ##'
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -92,16 +104,16 @@ sidebarDataSource <- function( selectDataBase, radioEvdStatistics,
     ## a slider for the location parameter of the parent GEV
     ## distribution
     if ( !is.null( selectDataBase() ) &&
-         selectDataBase() == "artificial data" ){
+         selectDataBase() == "Artificial data" ){
       if ( is.null( radioEvdStatistics() ) ||
            radioEvdStatistics() == "GEV" ){
         ## For GEV data
         sliderInput( "sliderArtificialDataLocation",
-                    "location", -30, 30, 1, round = 15 )
+                    "Location", -30, 30, 1, round = 0 )
       } else {
         ## For GP data just skip the slider for the location parameter
         sliderInput( "sliderArtificialDataScale",
-                    "scale", 0, 4, .8, round = -2 )
+                    "Scale", 0, 4, .8, round = 0, step = .1 )
       }
     } else {
       ## In case of the DWD data, just show the stations which amount of
@@ -155,14 +167,14 @@ sidebarDataTypeInput <- function(){
 ##' @title Sidebar menu selection
 ##' @details Provides the third selection menu in the sidebar.
 ##' If input$selectDataBase, provided by \code{\link{sidebarDataBase}},
-##' was set to "artificial data", the menu will be a numerical input
+##' was set to "Artificial data", the menu will be a numerical input
 ##' slider to provide the scale parameter for the GEV or shape
 ##' parameter for the GP distribution. Else it will be a drop down menu
 ##' listing the different types of data available at the chosen station.
 ##'
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -187,18 +199,18 @@ sidebarDataType <- function( selectDataBase, radioEvdStatistics ){
                     choices = c( "Daily max. temp.", "Daily min. temp.",
                                 "Daily precipitation" ),
                     selected = "Daily max. temp" )
-      } else if ( selectDataBase() == "artificial data" ){
+      } else if ( selectDataBase() == "Artificial data" ){
         if ( is.null( radioEvdStatistics() ) ||
              radioEvdStatistics() == "GEV" ){
-          sliderInput( "sliderArtificialDataScale", "scale", 0, 4,
-                      0.8, round = -2 )
+          sliderInput( "sliderArtificialDataScale", "Scale", 0, 4,
+                      0.8, round = 0, step = .1 )
         } else {
           ## For GP distributed data
-          sliderInput( "sliderArtificialDataShape", "shape", -1.5, 1.5,
-                      -.25, round = -2 )
+          sliderInput( "sliderArtificialDataShape", "Shape", -.7, .7,
+                      -.25, round = -2, step = .1 )
         }
-      } else if ( selectDataBase() == "input" ){
-        NULL
+      } else if ( selectDataBase() == "Input" ){
+        div( id = "aux-placeholder", style = "height: 0px;" )
       }
     } else
       NULL } )
@@ -221,7 +233,7 @@ sidebarLoadingInput <- function(){
 ##' @title Sidebar menu selection
 ##' @details Provides the fourth selection menu in the sidebar.
 ##' If input$selectDataBase, provided by \code{\link{sidebarDataBase}},
-##' was set to "artificial data", the menu will be a numerical input
+##' was set to "Artificial data", the menu will be a numerical input
 ##' slider to provide the shape parameter for the GEV or NULL for the GP
 ##' distribution. Else it will be a file input for the user to load
 ##' additional station data.
@@ -230,7 +242,7 @@ sidebarLoadingInput <- function(){
 ##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html}} 
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
@@ -252,19 +264,19 @@ sidebarLoading <- function( session, selectDataBase,
   renderMenu( {
     if ( is.null( selectDataBase() ) )
       return( NULL )
-    if ( selectDataBase() == "artificial data" &&
+    if ( selectDataBase() == "Artificial data" &&
          ( is.null( radioEvdStatistics() ) ||
            radioEvdStatistics() == "GEV" ) ){
-      sliderInput( "sliderArtificialDataShape", "shape", -1.5, 1.5,
-                  -0.25, round = -2 )
-    } else if ( selectDataBase() == "input" && (
+      sliderInput( "sliderArtificialDataShape", "Shape", -.7, .7,
+                  -0.25, round = -2, step = .1 )
+    } else if ( selectDataBase() == "Input" && (
       session$clientData$url_hostname == "localhost" ||
       session$clientData$url_hostname == "127.0.0.1"  ) ){
       ## due to security concerns only allow the file selection on
       ## localhost
       fileInput( "fileInputSelection", "Choose a .RData file" )
     } else
-      return( NULL )
+      return( div( id = "aux-placeholder", style = "height: 0px;" ) )
   } )
 }
 
@@ -279,7 +291,7 @@ sidebarLoading <- function( session, selectDataBase,
 ##' @return menuItemOutput
 ##' @author Philipp Mueller 
 sidebarCleaningInput <- function(){
-  menuItemOutput( "sidebarCleaning" )
+  uiOutput( "sidebarCleaning" )
 }
 
 ##' @title Toggling the cleaning of the time series
@@ -292,6 +304,15 @@ sidebarCleaningInput <- function(){
 ##' @param radioEvdStatistics Character (radio) input determining whether
 ##' the GEV or GP distribution shall be fitted to the data. Choices:
 ##' c( "GEV", "GP" ), default = "GEV".
+##' @param selectDataBase Character (select) input to determine the data
+##' source. In the default installation there are three options:
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
+##' provided as an argument to the call of the \code{\link{climex}}
+##' function. The second one uses the database of the German weather
+##' service (see \code{link{download.data.dwd}}). The third one allows
+##' the user to produce random numbers distributed according to the GEV
+##' or GP distribution. Determined by menuSelectDataBase.
+##' Default = "DWD".
 ##' 
 ##' @import shiny
 ##'
@@ -299,23 +320,82 @@ sidebarCleaningInput <- function(){
 ##'
 ##' @return renderMenu
 ##' @author Philipp Mueller
-sidebarCleaning <- function( radioEvdStatistics ){
-  renderMenu( {
+sidebarCleaning <- function( radioEvdStatistics, selectDataBase ){
+  renderUI({
     ## When applying the blocking method incomplete years distort
     ## the time series and have to be excluded. When using the
     ## threshold method on the other hand clusters are most likely
     ## to occure due to short range correlations. This has to be
     ## avoided by using declustering algorithms (which mainly picks
     ## the maximum of a specific cluster)
-    if ( is.null( radioEvdStatistics() ) ||
-         radioEvdStatistics() == "GEV" ){
-      checkboxInput( "checkboxIncompleteYears",
-                    "Remove incomplete years", TRUE )
+    if ( is.null( selectDataBase() ) ||
+         selectDataBase() != "Artificial data" ){
+      if ( is.null( radioEvdStatistics() ) ||
+           radioEvdStatistics() == "GEV" ){
+        checkboxInput( "checkboxIncompleteYears",
+                      "Remove incomplete years", TRUE )
+      } else {
+        checkboxInput( "checkboxDecluster",
+                      "Declustering of the data", TRUE )
+      }
     } else {
-      checkboxInput( "checkboxDecluster",
-                    "Declustering of the data", TRUE )
+      ## When working with artificial data cleaning does not make
+      ## sense. Instead we need to resample the time series.
+      div( actionButton( "buttonDrawTS", "Draw" ),
+          style = "padding: 12px 15px 0px 12px;" )
     }
-  } )
+  })
+}
+
+##' @title Slider to determine the length of an artificial time series
+##' @details Provides the shinydashboard::menuItemOutput for \code{\link{
+##' sidebarSeriesLength}}. See the later one for details
+##'
+##' @importFrom shinydashboard menuItemOutput
+##'
+##' @family sidebar
+##'
+##' @return menuItemOutput
+##' @author Philipp Mueller 
+sidebarSeriesLengthInput <- function(){
+  menuItemOutput( "sidebarSeriesLength" )
+}
+
+##' @title Slider to determine the length of an artificial time series
+##' @details Numerical slider which will only be displayed when
+##' "Artificial data" is selected in input$selectDataBase
+##' 
+##' @param selectDataBase Character (select) input to determine the data
+##' source. In the default installation there are three options:
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
+##' provided as an argument to the call of the \code{\link{climex}}
+##' function. The second one uses the database of the German weather
+##' service (see \code{link{download.data.dwd}}). The third one allows
+##' the user to produce random numbers distributed according to the GEV
+##' or GP distribution. Determined by menuSelectDataBase.
+##' Default = "DWD".
+##' 
+##' @import shiny
+##'
+##' @family sidebar
+##'
+##' @return menuItemOutput
+##' @author Philipp Mueller 
+sidebarSeriesLength <- function( selectDataBase ){
+  renderMenu({
+    if ( !is.null( selectDataBase() ) &&
+         selectDataBase() == "Artificial data" ){
+      ## In order to display the return levels on a
+      ## logarithmic scale, the exponent will be
+      ## chosen via the slider and its transformation
+      ## to 10^x is done in the script and inside a
+      ## JavaScript function 
+      sliderInput( "sliderSeriesLength", "Length", 1.477121, 3,
+                  2, round = 1, step = .1 )
+    } else {
+      div( id = "aux-placeholder", style = "height: 0px" )
+    }
+  })
 }
 
 ##' @title Reactive value selecting an individual time series.
@@ -323,8 +403,8 @@ sidebarCleaning <- function( radioEvdStatistics ){
 ##' artificial time series will be sampled or one from a database will be
 ##' selected. For the latter one the reactive value
 ##' \code{\link{climex:::data.chosen}} will be constulted. The length of
-##' the generated time series is determined by the input$sliderYears
-##' slider in the top right part of the leaflet tab.
+##' the generated time series is determined by the
+##' input$sliderSeriesLength.
 ##'
 ##' @param reactive.chosen Reactive value containing a list of the list
 ##' of all provided stations and a data.frame containing the meta data.
@@ -334,17 +414,13 @@ sidebarCleaning <- function( radioEvdStatistics ){
 ##' station's name.
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
-##' c( "input", "DWD", "artificial data" ). The first one uses the data
+##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
 ##' service (see \code{link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
-##' @param sliderYears Numerical (slider) input to determine the minimal
-##' length (in years) of the time series to be displayed. Minimal value
-##' is 0 and maximal is 155 (longest one in the DWD database), the
-##' default value is 65 and the step width is 1.
 ##' @param sliderThreshold Numerical (slider) input determining the
 ##' threshold used within the GP fit and the extraction of the extreme
 ##' events. Boundaries: minimal and maximal value of the deseasonalized
@@ -355,15 +431,21 @@ sidebarCleaning <- function( radioEvdStatistics ){
 ##' @param sliderArtificialDataLocation Numerical (slider) input
 ##' providing the location parameter to generate an artificial time
 ##' series. For input$radioEvdStatistics == "GP" or input$selectDataBase
-##' != "artificial data" this argument will be NULL.
+##' != "Artificial data" this argument will be NULL.
 ##' @param sliderArtificialDataScale Numerical (slider) input
 ##' providing the scale parameter to generate an artificial time
 ##' series. For input$selectDataBase
-##' != "artificial data" this argument will be NULL.
+##' != "Artificial data" this argument will be NULL.
 ##' @param sliderArtificialDataShape Numerical (slider) input
 ##' providing the shape parameter to generate an artificial time
 ##' series. For input$selectDataBase
-##' != "artificial data" this argument will be NULL.
+##' != "Artificial data" this argument will be NULL.
+##' @param buttonDrawTS Action button used to draw a time series when
+##' 'artificial data' is chosen in selectDataBase(). If not chosen,
+##' this button will not be defined.
+##' @param sliderSeriesLength Numerical slider determining the length
+##' of an artificial time series. This one will only be present when
+##' selectDataBase is set to "Artificial data"
 ##'
 ##' @family sidebar
 ##'
@@ -373,11 +455,12 @@ sidebarCleaning <- function( radioEvdStatistics ){
 ##' @return Reactive value containing a 'xts' class time series.
 ##' @author Philipp Mueller 
 data.selection <- function( reactive.chosen, selectDataSource,
-                           selectDataBase, sliderYears, sliderThreshold,
+                           selectDataBase, sliderThreshold,
                            radioEvdStatistics,
                            sliderArtificialDataLocation,
                            sliderArtificialDataScale,
-                           sliderArtificialDataShape ){
+                           sliderArtificialDataShape, buttonDrawTS,
+                           sliderSeriesLength ){
   reactive( {
     ## Selecting the data out of a pool of different possibilities
     ## or generate them artificially
@@ -385,19 +468,32 @@ data.selection <- function( reactive.chosen, selectDataSource,
     if ( is.null( data.selected ) ||
          is.null( selectDataSource() ) ||
          is.null( selectDataBase() ) ||
-         is.null( sliderYears() ) ||
          ( selectDataBase() == "GP" && is.null( sliderThreshold() ) ) ){
       return( NULL )
     }
-    if( selectDataBase() == "artificial data" ){
-      ## The length of the artificial time series is determined by
-      ## the number of years chosen via the input$sliderYears slider
-      ## in the leaflet tab
-      ## Using the Potsdam time series from Germany as reference
-      data( temp.potsdam, package = "climex" )
-      p.l <- length( temp.potsdam )
-      ## Length of the time series
-      x.length <- sliderYears()
+    if( selectDataBase() == "Artificial data" ){
+      ## Wait for the sidebar to initials the sliders of the GEV
+      ## parameters.
+      if ( is.null( sliderArtificialDataLocation() ) ||
+           is.null( sliderArtificialDataScale() ) ||
+           is.null( sliderArtificialDataShape() ) ){
+        return( NULL )
+      }
+      ## Redraw the time series using a button in the sidebar
+      if( !is.null( buttonDrawTS() ) ){
+        buttonDrawTS()
+      }
+      ## To transform the artificial time series today's time
+      ## stamp will be used and moved to 1900. All following
+      ## points will be future years from this point on. This
+      ## keeps the idea of annual block maxima
+      ## Since the slider just determines the exponent to the
+      ## base of 10 in order to display it in a logarithmic awy
+      ## I have to transform the input
+      series.length <- 10^sliderSeriesLength()
+      dates <- rep( lubridate::now(), series.length )
+      lubridate::year( dates ) <- 1900 +
+        seq( 1, series.length )
       ## Whether to use GEV or GPD data
       if ( is.null( radioEvdStatistics() ) ||
           radioEvdStatistics() == "GEV" ){
@@ -406,14 +502,13 @@ data.selection <- function( reactive.chosen, selectDataSource,
         model <- "gpd"
       }
       x.xts <- xts(
-          climex:::revd( n = x.length,
+          climex:::revd( n = series.length,
                         location = sliderArtificialDataLocation(),
                         scale = sliderArtificialDataScale(),
                         shape = sliderArtificialDataShape(),
                         model = model, silent = TRUE,
-                        threshold = sliderThreshold()),
-          order.by = index( temp.potsdam )[
-            ( p.l - x.length + 1 ) : p.l ] )
+                        threshold = 0 ),
+          order.by = dates )
     } else {
       ## In all other cases the possible choices are contained in
       ## the data.selected object and are agnostic of the data base
@@ -430,8 +525,7 @@ data.selection <- function( reactive.chosen, selectDataSource,
         if ( !any(  names( data.selected[[ 1 ]] ) ==
                     selectDataSource() ) ){
           x.xts <- data.selected[[ 1 ]][[ 1 ]]
-          shinytoastr::toastr_info(
-                           "Please check the selected station after changing the data base!" ) 
+          print( "New data source selected." )
         } else
           x.xts <- data.selected[[ 1 ]][[
             which( names( data.selected[[ 1 ]] ) ==
@@ -444,7 +538,7 @@ data.selection <- function( reactive.chosen, selectDataSource,
 
 ##' @title Reactive value listening for a file input via the sidebar
 ##' @details To use this function input$selectDataBase has to be set to
-##' "input".
+##' "Input".
 ##'
 ##' @param fileInputSelection File input through a shiny base selection
 ##' window.
@@ -545,3 +639,47 @@ sidebarLoadingGif <- function( input, output, session ){
                     ) ) ) )
   } )
 }
+
+##' @title Linking the imprint of the climex application
+##' @details Whenever the web app is run using shiny-server a link to
+##' an arbitrary HTML page (preferably an imprint) will be rendered.
+##' Else just an empty div will be added.
+##' Rendering of \code{link{sidebarImprint}}.
+##'
+##' @family sidebar
+##'
+##' @importFrom shinydashboard menuItemOutput
+##'
+##' @return menuItemOutput
+##' @author Philipp Mueller 
+sidebarImprintInput <- function(){
+  menuItemOutput( "sidebarImprint" )
+}
+
+##' @title Linking the imprint of the climex application
+##' @details Whenever the web app is run using shiny-server a link to
+##' an arbitrary HTML page (preferably an imprint) will be rendered.
+##' Else just an empty div will be added.
+##'
+##' @param session Namespace session. For details check out
+##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html}} 
+##'
+##' @family sidebar
+##'
+##' @import shiny
+##'
+##' @return div
+##' @author Philipp Mueller 
+sidebarImprint <- function( session ){
+  renderMenu({
+    ## Only display the imprint in the shiny-server and not on
+    ## localhost
+    if ( session$clientData$url_hostname == "localhost" ||
+         session$clientData$url_hostname == "127.0.0.1" ){
+      div( id = "aux-placeholder", style = "height: 0px;" )
+    } else {
+      div( a( "Imprint", href = "/imprint.html",
+             id = "climexImprint" ) )
+    }
+  })
+} 
