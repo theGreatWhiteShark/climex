@@ -900,19 +900,16 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
     }
     if ( type == "lmom" )
       return( initial.lmom )
-
-    initial.gum1 <- c( loc.init, sc.init, sh.init )   
-    initial.gum2 <- c( loc.init, sc.init, sh.init +
-                                          stats::rnorm( 1, sd = 0.5 ) ) 
-    initial.gum3 <- c( loc.init, sc.init, sh.init +
-                                          stats::rnorm( 1, sd = 0.5 ) ) 
-    initial.default1 <- c( loc.init, sc.init, 0.1 )
-    initial.default2 <- c( loc.init, sc.init, 1E-8 )
     ## Instead of taking just a default shape parameter, pick a bunch
     ## of them and query for the one resulting in the lowest negative
-    ## log-likelihood
-    sh.init.vector <- c( sh.init + stats::rnorm( 100, sd = .5 ), .1,
-                        1e-8, sh.init )
+    ## log-likelihood. In addition to the range of different shape
+    ## parameter the determined estimate from before as well as the
+    ## heuristics of the extRemes (1e-8) and ismev (.1) package are
+    ## evaluated as well.
+    number.init.parameters <- 30
+    sh.init.vector <- c( seq( sh.init - .3, sh.init + .3, ,
+                             number.init.parameters - 3 ),
+                        sh.init, 1e-8, .1 )
     parameter.vector <- rbind(
         data.frame( location = rep( loc.init, length( sh.init.vector ) ),
                    scale = rep( sc.init, length( sh.init.vector ) ),
@@ -983,9 +980,14 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
 
     ## Instead of taking just a default shape parameter, pick a bunch
     ## of them and query for the one resulting in the lowest negative
-    ## log-likelihood
-    sh.init.vector <- c( sh.init + stats::rnorm( 100, sd = .5 ), .1,
-                        1e-8, sh.init )
+    ## log-likelihood. In addition to the range of different shape
+    ## parameter the determined estimate from before as well as the
+    ## heuristics of the extRemes (1e-8) and ismev (.1) package are
+    ## evaluated as well.
+    number.init.parameters <- 30
+    sh.init.vector <- c( seq( sh.init - .3, sh.init + .3, ,
+                             number.init.parameters - 3 ),
+                        sh.init, 1e-8, .1 )
     parameter.vector <- rbind(
         data.frame( scale = rep( sc.init, length( sh.init.vector ) ),
                    shape = sh.init.vector ),
@@ -995,7 +997,6 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
                             climex::likelihood( c( ss[ 1 ], ss[ 2 ] ),
                                                x.in = x,
                                                model = "gpd" ) ) )
-
   }
   if ( !all( is.nan( as.numeric( initials.likelihood ) ) ) ){
     ## Returning the set of initial parameters which is yielding the
