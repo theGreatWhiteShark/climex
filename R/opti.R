@@ -856,28 +856,29 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
       ## When, for some reason, the time series consists of just a
       ## sequence of one unique number the calculation of the skewness
       ## returns NaN and the function throws an error
-      if ( is.nan( x.skewness ) )
-        x.skewness <- 0
-      if ( x.skewness >= .7 && x.skewness <= 1.6 ){
-        sh.init <- 0.001
-      } else if( x.skewness < .7 ){
-        sh.init <- -.1
-        if ( x.skewness < .1 ){
-          sh.init <- -.2775
-          if ( x.skewness < -.2 ){
-            sh.init <- -.4
-            if ( x.skewness < -1 )
-              ## Some arbitrary high value. Didn't checked it.
-              sh.init <- -1.5 
-          }
-        }
-      } else if ( x.skewness > 1.4 ){
-        sh.init <- .2
-        if ( x.skewness > 3.4 )
-          sh.init <- 1.5 # Some arbitrary high value. Didn't checked it.
+      if ( is.nan( x.skewness ) ){
+        ## If you can not calculate the skewness, set the shape parameter
+        ## to .001
+        x.skewness <- .8
       }
-    } else
-      sh.init <- 0.00001
+      if ( x.skewness > 4 ){
+        sh.init <- .75
+      } else if ( x.skewness > 2.5 ){
+        sh.init <- .6
+      } else if ( x.skewness > 1.6 ){
+        sh.init <- .35
+      } else if ( x.skewness > .7 ){
+        sh.init <- .001
+      } else if( x.skewness > .1 ){
+        sh.init <- -.1
+      } else if ( x.skewness > -.2 ){
+        sh.init <- -.2775
+      } else  if ( x.skewness > -1 ){
+        sh.init <- -.4
+      } else {
+        sh.init <- -.75
+      }
+    }
     if ( type == "mom" )
       return( c( loc.init, sc.init, sh.init ) )    
     ## Approximationg using the Lmoments method of Hosking, Wallis
@@ -955,9 +956,24 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
       ## For series of absurdly high values (e.g. big shape and scale
       ## parameters) the skewness function can return NaN
       if ( !is.nan( x.skewness ) && x.skewness < 0 ){
-        sh.init <- -.1
+        x.skewness <- 1.5
+      }
+      if ( x.skewness > 4.5 ){
+        sh.init <- .75
+      } else if ( x.skewness > 2.5 ){
+        sh.init <- .5
+      } else if ( x.skewness > 1.8 ){
+        sh.init <- .25
+      } else if ( x.skewness > 1.5 ){
+        sh.init <- .05
+      } else if ( x.skewness > 1.2 ){
+        sh.init <- -.05
+      } else if ( x.skewness > .8 ){
+        sh.init <- -.25
+      } else if ( x.skewness > .2 ){
+        sh.init <- -.5
       } else {
-        sh.init <- .1
+        sh.init <- -.75
       }
     } else {
       sh.init <- .1
