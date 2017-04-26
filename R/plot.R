@@ -152,26 +152,6 @@ likelihood.plot <- function( time.series, location.lim = NULL,
   if ( is.null( shape.lim ) )
     shape.lim <- c( center[ 3 ] - time.series.mle[ 3 ]* .5,
                    center[ 3 ] + time.series.mle[ 3 ]* .5 )
-  ## Calculation of the likelihood surface/space
-  ## Inspired by the likelihood.plot function but redone
-  ## C++ function calculating the likelihood for every parameter
-  ## combination
-  calcNllh <- inline::cxxfunction(
-                          methods::signature( parameters = "numeric",
-                                             xin = "numeric" ),
-                          plugin = "RcppArmadillo", body = '
-Rcpp::DataFrame parametersDataframe( parameters );
-Rcpp::NumericVector xVector( xin );
-Rcpp::NumericVector loc = parametersDataframe[ "location" ];
-Rcpp::NumericVector sc = parametersDataframe[ "scale" ];
-Rcpp::NumericVector sh = parametersDataframe[ "shape" ];
-Rcpp::NumericVector L(loc.size());
-Rcpp::NumericVector y( xVector.size() );
-for ( int ii = 0; ii < sc.size(); ii++ ){
-    y = 1 + ( ( xVector - loc[ii])/sc[ii] )*sh[ii];    
-    L[ii] =  log( sc[ii] )* xVector.size() + sum( pow( y, -1/sh[ii] ) ) + sum( log( y ) )*(1/sh[ii] + 1 ) ;
-}                                          
-return Rcpp::wrap( L );')
   ## 2D likelihood
   ## some more point because its just the plane this time
   number.of.points <- 200
@@ -198,7 +178,8 @@ return Rcpp::wrap( L );')
   plot.plane <- function( par.plane, par.plane.names,
                          time.series = time.series ){
     names( par.plane ) <- c( "location", "scale", "shape" )
-    likelihood.plane <- calcNllh( par.plane, time.series )
+    likelihood.plane <- .Call( 'likelihood_GEV', PACKAGE = 'climex',
+                              par.plane, time.series )
     ## Maybe introducing a cutoff in the likelihood values make the
     ## contour plot work again
     likelihood.plane[ likelihood.plane > 1E8 ] <- 1E8       

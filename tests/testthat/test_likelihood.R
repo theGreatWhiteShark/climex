@@ -49,9 +49,15 @@ test_that( "Likelihood.gradient spits the right vales", {
                                              x.block ),
                c( 11.44009 - 3.34e-06, -14.32531 - 8.14e-07,
                  -35.40255 + 4.50e-06 ) )
+  expect_equal( climex:::likelihood.gradient( c( 12, 1.4, 0 ),
+                                             x.block ),
+               c( 35.41967 - 2.68e-06, -29.82722 + 3.99e-06 ) )
   expect_equal( climex:::likelihood.gradient( c( 1.4, -.1 ), x.thresh,
                                              model = "gpd" ),
-               c( 525.510 + 4.68e-05, 1411.622 - 2.08e-04 ) )
+               c( -525.510 - 4.68e-05, -1411.622 + 2.08e-04 ) )
+  expect_equal( climex:::likelihood.gradient( c( 1.4, 0 ), x.thresh,
+                                             model = "gpd" ),
+               c( -298.7755 - 1.02e-05 ) )
 })
 
 test_that( "likelihood.initials' inputs and outputs are alright", {

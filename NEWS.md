@@ -1,3 +1,5 @@
+# v1.0.2
+The likelihood gradient now works for the shape parameter equals zero too (for both GEV and GP). In addition the a bug in the internal function likelihood.plot was fixed and the climex app now can choose between the OpenStreetMaps and OpenTopoMaps tiles via a control panel.
 # v1.0.1
 Improved heuristics for the estimation of the initial GEV and GP parameters used during the optimization. The likelihood.initials function now uses a more fine grained precision tree for deciding about the initial value of the shape parameter for both the GEV and GP distribution. Beforehand this function also featured a stochastic component drawing random shape parameter around the estimate and searching for the best possible. This was replaced by a sequence function to make the fit deterministic and hence reproducible. In addition a number of fixes and improvement in the documentation and the vignettes were performed.
 # v1.0.0
