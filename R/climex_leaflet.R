@@ -196,12 +196,23 @@ leafletClimex <- function( input, output, session, reactive.chosen,
   ## added on top of it.
   output$map <- renderLeaflet( {
     leaflet() %>% fitBounds( 5, 46, 13, 55 ) %>%
-      ## Unfortunately OpenTopoMaps seems to stop working (5.4.17)
-      ## Okay, it works again. Whenever it does not, just comment
-      ## the next and uncomment the next next line.
+      ## Provide both the OpenTopoMaps and the OpenStreetMaps. The first
+      ## one is more convenient for climate data but it is also quite
+      ## unstable. Therefore the user has the option to choose the
+      ## regular OSM map instead.
       addTiles( "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+<<<<<<< HEAD
                attribution = '<code> Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a></code>)' )
       ## addTiles()
+=======
+               attribution = '<code> Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a> </code>)',
+               group = "OpenTopoMaps" ) %>%
+      addTiles( group = "OpenStreetMaps" ) %>%
+      addLayersControl(
+          baseGroups = c( "OpenTopoMaps", "OpenStreetMaps" ),
+          overlayGroups = "stations",
+          options = layersControlOptions( collapsed = FALSE ) )
+>>>>>>> develop
     } )
   
   ## Depending on the number of minimal years and the selected data
@@ -222,7 +233,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                    lng = ~longitude,
                    icon = blue.icon, lat = ~latitude,
                    options = popupOptions( closeButton = FALSE ) )
-    } } )
+        } } )
   
   ## The purpose of this function is to supply a data.frame
   ## containing the 50/100/500 year return level of all selected
@@ -367,7 +378,9 @@ leafletClimex <- function( input, output, session, reactive.chosen,
             fillOpacity = .8 )
         ## layer control to turn the return level layer on and off
         map.leaflet <- addLayersControl( map.leaflet,
-                                        baseGroups = c( "stations",
+                                        baseGroups = c( "OpenTopoMaps",
+                                                       "OpenStreetMaps" ),
+                                        overlayGroups = c( "stations",
                                                        "returns" ),
                                         position = "bottomright",
                                         options = layersControlOptions(
