@@ -321,6 +321,17 @@ table.table-bordered.dataTable {
   margin-right: 0px !important;
   border-radius: 9px !important;
 }
+/* I want the leaflet-control panel to be place on top
+   and the copyright below the leaflet return level slider */
+.leaflet-top, .leaflet-right {
+  position: inherit !important;
+}
+.leaflet-bottom {
+  position: absolute !important;
+}
+.leaflet-control-layers-separator {
+  border-top-color: #191970 !important
+}
 #leaflet-buttonDrawMarkers {
   font-weight: 100 !important;
   font-size: 100% !important;

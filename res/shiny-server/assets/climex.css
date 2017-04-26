@@ -321,6 +321,17 @@ table.table-bordered.dataTable {
   margin-right: 0px !important;
   border-radius: 9px !important;
 }
+/* I want the leaflet-control panel to be place on top
+   and the copyright below the leaflet return level slider */
+.leaflet-top, .leaflet-right {
+  position: inherit !important;
+}
+.leaflet-bottom {
+  position: absolute !important;
+}
+.leaflet-control-layers-separator {
+  border-top-color: #191970 !important
+}
 #leaflet-buttonDrawMarkers {
   font-weight: 100 !important;
   font-size: 100% !important;
@@ -375,6 +386,22 @@ table {
   background: none !important;
   font-size: 12px !important;
   line-height: 12px !important;
+}
+
+/* Adjusting the style of the link to the imprint of the map 
+   (only present when running the app using shiny-server) */
+#climexImprint {
+  font-size: 130%;
+  color: #FF8C00;
+  padding: 10px 10px 10px 10px;
+  width: 100%;
+  color: #b8c7ce;
+  text-align: center;
+}
+#sidebarImprint {
+  position: absolute !important;
+  bottom: 0px;
+  width: 100%;
 }
 
 /* Alignment of the boxes in the General tab on big screens */
