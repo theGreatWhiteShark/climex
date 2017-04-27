@@ -1,3 +1,5 @@
+# v1.0.3
+The GenSA function is not that robust. Therefore I added the stats::optim( method = "SANN" ) implementation as a fallback function in case the former one does not work. In addition I updated the documentation to the tile control panel in the leaflet tab of the climex app and fixed a bug in the likelihood.gradient function.
 # v1.0.2
 The likelihood gradient now works for the shape parameter equals zero too (for both GEV and GP). In addition the a bug in the internal function likelihood.plot was fixed and the climex app now can choose between the OpenStreetMaps and OpenTopoMaps tiles via a control panel.
 # v1.0.1

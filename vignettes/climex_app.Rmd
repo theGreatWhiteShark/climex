@@ -58,7 +58,7 @@ To **stop the app** just go to your R shell and press Ctrl-c two times in a row.
 
 ![map-screenshot](../res/climex_map.png)
 
-This [leaflet](https://github.com/theGreatWhiteShark/leaflet)-based tab is the default entry point of the climex app and its main purpose is to provide a convenient way of navigation between the different station data. 
+This [leaflet](https://github.com/theGreatWhiteShark/leaflet)-based tab is the default entry point of the climex app and its main purpose is to provide a convenient way of navigation between the data of the different stations. 
 
 While working with tens or hundreds of time series from different
 geographical sites, it is always hard to keep their spatial relations,
@@ -75,9 +75,10 @@ Apart from being a selection interface for the station data the Map tab features
 - When selecting a station via mouse click a summary statistic containing the
   station's name as well as its 20, 50 and 100 year return level will
   be displayed in the upper right corner of the map.
+- In the control panel you can choose either the tiles of the [OpenTopoMapshttps](https://opentopomap.org/) or the once of the default [OpenStreetMaps](https://www.openstreetmap.org/) to provide your map. While the first one is more instructive in the context of climatic time series it also faced some down times recently. Therefore you always can use the default OSM map as a fallback solution.
 - Using the **Return level** slider and the attached **Return level** slider 
   the chosen return level will be calculated for all shown stations. 
-  After the calculation finished (the cat in the wheel disappeared), a select appears where you can switch between displaying the stations as blue markers (*stations*) or their return level as colored cirlces (*returns*).
+- After the calculation finished (the cat in the wheel disappeared), an additional select item appears where you can choose to display the stations as blue markers (*stations*) and/or their return level as colored cirlces (*returns*).
   But beware: this can take up to several minutes depending
   an the number of stations displayed! Since all stations selected via the Minimal length slider will be considered in the calculation and not just the ones displayed after zooming in, only a limited amount of stations is supported when running the climex app within a shiny server.
 

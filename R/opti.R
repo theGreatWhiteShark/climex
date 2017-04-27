@@ -52,6 +52,8 @@
 ##' Monte Carlo estimate of the standard error of the fitting. Default = 1000
 ##' @param return.period Quantiles at which the return level is going to be
 ##' evaluated. Class "numeric". Default = 100.
+##' @param silent Determines whether or not warning messages shall be
+##' displayed. Default = TRUE.
 ##' @param ... Additional arguments for the optim() or GenSA::GenSA()
 ##' function. Depending on the chosen method.
 ##' 
@@ -94,7 +96,7 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE,
                     method = c( "Nelder-Mead",
                                "BFGS", "CG", "SANN", "nmk" ),
                     monte.carlo.sample.size = 1000, return.period = 100,
-                    ... ){
+                    silent = TRUE, ... ){
   ## Since there are some problems with the simulated annealing
   ## algorithm I intersect the method argument and switch to another
   ## package if necessary
@@ -126,19 +128,34 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE,
     aux <- GenSA::GenSA( as.numeric( initial ), optim.function,
                         lower = c( -Inf, 0, -Inf ),
                         upper = c( Inf, Inf, Inf ), x = x, ... )
-    ## return a NaN when not optimizing instead of the initial parameters
-    if ( sum( aux$par %in% initial ) > 1 ){
-      ## more than one parameter value remained unchanged
-      aux$value <- NaN
+    ## Sometime the simulated annealing using the GenSA package fails
+    ## and it is either not able to calculate all of the parameters
+    ## or at least one of the initial parameters is not updated at all
+    ## (exactly equal)
+    if ( any( is.nan( aux$par ) ) || sum( aux$par %in% initial ) > 1 ){
+      ## When GenSA fails, just use the stats::optim implementation
+      ## instead.
+      if ( !silent ){
+        warning( "The Simulated Annealing using the GenSA package didn't work. The implementation in stats::optim was used as a fallback instead." )
+      }
+      suppressWarnings(
+          res.optim <- stats::optim( initial, optim.function,
+                                    gr = gradient.function, x = x,
+                                    hessian = hessian.calculate,
+                                    method = "SANN", model = "gev",
+                                    ... ) )
+    } else {
+      ## Adjust the output of the GenSA function to correspond to
+      ## the structure of the stats::optim output
+      res.optim <- list( par = aux$par, value = aux$value,
+                        counts = aux$counts,
+                        hessian = if ( hessian.calculate ){
+                                    numDeriv::hessian( optim.function,
+                                                      x = aux$par,
+                                                      x.in = x )
+                                  } else NULL,
+                        convergence = 0, message = NULL )
     }
-    res.optim <- list( par = aux$par, value = aux$value,
-                      counts = aux$counts,
-                      hessian = if ( hessian.calculate ){
-                                  numDeriv::hessian( optim.function,
-                                                    x = aux$par,
-                                                    x.in = x )
-                                } else NULL,
-                      convergence = 0, message = NULL )
   } else if ( method == "nmk" ){
     ## The benefit of the nmk method is that its code base is written
     ## in R. So I could easily modify it and display the progress of
@@ -351,7 +368,7 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE,
 ##' standard error of the return level via the delta method of the MLE.
 ##' Default = NULL.
 ##' @param silent If TRUE, avoid the warning in case of a missing total.length
-##' parameter. Default = FALSE
+##' parameter. Default = TRUE.
 ##' @param ... Additional arguments for the optim() or GenSA::GenSA() function.
 ##' Depending on the chosen method.
 ##' 
@@ -395,7 +412,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
                     method = c( "Nelder-Mead", "BFGS", "CG",
                                "SANN", "nmk" ),
                     monte.carlo.sample.size = 1000, return.period = 100,
-                    total.length = NULL, silent = FALSE, ... ){
+                    total.length = NULL, silent = TRUE, ... ){
   if ( missing( method ) )
     method <- "Nelder-Mead"
   method <- match.arg( method )    
@@ -444,20 +461,33 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
         GenSA::GenSA( as.numeric( initial ), optim.function,
                      lower = c( 0, -Inf ), upper = c( Inf, Inf ),
                      x = x, model = "gpd", ... ) )
-    ## return a NaN when not optimizing instead of the initial parameters
-    if ( sum( aux$par %in% initial ) > 1 ){
-      ## more than one parameter value remained unchanged
-      aux$value <- NaN
+    ## Sometime the simulated annealing using the GenSA package fails
+    ## and it is either not able to calculate all of the parameters
+    ## or at least one of the initial parameters is not updated at all
+    ## (exactly equal)
+    if ( any( is.nan( aux$par ) ) || sum( aux$par %in% initial ) > 1 ){
+      ## When GenSA fails, just use the stats::optim implementation
+      ## instead.
+      if ( !silent ){
+        warning( "The Simulated Annealing using the GenSA package didn't work. The implementation in stats::optim was used as a fallback instead." )
+      }
+      suppressWarnings(
+          res.optim <- stats::optim( initial, optim.function,
+                                    gr = gradient.function, x = x,
+                                    hessian = hessian.calculate,
+                                    method = "SANN", model = "gpd",
+                                    ... ) )
+    } else {
+      res.optim <- list( par = aux$par, value = aux$value,
+                        counts = aux$counts,
+                        hessian = if ( hessian.calculate ){
+                                    numDeriv::hessian( optim.function,
+                                                      x = aux$par,
+                                                      x.in = x,
+                                                      model = "gpd", ... )
+                                  } else NULL,
+                        convergence = 0, message = NULL )
     }
-    res.optim <- list( par = aux$par, value = aux$value,
-                      counts = aux$counts,
-                      hessian = if ( hessian.calculate ){
-                                  numDeriv::hessian( optim.function,
-                                                    x = aux$par,
-                                                    x.in = x,
-                                                    model = "gpd", ... )
-                                } else NULL,
-                      convergence = 0, message = NULL )
   } else if ( method == "nmk" ){
     ## The benefit of the nmk method is that its code base is written
     ## in R. So I could easily modify it and display the progress of
@@ -783,17 +813,17 @@ likelihood.gradient <- function( parameters, x.in,
 
   ## Calculating the gradient
   if ( model == "gev" ){
+    gradient <- numeric( 3 )
     if ( shape == 0 ){
       ## If the shape parameter is identical to zero, use the gradient
       ## of the Gumbel distribution instead
       z <- y/ scale
-      gradient <- numeric( 2 )
       gradient[ 1 ] <- -length( x.in )/ scale + sum( exp( -z ) )/ scale
       gradient[ 2 ] <- length( x.in )/ scale - sum( y )/ scale^2 +
-        sum( y* exp( -z )/ scale^2 )        
+        sum( y* exp( -z )/ scale^2 )
+      gradient[ 3 ] <- 0
     } else {
       z <- 1 + y* gamma
-      gradient <- numeric( 3 )
       gradient[ 1 ] <- sum( z^{-alpha}/ scale ) - sum( alpha* gamma/ z )
       gradient[ 2 ] <- length( x.in )/ scale -
         sum( alpha* shape* y/ ( scale^2 * z ) ) +
@@ -804,19 +834,20 @@ likelihood.gradient <- function( parameters, x.in,
              y/ ( scale* shape* z^alpha ) )
     }
   } else {
+    gradient <- numeric( 2 )
     if ( shape == 0 ){
       ## Only if the shape parameter is exactly zero use the
       ## gradient of the exponential function
-      gradient <- length( x.in )/ scale - sum( y/ scale^ 2 )
+      gradient[ 1 ] <- length( x.in )/ scale - sum( y/ scale^ 2 )
+      gradient[ 2 ] <- 0
     } else {
       z <- 1 + y* gamma
-      gradient <- numeric( 2 )
       gradient[ 1 ] <- length( x.in )/scale -
         alpha* shape* sum( x.in/ ( z* scale^2) )
       gradient[ 2 ] <- -1/ shape^2* sum( log( z ) ) +
         alpha/ scale* sum( x.in/ z )
     }
-  }            
+  }
   return( gradient )
 }
 

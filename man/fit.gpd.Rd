@@ -8,7 +8,7 @@ fit.gpd(x, initial = NULL, threshold = NULL, rerun = TRUE,
   optim.function = likelihood, gradient.function = NULL,
   error.estimation = c("none", "MLE", "MC"), method = c("Nelder-Mead",
   "BFGS", "CG", "SANN", "nmk"), monte.carlo.sample.size = 1000,
-  return.period = 100, total.length = NULL, silent = FALSE, ...)
+  return.period = 100, total.length = NULL, silent = TRUE, ...)
 }
 \arguments{
 \item{x}{Blocked time series to which the GPD distribution should be
@@ -70,7 +70,7 @@ standard error of the return level via the delta method of the MLE.
 Default = NULL.}
 
 \item{silent}{If TRUE, avoid the warning in case of a missing total.length
-parameter. Default = FALSE}
+parameter. Default = TRUE.}
 
 \item{...}{Additional arguments for the optim() or GenSA::GenSA() function.
 Depending on the chosen method.}

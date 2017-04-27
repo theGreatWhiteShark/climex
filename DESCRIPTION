@@ -1,7 +1,7 @@
 Package: climex
 Type: Package
 Title: Climate time series and extreme events
-Version: 1.0.2
+Version: 1.0.3
 Date: 2017-04-26
 LazyData: true
 Authors@R: person("Philipp","Developer", role = c("aut","cre"),
