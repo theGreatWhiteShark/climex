@@ -813,17 +813,17 @@ likelihood.gradient <- function( parameters, x.in,
 
   ## Calculating the gradient
   if ( model == "gev" ){
+    gradient <- numeric( 3 )
     if ( shape == 0 ){
       ## If the shape parameter is identical to zero, use the gradient
       ## of the Gumbel distribution instead
       z <- y/ scale
-      gradient <- numeric( 2 )
       gradient[ 1 ] <- -length( x.in )/ scale + sum( exp( -z ) )/ scale
       gradient[ 2 ] <- length( x.in )/ scale - sum( y )/ scale^2 +
-        sum( y* exp( -z )/ scale^2 )        
+        sum( y* exp( -z )/ scale^2 )
+      gradient[ 3 ] <- 0
     } else {
       z <- 1 + y* gamma
-      gradient <- numeric( 3 )
       gradient[ 1 ] <- sum( z^{-alpha}/ scale ) - sum( alpha* gamma/ z )
       gradient[ 2 ] <- length( x.in )/ scale -
         sum( alpha* shape* y/ ( scale^2 * z ) ) +
@@ -834,19 +834,20 @@ likelihood.gradient <- function( parameters, x.in,
              y/ ( scale* shape* z^alpha ) )
     }
   } else {
+    gradient <- numeric( 2 )
     if ( shape == 0 ){
       ## Only if the shape parameter is exactly zero use the
       ## gradient of the exponential function
-      gradient <- length( x.in )/ scale - sum( y/ scale^ 2 )
+      gradient[ 1 ] <- length( x.in )/ scale - sum( y/ scale^ 2 )
+      gradient[ 2 ] <- 0
     } else {
       z <- 1 + y* gamma
-      gradient <- numeric( 2 )
       gradient[ 1 ] <- length( x.in )/scale -
         alpha* shape* sum( x.in/ ( z* scale^2) )
       gradient[ 2 ] <- -1/ shape^2* sum( log( z ) ) +
         alpha/ scale* sum( x.in/ z )
     }
-  }            
+  }
   return( gradient )
 }
 
