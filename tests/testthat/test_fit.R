@@ -151,7 +151,7 @@ test_that( "fit.gpd's error estimation works", {
       tolerance = 2E-2 )
 })
 test_that( "fit.gpd throws a warning if total.length is not supplied", {
-  expect_warning( climex::fit.gpd( x.thresh ) )
+  expect_warning( climex::fit.gpd( x.thresh, silent = FALSE ) )
 })
 test_that( "fit.gpd's threshold argument affect the result the way it is supposed to", {
   expect_equal( as.numeric(
