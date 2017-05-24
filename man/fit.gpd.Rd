@@ -5,7 +5,8 @@
 \title{Performing a fit to the GPD function.}
 \usage{
 fit.gpd(x, initial = NULL, threshold = NULL, rerun = TRUE,
-  optim.function = likelihood, gradient.function = NULL,
+  optim.function = likelihood,
+  gradient.function = climex:::likelihood.gradient,
   error.estimation = c("none", "MLE", "MC"), method = c("Nelder-Mead",
   "BFGS", "CG", "SANN", "nmk"), monte.carlo.sample.size = 1000,
   return.period = 100, total.length = NULL, silent = TRUE, ...)
@@ -33,10 +34,9 @@ function via ... instead. Default = TRUE}
 \code{\link{likelihood}}}
 
 \item{gradient.function}{If NULL a finite difference method is invoked.
-I'm not really sure why but I obtained more consistent results using
-the finite difference method instead of the derived formula of the GPD
-likelihood gradient. To use the later one provide
-\code{\link{likelihood.gradient}}. Default = NULL.}
+To use the derived formula from the GPD likelihood gradient provide
+\code{\link{likelihood.gradient}}.
+Default = climex:::likelihood.gradient.}
 
 \item{error.estimation}{Method for calculating the standard errors of
 the fitted results. Using the option "MLE" the errors of the GPD

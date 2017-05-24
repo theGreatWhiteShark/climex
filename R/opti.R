@@ -337,10 +337,9 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE,
 ##' @param optim.function Function which is going to be optimized. Default:
 ##' \code{\link{likelihood}}
 ##' @param gradient.function If NULL a finite difference method is invoked.
-##' I'm not really sure why but I obtained more consistent results using
-##' the finite difference method instead of the derived formula of the GPD
-##' likelihood gradient. To use the later one provide
-##' \code{\link{likelihood.gradient}}. Default = NULL.
+##' To use the derived formula from the GPD likelihood gradient provide
+##' \code{\link{likelihood.gradient}}.
+##' Default = climex:::likelihood.gradient.
 ##' @param error.estimation Method for calculating the standard errors of
 ##' the fitted results. Using the option "MLE" the errors of the GPD
 ##' parameters will be calculated as the square roots of the diagonal
@@ -407,7 +406,7 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE,
 ##' fit.gpd( potsdam.extremes )
 fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
                     optim.function = likelihood,
-                    gradient.function = NULL,                    
+                    gradient.function = climex:::likelihood.gradient,                    
                     error.estimation = c( "none", "MLE", "MC" ),
                     method = c( "Nelder-Mead", "BFGS", "CG",
                                "SANN", "nmk" ),
