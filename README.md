@@ -29,7 +29,7 @@
 - Using a set of different starting points, you also check for local minima.
   If all of them result in the same parameter combination, everything is worked.
 
-## Robust and sophisticated optimization
+## Robust and sophisticated optimization (or why to use this package over others)
 
 When searching for the best candidate to use among all the different extreme value packages in R, I noticed that almost all of them just called the stats::optim function with its default arguments. None of them thought about how to perform the actual fit as good as possible. The only exception (in summer 2016) was the **extRemes** package which uses a more sophisticated heuristics to determine the starting points of the optimization and the *BFGS* algorithm. But the later one does make the fitting numerically unstable.
 
@@ -73,6 +73,9 @@ An in-depth introduction to the [general usage](vignettes/data_dwd_and_usage.Rmd
 
 When using this package in your own analysis, keep in mind that its functions expect your time series to be of class [xts](https://cran.r-project.org/web/packages/xts/index.html) and not numeric!
 
+### Why is this not on [CRAN](https://cran.r-project.org/)?
+
+The CRAN project has some special requirements a package has to fulfill to be hosted on their web page. One of those is for the package to complete the R package check without raising a single warning. Unfortunately I don't see a way right now to rewrite the function _climex::climex_ in such a way it fulfills this requirement and I most certainly don't want to drop it. CRAN is just not meant to host a variety of more complex shiny apps yet. ;)
 ---
 
 ### License
