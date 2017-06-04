@@ -76,6 +76,7 @@ When using this package in your own analysis, keep in mind that its functions ex
 ### Why is this not on [CRAN](https://cran.r-project.org/)?
 
 The CRAN project has some special requirements a package has to fulfill to be hosted on their web page. One of those is for the package to complete the R package check without raising a single warning. Unfortunately I don't see a way right now to rewrite the function _climex::climex_ in such a way it fulfills this requirement and I most certainly don't want to drop it. CRAN is just not meant to host a variety of more complex shiny apps yet. ;)
+
 ---
 
 ### License
