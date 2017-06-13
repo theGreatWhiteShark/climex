@@ -28,6 +28,8 @@
   set the starting points of the MLE optimization.
 - Using a set of different starting points, you also check for local minima.
   If all of them result in the same parameter combination, everything is worked.
+  
+[Try it!](http://climex.pks.mpg.de)
 
 ## Robust and sophisticated optimization (or why to use this package over others)
 
