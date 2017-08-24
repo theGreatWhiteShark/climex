@@ -26,6 +26,12 @@
 ##' vector  The options are: temp.max, temp.min, prec, default (for both
 ##' the daily maximum and minimum temperature and the precipitation),
 ##' temp.mean, vapor.pressure, cloud.amount, air.pressure,
+##' quality (-999 = faulty or suspicious, 1 = superficially checked,
+##' 2 = checked according to individual criterion, 3 = old automated
+##' check and correction, 5 = historical and subjective check, 7 =
+##' additional second check but without correction, 8 = quality check
+##' outside of the routine (?, just quoting the manual), 9 = not all
+##' parameters are corrected, 10 = fully checked and corrected),
 ##' relative.humidity, wind.speed, temp.min.at.ground, wind.speed.peak,
 ##' prec.type (0 = no precipitation, 1 = only rain (before 1979), 2 =
 ##' unknown, 4 = only rain (after 1979), 7 = only snow, 8 = snow or rain),
@@ -52,7 +58,7 @@ download.data.dwd <- function( save.downloads = TRUE,
                                             "wind.speed",
                                             "temp.min.at.ground",
                                             "wind.speed.peak",
-                                            "prec.type",
+                                            "prec.type", "quality",
                                             "sunshine.duration",
                                             "snow.height" ),
                               download.path = NULL ){
@@ -84,34 +90,36 @@ download.data.dwd <- function( save.downloads = TRUE,
   if ( data.type == "default" )
     data.type <- c( "temp.max", "temp.min", "prec" )
   data.columns <- numeric()
-  if ( "temp.mean" %in% data.type )
-    data.columns <- c( data.columns, 4 )
-  if ( "vapor.pressure" %in% data.type )
-    data.columns <- c( data.columns, 5 )
-  if ( "cloud.amount" %in% data.type )
+  if ( "quality" %in% data.type )
     data.columns <- c( data.columns, 6 )
-  if ( "air.pressure" %in% data.type )
-    data.columns <- c( data.columns, 7 )
-  if ( "relative.humidity" %in% data.type )
-    data.columns <- c( data.columns, 8 )
-  if ( "wind.speed" %in% data.type )
-    data.columns <- c( data.columns, 9 )
-  if ( "temp.max" %in% data.type )
-    data.columns <- c( data.columns, 10 )
-  if ( "temp.min" %in% data.type )
-    data.columns <- c( data.columns, 11 )
-  if ( "temp.min.at.ground" %in% data.type )
-    data.columns <- c( data.columns, 12 )
-  if ( "wind.speed.peak" %in% data.type )
-    data.columns <- c( data.columns, 13 )
-  if ( "prec" %in% data.type )
+  if ( "temp.mean" %in% data.type )
     data.columns <- c( data.columns, 14 )
-  if ( "prec.type" %in% data.type )
+  if ( "vapor.pressure" %in% data.type )
+    data.columns <- c( data.columns, 12 )
+  if ( "cloud.coverage" %in% data.type )
+    data.columns <- c( data.columns, 11 )
+  if ( "air.pressure" %in% data.type )
+    data.columns <- c( data.columns, 13 )
+  if ( "relative.humidity" %in% data.type )
     data.columns <- c( data.columns, 15 )
-  if ( "sunshine.duration" %in% data.type )
+  if ( "wind.speed" %in% data.type )
+    data.columns <- c( data.columns, 5 )
+  if ( "temp.max" %in% data.type )
     data.columns <- c( data.columns, 16 )
-  if ( "snow.height" %in% data.type )
+  if ( "temp.min" %in% data.type )
     data.columns <- c( data.columns, 17 )
+  if ( "temp.min.at.ground" %in% data.type )
+    data.columns <- c( data.columns, 18 )
+  if ( "wind.speed.peak" %in% data.type )
+    data.columns <- c( data.columns, 4 )
+  if ( "prec" %in% data.type )
+    data.columns <- c( data.columns, 7 )
+  if ( "prec.type" %in% data.type )
+    data.columns <- c( data.columns, 8 )
+  if ( "sunshine.duration" %in% data.type )
+    data.columns <- c( data.columns, 9 )
+  if ( "snow.height" %in% data.type )
+    data.columns <- c( data.columns, 10 )
   ## it will be downloaded in separate folders
   if ( length( grep( "downloads_dwd", getwd() ) ) == 0 ){
     if ( !dir.exists( "./downloads_dwd" ) )
@@ -223,7 +231,7 @@ download.data.dwd <- function( save.downloads = TRUE,
                      function( x ) strsplit( x, "_" )[[ 1 ]][ 3 ] ) ),
       Reduce( c, lapply( list.files( "./historical/" )[
                      grep( ".zip", list.files( "./historical/" ) ) ],
-                     function( x ) strsplit( x, "_" )[[ 1 ]][ 2 ] ) )
+                     function( x ) strsplit( x, "_" )[[ 1 ]][ 3 ] ) )
   ) ) )
   ## this lists will contain all the final station data
   ## I will only extract the maximum, minimum temperature and the
@@ -397,7 +405,7 @@ download.data.dwd <- function( save.downloads = TRUE,
     ## and the necessity of the second to start with either a 1 or a 2
     ## the station ID can be extracted uniquely.
     ## The conversion to numeric and back is necessary to delete zeros
-    line.raw <- grep( paste0( " ", as.numeric( station.id ), " [1,2]" ),
+    line.raw <- grep( paste0( station.id, " [1,2]" ),
                      file.description, value = TRUE )
     ## The extraction of the name fails, because the DWD has not yet
     ## added the station to the Description file holding of the
@@ -413,7 +421,7 @@ download.data.dwd <- function( save.downloads = TRUE,
     ## there is a digit and in the next the county consisting of one
     ## word (including a minus)
     line.full <- unlist( strsplit( line.raw, " " ) )
-    line <- line.full[ line.full != "" ]
+    line <- as.character( line.full[ line.full != "" ] )
     line.last.digit <- utils::tail( grep( "[[:digit:]]", line ), 1 )
     line.last.word <- utils::tail( grep( "[[:alpha:]]", line ), 1 )
     station.name <- line[ line.last.digit + 1 ]
@@ -431,6 +439,11 @@ download.data.dwd <- function( save.downloads = TRUE,
   station.extracts <- parallel::mclapply( list.station.ids, function( x )
     extract.station.names( x, file.description ),
     mc.cores = parallel::detectCores( logical = FALSE ) )
+
+  for ( ll in 1 : length( list.station.ids ) ){
+    a <- extract.station.names( list.station.ids[[ ll ]], file.description )
+  }
+  
   station.names <- Reduce( c, lapply( station.extracts,
                                      function( x ) x[[ 1 ]] ) )
   station.positions.aux <- Reduce( rbind, lapply( station.extracts,
