@@ -22,7 +22,7 @@
 ##' @family extremes
 ##' @author Philipp Mueller
 ##' @export
-##' @import xts
+##' @importFrom xts xts
 ##'
 ##' @family extremes
 ##' 
@@ -121,7 +121,7 @@ block <- function( input.bulk,
 ##' @family extremes
 ##' 
 ##' @export
-##' @import xts
+##' @importFrom xts xts
 ##' @author Philipp Mueller
 decluster <- function( x, threshold, cluster.distance = NULL,
                       silent = FALSE ){

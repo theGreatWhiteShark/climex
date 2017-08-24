@@ -37,7 +37,7 @@
 ##' options( climex.path = "PATH" ) to your .Rprofile path in your home.
 ##' 
 ##' @export
-##' @import xts
+##' @importFrom xts xts
 ##' @return invisible setwd()
 ##' @author Philipp Mueller 
 download.data.dwd <- function( save.downloads = TRUE,
@@ -378,7 +378,6 @@ download.data.dwd <- function( save.downloads = TRUE,
     results.tmp[ results.tmp == -999 ] <- NA
     return( results.tmp )
   }
-  
   ## For each data type a separate list containing the corresponding
   ## data of all stations will be generated
   ## This takes some time. But unfortunately it can't be parallelized

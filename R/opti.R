@@ -84,7 +84,7 @@
 ##' }
 ##' @author Philipp Mueller
 ##' @export
-##' @import xts
+##' @importFrom xts xts
 ##' @examples
 ##' potsdam.anomalies <- anomalies( temp.potsdam )
 ##' potsdam.blocked <- block( potsdam.anomalies )
@@ -398,7 +398,7 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE,
 ##' }
 ##' @author Philipp Mueller
 ##' @export
-##' @import xts
+##' @importFrom xts xts
 ##' @examples
 ##' potsdam.anomalies <- anomalies( temp.potsdam )
 ##' potsdam.extremes <- threshold( potsdam.anomalies, threshold = 10,

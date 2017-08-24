@@ -25,7 +25,7 @@
 ##' @export
 ##' @import shiny
 ##' @import leaflet
-##' @import xts
+##' @importFrom xts xts
 ##' @author Philipp Mueller 
 climex <- function(){
   source.data( pick.default = TRUE, import = "global" )
@@ -90,7 +90,7 @@ climex <- function(){
 ##'
 ##' @return Function acting as the shiny server.
 ##' @import shiny
-##' @import xts
+##' @importFrom xts xts
 ##' @import dygraphs
 ##' @import ggplot2
 ##'

@@ -82,7 +82,7 @@ multiplot <- function( tt.title = main, main = NULL, ...,
 ##'
 ##' @family plot
 ##' @export
-##' @import xts
+##' @importFrom xts is.xts
 ##' @import ggplot2
 ##' @return Nothing. The multiplot function is run in the last step.
 ##' @author Philipp Mueller
