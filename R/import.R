@@ -439,11 +439,6 @@ download.data.dwd <- function( save.downloads = TRUE,
   station.extracts <- parallel::mclapply( list.station.ids, function( x )
     extract.station.names( x, file.description ),
     mc.cores = parallel::detectCores( logical = FALSE ) )
-
-  for ( ll in 1 : length( list.station.ids ) ){
-    a <- extract.station.names( list.station.ids[[ ll ]], file.description )
-  }
-  
   station.names <- Reduce( c, lapply( station.extracts,
                                      function( x ) x[[ 1 ]] ) )
   station.positions.aux <- Reduce( rbind, lapply( station.extracts,
