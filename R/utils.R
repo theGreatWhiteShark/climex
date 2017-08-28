@@ -41,5 +41,74 @@ convert.date.Date <- function( input.data, origin = "1970-01-01"  ){
   return( output.data )
 }
 
+##' @title Summary of the fit results
+##' @export
+##' @author Philipp Mueller
+print.climex.fit.gev <- function( x ){
+  summary( x )
+  invisible()
+}
+##' @title Summary of the fit results
+##' @export
+##' @author Philipp Mueller
+summary.climex.fit.gev <- function( x ){
+  cat( "\n" )
+  cat( paste( length( x$x ), "block maxima fitted using the\n" ) )
+  cat( paste( x$control$optim.method, "optimization routine.\n" ) )
+  cat( "\n" )
+  cat( "Estimated parameters\n" )
+  print( data.frame( parameter = x$par, fitting.error = x$se[ 1 : 3 ],
+                    row.names = c( "location", "scale", "shape" ) ) )
+  cat( "\n" )
+  cat( "Estimated return levels\n" )
+  print( data.frame( return.level = x$return.level,
+                    fitting.error = x$se[ 4 : length( x$se ) ],
+                    row.names = as.character( x$control$return.period ) ) )
+  cat( "\n" )
+  if ( x$control$error.estimation != "none" ){
+    cat( paste( "The error estimation was done using the",
+               x$control$error.estimation, "approach\n" ) )
+  }
+  cat( paste( "The optimizaion took", x$counts$function, "function and",
+             x$counts$gradient, "gradient evaluation\n as well as",
+             x$outer.iteration,
+             "updates of the penalty and|or Lagrangian parameter to complete" ) )
 
+  invisible()
+}
+##' @title Summary of the fit results
+##' @export
+##' @author Philipp Mueller
+print.climex.fit.gpd <- function( x ){
+  summary( x )
+  invisible()
+}
+##' @title Summary of the fit results
+##' @export
+##' @author Philipp Mueller
+summary.climex.fit.gpd <- function( x ){
+  cat( "\n" )
+  cat( paste( length( x$x ), "exceedances over the threshold",
+             x$threshold, "using the\n" ) )
+  cat( paste( x$control$optim.method, "optimization routine.\n" ) )
+  cat( "\n" )
+  cat( "Estimated parameters\n" )
+  print( data.frame( parameter = x$par, fitting.error = x$se[ 1 : 2 ],
+                    row.names = c( "scale", "shape" ) ) )
+  cat( "\n" )
+  cat( "Estimated return levels\n" )
+  print( data.frame( return.level = x$return.level,
+                    fitting.error = x$se[ 3 : length( x$se ) ],
+                    row.names = as.character( x$control$return.period ) ) )
+  cat( "\n" )
+  if ( x$control$error.estimation != "none" ){
+    cat( paste( "The error estimation was done using the",
+               x$control$error.estimation, "approach\n" ) )
+  }
+  cat( paste( "The optimizaion took", x$counts$function, "function and",
+             x$counts$gradient, "gradient evaluation\n as well as",
+             x$outer.iteration,
+             "updates of the penalty and|or Lagrangian parameter to complete" ) )
 
+  invisible()
+}
