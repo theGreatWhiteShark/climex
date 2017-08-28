@@ -70,6 +70,10 @@ download.data.dwd <- function( save.downloads = TRUE,
     download.path <- getOption( "climex.path" )
   }
   old.dir <- getwd()
+  ## If the folder does not exists yet, create it.
+  if ( !dir.exists( download.path ) ){
+    system2( "mkdir", args = paste( "-p", download.path ) )
+  }
   setwd( download.path ) 
   ## paths on the DWD servers
   url.recent <- "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/"
