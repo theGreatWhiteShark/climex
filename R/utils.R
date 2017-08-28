@@ -53,27 +53,33 @@ print.climex.fit.gev <- function( x ){
 ##' @author Philipp Mueller
 summary.climex.fit.gev <- function( x ){
   cat( "\n" )
-  cat( paste( length( x$x ), "block maxima fitted using the\n" ) )
-  cat( paste( x$control$optim.method, "optimization routine.\n" ) )
-  cat( "\n" )
-  cat( "Estimated parameters\n" )
-  print( data.frame( parameter = x$par, fitting.error = x$se[ 1 : 3 ],
+  cat( paste( length( x$x ), "block maxima fitted using then " ) )
+  cat( paste( x$control$optim.method, "\noptimization routine." ) )
+  if ( x$control$error.estimation != "none" ){
+    cat( paste( " Errors using",
+               x$control$error.estimation, "approach." ) )
+  }
+  cat( "\n\n" )
+  cat( "\t\tEstimated parameters:\n" )
+  print( data.frame( parameter = x$par,
+                    fitting.error = as.numeric( x$se[ 1 : 3 ] ),
                     row.names = c( "location", "scale", "shape" ) ) )
   cat( "\n" )
-  cat( "Estimated return levels\n" )
+  cat( "\t\tEstimated return levels:\n" )
   print( data.frame( return.level = x$return.level,
-                    fitting.error = x$se[ 4 : length( x$se ) ],
-                    row.names = as.character( x$control$return.period ) ) )
+                    fitting.error = as.numeric(
+                        x$se[ 4 : length( x$se ) ] ),
+                    row.names = paste( as.character(
+                        x$control$return.period ),
+                        "block return level" ) ) )
   cat( "\n" )
-  if ( x$control$error.estimation != "none" ){
-    cat( paste( "The error estimation was done using the",
-               x$control$error.estimation, "approach\n" ) )
-  }
-  cat( paste( "The optimizaion took", x$counts$function, "function and",
-             x$counts$gradient, "gradient evaluation\n as well as",
-             x$outer.iteration,
-             "updates of the penalty and|or Lagrangian parameter to complete" ) )
-
+  cat( "\t\tFunction evaluations:\n" )
+  print( data.frame( function.eval = as.numeric( x$counts[ 1 ] ),
+                    gradient.eval = ifelse( is.na( x$counts[ 2 ] ), 0,
+                                           as.numeric( x$counts[ 2 ] ) ),
+                    penalty.updates = x$outer.iteration,
+                    row.names = "eval" ) )
+  cat( "\n" )
   invisible()
 }
 ##' @title Summary of the fit results
@@ -89,26 +95,32 @@ print.climex.fit.gpd <- function( x ){
 summary.climex.fit.gpd <- function( x ){
   cat( "\n" )
   cat( paste( length( x$x ), "exceedances over the threshold",
-             x$threshold, "using the\n" ) )
-  cat( paste( x$control$optim.method, "optimization routine.\n" ) )
-  cat( "\n" )
-  cat( "Estimated parameters\n" )
-  print( data.frame( parameter = x$par, fitting.error = x$se[ 1 : 2 ],
+             x$threshold, "using the", x$control$optim.method ) )
+  cat( "\noptimization routine." )
+  if ( x$control$error.estimation != "none" ){
+    cat( paste( " Errors using",
+               x$control$error.estimation, "approach." ) )
+  }
+  cat( "\n\n" )
+  cat( "\t\tEstimated parameters:\n" )
+  print( data.frame( parameter = x$par,
+                    fitting.error = as.numeric( x$se[ 1 : 2 ] ),
                     row.names = c( "scale", "shape" ) ) )
   cat( "\n" )
-  cat( "Estimated return levels\n" )
+  cat( "\t\tEstimated return levels:\n" )
   print( data.frame( return.level = x$return.level,
-                    fitting.error = x$se[ 3 : length( x$se ) ],
-                    row.names = as.character( x$control$return.period ) ) )
+                    fitting.error = as.numeric(
+                        x$se[ 3 : length( x$se ) ] ),
+                    row.names = paste( as.character(
+                        x$control$return.period ),
+                        "block return level" ) ) )
   cat( "\n" )
-  if ( x$control$error.estimation != "none" ){
-    cat( paste( "The error estimation was done using the",
-               x$control$error.estimation, "approach\n" ) )
-  }
-  cat( paste( "The optimizaion took", x$counts$function, "function and",
-             x$counts$gradient, "gradient evaluation\n as well as",
-             x$outer.iteration,
-             "updates of the penalty and|or Lagrangian parameter to complete" ) )
-
+  cat( "\t\tFunction evaluations:\n" )
+  print( data.frame( function.eval = as.numeric( x$counts[ 1 ] ),
+                    gradient.eval = ifelse( is.na( x$counts[ 2 ] ), 0,
+                                           as.numeric( x$counts[ 2 ] ) ),
+                    penalty.updates = x$outer.iteration,
+                    row.names = "eval" ) )
+  cat( "\n" )
   invisible()
 }
