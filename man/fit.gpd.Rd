@@ -2,40 +2,33 @@
 % Please edit documentation in R/opti.R
 \name{fit.gpd}
 \alias{fit.gpd}
-\title{Performing a fit to the GPD function.}
+\title{Robust maximum-likelihood fit of the GPD distribution}
 \usage{
-fit.gpd(x, initial = NULL, threshold = NULL, rerun = TRUE,
-  optim.function = likelihood,
+fit.gpd(x, initial = NULL, threshold = NULL,
+  likelihood.function = likelihood,
   gradient.function = climex:::likelihood.gradient,
-  error.estimation = c("none", "MLE", "MC"), method = c("Nelder-Mead",
-  "BFGS", "CG", "SANN", "nmk"), monte.carlo.sample.size = 1000,
+  error.estimation = c("none", "MLE", "MC"), optim.method = c("Nelder-Mead",
+  "BFGS", "CG", "SANN"), monte.carlo.sample.size = 1000,
   return.period = 100, total.length = NULL, silent = TRUE, ...)
 }
 \arguments{
-\item{x}{Blocked time series to which the GPD distribution should be
-fitted.}
+\item{x}{Threshold exceedances with the threshold already subtracted.}
 
 \item{initial}{Initial values for the GPD parameters. Has to be
 provided as 2x1 vector. If NULL the parameters are estimated with the
 function \code{\link{likelihood.initials}}. Default = NULL}
 
-\item{threshold}{Optional threshold for the GPD model. If present it
-will be added to the return level to produce a value which fits to
-underlying time series. Default = NULL.}
+\item{threshold}{Optional threshold used to extract the exceedances
+x from the original series. If present it will be added to the
+return level to produce a value which fits to underlying time series.
+Default = NULL.}
 
-\item{rerun}{The optimization will be started again using the results
-of the first optimization run. If the "Nelder-Mead" algorithm is used
-for optimization (as it is here) this can be useful to escape local
-minima. When choosing simulated annealing as method the rerun will be
-skipped. Provide a different number of runs directly to the GenSA
-function via ... instead. Default = TRUE}
+\item{likelihood.function}{Function which is going to be optimized.
+Default: \code{\link{likelihood}}}
 
-\item{optim.function}{Function which is going to be optimized. Default:
-\code{\link{likelihood}}}
-
-\item{gradient.function}{If NULL a finite difference method is invoked.
-To use the derived formula from the GPD likelihood gradient provide
-\code{\link{likelihood.gradient}}.
+\item{gradient.function}{If NULL a finite difference method is
+invoked. To use the derived formula from the GPD likelihood gradient
+provide \code{\link{likelihood.gradient}}.
 Default = climex:::likelihood.gradient.}
 
 \item{error.estimation}{Method for calculating the standard errors of
@@ -43,37 +36,41 @@ the fitted results. Using the option "MLE" the errors of the GPD
 parameters will be calculated as the square roots of the diagonal
 elements of the inverse of the hessian matrix calculated with the MLE
 of the GPD parameters. The standard error of the return level is
-calculated using the Delta method and the MLE of the GPD parameters.
+calculated using the Delta method and the maximum likelihood
+estimates (MLE) of the GPD parameters.
+
 Alternative one can use Monte Carlo simulations with "MC" for which
-1000 samples of the same size as x will be drawn from a GPD constituted
-by the obtained MLE of the GPD parameters of x. The standard error is
-then calculated via the square of the variance of all fitted GPD
-parameters and calculated return levels. Sometimes the inversion of the
-hessian fails (since the are some NaN in the hessian) (which is also the
-reason why the ismev package occasionally does not work). In such cases
-the Monte Carlo method is used. Option "none" just skips the calculation
-of the error. Default = "none".}
+monte.carlo.sample.size samples of the same size as x will be drawn
+from a GPD distribution constituted by the obtained MLE of the GPD
+parameters of x. The standard error is then calculated via the square
+of the variance of all fitted GPD parameters and calculated return
+levels.
 
-\item{method}{Through the argument 'method' (which is passed to the optim
-function) the optimization algorithm is chosen. The default one is the
-"Nelder-Mead".}
+Sometimes the inversion of the hessian fails (since the are some NaN
+in the hessian) (which is also the reason why the ismev package
+occasionally does not work). In such cases the Monte Carlo method is
+used. Option "none" just skips the calculation of the error.
+Default = "none".}
 
-\item{monte.carlo.sample.size}{Number of samples used to obtain the Monte
-Carlo estimate of the standard error of the fitting. Default = 1000}
+\item{optim.method}{Choosing the optimization algorithm used within
+\code{\link{stats::optim}}. The default one is the "Nelder-Mead".}
 
-\item{return.period}{Quantiles at which the return level is going to be
-evaluated. Class "numeric". Default = 100.}
+\item{monte.carlo.sample.size}{Number of samples used to obtain the
+Monte Carlo estimate of the standard error of the fitting.
+Default = 1000}
 
-\item{total.length}{Total number of observations in the time series the
-exceedance were obtained from. This argument is needed to calculate the
-standard error of the return level via the delta method of the MLE.
-Default = NULL.}
+\item{return.period}{Quantiles at which the return level is going to
+be evaluated. Class "numeric". Default = 100.}
 
-\item{silent}{If TRUE, avoid the warning in case of a missing total.length
-parameter. Default = TRUE.}
+\item{total.length}{Total number of observations in the time series
+the exceedance were obtained from. This argument is needed to
+calculate the standard error of the return level via the delta method
+of the MLE. Default = NULL.}
 
-\item{...}{Additional arguments for the optim() or GenSA::GenSA() function.
-Depending on the chosen method.}
+\item{silent}{Determines whether or not warning messages shall be
+displayed and results shall be reported. Default = TRUE.}
+
+\item{...}{Additional arguments for the optim() function.}
 }
 \value{
 Output of the optim function with class ==
@@ -82,39 +79,47 @@ c( "list", "climex.fit.gpd" )
  \item{ par = MLE of the GPD parameters }
  \item{ value = Value of the negative log-likelihood
 evaluated at the MLE }
- \item{ counts = Number of function evaluations during the
-optimization }
- \item{ convergence = Specifies the state of the convergence
-(see \code{\link{optim}})) }
- \item{ message = see \code{\link{optim}} }
- \item{ hessian = Hessian or the observed information matrix
-evaluated at the MLE }
+ \item{ counts = Number of evaluations of the likelihood
+function and its gradient during optimization (inner routine) }
+ \item{ outer.iteration = Number of updates of the penalty and
+the Lagrangian parameter to fine-tune the impact of the
+constraints on the optimization (outer routine) }
  \item{ return.level = Estimate of the return levels at the provided
 return periods }
  \item{ se = Standard error of the GPD parameters and the return
 levels }
- \item{ x = Original time series }
- \item{ updates = A data.frame either the first and last step
-( !'nmk' )
-        containing all the optimization steps visited during the
-call. }
+ \item{ x = Threshold exceedances }
+ \item{ threshold = Value which had to be exceeded }
+ \item{ control = Parameter and options used during optimization }
 }
+}
+\description{
+This function fits the Generalized Pareto distribution
+(GPD) to the supplied data, which have to be threshold exceedances
+with the corresponding threshold already subtracted. The
+determination of the starting point for the optimization and the
+calculation of the return level and the all the corresponding
+estimates of the fitting errors will be done internally.
 }
 \details{
-Custom fitting of the generalized Pareto distribution (GPD)
-function including the estimation of the initial conditions. Per
-default the optimization is run twice to prevent getting trapped in
-local minima of the negative log-likelihood function. The output is
-of optim style. But the errors of the fitting are also provided as
-well as the estimates and the errors of some specified return levels.
-I had some problems with the optim implementation of the simulated
-annealing implementation. The optimization just kept its value and
-nothing happened. That's why I switched to the \code{\link{GenSA}}
-package. More for convenience and due to its use in the animation of
-the climex shiny app I also introduced a slightly modified version of
-the dfoptim package's 'nmk' function. But I do not recommend using it
-since they produce slightly worse results and seem to be numerical
-more unstable.
+The optimization is performed using the augmented Lagrangian
+method. Within this framework the log-likelihood function of the GPD
+gets augmented with N+2 constraints, where N is the
+number of points in the time series. N+1 of those constraints ensure
+the log-likelihood (containing two logarithms) to be always defined.
+The remaining constraints ensures for the shape parameter to be
+always bigger than -1 for the maximum likelihood to be defined in the
+first place. The penalty in the log-likelihood function is the sum of
+all squared constrain violations plus an additional term linear in
+the constraint violation to ensure well-conditioning. Using this
+penalty term the problem becomes unconstrained again and can be
+solved using \code{\link{stats::optim}}. After each of those inner
+routines the weighting parameter of the penalty is being increased
+until some convergence conditions are fulfilled.
+
+Since it usually takes just four to five outer iterations this
+functions needs only double the time a pure call to the stats::optim
+function would need.
 }
 \examples{
 potsdam.anomalies <- anomalies( temp.potsdam )

@@ -2,7 +2,7 @@ Package: climex
 Type: Package
 Title: Climate time series and extreme events
 Version: 1.0.3
-Date: 2017-04-26
+Date: 2017-08-28
 LazyData: true
 Authors@R: person("Philipp","Developer", role = c("aut","cre"),
     email = "thetruephil@googlemail.com")
@@ -33,12 +33,10 @@ Imports:
     Lmoments,
     moments,
     leaflet,
-    GenSA,
-    dfoptim,
-    numDeriv
+    numDeriv,
+    alabama
 Remotes: theGreatWhiteShark/leaflet,
-    theGreatWhiteShark/shinydashboard,
-    theGreatWhiteShark/dfoptim
+    theGreatWhiteShark/shinydashboard
 License: GPL (>= 3)
 LinkingTo: Rcpp, RcppArmadillo
 VignetteBuilder: knitr

@@ -432,7 +432,7 @@ return.level <- function( x, return.period = 100,
     model <- "gev"
     return.levels <- Reduce( c, lapply( return.period, function( y )
       as.numeric( climex:::rlevd( y, x$par[ 1 ], x$par[ 2 ], x$par[ 3 ],
-                                 model = "gev", silent = TRUE ) ) ) )
+                                 model = "gev", silent = silent ) ) ) )
   } else if ( any( class( x ) == "climex.fit.gpd" ) ){
     model <- "gpd"
     if ( !is.xts( x$x ) ){
@@ -455,7 +455,7 @@ return.level <- function( x, return.period = 100,
       as.numeric( climex:::rlevd( y, scale = x$par[ 1 ],
                                  shape = x$par[ 2 ],
                                  model = "gpd", threshold = x$threshold,
-                                 silent = TRUE ) ) ) )
+                                 silent = silent ) ) ) )
   } else if ( any( class( x ) == "numeric" ) ){
     ## Neither a object from fit.gev nor from fit.gpd but a numerical
     ## vector containing the GEV/GPD parameters was supplied
@@ -487,7 +487,7 @@ return.level <- function( x, return.period = 100,
       return.levels <- Reduce( c, lapply( m, function( y )
         as.numeric( climex:::rlevd( y, scale = x[ 1 ], shape = x[ 2 ],
                                    model = "gpd", threshold = threshold,
-                                   silent = TRUE ) ) ) )
+                                   silent = silent ) ) ) )
     }
   } else
     stop( "return.level is not implemented for this class of input values!" )
@@ -517,20 +517,21 @@ return.level <- function( x, return.period = 100,
                              total.length = total.length )$hessian
       }
     }
-    if ( is.null( x$hessian ) ||
-         any( is.nan( x$hessian ) ) ){
-      ## If there are NaN in the hessian, the return levels
-      ## can not be calculated. So try the numDeriv instead.
-      x$hessian <- numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
-                                     model = model )
-    }
-    if ( any( is.nan( x$hessian ) ) ){
-      ## If there are still NaN, let it be.
-      warning( "return level: NaN in the hessian. Error estimates can not be calculated via the maximum likelihood estimates" )
-      return( c( NaN, NaN, NaN ) )
-    }
+    ## Sometimes the obtained hessian is not invertible. If this is the
+    ## case, recalculate it in order to access the fitting error
+    ## estimates.
     ## Calculating the errors using the MLE
-    error.covariance <- solve( x$hessian )
+    error.covariance <- try( solve( x$control$hessian ), silent = silent )
+    if ( class( error.covariance ) == "try-error" ){
+      x.hessian <- numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
+                                     model = model )
+      error.covariance <- solve( x.hessian )
+      if ( any( is.nan( x.hessian ) ) ){
+        ## If there are still NaN, let it be.
+        warning( "return level: NaN in the hessian. Error estimates can not be calculated via the maximum likelihood estimates" )
+        return( c( NaN, NaN, NaN ) )
+      }
+    }
     ## Delta method for the return level
     parameter.estimate <- x$par
     errors <- data.frame( a = 0 )
