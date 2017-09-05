@@ -26,6 +26,9 @@
 ##' functions needs only double the time a pure call to the stats::optim
 ##' function would need.
 ##'
+##' The negative log-likelihood of the Gumbel distribution is just fitted
+##' if the shape parameter is exactly equal to zero.
+##'
 ##' @param x Blocked time series to which the GEV distribution should
 ##' be fitted.
 ##' @param initial Initial values for the GEV parameters. Has to be
@@ -121,6 +124,10 @@ fit.gev <- function( x, initial = NULL,
   ## The Rsolnp package did not performed as well as the alabama one.
   ## It takes two orders of magnitude longer and gets stuck for
   ## certain initial parameter combinations.
+  ## If the shape parameter is exactly equal to zero and the
+  ## likelihood function switches to the Gumbel distribution, the
+  ## constraints involving the shape parameter become true and are
+  ## redundant anyway.
   suppressWarnings(
       res.alabama <- auglag(
           par = initial, fn = likelihood.function,
@@ -172,11 +179,19 @@ fit.gev <- function( x, initial = NULL,
         climex:::revd( length( x ), location = parameter.estimate[ 1 ],
                       scale = parameter.estimate[ 2 ],
                       shape = parameter.estimate[ 3 ], model = "gev" ) )
-      suppressWarnings( 
-          samples.fit <- try( lapply( samples.list, function( y )
-            stats::optim( likelihood.initials( y, model = "gev" ),
-                         likelihood.function,
-                         x = y, method = "Nelder-Mead" )$par ) ) )
+      suppressWarnings(
+          samples.fit <- try( lapply( samples.list, function ( y )
+            auglag( par = likelihood.initials( y, model = "gev" ),
+                   fn = likelihood.function,
+                   gr = gradient.function, 
+                   hin = function( parameters, x.in, ... ){
+                     return( as.numeric(
+                         c( parameters[ 2 ] - .03,
+                           .95 + parameters[ 3 ]* ( x.in - parameters[ 1 ])/
+                           parameters[ 2 ],
+                           parameters[ 3 ] + .95 ) ) ) },
+                   control.outer = list( trace = FALSE, method = optim.method ),
+                   x.in = y, model = "gev" )$par ) ) )
       if ( class( samples.fit ) == "try-error" ){
         errors <- c( NaN, NaN, NaN, rep( NaN, length( return.period ) ) )
       } else {
@@ -192,6 +207,7 @@ fit.gev <- function( x, initial = NULL,
                   climex::return.level( z,                                                                    return.period = return.period[ rr ]
                                        ) ) ) ) ) ) )
       }
+      errors <- as.numeric( errors )
       names( errors ) <- c( "location", "scale", "shape",
                            paste0( return.period, ".rlevel" ) )
     } else {
@@ -371,6 +387,9 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
   ## The Rsolnp package did not performed as well as the alabama one.
   ## It takes two orders of magnitude longer and gets stuck for
   ## certain initial parameter combinations.
+  ## For shape parameter equal to zero only the first constraint is
+  ## relevant and the other ones can not be violated anymore. So no
+  ## need to remove them.
   suppressWarnings(
       res.alabama <- auglag(
           par = initial, fn = likelihood.function,
@@ -418,12 +437,19 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
         climex:::revd( length( x ), scale = parameter.estimate[ 1 ],
                       shape = parameter.estimate[ 2 ], model = "gpd",
                       silent = TRUE ) )
-      suppressWarnings( 
+      suppressWarnings(
           samples.fit <- try( lapply( samples.list, function( y )
-            stats::optim( likelihood.initials( y, model = "gpd" ),
-                         likelihood.function, x = y,
-                         method = "Nelder-Mead", model = "gpd",
-                         ... )$par ) ) )
+            auglag( par = likelihood.initials( y, model = "gpd" ),
+                   fn = likelihood.function,
+                   gr = gradient.function,
+                   hin = function( parameters, x.in, ... ){
+                     return( as.numeric(
+                         c( parameters[ 1 ] - .03,
+                           .95 + parameters[ 2 ]* ( x.in )/ parameters[ 1 ],
+                           parameters[ 2 ] + .95 ) ) ) },
+                   control.outer = list( trace = FALSE,
+                                        method = optim.method ),
+                   x.in = y, model = "gpd" )$par ) ) )
       if ( class( samples.fit ) == "try-error" ){
         errors <- c( NaN, NaN, NaN )
       } else {
