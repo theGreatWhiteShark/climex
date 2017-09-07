@@ -129,14 +129,6 @@ leafletClimexUI <- function( id ){
 ##' @param sliderBlockLength Numerical (slider) input determining the
 ##' block length used in the GEV flavor of extreme value theory. On
 ##' default it is set to one year.
-##' @param selectOptimization Character (select) input to determine which
-##' optimization routine/method is going to be used when fitting the maximum
-##' likelihood function of the GEV/GP distribution. The choices are given in
-##' \code{\link{generalFittingRoutineInput}} and the default value is set to
-##' "Nelder-Mead".
-##' @param checkboxRerun Logical (checkbox) input from the Likelihood tab.
-##' It determines whether or not to start the optimization at the results
-##' of the first run again to escape local minima.
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
@@ -163,7 +155,6 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                           extremes.interactive, selectDataSource,
                           checkboxIncompleteYears, checkboxDecluster,
                           selectDeseasonalize, sliderBlockLength,
-                          selectOptimization, checkboxRerun,
                           selectDataBase ){
   ## This variable contains the name of the previously selected station.
   ## It's a little bit ugly since it's global, but right now I'm lacking
@@ -292,9 +283,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
           climex::return.level( fit.interactive( data.blocked[[ rr ]],
                                                 x.initial = NULL,
                                                 radioEvdStatistics,
-                                                selectOptimization,
                                                 buttonMinMax,
-                                                checkboxRerun,
                                                 sliderThreshold ),
                                return.period = return.level.year,
                                model = model, error.estimation = "none",
@@ -308,9 +297,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
         auxiliary.fit <- fit.interactive( data.blocked[[ rr ]],
                                          x.initial = NULL,
                                          radioEvdStatistics,
-                                         selectOptimization,
                                          buttonMinMax,
-                                         checkboxRerun,
                                          sliderThreshold )
         return.level.vector[ rr ] <-
           -1* climex::return.level( c( -1* auxiliary.fit$par[ 1 ],

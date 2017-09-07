@@ -1,21 +1,6 @@
 ### All functions and modules in charge of fitting a GEV or GP function to
 ### the provided time series in the Climex app.
 
-##' @title Selection input to determine the fitting routine/method 
-##'
-##' @family climex-fitting
-##'
-##' @import shiny
-##' 
-##' @return selectInput
-##' @author Philipp Mueller 
-generalFittingRoutineInput <- function(){
-  selectInput( "selectOptimization", "Fitting routine",
-              choices = c( "Nelder-Mead", "CG", "BFGS", "SANN",
-                          "dfoptim::nmk" ),
-              selected = c( "Nelder-Mead" ) )
-}
-
 ##' @title Function to perform the GEV/GP fit within the Climex app.
 ##' @details This function does not wait for the initialization of its
 ##' slider, checkbox etc. inputs. This way the fit can be performed with its
@@ -24,22 +9,12 @@ generalFittingRoutineInput <- function(){
 ##'
 ##' @param x.kept Time series of class 'xts'. Removing clicked or brushed
 ##' values has to be done beforehand.
-##' @param x.initial Initial parameters to start the fitting routine at. See
-##' \code{\link{likelihood.initials}}. Default = NULL.
 ##' @param radioEvdStatistics Character (radio) input determining whether
 ##' the GEV or GP distribution shall be fitted to the data. Choices:
 ##' c( "GEV", "GP" ), default = "GEV".
-##' @param selectOptimization Character (select) input to determine which
-##' optimization routine/method is going to be used when fitting the maximum
-##' likelihood function of the GEV/GP distribution. The choices are given in
-##' \code{\link{generalFittingRoutineInput}} and the default value is set to
-##' "Nelder-Mead".
 ##' @param buttonMinMax Character (radio) input determining whether
 ##' the GEV/GP distribution shall be fitted to the smallest or biggest
 ##' vales. Choices: c( "Max", "Min ), default = "Max".
-##' @param checkboxRerun Logical (checkbox) input from the Likelihood tab.
-##' It determines whether or not to start the optimization at the results
-##' of the first run again to escape local minima.
 ##' @param sliderThreshold Numerical (slider) input determining the
 ##' threshold used within the GP fit and the extraction of the extreme
 ##' events. Boundaries: minimal and maximal value of the deseasonalized
@@ -59,10 +34,8 @@ generalFittingRoutineInput <- function(){
 ##' @return Object of class 'climex.fit.gev' or 'climex.fit.gpd', depending
 ##' on the choice in input$radioEvdStatistics.
 ##' @author Philipp Mueller 
-fit.interactive <- function( x.kept, x.initial = NULL,
-                            radioEvdStatistics, selectOptimization,
-                            buttonMinMax, checkboxRerun, sliderThreshold,
-                            selectDataBase ){
+fit.interactive <- function( x.kept, radioEvdStatistics, buttonMinMax,
+                            sliderThreshold, selectDataBase ){
   ## Don't wait for initialization here or the summary statistic table in
   ## the leaflet tab will be only available after switching to the General
   ## tab and back.
@@ -71,66 +44,20 @@ fit.interactive <- function( x.kept, x.initial = NULL,
   } else {
     model <- "gpd"
   }
+  ## Calculating the parameter combination to start the optimization with.
+  x.initial <- climex::likelihood.initials( x.kept, model = model )
   ## When considering the minima instead of the maxima x*(-1)
   ## will be fitted and the location parameter will be multiplied
   ## by -1 afterwards
   if ( ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" ) &&
        ( model == "gev" ) ){
     x.kept <- x.kept*( -1 )
-    if ( !is.null( x.initial ) )
-      x.initial[ 1 ] <- -1* x.initial[ 1 ]
+    x.initial[ 1 ] <- -1* x.initial[ 1 ]
   }
-  if ( !is.null( x.initial ) ){
-    ## Check whether the supplied initial parameter combination can
-    ## still be evaluated. This might fail, e.g. when changing between
-    ## time series or minimal und maximal extremes.
-    if ( is.nan( climex::likelihood( x.initial, x.kept, model = model ) ) ){
-      shinytoastr::toastr_warning(
-                       "Initial parameters can not be evaluated. They have been reseted during the fitting procedure!",
-                       preventDuplicates = TRUE )
-      x.initial <- NULL
-    } 
-    ## While changing the EVD statistics from "GEV" to "GP" the initial
-    ## parameter combination has to be reset. This is nevertheless a
-    ## little bit problematic since both reactive.fitting() and
-    ## reactive.initials() are labeled dirty during this procedure. So
-    ## one can not really control which is evaluted first. But since the
-    ## reseting of reactive.initials() would result in the default
-    ## setting, we are save to use it in here too.
-    if ( model == "gev" && length( x.initial ) != 3 )
-      x.initial <- NULL
-    if ( model == "gpd" && length( x.initial ) != 2 )
-      x.initial <- NULL
-    }
-  x.initial <- climex::likelihood.initials( x.kept, model = model )
-  
   if ( model == "gev" ){
     ## Fits of GEV parameters to blocked data set
-    x.fit.evd <- suppressWarnings( switch(
-        selectOptimization(),
-        "Nelder-Mead" = climex::fit.gev( x.kept, initial = x.initial,
-                                        rerun = checkboxRerun(),
-                                        method = "Nelder-Mead",
-                                        error.estimation = "none" ),
-        "CG" = climex::fit.gev( x.kept, initial = x.initial,
-                               rerun = checkboxRerun(),
-                               method = "CG", error.estimation = "none" ),
-        "BFGS" = climex::fit.gev( x.kept, initial = x.initial,
-                                 rerun = checkboxRerun(),
-                                 method = "BFGS",
-                                 error.estimation = "none" ),
-        "SANN" = climex::fit.gev( x.kept, initial = x.initial,
-                                 rerun = checkboxRerun(),
-                                 method = "SANN",
-                                 error.estimation = "none" ),
-        "dfoptim::nmk" = climex::fit.gev( x.kept, initial = x.initial,
-                                         rerun = checkboxRerun(),
-                                         method = "nmk",
-                                         error.estimation = "none" ),
-        NULL = climex::fit.gev( x.kept, initial = x.initial,
-                               method = "Nelder-Mead",
-                               rerun = checkboxRerun(),
-                               error.estimation = "none" ) ) ) 
+    x.fit.evd <- climex::fit.gev( x.kept, initial = x.initial,
+                                 error.estimation = "none" )
   } else {
     ## Fits of GPD parameters to blocked data set
     if ( selectDataBase() == "Artificial data" ){
@@ -147,38 +74,9 @@ fit.interactive <- function( x.kept, x.initial = NULL,
     ## series was not provided and the return level con not be given in
     ## years but in number of observations. But since I do not use the
     ## return levels of this object anyway, I just suppress those warnings
-    x.fit.evd <- suppressWarnings( switch(
-        selectOptimization(),
-        "Nelder-Mead" = climex::fit.gpd( x.kept, initial = x.initial,
-                                        threshold = threshold,
-                                        rerun = checkboxRerun(),
-                                        method = "Nelder-Mead",
-                                        error.estimation = "none" ),
-        "CG" = climex::fit.gpd( x.kept, initial = x.initial, 
-                               threshold = threshold,
-                               rerun = checkboxRerun(),
-                               method = "CG",
-                               error.estimation = "none" ),
-        "BFGS" = climex::fit.gpd( x.kept, initial = x.initial,
+    x.fit.evd <- climex::fit.gpd( x.kept, initial = x.initial,
                                  threshold = threshold,
-                                 rerun = checkboxRerun(),
-                                 method = "BFGS",
-                                 error.estimation = "none" ),
-        "SANN" = climex::fit.gpd( x.kept, initial = x.initial,
-                                 threshold = threshold,
-                                 rerun = checkboxRerun(),
-                                 method = "SANN",
-                                 error.estimation = "none" ),
-        "dfoptim::nmk" = climex::fit.gpd( x.kept, initial = x.initial,
-                                         threshold = threshold,
-                                         rerun = checkboxRerun(),
-                                         method = "nmk",
-                                         error.estimation = "none" ),
-        NULL = climex::fit.gpd( x.kept, initial = x.initial,
-                               threshold = threshold,
-                               rerun = checkboxRerun(),
-                               method = "Nelder-Mead",
-                               error.estimation = "none" ) ) )
+                                 error.estimation = "none" )
   }
   if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" &&
        radioEvdStatistics() == "GEV" ){
@@ -212,17 +110,9 @@ fit.interactive <- function( x.kept, x.initial = NULL,
 ##' @param radioEvdStatistics Character (radio) input determining whether
 ##' the GEV or GP distribution shall be fitted to the data. Choices:
 ##' c( "GEV", "GP" ), default = "GEV".
-##' @param selectOptimization Character (select) input to determine which
-##' optimization routine/method is going to be used when fitting the
-##' maximum likelihood function of the GEV/GP distribution. The choices
-##' are given in \code{\link{generalFittingRoutineInput}} and the default
-##' value is set to "Nelder-Mead".
 ##' @param buttonMinMax Character (radio) input determining whether
 ##' the GEV/GP distribution shall be fitted to the smallest or biggest
 ##' vales. Choices: c( "Max", "Min ), default = "Max".
-##' @param checkboxRerun Logical (checkbox) input from the Likelihood tab.
-##' It determines whether or not to start the optimization at the results
-##' of the first run again to escape local minima.
 ##' @param sliderThreshold Numerical (slider) input determining the
 ##' threshold used within the GP fit and the extraction of the extreme
 ##' events. Boundaries: minimal and maximal value of the deseasonalized
@@ -247,9 +137,8 @@ fit.interactive <- function( x.kept, x.initial = NULL,
 ##' @author Philipp Mueller 
 data.fitting <- function( reactive.extreme, reactive.initials,
                          reactive.rows, fit.interactive,
-                         radioEvdStatistics, selectOptimization,
-                         buttonMinMax, checkboxRerun, sliderThreshold,
-                         selectDataBase ){
+                         radioEvdStatistics, buttonMinMax,
+                         sliderThreshold, selectDataBase ){
   reactive( {
     if ( is.null( reactive.extreme() ) ||
          is.null( reactive.initials() ) ||
@@ -281,67 +170,8 @@ data.fitting <- function( reactive.extreme, reactive.initials,
     }
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
     return( fit.interactive( x.kept, x.initial, radioEvdStatistics,
-                            selectOptimization, buttonMinMax,
-                            checkboxRerun, sliderThreshold,
+                            buttonMinMax, sliderThreshold,
                             selectDataBase ) )
-  } )
-}
-
-##' @title Reactive value containing the initial parameters to start the
-##' GEV/GP fit at.
-##' @details The initial parameter combination can be set by the numerical
-##' input in the Likelihood tab. Until that happened, just the default
-##' values obtained by \code{\link{likelihood.initials}} will be used.
-##'
-##' @param initialLocation Numerical (numerical) input determining the
-##' location parameter at which to start the fitting procedure.
-##' @param initialScale Numerical (numerical) input determining the
-##' scale parameter at which to start the fitting procedure.
-##' @param initialShape Numerical (numerical) input determining the
-##' shape parameter at which to start the fitting procedure.
-##' @param radioEvdStatistics Character (radio) input determining whether
-##' the GEV or GP distribution shall be fitted to the data. Choices:
-##' c( "GEV", "GP" ), default = "GEV".
-##' @param reactive.extreme Reactive value returning a list containing
-##' three elements: 1. the blocked time series, 2. the deseasonalized time
-##' series, and 3. the pure time series.
-##'
-##' @import shiny
-##'
-##' @family climex-fitting
-##'
-##' @return Numerical vector containing three elements: location, scale
-##' and shape parameter to start the GEV fit at.
-##' @author Philipp Mueller 
-data.initials <- function( initialLocation, initialScale, initialShape,
-                          radioEvdStatistics, reactive.extreme ){
-  reactive( {
-    if ( is.null( initialLocation() ) || is.null( initialScale() ) ||
-         is.null( initialShape() ) ){
-      ## If the sliders arn't set yet, I will just use the default
-      ## values
-      x.extreme <- reactive.extreme()[[ 1 ]]
-      if ( is.null( x.extreme ) ){
-        ## if the initialization has not finished yet just wait a
-        ## little longer
-        return( NULL )
-      }
-      if ( is.null( radioEvdStatistics() ) ||
-           radioEvdStatistics() == "GEV" ){
-        model <- "gev"
-      } else {
-        model <- "gpd"
-      }
-      return( climex::likelihood.initials( x.extreme, model = model ) )
-    } else {
-      if ( is.null( radioEvdStatistics() ) ||
-           radioEvdStatistics() == "GEV" ){
-        return( c( initialLocation(), initialScale(),
-                  initialShape() ) )
-      } else {
-        return( c( initialScale(), initialShape() ) )
-      }
-    }
   } )
 }
 
@@ -564,3 +394,7 @@ color.table <- function( x.html.table, css.colours,
                           style ) ),
       htmltools::HTML( x.html.table ) ) )
 }
+
+#' @useDynLib climex
+#' @importFrom Rcpp sourceCpp
+NULL
