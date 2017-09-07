@@ -411,6 +411,8 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
     return( gg.evd )
   } )
   ## PP plot for fit statistics
+  ## The PP plot is the CDF of the theoretical distribution vs.
+  ## the CDF of the empirical data.
   output$plotFitPP <- renderPlot( {
     if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) ||
         is.null( buttonMinMax() ) ){
@@ -424,18 +426,25 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
         x.kept <- -1* x.kept
         x.fit.evd$par[ 1 ] <- -1* x.fit.evd$par[ 1 ]
       }
-      model <- climex:::qevd( p = stats::ppoints( length( x.kept ), 0 ),
-                             location = x.fit.evd$par[ 1 ],
-                             scale = x.fit.evd$par[ 2 ],
-                             shape = x.fit.evd$par[ 3 ],
-                             model = "gev", silent = TRUE )
+      if ( x.fit.evd$par[ 3 ] != 0 ){
+        ## GEV
+        theoretical <-
+          Reduce( c, lapply( sort( as.numeric( x.kept ) ), function( xx )
+            exp( -1* ( 1 + x.fit.evd$par[ 3 ]*( xx - x.fit.evd$par[ 1 ] )/
+                       x.fit.evd$par[ 2 ] )^( -1/x.fit.evd$par[ 3 ] ) ) ) )
+      } else {
+        ## Gumbel
+        theoretical <-
+          Reduce( c, lapply( sort( as.numeric( x.kept ) ), function( xx )
+            exp( -1* exp( -1* ( xx - x.fit.evd$par[ 1 ] )/ x.fit.evd$par[ 2 ] ) )
+            ) )
+      }
       if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min"  ){
         empirical <- -1* sort( as.numeric( x.kept ) )
-        model <- -1* model
+        theoretical <- -1* theoretical
       } else {
-        empirical <- sort( as.numeric( x.kept ) )
+        empirical <- stats::ppoints( length( x.kept ), 0 )
       }
-      plot.data <- data.frame( model = model, empirical = empirical )
     } else {
       ## radioEvdStatistics() == "GP"
       if ( selectDataBase() == "Artificial data" ){
@@ -445,22 +454,31 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       } else {
         threshold <- sliderThreshold()
       }
-      plot.data <- data.frame(
-          model = sort( climex:::qevd( p = stats::ppoints( length( x.kept ),
-                                                          0 ),
-                                      scale = x.fit.evd$par[ 1 ], 
-                                      shape = x.fit.evd$par[ 2 ],
-                                      model = "gpd", silent = TRUE,
-                                      threshold = threshold ) ),
-          empirical = sort( as.numeric( x.kept ) ) + threshold )
+      if ( x.fit.evd$par[ 3 ] != 0 ){
+        ## GP
+        theoretical <-
+          Reduce( c, lapply( sort( as.numeric( x.kept ) ), function( xx )
+            1 - ( 1 + ( x.fit.evd$par[ 2 ]*( xx + threshold )/
+                        x.fit.evd$par[ 1 ] ) )^( -1/ x.fit.evd$par[ 2 ] ) ) )
+      } else {
+        ## Exponential distribution
+        theoretical <-
+          Reduce( c, lapply( sort( as.numeric( x.kept ) ), function( xx )
+            1 - exp( -( xx + threshold )/ x.fit.evd[ 1 ] ) ) )
+      }
+      empirical <- stats::ppoints( length( x.kept ), 0 )
     }
-    plot.fit <- stats::lm( empirical ~ model, plot.data )[[ 1 ]]
+    plot.data <- data.frame( theoretical = theoretical, empirical = empirical )
+    plot.fit <- stats::lm( empirical ~ theoretical, plot.data )[[ 1 ]]
     gg.pp <- ggplot() +
-      geom_point( data = plot.data, aes( x = model, y = empirical ),
+      geom_point( data = plot.data, aes( x = theoretical, y = empirical ),
                  colour = colour.ts, shape = 1, size = 2, alpha = 0.8 ) +
       geom_abline( intercept = plot.fit[ 1 ], slope = plot.fit[ 2 ],
                   colour = colour.ts, linetype = 2 ) +
       geom_abline( intercept = 0, slope = 1, colour = colour.extremes ) +
+      xlab( "theoretical CDF" ) + ylab( "empirical CDF" ) +
+      annotate( "text", size = 5, color = colour.ts, x = .2, y = .95,
+               label = "P-P plot" ) +
       theme_bw() +
       theme( axis.title = element_text( size = 15, colour = colour.ts ),
             axis.text = element_text( size = 12, colour = colour.ts ) )
@@ -480,13 +498,15 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       x.fit.evd$par[ 1 ] <- -1* x.fit.evd$par[ 1 ]
     }
     if ( radioEvdStatistics() == "GEV" ){
-      sampled <- sort( climex:::revd( n = length( x.kept ),
-                                     location = x.fit.evd$par[ 1 ],
-                                     scale = x.fit.evd$par[ 2 ],
-                                     shape = x.fit.evd$par[ 3 ],
-                                     silent = TRUE, model = "gev" ) )
+      theoretical <- Reduce(
+          c, lapply( stats::ppoints( length( x.kept ), 0 ),
+                    function( ss )
+                      climex:::qevd( ss, location = x.fit.evd$par[ 1 ],
+                                    scale = x.fit.evd$par[ 2 ],
+                                    shape = x.fit.evd$par[ 3 ],
+                                    model = "gev" ) ) )
       if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" ){
-        sampled <- -1* sampled
+        theoretical <- -1* theoretical
         empirical <- -1* sort( as.numeric( x.kept ) )
       } else {
         empirical <- sort( as.numeric( x.kept ) )
@@ -499,52 +519,30 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       } else {
         threshold <- sliderThreshold()
       }
-      sampled <- sort( climex:::revd( n = length( x.kept ),
-                                     scale = x.fit.evd$par[ 1 ],
-                                     shape = x.fit.evd$par[ 2 ],
-                                     silent = TRUE, model = "gpd",
-                                     threshold = threshold ) )
+      theoretical <- Reduce(
+              c, lapply( stats::ppoints( length( x.kept ), 0 ),
+                        function( ss )
+                          climex:::qevd( ss, threshold = threshold,
+                                        scale = x.fit.evd$par[ 1 ],
+                                        shape = x.fit.evd$par[ 2 ],
+                                        model = "gpd" ) ) )
       empirical <- sort( as.numeric( x.kept ) + threshold )
     }
-    length.e <- length( empirical )
-    length.s <- length( sampled )
-    ## inspired by extRemes::qqplot( plot.data$empirical,
-    ## plot.data$sampled )
-    ## function giving a linear interpolation 
-    function.sampled.interpolate <-
-      stats::approxfun( seq( 0, 1, length = length( sampled ) ),
-                       sort( sampled ), yleft = NA, yright = NA )
-    if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" &&
-         radioEvdStatistics() == "GEV" ){
-      period <- rev( ( 1 : length( empirical ) - 1 )/
-                     ( length( empirical ) - 1 ) )
-    } else {
-      period <- ( 1 : length( empirical ) - 1 )/
-        ( length( empirical ) - 1 )
-    }
-    sampled.interpolate <- function.sampled.interpolate( period )
-    sampled.ci.low <- function.sampled.interpolate(
-        period - 1.36/ sqrt( length.e* length.s/
-                             ( length.e + length.s ) ) )
-    sampled.ci.high <- function.sampled.interpolate(
-        period + 1.36/ sqrt( length.e* length.s/
-                             ( length.e + length.s ) ) )
-    plot.data <- data.frame( empirical = empirical,
-                            sampled = sampled.interpolate,
-                            ci.low = sampled.ci.low,
-                            ci.high = sampled.ci.high )
-    plot.fit <- stats::lm( empirical ~ sampled, plot.data )[[ 1 ]]
+    ## Writing the data in a format used by ggplot2
+    plot.data = data.frame( theoretical = theoretical,
+                           empirical = empirical )
+    plot.fit <- stats::lm( empirical ~ theoretical, plot.data )[[ 1 ]]
     gg.qq <- ggplot() +
-      geom_point( data = plot.data, aes( x = sampled, y = empirical ),
+      geom_point( data = plot.data, aes( x = theoretical, y = empirical ),
                  colour = colour.ts, shape = 1, size = 2, alpha = 0.8,
                  na.rm = TRUE ) +
-      geom_line( data = plot.data, aes( x = sampled.ci.low, y = empirical ),
-                na.rm = TRUE, linetype = 2, colour = colour.extremes ) +
-      geom_line( data = plot.data, colour = colour.extremes, na.rm = TRUE,
-                aes( x = sampled.ci.high, y = empirical ), linetype = 2 ) +
       geom_abline( intercept = plot.fit[ 1 ], slope = plot.fit[ 2 ],
                   colour = colour.ts, linetype = 2 ) + theme_bw() +
       geom_abline( intercept = 0, slope = 1, colour = colour.extremes ) +
+      xlab( "theoretical quantile" ) + ylab( "empirical" ) +
+      annotate( "text", size = 5, color = colour.ts,
+               x = min( plot.data$theoretical )* 1.2,
+               y = max( plot.data$empirical )* .95, label = "Q-Q plot" ) +
       theme( axis.title = element_text( size = 15, colour = colour.ts ),
             axis.text = element_text( size = 12, colour = colour.ts ) )
     return( gg.qq )        
