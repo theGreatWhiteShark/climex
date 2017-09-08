@@ -99,9 +99,6 @@ fit.interactive <- function( x.kept, radioEvdStatistics, buttonMinMax,
 ##' @param reactive.extreme Reactive value returning a list containing
 ##' three elements: 1. the blocked time series, 2. the deseasonalized time
 ##' series, and 3. the pure time series.
-##' @param reactive.initial Reactive value holding the initial parameters
-##' to start the time series fit at. \code{\link{data.initials}}. Those can
-##' be specified in the top right box of the Likelihood tab.
 ##' @param reactive.rows Reactive value holding a logical vector indicating
 ##' which values of the time series provided by \code{\link{data.extremes}}
 ##' to use after clicking and brushing.
@@ -135,13 +132,12 @@ fit.interactive <- function( x.kept, radioEvdStatistics, buttonMinMax,
 ##' 'climex.fit.gev' or 'climex.fit.gpd', depending on the choice of
 ##' input$radioEvdStatistics
 ##' @author Philipp Mueller 
-data.fitting <- function( reactive.extreme, reactive.initials,
+data.fitting <- function( reactive.extreme,
                          reactive.rows, fit.interactive,
                          radioEvdStatistics, buttonMinMax,
                          sliderThreshold, selectDataBase ){
   reactive( {
     if ( is.null( reactive.extreme() ) ||
-         is.null( reactive.initials() ) ||
          is.null( reactive.rows$keep.rows ) ){
       return( NULL )
     }
@@ -156,7 +152,6 @@ data.fitting <- function( reactive.extreme, reactive.initials,
       return( NULL )
     }
     x.extreme <- x.data[[ 1 ]]
-    x.initial <- reactive.initials()
     ## Removing all points marked by clicking or brushing in the ggplot2
     ## plot of the extreme events in the bottom right box in the General
     ## tab
@@ -169,7 +164,7 @@ data.fitting <- function( reactive.extreme, reactive.initials,
       return( NULL )
     }
     x.kept <- x.extreme[ reactive.rows$keep.rows ]
-    return( fit.interactive( x.kept, x.initial, radioEvdStatistics,
+    return( fit.interactive( x.kept, radioEvdStatistics,
                             buttonMinMax, sliderThreshold,
                             selectDataBase ) )
   } )

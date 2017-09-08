@@ -343,11 +343,6 @@ generalFitPlotOutput <- function( id ){
 ##' threshold used within the GP fit and the extraction of the extreme
 ##' events. Boundaries: minimal and maximal value of the deseasonalized
 ##' time series (rounded). Default: 0.8* the upper end point.
-##' @param selectOptimization Character (select) input to determine which
-##' optimization routine/method is going to be used when fitting the
-##' maximum likelihood function of the GEV/GP distribution. The choices
-##' are given in \code{\link{generalFittingRoutineInput}} and the default
-##' value is set to "Nelder-Mead".
 ##'
 ##' @family climex-plot
 ##'
@@ -360,8 +355,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
                            reactive.rows, reactive.fitting,
                            buttonMinMax, radioEvdStatistics,
                            function.get.y.label, selectDataBase,
-                           selectDataType, sliderThreshold,
-                           selectOptimization ){
+                           selectDataType, sliderThreshold ){
   ## Wait for proper initialization
   observe( {
     if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) ||
@@ -591,26 +585,13 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       model <- "gev"
     } else {
       model <- "gpd"
-    }
-    if ( selectOptimization() == "SANN" ||
-         selectOptimization() == "dfoptim::nmk" ){
-      ## When performing simulated annealing the hessian was not
-      ## calculated so the error estimate of the return levels
-      ## will just be calculated via the Monte Carlo approach
-      x.confidence.intervals.aux <-
-        climex::return.level( fit.aux, return.period = x.period,
-                             error.estimation = "MC",
-                             threshold = fit.aux$threshold,
-                             total.length = length( x.data[[ 3 ]] ),
-                             model = model )
-    } else {           
-      x.confidence.intervals.aux <-
-        climex::return.level( fit.aux, return.period = x.period,
-                             error.estimation = "MLE",
-                             threshold = fit.aux$threshold,
-                             total.length = length( x.data[[ 3 ]] ),
-                             model = model )
-    }
+    }         
+    x.confidence.intervals.aux <-
+      climex::return.level( fit.aux, return.period = x.period,
+                           error.estimation = "MLE",
+                           threshold = fit.aux$threshold,
+                           total.length = length( x.data[[ 3 ]] ),
+                           model = model )
     if ( class( x.confidence.intervals.aux ) != "list" ||
         any( is.nan( x.confidence.intervals.aux$errors[ , 1 ] ) ) ) {
       ## The confidence intervals couldn't be calculated for using

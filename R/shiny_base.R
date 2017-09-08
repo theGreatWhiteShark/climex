@@ -361,8 +361,7 @@ climex.ui <- function( selected = c( "Map", "General" ) ){
                            selected = "GEV" ),
               climex:::generalExtremeExtractionInput(),
               climex:::generalButtonMinMaxInput(),
-              climex:::deseasonalizeSelectionInput(),
-              climex:::generalFittingRoutineInput() ) ),
+              climex:::deseasonalizeSelectionInput() ) ),
           fluidRow(
               climex:::generalFitStatisticsTable(),
               climex:::generalTimeSeriesPlotOutput( "ts" ) ) ))))
