@@ -449,6 +449,8 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
         threshold <- sliderThreshold()
       }
       if ( x.fit.evd$par[ 3 ] != 0 ){
+        print( "PP" )
+        browser()
         ## GP
         theoretical <-
           Reduce( c, lapply( sort( as.numeric( x.kept ) ), function( xx )
@@ -519,7 +521,8 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
                           climex:::qevd( ss, threshold = threshold,
                                         scale = x.fit.evd$par[ 1 ],
                                         shape = x.fit.evd$par[ 2 ],
-                                        model = "gpd" ) ) )
+                                        model = "gpd",
+                                        lower.tail = FALSE ) ) )
       empirical <- sort( as.numeric( x.kept ) + threshold )
     }
     ## Writing the data in a format used by ggplot2
@@ -552,10 +555,6 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
     x.fit.evd <- reactive.fitting()
     x.period <- c( 2, 5, 10, 20, 50, 80, 100, 120, 200,
                   250, 300, 500, 800 )
-    ## Forget about the extRemes::ci.fevd.mle.
-    ## I have an implementation of the error estimate of the
-    ## return level myself! The confidence level will be set to
-    ## one standard deviation.
     fit.aux <- x.fit.evd
     if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" &&
          radioEvdStatistics() == "GEV" ){
@@ -585,94 +584,73 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       model <- "gev"
     } else {
       model <- "gpd"
-    }         
-    x.confidence.intervals.aux <-
+    }
+    ## Calculating the return levels and their error estimation.
+    x.return.levels <- 
       climex::return.level( fit.aux, return.period = x.period,
                            error.estimation = "MLE",
                            threshold = fit.aux$threshold,
-                           total.length = length( x.data[[ 3 ]] ),
+                           total.length = length( x.data[[ 2 ]] ),
                            model = model )
-    if ( class( x.confidence.intervals.aux ) != "list" ||
-        any( is.nan( x.confidence.intervals.aux$errors[ , 1 ] ) ) ) {
-      ## The confidence intervals couldn't be calculated for using
-      ## the MLE approach. This can happen for quite low shape
-      ## parameter (< -1). Since the calculations involving those
-      ## are already quite time consuming, I will just don't use
-      ## any confidence intervals at all.
-      x.confidence.intervals <- NULL
-    } else {
-      if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" &&
-           radioEvdStatistics() == "GEV" ){
-        x.confidence.intervals.aux$return.levels <-
-          x.confidence.intervals.aux$return.levels* ( -1 )
-      }
-      x.confidence.intervals <- data.frame(
-          ci.low = x.confidence.intervals.aux$return.levels -
-            as.numeric( x.confidence.intervals.aux$errors ),
-          level = x.confidence.intervals.aux$return.levels,
-          ci.high = x.confidence.intervals.aux$return.levels +
-            as.numeric( x.confidence.intervals.aux$errors ) )
+    ## In case some of the return periods have been omitted in the
+    ## GP case because their were to small, one has to discard the
+    ## corresponding return.periods too
+    if ( length( x.return.levels$return.levels ) <
+         length( x.period ) ){
+      x.period <- x.period[ length( x.period ) - 1 -
+                            length(
+                                x.return.levels$return.levels ) :
+                            length( x.period ) ]
     }
+    if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" &&
+         radioEvdStatistics() == "GEV" ){
+      x.return.levels$return.levels <-
+        x.return.levels$return.levels* ( -1 )
+    x.return.levels$ci.low <- x.return.levels$return.levels +
+      as.numeric( x.return.levels$errors )
+    x.return.levels$ci.high <- x.return.levels$return.levels -
+      as.numeric( x.return.levels$errors )
+    } else {
+      x.return.levels$ci.low <- x.return.levels$return.levels -
+        as.numeric( x.return.levels$errors )
+      x.return.levels$ci.high <- x.return.levels$return.levels +
+        as.numeric( x.return.levels$errors )
+    }
+    ## Generate a data.frame for the return level plot.
     if ( radioEvdStatistics() == "GEV" ){
-      if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" ){
-        plot.data <- data.frame(
-            x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
-            y = -1* sort( as.numeric( x.kept* -1 ) ) )
-        plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
-                           min( x.confidence.intervals[ , 3 ] ) )
-      } else {
-        plot.data <- data.frame(
-            x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
-            y = sort( as.numeric( x.kept ) ) )
-        plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
-                           max( x.confidence.intervals[ , 3 ] ) )
-      } 
+      plot.data <- data.frame(
+          x = Reduce( c, lapply( x.period, function( xx )
+            -log( 1/ xx ) ) ),
+          y = x.return.levels$return.levels,
+          y.low = x.return.levels$ci.low,
+          y.high = x.return.levels$ci.high )
     } else {
+      print( "return level" )
       ## GP
-      if ( selectDataBase() == "Artificial data" ){
-        ## Since I right now don't see the point of introducing constant
-        ## threshold in the artificial data, it will be set to zero.
-        threshold <- 0
-      } else {
-        threshold <- sliderThreshold()
-      }
-      plot.data <-  data.frame(
-          x = -1/ log( stats::ppoints( length( x.kept ), 0 ) ),
-          y = sort( as.numeric( x.kept + threshold ) ) )
-      plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
-                         max( x.confidence.intervals[ , 3 ] ) )
+      plot.data <- data.frame(
+          x = Reduce( c, lapply( x.period, function( xx )
+            -log( 1/ xx ) ) ),
+          y = x.return.levels$return.levels,
+          y.low = x.return.levels$ci.low,
+          y.high = x.return.levels$ci.high )
     }
-    if ( is.null( x.confidence.intervals ) ){
-      ## Plot without confidence intervals
-      gg.rl <- ggplot() +
-        geom_point( data = plot.data, aes( x = x, y = y ), colour = colour.ts,
-                   shape = 1, size = 2, alpha = 0.8, na.rm = TRUE ) +
-        xlab( "return period" ) + ylab( "return level" ) +
-        theme_bw() + scale_x_log10() +
-        theme( axis.title = element_text( size = 15, colour = colour.ts ),
-              axis.text = element_text( size = 12, colour = colour.ts ) )
-      plot.y.limits <- NULL
-    } else {
-      ## Plot with confidence intervals
-      plot.statistics <- data.frame(
-          period = -1/ ( log( 1 - 1/ x.period ) ),
-          level = as.numeric( x.confidence.intervals[ , 2 ] ),
-          ci.low = as.numeric( x.confidence.intervals[ , 1 ] ), 
-          ci.high = as.numeric( x.confidence.intervals[ , 3 ] ) )
-      gg.rl <- ggplot() +
-        geom_point( data = plot.data, aes( x = x, y = y ), colour = colour.ts,
-                   shape = 1, size = 2, alpha = 0.8, na.rm = TRUE ) +
-        geom_line( data = plot.statistics, aes( x = period, y = level ),
-                  colour = colour.extremes, na.rm = TRUE ) +
-        geom_line( data = plot.statistics, aes( x = period, y = ci.low ),
-                  linetype = 2, colour = colour.extremes, na.rm = TRUE ) +
-        geom_line( data = plot.statistics, aes( x = period, y = ci.high ),
-                  linetype = 2, colour = colour.extremes, na.rm = TRUE ) +
-        xlab( "return period" ) + ylab( "return level" ) +
-        theme_bw() + scale_x_log10( limits = c( 1, 1000 ) ) +
-        theme( axis.title = element_text( size = 15, colour = colour.ts ),
-              axis.text = element_text( size = 12, colour = colour.ts ) )
-    }
+    plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
+                       max( plot.data$y.high ) )
+    ## Plot with confidence intervals
+    gg.rl <- ggplot( data = plot.data, aes( x = x ) ) +
+      geom_line( aes( y = y ),
+                colour = colour.ts, na.rm = TRUE ) +
+      geom_point( aes( y = y ), colour = colour.ts,
+                 shape = 1, size = 2, alpha = 0.8, na.rm = TRUE ) +
+      geom_line( aes( y = y.low ),
+                linetype = 2, colour = colour.extremes, na.rm = TRUE ) +
+      geom_line( aes( y = y.high ),
+                linetype = 2, colour = colour.extremes, na.rm = TRUE ) +
+      xlab( "return period" ) + ylab( "return level" ) +
+      theme_bw() + scale_x_log10( breaks = plot.data$x[ c( 1, 2, 4, 11 ) ],
+                                 labels = function( ll ) round( exp( ll ) ) ) +
+      theme( axis.title = element_text( size = 15, colour = colour.ts ),
+            axis.text = element_text( size = 12, colour = colour.ts ) )
     if ( !is.null( buttonMinMax() ) ){
       if ( buttonMinMax() == "Min" && radioEvdStatistics() == "GEV" ){
         gg.rl <- gg.rl + scale_y_reverse( limits = plot.y.limits )
