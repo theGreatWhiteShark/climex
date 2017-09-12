@@ -7,7 +7,7 @@
 fit.gev(x, initial = NULL, likelihood.function = likelihood,
   gradient.function = likelihood.gradient, error.estimation = c("MLE", "MC",
   "none"), optim.method = c("Nelder-Mead", "BFGS", "CG"),
-  monte.carlo.sample.size = 1000, return.period = 100, silent = TRUE, ...)
+  monte.carlo.sample.size = 100, return.period = 100, silent = TRUE, ...)
 }
 \arguments{
 \item{x}{Blocked time series to which the GEV distribution should
@@ -49,7 +49,7 @@ Default = "none".}
 
 \item{monte.carlo.sample.size}{Number of samples used to obtain the
 Monte Carlo estimate of the standard error of the fitting.
-Default = 1000}
+Default = 100.}
 
 \item{return.period}{Quantiles at which the return level is going to
 be evaluated. Class "numeric". Default = 100.}
