@@ -84,16 +84,16 @@ test_that( "return.level of fit results and GEV/GP parameters as input", {
   expect_equal( climex::return.level( x.thresh.fit$par, model = "gpd",
                                      threshold = 29,
                                      thresholded.time.series = x.thresh ),
-               38.1902597338 )
+               38.1899770466, tolerance = 5E-4 )
   ## The next one uses a more accurate estimate for the probability of
   ## a threshold exceedance.
   expect_equal( climex::return.level( x.thresh.fit$par, model = "gpd",
                                      threshold = 29,
                                      thresholded.time.series = x.thresh,
                                      total.length = length( temp.potsdam) ),
-               38.1915142245 )
+               38.1912316541, tolerance = 5E-4 )
   expect_equal( climex::return.level( x.thresh.fit, model = "gpd" ),
-               38.1915142245 )
+               38.1912316541, tolerance = 5E-4 )
 })
 test_that( "return.level can take return periods of different length and value", {
   expect_equal( climex::return.level( x.block.fit, return.period = 100 ),
@@ -127,7 +127,8 @@ test_that( "return.level get the error estimation right for MLE", {
       climex::return.level( x.thresh.fit, return.period = c( 42, 637 ),
                            error.estimation = "MLE", threshold = 29,
                            )$errors ),
-      c( 0.0459148403941, 0.0873463064263 ) )
+      c( 0.0458864778135, 0.0872790180993 ),
+      tolerance = 5E-4 )
 })
 test_that( "return.level get the error estimation right for MC", { 
   expect_equal( as.numeric(
@@ -139,7 +140,7 @@ test_that( "return.level get the error estimation right for MC", {
   expect_equal( as.numeric(
       climex::return.level( x.thresh.fit, return.period = 42,
                            error.estimation = "MC", threshold = 29,
-                           monte.carlo.sample.size = 100 )$errors ),
+                           monte.carlo.sample.size = 10 )$errors ),
       0.3445054, tolerance = .1 )
   expect_warning(
       climex::return.level( x.thresh.fit$par, return.period = 42,

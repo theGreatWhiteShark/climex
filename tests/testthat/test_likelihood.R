@@ -75,29 +75,6 @@ test_that( "likelihood.initials' results are okay", {
   expect_equal( climex::likelihood.initials( x.block, model = "gev" ),
                c( 11.7474404, 1.4419331, -0.2903362 ) )
   expect_equal( climex::likelihood.initials( x.block, model = "gpd" ),
-               c( 1.437634 + 2.9e-07, .25 ) )
-})
-test_that( "likelihood.initials' type and modified argument work", {
-  expect_equal( climex::likelihood.initials( x.block, model = "gev",
-                                            type = "lmom" ),
-               c( 11.7474404, 1.4419331, -0.2903362 ) )
-  expect_equal( climex::likelihood.initials( x.block, model = "gev",
-                                            type = "mom" ),
-               c( 11.602097 - 7.60e-08, 1.120919 - 1.42e-07,
-                 -0.277500 ) )
-  expect_equal( climex::likelihood.initials( x.block, model = "gpd",
-                                            type = "lmom" ),
-               c( 172.1049 + 1.46e-05, -13.0504 + 2.67e-06 ) )
-  expect_equal( climex::likelihood.initials( x.block, model = "gpd",
-                                            type = "mom" ),
-               c( 1.437634 + 2.9e-07, -0.05 ) )
-  expect_equal( climex::likelihood.initials( x.block, model = "gev",
-                                            type = "mom",
-                                            modified = FALSE ),
-               c( 11.602097 - 7.60e-08, 1.120919 - 1.42e-07, 0.1 ) )
-  expect_equal( climex::likelihood.initials( x.block, model = "gpd",
-                                            type = "mom",
-                                            modified = FALSE ),
-               c( 1.437634 + 2.9e-07, 0.1 ) )
+               c( 1.437634 + 2.9e-07, -.05 ) )
 })
 
