@@ -137,7 +137,7 @@ data.fitting <- function( reactive.extreme,
                          radioEvdStatistics, buttonMinMax,
                          sliderThreshold, selectDataBase ){
   reactive( {
-    if ( is.null( reactive.extreme() ) ||
+    if ( is.null( reactive.extreme()[[ 1 ]] ) ||
          is.null( reactive.rows$keep.rows ) ){
       return( NULL )
     }
