@@ -260,14 +260,15 @@ generalFitStatistics <- function( reactive.fitting, reactive.extreme,
                                           model = "gev" ) )
       }
     } else {
-      current <- c( 0, x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
+      current <- c( sliderThreshold(), x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
                    x.fit.evd$value, climex:::aic( x.fit.evd ),
                    climex:::bic( x.fit.evd ),
                    climex::return.level(
-                               x.fit.evd, error.estimation = "none",
+                               x.fit.evd,
+                               error.estimation = "none",
                                threshold = sliderThreshold(),
                                model = "gpd",
-                               total.length = x.data[[ 1 ]] ) )
+                               total.length = length( x.data[[ 2 ]] ) ) )
     }
     ## Negating the return level to get the correct results for
     ## the minimum
@@ -328,11 +329,19 @@ generalFitStatistics <- function( reactive.fitting, reactive.extreme,
       ## I don't want to see the statistics during the initialization
       last.1 <<- rep( 0, length( last.1 ) ) }
     last.values <<- current
-    x.table <- data.frame( current = current, h_1 = last.1,
-                          h_2 = last.2, h_3 = last.3,
-                          row.names = c( "location", "scale",
-                                        "shape", "nllh", "AIC",
-                                        "BIC", "rlevel" ) )
+    if ( radioEvdStatistics() == "GEV" ){
+      x.table <- data.frame( current = current, h_1 = last.1,
+                            h_2 = last.2, h_3 = last.3,
+                            row.names = c( "location", "scale",
+                                          "shape", "nllh", "AIC",
+                                          "BIC", "rlevel" ) )
+    } else {
+      x.table <- data.frame( current = current, h_1 = last.1,
+                            h_2 = last.2, h_3 = last.3,
+                            row.names = c( "threshold", "scale",
+                                          "shape", "nllh", "AIC",
+                                          "BIC", "rlevel" ) )
+    }
     colnames( x.table ) <- c( "current",
                              '<math id="math-text" xmlns="http://www.w3.org/1998/Math/MathML"><msub><mtext>hist</mtext><mn>1</mn></msub></math>',
                              '<math id="math-text" xmlns="http://www.w3.org/1998/Math/MathML"><msub><mtext>hist</mtext><mn>2</mn></msub></math>',
