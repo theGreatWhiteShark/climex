@@ -62,7 +62,7 @@
 ##' \code{\link{stats::optim}}. The default one is the "Nelder-Mead".
 ##' @param monte.carlo.sample.size Number of samples used to obtain the
 ##' Monte Carlo estimate of the standard error of the fitting.
-##' Default = 1000
+##' Default = 100.
 ##' @param return.period Quantiles at which the return level is going to
 ##' be evaluated. Class "numeric". Default = 100.
 ##' @param silent Determines whether or not warning messages shall be
@@ -102,7 +102,7 @@ fit.gev <- function( x, initial = NULL,
                     gradient.function = likelihood.gradient,
                     error.estimation = c( "MLE", "MC", "none" ),
                     optim.method = c( "Nelder-Mead","BFGS", "CG" ),
-                    monte.carlo.sample.size = 1000, return.period = 100,
+                    monte.carlo.sample.size = 100, return.period = 100,
                     silent = TRUE, ... ){
   ## I found the Nelder-Mead method to be more robust to starting
   ## points more far away from the global optimum. This also holds
@@ -326,7 +326,7 @@ fit.gev <- function( x, initial = NULL,
 ##' \code{\link{stats::optim}}. The default one is the "Nelder-Mead".
 ##' @param monte.carlo.sample.size Number of samples used to obtain the
 ##' Monte Carlo estimate of the standard error of the fitting.
-##' Default = 1000
+##' Default = 100.
 ##' @param return.period Quantiles at which the return level is going to
 ##' be evaluated. Class "numeric". Default = 100.
 ##' @param total.length Uses the maximum likelihood estimator to calculate
@@ -372,7 +372,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
                     gradient.function = climex:::likelihood.gradient,                    
                     error.estimation = c( "MLE", "MC", "none" ),
                     optim.method = c( "Nelder-Mead", "BFGS", "CG" ),
-                    monte.carlo.sample.size = 1000, return.period = 100,
+                    monte.carlo.sample.size = 100, return.period = 100,
                     total.length = NULL, silent = TRUE, ... ){
   ## I found the Nelder-Mead method to be more robust to starting
   ## points more far away from the global optimum. This also holds
@@ -720,23 +720,19 @@ likelihood.gradient <- function( parameters, x.in,
 ##' and with respect to some heuristic thresholds a shape parameter
 ##' between -.4 and .2 is assigned for the GEV distribution. In case of
 ##' the GP one, the sign of the skewness matches the sign of the series'
-##' shape parameter. Warning: both methods do not work
-##' for samples with diverging (or pretty big) mean or variance. For
-##' this reason the restrict argument is included. If the estimates are
-##' bigger than the corresponding restrict.thresholds, they will be
-##' replaced by this specific value.
+##' shape parameter.
+##'
+##' Warning: both methods do not work for samples with diverging (or
+##' pretty big) mean or variance.
+##'
+##' If no working initial parameter combination could be found using
+##' those methods, the function will perform a constrained random
+##' walk on the parameters until a working pair is found.
 ##'
 ##' @param x Time series/numeric.
 ##' @param model Determining whether to calculate the initial parameters
 ##' of the GEV or GPD function. Default = "gev"
-##' @param type Which method should be used to calculate the initial
-##' parameters. "best" combines all methods, in addition samples 100
-##' different shape values around the one determined by type 'mom' and
-##' returns the result with the least likelihood. "mom" - method of
-##' moments returns an approximation according to the first two moments
-##' of the Gumbel distribution. "lmom" - returns an estimate according
-##' to the Lmoments method. Default = "best"
-##' @param modified Determines if the skewness is getting used to
+##' @param use.skewness Determines if the skewness is getting used to
 ##' determine the initial shape parameter. Default = TRUE.
 ##'
 ##' @family optimization
@@ -747,19 +743,15 @@ likelihood.gradient <- function( parameters, x.in,
 ##' method = "gpd".
 ##' @author Philipp Mueller
 likelihood.initials <- function( x, model = c( "gev", "gpd" ),
-                                type = c( "best", "mom", "lmom" ),
-                                modified = TRUE ){
+                                use.skewness = TRUE ){
   if ( missing( model ) )
     model <- "gev"
   model <- match.arg( model )
-  if ( missing( type ) )
-    type <- "best"
-  type <- match.arg( type )
   if ( model == "gev" ){
     ## Method of moments
     sc.init <- sqrt( 6* stats::var( x ) )/ pi
     loc.init <- mean( x ) - 0.57722* sc.init
-    if ( modified ){
+    if ( use.skewness ){
       x.skewness <- moments::skewness( x )
       ## When, for some reason, the time series consists of just a
       ## sequence of one unique number the calculation of the skewness
@@ -790,8 +782,7 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
       ## No modification with respect to the ismev package
       sh.init <- .1
     }
-    if ( type == "mom" )
-      return( c( loc.init, sc.init, sh.init ) )    
+    initial.mom <- c( loc.init, sc.init, sh.init )
     ## Approximationg using the Lmoments method of Hosking, Wallis
     ## and Wood (1985). Therefore I will use the interior of the
     ## extRemes:::initializer.lmoments function
@@ -809,29 +800,6 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
       xi <- -kappa
       initial.lmom <- c( mu, sigma, xi )
     }
-    if ( type == "lmom" )
-      return( initial.lmom )
-    ## Instead of taking just a default shape parameter, pick a bunch
-    ## of them and query for the one resulting in the lowest negative
-    ## log-likelihood. In addition to the range of different shape
-    ## parameter the determined estimate from before as well as the
-    ## heuristics of the extRemes (1e-8) and ismev (.1) package are
-    ## evaluated as well.
-    number.init.parameters <- 30
-    sh.init.vector <- c( seq( sh.init - .3, sh.init + .3, ,
-                             number.init.parameters - 3 ),
-                        sh.init, 1e-8, .1 )
-    parameter.vector <- rbind(
-        data.frame( location = rep( loc.init, length( sh.init.vector ) ),
-                   scale = rep( sc.init, length( sh.init.vector ) ),
-                   shape = sh.init.vector ),
-        initial.lmom )
-    suppressWarnings( initials.likelihood <- apply(
-                          parameter.vector, 1, function( ss )
-                            climex::likelihood( c( ss[ 1 ], ss[ 2 ],
-                                                  ss[ 3 ] ),
-                                               x.in = x,
-                                               model = "gev" ) ) )
   } else {
     ## model == "gpd"
     ## Approximationg using the Lmoments method
@@ -850,12 +818,9 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
       xi <- -kappa
       initial.lmom <- c( sigma, xi )
     }
-    if ( type == "lmom" )
-      return( initial.lmom )
-
     ## Approximation using the method of moments
     sc.init <- sqrt( var( x ) )
-    if ( modified ){
+    if ( use.skewness ){
       ## For positive shape parameters the skewness to the time series is
       ## positive as well. For negative it's negative. This way at least
       ## the sign of the shape (but unfortunately not the magnitude) can
@@ -886,36 +851,38 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
     } else {
       sh.init <- .1
     }
-    if ( type == "mom" )
-      return( c( sc.init, sh.init ) )
-
-    ## Instead of taking just a default shape parameter, pick a bunch
-    ## of them and query for the one resulting in the lowest negative
-    ## log-likelihood. In addition to the range of different shape
-    ## parameter the determined estimate from before as well as the
-    ## heuristics of the extRemes (1e-8) and ismev (.1) package are
-    ## evaluated as well.
-    number.init.parameters <- 30
-    sh.init.vector <- c( seq( sh.init - .3, sh.init + .3, ,
-                             number.init.parameters - 3 ),
-                        sh.init, 1e-8, .1 )
-    parameter.vector <- rbind(
-        data.frame( scale = rep( sc.init, length( sh.init.vector ) ),
-                   shape = sh.init.vector ),
-        initial.lmom )
-    suppressWarnings( initials.likelihood <- apply(
-                          parameter.vector, 1, function( ss )
-                            climex::likelihood( c( ss[ 1 ], ss[ 2 ] ),
-                                               x.in = x,
-                                               model = "gpd" ) ) )
+    initial.mom <- c( sc.init, sh.init )
   }
+  ## Calculate the likelihood of the initial parameter obtained by
+  ## the two methods and pick the one yielding the lowest value.
+  initials <- list( initial.lmom, initial.mom )
+  initials.likelihood <- Reduce( c, lapply( initials, function( ii )
+    suppressWarnings( likelihood( as.numeric( ii ), x.in = x,
+                                 model = model ) ) ) )
   if ( !all( is.nan( as.numeric( initials.likelihood ) ) ) ){
-    ## Returning the set of initial parameters which is yielding the
-    ## lowest negative log-likelihood
-    ## the second value will tend to fluctuate a lot!
-    return( as.numeric( parameter.vector[ which.min(
-        initials.likelihood ), ] ) )
-  } else
-    ## Well, what to do now?
-    stop( "The GEV likelihood couldn't be evaluated at all of the suggested initials parameter positions" )
+    return( as.numeric( initials[[ which.min(
+        initials.likelihood ) ]] ) )
+  } else {
+    ## None of the methods above yielded reasonable initial parameters.
+    ## In order to perform the optimization after all, let's slightly
+    ## change the values (Markov chain) until they can be evaluated.
+    x.initial <- initial.mom
+    suppressWarnings({
+      while ( is.na( climex::likelihood( x.initial, x.in = x,
+                                        model = model ) ) ){
+        if ( model == "gev" ){
+          x.initial[ 1 ] <- x.initial[ 1 ] + rnorm( 1, sd = .4 )
+          x.initial[ 2 ] <- max( x.initial[ 2 ] + rnorm( 1, sd = .4 ),
+                                .05 )
+          x.initial[ 3 ] <- min( -.95, max( .95, x.initial[ 3 ] +
+                                                 rnorm( 1, sd = .2 ) ) )
+        } else {
+          x.initial[ 1 ] <- max( x.initial[ 1 ] + rnorm( 1, sd = .4 ),
+                                .05 )
+          x.initial[ 2 ] <- min( -.95, max( .95, x.initial[ 2 ] +
+                                                 rnorm( 1, sd = .2 ) ) )
+        }}
+    })
+    return( as.numeric( x.initial ) )
+  }
 }
