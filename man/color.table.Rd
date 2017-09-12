@@ -27,11 +27,9 @@ paste( as.character( table[ x, y ] ), "#0000FF" ).
 \code{\link{markdown::markdownToHTML}}
 
 Other climex-fitting: \code{\link{data.fitting}},
-  \code{\link{data.initials}},
   \code{\link{fit.interactive}},
   \code{\link{generalFitStatisticsTable}},
-  \code{\link{generalFitStatistics}},
-  \code{\link{generalFittingRoutineInput}}
+  \code{\link{generalFitStatistics}}
 }
 \author{
 Philipp Mueller

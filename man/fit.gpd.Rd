@@ -7,9 +7,9 @@
 fit.gpd(x, initial = NULL, threshold = NULL,
   likelihood.function = likelihood,
   gradient.function = climex:::likelihood.gradient,
-  error.estimation = c("none", "MLE", "MC"), optim.method = c("Nelder-Mead",
-  "BFGS", "CG", "SANN"), monte.carlo.sample.size = 1000,
-  return.period = 100, total.length = NULL, silent = TRUE, ...)
+  error.estimation = c("MLE", "MC", "none"), optim.method = c("Nelder-Mead",
+  "BFGS", "CG"), monte.carlo.sample.size = 1000, return.period = 100,
+  total.length = NULL, silent = TRUE, ...)
 }
 \arguments{
 \item{x}{Threshold exceedances with the threshold already subtracted.}
@@ -50,7 +50,7 @@ Sometimes the inversion of the hessian fails (since the are some NaN
 in the hessian) (which is also the reason why the ismev package
 occasionally does not work). In such cases the Monte Carlo method is
 used. Option "none" just skips the calculation of the error.
-Default = "none".}
+Default = "MLE".}
 
 \item{optim.method}{Choosing the optimization algorithm used within
 \code{\link{stats::optim}}. The default one is the "Nelder-Mead".}
@@ -62,10 +62,10 @@ Default = 1000}
 \item{return.period}{Quantiles at which the return level is going to
 be evaluated. Class "numeric". Default = 100.}
 
-\item{total.length}{Total number of observations in the time series
-the exceedance were obtained from. This argument is needed to
-calculate the standard error of the return level via the delta method
-of the MLE. Default = NULL.}
+\item{total.length}{Uses the maximum likelihood estimator to calculate
+the probability of a measurement to be an exceedance. Else an estimate
+based on the mean number of exceedances in the available years (time
+stamps of the class 'xts' time series) will be used. Default = NULL.}
 
 \item{silent}{Determines whether or not warning messages shall be
 displayed and results shall be reported. Default = TRUE.}
@@ -120,6 +120,13 @@ until some convergence conditions are fulfilled.
 Since it usually takes just four to five outer iterations this
 functions needs only double the time a pure call to the stats::optim
 function would need.
+
+The 'total.length' argument refers to the length of the original time
+series before the thresholding was applied. If present it will be used
+to calculate the maximum likelihood estimate of the probability of an
+observation to be a threshold exceedance (necessary to determine the
+estimation errors for the calculated return levels). Else an estimator
+based on mean number of exceedances per year will be used.
 }
 \examples{
 potsdam.anomalies <- anomalies( temp.potsdam )

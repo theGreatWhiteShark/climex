@@ -10,7 +10,7 @@ leafletClimex(input, output, session, reactive.chosen, buttonMinMax,
   sliderThreshold, fit.interactive, cleaning.interactive,
   deseasonalize.interactive, extremes.interactive, selectDataSource,
   checkboxIncompleteYears, checkboxDecluster, selectDeseasonalize,
-  sliderBlockLength, selectOptimization, checkboxRerun, selectDataBase)
+  sliderBlockLength, selectDataBase)
 }
 \arguments{
 \item{input}{Namespace input. For more details check out
@@ -89,16 +89,6 @@ correlations from the provided time series.
 \item{sliderBlockLength}{Numerical (slider) input determining the
 block length used in the GEV flavor of extreme value theory. On
 default it is set to one year.}
-
-\item{selectOptimization}{Character (select) input to determine which
-optimization routine/method is going to be used when fitting the maximum
-likelihood function of the GEV/GP distribution. The choices are given in
-\code{\link{generalFittingRoutineInput}} and the default value is set to
-"Nelder-Mead".}
-
-\item{checkboxRerun}{Logical (checkbox) input from the Likelihood tab.
-It determines whether or not to start the optimization at the results
-of the first run again to escape local minima.}
 
 \item{selectDataBase}{Character (select) input to determine the data
 source. In the default installation there are three options:

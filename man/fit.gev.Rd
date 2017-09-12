@@ -5,8 +5,8 @@
 \title{Robust maximum-likelihood fit of the GEV distribution}
 \usage{
 fit.gev(x, initial = NULL, likelihood.function = likelihood,
-  gradient.function = likelihood.gradient, error.estimation = c("none",
-  "MLE", "MC"), optim.method = c("Nelder-Mead", "BFGS", "CG", "SANN"),
+  gradient.function = likelihood.gradient, error.estimation = c("MLE", "MC",
+  "none"), optim.method = c("Nelder-Mead", "BFGS", "CG"),
   monte.carlo.sample.size = 1000, return.period = 100, silent = TRUE, ...)
 }
 \arguments{
@@ -106,6 +106,9 @@ until some convergence conditions are fulfilled.
 Since it usually takes just four to five outer iterations this
 functions needs only double the time a pure call to the stats::optim
 function would need.
+
+The negative log-likelihood of the Gumbel distribution is just fitted
+if the shape parameter is exactly equal to zero.
 }
 \examples{
 potsdam.anomalies <- anomalies( temp.potsdam )
