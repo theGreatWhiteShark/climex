@@ -113,7 +113,7 @@ summary.climex.fit.gpd <- function( x ){
                         x$se[ 3 : length( x$se ) ] ),
                     row.names = paste( as.character(
                         x$control$return.period ),
-                        "block return level" ) ) )
+                        "year return level" ) ) )
   cat( "\n" )
   cat( "\t\tFunction evaluations:\n" )
   print( data.frame( function.eval = as.numeric( x$counts[ 1 ] ),
