@@ -280,6 +280,13 @@ fit.gev <- function( x, initial = NULL,
 ##' Since it usually takes just four to five outer iterations this
 ##' functions needs only double the time a pure call to the stats::optim
 ##' function would need.
+##'
+##' The 'total.length' argument refers to the length of the original time
+##' series before the thresholding was applied. If present it will be used
+##' to calculate the maximum likelihood estimate of the probability of an
+##' observation to be a threshold exceedance (necessary to determine the
+##' estimation errors for the calculated return levels). Else an estimator
+##' based on mean number of exceedances per year will be used.
 ##' 
 ##' @param x Threshold exceedances with the threshold already subtracted.
 ##' @param initial Initial values for the GPD parameters. Has to be
@@ -322,10 +329,10 @@ fit.gev <- function( x, initial = NULL,
 ##' Default = 1000
 ##' @param return.period Quantiles at which the return level is going to
 ##' be evaluated. Class "numeric". Default = 100.
-##' @param total.length Total number of observations in the time series
-##' the exceedance were obtained from. This argument is needed to
-##' calculate the standard error of the return level via the delta method
-##' of the MLE. Default = NULL.
+##' @param total.length Uses the maximum likelihood estimator to calculate
+##' the probability of a measurement to be an exceedance. Else an estimate
+##' based on the mean number of exceedances in the available years (time
+##' stamps of the class 'xts' time series) will be used. Default = NULL.
 ##' @param silent Determines whether or not warning messages shall be
 ##' displayed and results shall be reported. Default = TRUE.
 ##' @param ... Additional arguments for the optim() function.
@@ -419,10 +426,9 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
                         monte.carlo.sample.size =
                           monte.carlo.sample.size,
                         error.estimation = error.estimation,
-                        total.length = total.length ) )
+                        total.length = total.length,
+                        return.period = return.period ) )
   ## For an adequate calculation of the return level
-  if ( is.null( total.length ) && !silent )
-    warning( "The estimation of the return level of the GP distribution does need the total length 'total.length' of the time series the exceedance are extracted from! Please supply it or use the Monte Carlo approach!" ) 
   ## Error estimation
   if ( error.estimation != "none" ){
     error.covariance <- try( solve( res.optim$control$hessian ) )
@@ -432,7 +438,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
       parameter.estimate <- res.optim$par
       number.of.samples <- 1000
       ## Draw a number of samples and fit the GPD parameters for all
-      ## of them
+      ## of them.
       samples.list <- lapply( 1 : number.of.samples, function( y )
         climex:::revd( length( x ), scale = parameter.estimate[ 1 ],
                       shape = parameter.estimate[ 2 ], model = "gpd",
@@ -473,38 +479,34 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
                            paste0( return.period, ".rlevel" ) )
     } else {
       ## Calculating the errors using the MLE
+      ## The supplied 'return.period' are of the unit 'per year'.
+      ## In order to be used with the GP return levels they have to
+      ## be transformed in 'per observation (of the original series)'.
+      if ( !is.null( total.length ) ){
+        ## The maximum likelihood estimate of the probability of an
+        ## exceedance to occur per year will be used.
+        zeta <- length( x )/ total.length
+        m <- return.period* 365.25* zeta
+      } else {
+        ## m-observation return level = return.period* the mean number of
+        ## exceedance per year. This way the unit of the provided return
+        ## level and its error are  not 'per observation' but 'per year'.
+        ## In this step we harness the power of the 'xts' package
+        m <- return.period* mean( apply.yearly( x,
+                                               function( y ) length( y ) ) )
+      }
       errors.aux <- sqrt( diag( error.covariance ) ) # GPD parameters
       errors <- data.frame( errors.aux[ 1 ], errors.aux[ 2 ] )
       ## Delta method for the return level
       parameter.estimate <- res.optim$par
       ## Formula according to Stuart Coles p. 82
-      if ( is.null( total.length ) ){
-        errors <- cbind( errors, rep( NaN, length( return.period ) ) )
-      } else {
-        for ( rr in 1 : length( return.period ) ){
-          ## probability of an exceedance
-          zeta <- length( x )/ total.length 
-          ## m-observation return level = return.period* the mean
-          ## number of exceedance per year. This way the unit of the
-          ## provided return level and its error are  not 'per
-          ## observation' but 'per year'.
-          ## In this step we harness the power of the 'xts' package
-          m <- return.period* mean( apply.yearly( x, function( y )
-            length( y ) ) )
-          ## In addition the uncertainty of zeta has to be part of the
-          ## error covariance matrix
-          error.covariance.2 <- matrix( 0, 3, 3 )
-          error.covariance.2[ 1 , 1 ] <- zeta*( 1 - zeta )/ total.length
-          error.covariance.2[ 2 : 3, 2 : 3 ] <- error.covariance
+      for ( rr in 1 : length( return.period ) ){
           scale <- parameter.estimate[ 1 ]
           shape <- parameter.estimate[ 2 ]
-          dz <- c( scale* m^shape* zeta^{ shape - 1 },
-                  shape^{ -1 }* ( ( m* zeta )^shape - 1 ),
-                  -scale* shape^{ -2 }* ( ( m* zeta )^ shape - 1 ) +
-                  scale* shape^{ -1 }* ( m* zeta )^shape*
-                  log( m* zeta ) )
-          errors <- cbind( errors, dz %*% error.covariance.2 %*% dz )
-        }
+          dz <- c( ( m[ rr ]^ shape - 1 )/ shape,
+                  -scale* shape^{ -2 }*( m[ rr ]^shape - 1 ) +
+                  scale/shape*m[ rr ]^shape* log( m[ rr ] ) )
+          errors <- cbind( errors, dz %*% error.covariance %*% dz )
       }
       names( errors ) <- c( "scale", "shape",
                            paste0( return.period, ".rlevel" ) )
