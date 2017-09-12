@@ -54,6 +54,23 @@ fit.interactive <- function( x.kept, radioEvdStatistics, buttonMinMax,
     x.kept <- x.kept*( -1 )
     x.initial[ 1 ] <- -1* x.initial[ 1 ]
   }
+  ## Sometimes the initial parameter combination can not be evaluated.
+  ## If such a case occurs, slightly change the values (Markov chain)
+  ## until they can be evaluated.
+  while ( is.na( climex::likelihood( x.initial, x.in = x.kept,
+                                      model = model ) ) ){
+    if ( model == "gev" ){
+      x.initial[ 1 ] <- x.initial[ 1 ] + rnorm( 1, sd = .4 )
+      x.initial[ 2 ] <- max( x.initial[ 2 ] + rnorm( 1, sd = .4 ),
+                            .05 )
+      x.initial[ 3 ] <- min( -.95, max( .95, x.initial[ 3 ] +
+                                             rnorm( 1, sd = .2 ) ) )
+    } else {
+      x.initial[ 1 ] <- max( x.initial[ 1 ] + rnorm( 1, sd = .4 ),
+                            .05 )
+      x.initial[ 2 ] <- min( -.95, max( .95, x.initial[ 2 ] +
+                                             rnorm( 1, sd = .2 ) ) )
+    } } 
   if ( model == "gev" ){
     ## Fits of GEV parameters to blocked data set
     x.fit.evd <- climex::fit.gev( x.kept, initial = x.initial,
