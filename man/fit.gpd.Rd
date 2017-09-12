@@ -136,6 +136,8 @@ fit.gpd( potsdam.extremes )
 }
 \seealso{
 Other optimization: \code{\link{fit.gev}},
+  \code{\link{likelihood.augmented}},
+  \code{\link{likelihood.gradient.augmented}},
   \code{\link{likelihood.gradient}},
   \code{\link{likelihood.initials}},
   \code{\link{likelihood}}

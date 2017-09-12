@@ -117,6 +117,8 @@ fit.gev( potsdam.blocked )
 }
 \seealso{
 Other optimization: \code{\link{fit.gpd}},
+  \code{\link{likelihood.augmented}},
+  \code{\link{likelihood.gradient.augmented}},
   \code{\link{likelihood.gradient}},
   \code{\link{likelihood.initials}},
   \code{\link{likelihood}}

@@ -595,31 +595,120 @@ likelihood <- function( parameters = NULL, x.in,
     y <- x.in
   z <- 1 + y* gamma
 
-  if ( model == "gev" ){
-    if ( shape == 0 ){
-      ## Using the Gumbel distribution. But only when the shape parameter
-      ## is exactly 0
-      negloglikelihood <- length( x.in )*log( scale ) +
-        sum( y )/ scale + sum( exp( -y/ scale ) )
-    } else {
-      suppressWarnings( {
+  suppressWarnings( {
+    if ( model == "gev" ){
+      if ( shape == 0 ){
+        ## Using the Gumbel distribution. But only when the shape parameter
+        ## is exactly 0
+        negloglikelihood <- length( x.in )*log( scale ) +
+          sum( y )/ scale + sum( exp( -y/ scale ) )
+      } else {
         negloglikelihood <- length( x.in )* log( scale ) +
           alpha* sum( log( z ) ) + sum( z^{ -1/ shape } )
-      } )
-    }
-  } else {
-    if ( shape == 0 ){
-      ## Again: just for a shape exactly equal to 0
-      negloglikelihood <- length( x.in )* log( scale ) +
-        sum( y )/scale 
+      }
     } else {
-      negloglikelihood <- length( x.in )* log( scale ) +
-        alpha* sum( log( z ) )
+      if ( shape == 0 ){
+        ## Again: just for a shape exactly equal to 0
+        negloglikelihood <- length( x.in )* log( scale ) +
+          sum( y )/scale 
+      } else {
+        negloglikelihood <- length( x.in )* log( scale ) +
+          alpha* sum( log( z ) )
+      }
     }
-  }
+  } )
   names( negloglikelihood ) <- NULL
   return( negloglikelihood )
 }
+
+##' @title Calculated the augmented negative log likelihood of the
+##' GEV or GPD function.
+##'
+##' @description This function uses the \code{\link{likelihood}}
+##' function and adds the linear constraints used in
+##' \code{\link{fit.gev}} and \code{\link{fit.gpd}} to produce the
+##' augmented Lagrangian version of the GEV or GP negative
+##' log-likelihood function. 
+##'
+##' @details A convenience function not used by the fitting routines.
+##'
+##' It is only meant to work with constant parameters
+##' and no covariates.
+##'
+##' 'x.in' is not called "x" anymore since the call
+##' grad( func = likelihood, x = parameters, ... ) wouldn't be possible.
+##'
+##' @param parameters Vector containing the location, scale and shape
+##' parameter for the GEV or the scale and shape parameter for the GPD.
+##' If NULL the \code{\link{likelihood.initials}} is used. Default = NULL
+##' @param x.in Time series.
+##' @param model Determining whether to calculate the initial parameters
+##' of the GEV or GPD function. Default = "gev"
+##' @param lagrangian.multiplier Lagrangian multipliers used to weight
+##' the linear contribution of the constraints. In most cases all of them
+##' are zero, since optimization of the GEV/GP likelihood usually doesn't
+##' take place inside a region of constraint violations. When supplying
+##' this parameter it has to have the same length as present number of
+##' constraints: number of points in x.in + 2.
+##' Default = 0 for all constraints.
+##' @param penalty.parameter Penalty parameter used to weight the
+##' quadratic contribution of the constraints. In the end of a typical
+##' constrained GEV or GP optimization this parameter is 1000.
+##' Default = 1000.
+##' 
+##' @family optimization
+##'
+##' @export
+##' @return Numerical value of the augmented negative log likelihood.
+##' @author Philipp Mueller
+likelihood.augmented <- function( parameters, x.in,
+                                 model = c( "gev", "gpd" ),
+                                 lagrangian.multiplier =
+                                   rep( 0, length( x.in ) + 2 ),
+                                 penalty.parameter = 1000 ){
+  if ( missing( model ) )
+    model <- "gev"
+  ## Defining the constraints
+  constraints <- function( parameters, x.in, model ){
+    if ( model == "gev" ){
+      return( as.numeric(
+          c( parameters[ 2 ] - .03,
+            .95 + parameters[ 3 ]*
+            ( x.in - parameters[ 1 ])/ parameters[ 2 ],
+            parameters[ 3 ] + .95 ) ) )
+    } else {
+      return( as.numeric(
+          c( parameters[ 1 ] - .03,
+            .95 + parameters[ 2 ]*
+            ( x.in )/ parameters[ 1 ],
+            parameters[ 2 ] + .95 ) ) )
+      
+    } }
+  ## Right here I will use the code of the alabama::auglag2 function.
+  constraint.violation <- constraints( parameters, x.in, model )
+  constraint.violation.threshold <- constraint.violation
+  ## Mark a constraint as inactive if its value is smaller than
+  ## the initial Lagrangian parameter divided by the scale
+  ## parameter for the penalty (Lagrangian) term. In addition
+  ## replace all values of the constraint function exceeding this
+  ## threshold by the threshold itself.
+  inactive <- ( 1 : length( constraint.violation ) )[
+    ( constraint.violation > lagrangian.multiplier[
+                                 1 : length( constraint.violation ) ]/
+      penalty.parameter ) ]
+  constraint.violation.threshold[ inactive ] <- lagrangian.multiplier[ inactive ] /
+    penalty.parameter
+  ## Augmenting the Lagrangian to penalize constraint violations
+  ## by squaring the infeasibilites and an explicit estimate of the
+  ## Lagrange multipliers to avoid a systematic perturbation.
+  ## Nocedal P. 514; (17.36)
+  return( as.numeric(
+      climex::likelihood( parameters, x.in = x.in, model = model ) -
+      sum( lagrangian.multiplier* constraint.violation.threshold ) + 
+      penalty.parameter/2 * sum( constraint.violation.threshold *
+                                 constraint.violation.threshold ) ) )
+}
+
 
 ##' @title Calculates the gradient of the negative log likelihood of the
 ##' GEV or GPD function.
@@ -708,6 +797,129 @@ likelihood.gradient <- function( parameters, x.in,
         alpha/ scale* sum( x.in/ z )
     }
   }
+  return( gradient )
+}
+
+##' @title Calculated the gradient of the augmented negative log
+##' likelihood of the GEV or GPD function.
+##'
+##' @description This function uses the \code{\link{likelihood.gradient}}
+##' function and adds the linear constraints used in
+##' \code{\link{fit.gev}} and \code{\link{fit.gpd}} to produce the
+##' augmented Lagrangian version of the GEV or GP negative
+##' log-likelihood function. 
+##'
+##' @details A convenience function not used by the fitting routines.
+##'
+##' It is only meant to work with constant parameters
+##' and no covariates.
+##'
+##' @param parameters Vector containing the location, scale and shape
+##' parameter for the GEV or the scale and shape parameter for the GPD.
+##' If NULL the \code{\link{likelihood.initials}} is used. Default = NULL
+##' @param x.in Time series.
+##' @param model Determining whether to calculate the initial parameters
+##' of the GEV or GPD function. Default = "gev"
+##' @param lagrangian.multiplier Lagrangian multipliers used to weight
+##' the linear contribution of the constraints. In most cases all of them
+##' are zero, since optimization of the GEV/GP likelihood usually doesn't
+##' take place inside a region of constraint violations. When supplying
+##' this parameter it has to have the same length as present number of
+##' constraints: number of points in x.in + 2, with the last two
+##' constraints handling the lower bound of the scale and the shape
+##' parameter. Default = 0 for all constraints.
+##' @param penalty.parameter Penalty parameter used to weight the
+##' quadratic contribution of the constraints. In the end of a typical
+##' constrained GEV or GP optimization this parameter is 1000.
+##' Default = 1000.
+##' 
+##' @family optimization
+##'
+##' @export
+##' @return Numerical value of the gradient of the augmented negative
+##' log likelihood.
+##' @author Philipp Mueller
+likelihood.gradient.augmented <- function( parameters, x.in,
+                               model = c( "gev", "gpd" ),
+                               lagrangian.multiplier = 
+                                 rep( 0, length( x.in ) + 2 ),
+                               penalty.parameter = 1000 ){
+  ## The augmented gradient consists of the GEV/GP likelihood
+  ## gradient and some additive term for the constraint violations.
+  ## Defining the constraints
+  constraints <- function( parameters, x.in, model ){
+    if ( model == "gev" ){
+      return( as.numeric(
+          c( parameters[ 2 ] - .03,
+            .95 + parameters[ 3 ]*
+            ( x.in - parameters[ 1 ])/ parameters[ 2 ],
+            parameters[ 3 ] + .95 ) ) )
+    } else {
+      return( as.numeric(
+          c( parameters[ 1 ] - .03,
+            .95 + parameters[ 2 ]*
+            ( x.in )/ parameters[ 1 ],
+            parameters[ 2 ] + .95 ) ) )
+    }
+  }
+  gradient <- climex:::likelihood.gradient( parameters = parameters,
+                                           x.in = x.in, model = model )
+  ## Check whether a constraint is violated and at its contribution to
+  ## the gradient
+  if ( model == "gev" ){
+    for ( ii in 1 : length( x.in ) ){
+      constraint <- parameters[ 3 ]*
+        ( x.in[ ii ] - parameters[ 1 ])/ parameters[ 2 ]
+      if ( constraint <= -.95 ){
+        gradient[ 1 ] <- gradient[ 1 ] -
+          lagrangian.multiplier[ ii ]* parameters[ 3 ]/ parameters[ 2 ] -
+          penalty.parameter* constraint* parameters[ 3 ]/ parameters[ 2 ]
+        gradient[ 2 ] <- gradient[ 2 ] -
+          lagrangian.multiplier[ ii ]* parameters[ 3 ]*
+          ( x.in[ ii ] - parameters[ 1 ] )/ parameters[ 2 ]^ 2 -
+          penalty.parameter* constraint* parameters[ 3 ]*
+          ( x.in[ ii ] - parameters[ 1 ] )/ parameters[ 2 ]^ 2
+        gradient[ 3 ] <- gradient[ 3 ] +
+          lagrangian.multiplier[ ii ]*
+          ( x.in[ ii ] - parameters[ 1 ] )/ parameters[ 2 ] +
+          penalty.parameter* constraint*
+          ( x.in[ ii ] - parameters[ 1 ] )/ parameters[ 2 ]
+      }
+    }
+    if ( parameters[ 2 ] <= .05 ){
+      gradient[ 2 ] <- gradient[ 2 ] +
+        lagrangian.multiplier[ length( x.in ) + 1 ] +
+        penalty.parameter* parameters[ 2 ]
+    }
+    if ( parameters[ 3 ] <= -.95 ){
+      gradient[ 3 ] <- gradient[ 3 ] +
+        lagrangian.multiplier[ length( x.in ) + 2 ] +
+        penalty.parameter* parameters[ 3 ]
+    }
+  } else {
+    ## Generalized Pareto version
+    for ( ii in 1 : length( x.in ) ){
+      constraint <- parameters[ 2 ]* x.in[ ii ]/ parameters[ 1 ]
+      if ( constraint <= -.95 ){
+        gradient[ 1 ] <- gradient[ 1 ] -
+          lagrangian.multiplier[ ii ]* constraint/ parameters[ 1 ] -
+          penalty.parameter* constraint^ 2/ parameters[ 1 ]
+        gradient[ 2 ] <- gradient[ 2 ] +
+          lagrangian.multiplier[ ii ]* x.in[ ii ]/ parameters[ 1 ] +
+          penalty.parameter* constraint* x.in[ ii ]/ parameters[ 1 ]
+      }
+    }
+    if ( parameters[ 1 ] <= .05 ){
+      gradient[ 1 ] <- gradient[ 1 ] +
+        lagrangian.multiplier[ length( x.in ) + 1 ] +
+        penalty.parameter* parameters[ 1 ]
+    }
+    if ( parameters[ 2 ] <= -.95 ){
+      gradient[ 2 ] <- gradient[ 2 ] +
+        lagrangian.multiplier[ length( x.in ) + 2 ] +
+        penalty.parameter* parameters[ 2 ]
+    }
+  }   
   return( gradient )
 }
 
