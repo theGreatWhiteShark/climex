@@ -368,6 +368,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
   colour.extremes <- grDevices::rgb( 1, 0.55, 0 )
   colour.ts.light <- "#7171EC"
   colour.extremes.light <- grDevices::rgb( 1, 0.9, 0.8 )
+
   ## Plots the result of the fitted GEV
   output$plotFitEvd <- renderPlot( {
     if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) ||
@@ -404,6 +405,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
     }
     return( gg.evd )
   } )
+
   ## PP plot for fit statistics
   ## The PP plot is the CDF of the theoretical distribution vs.
   ## the CDF of the empirical data.
@@ -448,19 +450,18 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       } else {
         threshold <- sliderThreshold()
       }
-      if ( x.fit.evd$par[ 3 ] != 0 ){
-        print( "PP" )
-        browser()
+      if ( x.fit.evd$par[ 2 ] != 0 ){
         ## GP
         theoretical <-
           Reduce( c, lapply( sort( as.numeric( x.kept ) ), function( xx )
-            1 - ( 1 + ( x.fit.evd$par[ 2 ]*( xx + threshold )/
-                        x.fit.evd$par[ 1 ] ) )^( -1/ x.fit.evd$par[ 2 ] ) ) )
+            as.numeric( 1 - ( 1 + ( x.fit.evd$par[ 2 ]*( xx )/
+                                    x.fit.evd$par[ 1 ] ) )^(
+                                      -1/ x.fit.evd$par[ 2 ] ) ) ) )
       } else {
         ## Exponential distribution
         theoretical <-
           Reduce( c, lapply( sort( as.numeric( x.kept ) ), function( xx )
-            1 - exp( -( xx + threshold )/ x.fit.evd[ 1 ] ) ) )
+            as.numeric( 1 - exp( -( xx )/ x.fit.evd$par[ 1 ] ) ) ) )
       }
       empirical <- stats::ppoints( length( x.kept ), 0 )
     }
@@ -473,12 +474,19 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
                   colour = colour.ts, linetype = 2 ) +
       geom_abline( intercept = 0, slope = 1, colour = colour.extremes ) +
       xlab( "theoretical CDF" ) + ylab( "empirical CDF" ) +
-      annotate( "text", size = 5, color = colour.ts, x = .2, y = .95,
+      annotate( "text", size = 5, color = colour.ts, 
+               x = min( plot.data$theoretical ) +
+                 ( max( plot.data$theoretical ) -
+                        min( plot.data$theoretical ) )* .2,
+               y = min( plot.data$empirical ) +
+                 ( max( plot.data$empirical ) -
+                        min( plot.data$empirical ) )* .91,
                label = "P-P plot" ) +
       theme_bw() +
       theme( axis.title = element_text( size = 15, colour = colour.ts ),
             axis.text = element_text( size = 12, colour = colour.ts ) )
     return( gg.pp ) } )
+
   ## Quantile-quantile plot for fit statistics with samples
   ## drawn from the fitted distribution
   output$plotFitQQ <- renderPlot( {
@@ -538,12 +546,18 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       geom_abline( intercept = 0, slope = 1, colour = colour.extremes ) +
       xlab( "theoretical quantile" ) + ylab( "empirical" ) +
       annotate( "text", size = 5, color = colour.ts,
-               x = min( plot.data$theoretical )* 1.2,
-               y = max( plot.data$empirical )* .95, label = "Q-Q plot" ) +
+               x = min( plot.data$theoretical ) +
+                 ( max( plot.data$theoretical ) -
+                        min( plot.data$theoretical ) )* .2,
+               y = min( plot.data$empirical ) +
+                 ( max( plot.data$empirical ) -
+                        min( plot.data$empirical ) )* .91,
+               label = "Q-Q plot" ) +
       theme( axis.title = element_text( size = 15, colour = colour.ts ),
             axis.text = element_text( size = 12, colour = colour.ts ) )
     return( gg.qq )        
   } )
+
   output$plotFitReturnLevel <- renderPlot( {
     if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) ||
         is.null( buttonMinMax() ) ){
@@ -625,7 +639,6 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
           y.low = x.return.levels$ci.low,
           y.high = x.return.levels$ci.high )
     } else {
-      print( "return level" )
       ## GP
       plot.data <- data.frame(
           x = Reduce( c, lapply( x.period, function( xx )
