@@ -436,7 +436,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
             ) )
       }
       if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min"  ){
-        empirical <- -1* sort( as.numeric( x.kept ) )
+        empirical <- -1* stats::ppoints( length( x.kept ), 0 )
         theoretical <- -1* theoretical
       } else {
         empirical <- stats::ppoints( length( x.kept ), 0 )
@@ -620,10 +620,10 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
          radioEvdStatistics() == "GEV" ){
       x.return.levels$return.levels <-
         x.return.levels$return.levels* ( -1 )
-    x.return.levels$ci.low <- x.return.levels$return.levels +
-      as.numeric( x.return.levels$errors )
-    x.return.levels$ci.high <- x.return.levels$return.levels -
-      as.numeric( x.return.levels$errors )
+      x.return.levels$ci.low <- x.return.levels$return.levels +
+        as.numeric( x.return.levels$errors )
+      x.return.levels$ci.high <- x.return.levels$return.levels -
+        as.numeric( x.return.levels$errors )
     } else {
       x.return.levels$ci.low <- x.return.levels$return.levels -
         as.numeric( x.return.levels$errors )
@@ -647,8 +647,6 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
           y.low = x.return.levels$ci.low,
           y.high = x.return.levels$ci.high )
     }
-    plot.y.limits <- c( plot.data$y[ which.min( abs( plot.data$x - 1 ) ) ],
-                       max( plot.data$y.high ) )
     ## Plot with confidence intervals
     gg.rl <- ggplot( data = plot.data, aes( x = x ) ) +
       geom_line( aes( y = y ),
@@ -666,10 +664,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
             axis.text = element_text( size = 12, colour = colour.ts ) )
     if ( !is.null( buttonMinMax() ) ){
       if ( buttonMinMax() == "Min" && radioEvdStatistics() == "GEV" ){
-        gg.rl <- gg.rl + scale_y_reverse( limits = plot.y.limits )
-      } else {
-        if ( !is.null( plot.y.limits ) )
-          gg.rl <- gg.rl + ylim( plot.y.limits )
+        gg.rl <- gg.rl + scale_y_reverse()
       }
     }
     return( gg.rl ) } )
