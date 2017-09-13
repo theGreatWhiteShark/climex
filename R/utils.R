@@ -60,6 +60,19 @@ summary.climex.fit.gev <- function( x ){
                x$control$error.estimation, "approach." ) )
   }
   cat( "\n\n" )
+  cat( "\t\tFunction evaluations:\n" )
+  print( data.frame( function.eval = as.numeric( x$counts[ 1 ] ),
+                    gradient.eval = ifelse( is.na( x$counts[ 2 ] ), 0,
+                                           as.numeric( x$counts[ 2 ] ) ),
+                    penalty.updates = x$outer.iteration,
+                    row.names = "eval" ) )
+  cat( "\n" )
+  cat( "\t\tFit statistics:\n" )
+  print( data.frame( nllh = x$value,
+                    AIC = climex:::aic( x ),
+                    BIC = climex:::bic( x ),
+                    row.names = "augmented fit" ) )
+  cat( "\n" )
   cat( "\t\tEstimated parameters:\n" )
   print( data.frame( parameter = x$par,
                     fitting.error = as.numeric( x$se[ 1 : 3 ] ),
@@ -72,13 +85,6 @@ summary.climex.fit.gev <- function( x ){
                     row.names = paste( as.character(
                         x$control$return.period ),
                         "block return level" ) ) )
-  cat( "\n" )
-  cat( "\t\tFunction evaluations:\n" )
-  print( data.frame( function.eval = as.numeric( x$counts[ 1 ] ),
-                    gradient.eval = ifelse( is.na( x$counts[ 2 ] ), 0,
-                                           as.numeric( x$counts[ 2 ] ) ),
-                    penalty.updates = x$outer.iteration,
-                    row.names = "eval" ) )
   cat( "\n" )
   invisible()
 }
@@ -102,6 +108,19 @@ summary.climex.fit.gpd <- function( x ){
                x$control$error.estimation, "approach." ) )
   }
   cat( "\n\n" )
+  cat( "\t\tFunction evaluations:\n" )
+  print( data.frame( function.eval = as.numeric( x$counts[ 1 ] ),
+                    gradient.eval = ifelse( is.na( x$counts[ 2 ] ), 0,
+                                           as.numeric( x$counts[ 2 ] ) ),
+                    penalty.updates = x$outer.iteration,
+                    row.names = "eval" ) )
+  cat( "\n" )
+  cat( "\t\tFit statistics:\n" )
+  print( data.frame( nllh = x$value,
+                    AIC = climex:::aic( x ),
+                    BIC = climex:::bic( x ),
+                    row.names = "augmented fit" ) )
+  cat( "\n" )
   cat( "\t\tEstimated parameters:\n" )
   print( data.frame( parameter = x$par,
                     fitting.error = as.numeric( x$se[ 1 : 2 ] ),
@@ -114,13 +133,6 @@ summary.climex.fit.gpd <- function( x ){
                     row.names = paste( as.character(
                         x$control$return.period ),
                         "year return level" ) ) )
-  cat( "\n" )
-  cat( "\t\tFunction evaluations:\n" )
-  print( data.frame( function.eval = as.numeric( x$counts[ 1 ] ),
-                    gradient.eval = ifelse( is.na( x$counts[ 2 ] ), 0,
-                                           as.numeric( x$counts[ 2 ] ) ),
-                    penalty.updates = x$outer.iteration,
-                    row.names = "eval" ) )
   cat( "\n" )
   invisible()
 }
