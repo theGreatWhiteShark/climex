@@ -169,6 +169,9 @@ generalTimeSeriesPlot <- function( input, output, session,
     x.extreme <- reactive.extreme()[[ 1 ]]
     df.block <- data.frame( date = index( x.extreme ),
                            value = as.numeric( x.extreme ) )
+    if ( radioEvdStatistics() != "GEV" ){
+      df.block$value <- df.block$value + sliderThreshold()
+    }
     result <- nearPoints( df.block, input$plotBlockedClick,
                          allRows = TRUE )
     reactive.rows$keep.rows <- xor( reactive.rows$keep.rows,
@@ -178,6 +181,9 @@ generalTimeSeriesPlot <- function( input, output, session,
     x.extreme <- reactive.extreme()[[ 1 ]]
     df.block <- data.frame( date = index( x.extreme ),
                            value = as.numeric( x.extreme ) )
+    if ( radioEvdStatistics() != "GEV" ){
+      df.block$value <- df.block$value + sliderThreshold()
+    }
     result <- brushedPoints( df.block, input$plotBlockedBrush,
                             allRows = TRUE )
     reactive.rows$keep.rows <- xor( reactive.rows$keep.rows,
