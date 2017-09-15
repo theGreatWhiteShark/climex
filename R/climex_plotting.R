@@ -299,8 +299,9 @@ generalFitPlotOutput <- function( id ){
   ns <- NS( id )
   box( title = h2( "GEV fit" ), status = "primary", height = 505,
       solidheader = TRUE, width = 8, id = "boxPlotFit",
-      column( 9, plotOutput( ns( "plotFitEvd" ) ) ),
-      column( 3, plotOutput( ns( "plotFitPP" ), height = 140 ),
+      column( 9, id = "plotEvd",plotOutput( ns( "plotFitEvd" ) ) ),
+      column( 3, id = "plotGOF",
+             plotOutput( ns( "plotFitPP" ), height = 140 ),
              plotOutput( ns( "plotFitQQ" ), height = 140 ),
              plotOutput( ns( "plotFitReturnLevel" ), height = 140 ) ) )
 }
