@@ -17,7 +17,7 @@ This vignette provides an introduction into the basic usage of the **climex** pa
 2. The preprocessing of time series and fitting of the generalized
    extreme value (GEV) and generalized Pareto (GP) distribution is explained.
 
-The usage of the Shiny-based climex web app will be covered in [another](vignettes/climex_app.Rmd) vignette.
+The usage of the Shiny-based climex web app will be covered in another vignette.
 
 # Downloading and formatting of the station data of the DWD
 

@@ -38,7 +38,7 @@ library( climex )
 download.data.dwd()
 ```
 
-For a more thorough explanation of the web scrapping and downloading capabilities of this package please refer to the **Downloading and formatting of the station data of the DWD** section in the package's second [vignette](vignettes/data_dwd_and_usage.Rmd).
+For a more thorough explanation of the web scrapping and downloading capabilities of this package please refer to the **Downloading and formatting of the station data of the DWD** section in the package's second vignette.
 
 With all the DWD data at hand, you are free to lunch the climex app.
 
@@ -75,7 +75,7 @@ Apart from being a selection interface for the station data the **Map** tab feat
 - When selecting a station via mouse click a summary statistic containing the
   station's name as well as its 20, 50 and 100 year return level will
   be displayed in the upper right corner of the map.
-- In the control panel you can choose either the tiles of the [OpenTopoMapshttps](https://opentopomap.org/) or the once of the default [OpenStreetMaps](https://www.openstreetmap.org/) to provide your map. While the first one is more instructive in the context of climatic time series it also faced some down times recently. Therefore you always can use the default OSM map as a fallback solution.
+- In the control panel you can choose either the tiles of the [OpenTopoMaps](https://opentopomap.org/) or the once of the default [OpenStreetMaps](https://www.openstreetmap.org/) to provide your map. While the first one is more instructive in the context of climatic time series it also faced some down times recently. Therefore you always can use the default OSM map as a fallback solution.
 - Using the **Return level** slider and the attached **Return level** slider 
   the chosen return level will be calculated for all shown stations. 
 - After the calculation finished (the cat in the wheel disappeared), an additional select item appears where you can choose to display the stations as blue markers (*stations*) and/or their return level as colored cirlces (*returns*).
