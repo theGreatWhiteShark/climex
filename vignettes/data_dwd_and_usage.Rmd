@@ -17,15 +17,15 @@ This vignette provides an introduction into the basic usage of the **climex** pa
 2. The preprocessing of time series and fitting of the generalized
    extreme value (GEV) and generalized Pareto (GP) distribution is explained.
 
-The usage of the shiny based climex web app will be covered in [another](./climex_app.Rmd) vignette.
+The usage of the Shiny-based climex web app will be covered in [another](vignettes/climex_app.Rmd) vignette.
 
 # Downloading and formatting of the station data of the DWD
 
-Since this package is intended to be used with climate data, it comes with a function to download and format all station data provided by the [German weather service (DWD)](http://www.dwd.de/DE/Home/home_node.html). I chose the daily measured time series since a finer temporal resolution would not make much sense in the context of extreme value analysis.
+Since this package is intended to be used with climatic data, it comes with a function to download and format all station data provided by the [German weather service (DWD)](http://www.dwd.de/DE/Home/home_node.html). I chose the daily measured time series since a finer temporal resolution would not make much sense in the context of extreme value analysis.
 
 Before using the data please read the [terms of use](ftp://ftp-cdc.dwd.de/pub/CDC/Terms_of_use.pdf) carefully.
 
-This package, as well as its shiny app, can be used without downloading any data. So if you already have your own data base, feel free to skip to the next chapter.
+This package, as well as its Shiny app, can be used without downloading any data. So if you already have your own data base, feel free to skip to the next chapter.
 
 ## Prerequisites 
 
@@ -226,9 +226,10 @@ After we obtained our extreme events by applying a sufficiently high threshold t
 
 ```{r gp-fit, cache = TRUE, dependson = "decluster"}
 ## Fitting the GP distribution
-## Since in the default setup the return level will be calculated not in units
-## of times but numbers of exceedances, we have to provide the length of the
-## original time series to rescale our return level to years
+## Since in the default setup the return level will be calculated not in
+## units of times but numbers of exceedances, we have to provide the
+## length of the original time series to rescale our return level to
+## years.
 gp.potsdam <- fit.gpd( temp.potsdam.declustered, threshold = 33,
                       total.length = length( temp.potsdam ) )
 
