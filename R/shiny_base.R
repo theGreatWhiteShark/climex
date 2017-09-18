@@ -196,25 +196,15 @@ climex.server <- function( input, output, session ){
                  climex:::extremes.interactive,
                  climex:::cleaning.interactive,
                  reactive( input$checkboxIncompleteYears ) )
-  ## Reactive value determining the initial parameters of the fitting
-  ## procedure.
-  reactive.initials <- climex:::data.initials(
-                                    reactive( input$initialLocation ),
-                                    reactive( input$initialScale ),
-                                    reactive( input$initialShape ),
-                                    reactive( input$radioEvdStatistics ),
-                                    reactive.extreme )
   ## Reactive value performing the GEV/GP fit to the selected time series
   ## and providing the fitted object of class 'climex.fit.gev' or
   ## 'climex.fit.gpd'.
   reactive.fitting <- climex:::data.fitting(
-                                   reactive.extreme, reactive.initials,
+                                   reactive.extreme,
                                    reactive.rows,
                                    climex:::fit.interactive,
                                    reactive( input$radioEvdStatistics ),
-                                   reactive( input$selectOptimization ),
                                    reactive( input$buttonMinMax ),
-                                   reactive( input$checkboxRerun ),
                                    reactive( input$sliderThreshold ),
                                    reactive( input$selectDataBase ) )
 ########################################################################
@@ -225,7 +215,7 @@ climex.server <- function( input, output, session ){
   ## Displaying of the original, intermediate and final time series.
   ## Reactive value containing a logical vector indicating which element
   ## of reactive.extreme()[[ 1 ]] should still be used after clicking and
-  ## brushing in the extreme's gplot2 plot. In addition the plotting and
+  ## brushing in the extreme's ggplot2 plot. In addition the plotting and
   ## rendering of the extremes, deseasonalized and pure time series is
   ## done in here.
   reactive.rows <- callModule( climex:::generalTimeSeriesPlot, "ts",
@@ -245,8 +235,7 @@ climex.server <- function( input, output, session ){
              climex:::function.get.y.label,
              reactive( input$selectDataBase ), 
              reactive( input$selectDataType ),
-             reactive( input$sliderThreshold ),
-             reactive( input$selectOptimization ) )
+             reactive( input$sliderThreshold ) )
   ## Table containing the fits results. Those four global variable will
   ## store the previous results of the GEV/GP fitting. This is
   ## unfortunately necessary in order to highlight the progress in the
@@ -259,16 +248,6 @@ climex.server <- function( input, output, session ){
                                   reactive( input$radioEvdStatistics ),
                                   climex:::color.table )
 ########################################################################
-
-  ## Module drawing the animation of optimization as well as the
-  ## likelihood tab
-  callModule(
-      climex:::likelihoodAnimation, "animation", reactive.fitting,
-      reactive.extreme, reactive.initials,
-      reactive( input$radioEvdStatistics ),
-      reactive( input$buttonMinMax ),
-      reactive( input$selectOptimization ),
-      reactive( input$checkboxRerun ) )
 
   ## Module providing the leaflet map tab and returning a reactive value
   ## containing all stations with a length longer than the minimal length
@@ -286,8 +265,6 @@ climex.server <- function( input, output, session ){
       reactive( input$checkboxDecluster ),
       reactive( input$selectDeseasonalize ),
       reactive( input$sliderBlockLength ),
-      reactive( input$selectOptimization ),
-      reactive( input$checkboxRerun ),
       reactive( input$selectDataBase ) )
 }
 
@@ -321,7 +298,7 @@ climex.server <- function( input, output, session ){
 ##' @family climex
 ##' 
 ##' @author Philipp Mueller 
-climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
+climex.ui <- function( selected = c( "Map", "General" ) ){
   if ( missing( selected ) )
     selected <- "Map"
   selected <- match.arg( selected )
@@ -341,10 +318,6 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
         menuItem( "General", tabName = "tabGeneral",
                  icon = icon( "stats", lib = "glyphicon" ),
                  selected = ifelse( selected == "General",
-                                   TRUE, FALSE ) ),
-        menuItem( "Likelihood", tabName = "tabLikelihood",
-                 icon = icon( "ok-circle", lib = "glyphicon" ),
-                 selected = ifelse( selected == "Likelihood",
                                    TRUE, FALSE ) ),
         climex:::sidebarDataBaseInput(),
         climex:::sidebarDataSourceInput(),
@@ -388,12 +361,8 @@ climex.ui <- function( selected = c( "Map", "General", "Likelihood" ) ){
                            selected = "GEV" ),
               climex:::generalExtremeExtractionInput(),
               climex:::generalButtonMinMaxInput(),
-              climex:::deseasonalizeSelectionInput(),
-              climex:::generalFittingRoutineInput() ) ),
+              climex:::deseasonalizeSelectionInput() ) ),
           fluidRow(
               climex:::generalFitStatisticsTable(),
-              climex:::generalTimeSeriesPlotOutput( "ts" ) ) ),
-        tabItem( tabName = "tabLikelihood",
-                climex:::likelihoodAnimationUI( "animation" )
-                ))))
+              climex:::generalTimeSeriesPlotOutput( "ts" ) ) ))))
 }

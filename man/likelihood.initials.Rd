@@ -4,8 +4,7 @@
 \alias{likelihood.initials}
 \title{Estimates the initial GEV or GPD parameters of a time series.}
 \usage{
-likelihood.initials(x, model = c("gev", "gpd"), type = c("best", "mom",
-  "lmom"), modified = TRUE)
+likelihood.initials(x, model = c("gev", "gpd"), use.skewness = TRUE)
 }
 \arguments{
 \item{x}{Time series/numeric.}
@@ -13,15 +12,7 @@ likelihood.initials(x, model = c("gev", "gpd"), type = c("best", "mom",
 \item{model}{Determining whether to calculate the initial parameters
 of the GEV or GPD function. Default = "gev"}
 
-\item{type}{Which method should be used to calculate the initial
-parameters. "best" combines all methods, in addition samples 100
-different shape values around the one determined by type 'mom' and
-returns the result with the least likelihood. "mom" - method of
-moments returns an approximation according to the first two moments
-of the Gumbel distribution. "lmom" - returns an estimate according
-to the Lmoments method. Default = "best"}
-
-\item{modified}{Determines if the skewness is getting used to
+\item{use.skewness}{Determines if the skewness is getting used to
 determine the initial shape parameter. Default = TRUE.}
 }
 \value{
@@ -37,15 +28,21 @@ a modification was added: By looking at skewness of the time series x
 and with respect to some heuristic thresholds a shape parameter
 between -.4 and .2 is assigned for the GEV distribution. In case of
 the GP one, the sign of the skewness matches the sign of the series'
-shape parameter. Warning: both methods do not work
-for samples with diverging (or pretty big) mean or variance. For
-this reason the restrict argument is included. If the estimates are
-bigger than the corresponding restrict.thresholds, they will be
-replaced by this specific value.
+shape parameter.
+
+Warning: both methods do not work for samples with diverging (or
+pretty big) mean or variance.
+
+If no working initial parameter combination could be found using
+those methods, the function will perform a constrained random
+walk on the parameters until a working pair is found.
 }
 \seealso{
 Other optimization: \code{\link{fit.gev}},
-  \code{\link{fit.gpd}}, \code{\link{likelihood.gradient}},
+  \code{\link{fit.gpd}},
+  \code{\link{likelihood.augmented}},
+  \code{\link{likelihood.gradient.augmented}},
+  \code{\link{likelihood.gradient}},
   \code{\link{likelihood}}
 }
 \author{

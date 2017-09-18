@@ -79,23 +79,28 @@ test_that( "extremal.index calculates correct results and throws warnings", {
 test_that( "return.level of fit results and GEV/GP parameters as input", {
   expect_error( climex::return.level( temp.potsdam ) )
   expect_error( climex::return.level( as.numeric( temp.potsdam ) ) )
-  expect_equal( climex::return.level( x.block.fit ), 15.55642 - 8.95e-07 )
-  expect_equal( climex::return.level( x.block.fit$par ),
-               15.55642 - 8.95e-07 )
+  expect_equal( climex::return.level( x.block.fit ), 15.556303455 )
+  expect_equal( climex::return.level( x.block.fit$par ), 15.556303455 )
   expect_equal( climex::return.level( x.thresh.fit$par, model = "gpd",
                                      threshold = 29,
                                      thresholded.time.series = x.thresh ),
-               38.18985 + 3.46e-06)
+               38.1899770466, tolerance = 5E-4 )
+  ## The next one uses a more accurate estimate for the probability of
+  ## a threshold exceedance.
+  expect_equal( climex::return.level( x.thresh.fit$par, model = "gpd",
+                                     threshold = 29,
+                                     thresholded.time.series = x.thresh,
+                                     total.length = length( temp.potsdam) ),
+               38.1912316541, tolerance = 5E-4 )
   expect_equal( climex::return.level( x.thresh.fit, model = "gpd" ),
-               38.18985 + 3.46e-06 )
+               38.1912316541, tolerance = 5E-4 )
 })
 test_that( "return.level can take return periods of different length and value", {
   expect_equal( climex::return.level( x.block.fit, return.period = 100 ),
-               15.55642 - 8.95e-07 )
+               15.556303455 )
   expect_equal( climex::return.level( x.block.fit,
                                      return.period = c( 10, 20, 500 ) ),
-               c( 14.15995 - 3.82e-06, 14.68160 - 2.05e-06,
-                 16.12371 + 3.76e-06 ) )
+               c( 14.1600474831, 14.6816437202, 16.1234297804 ) )
 })
 test_that( "return.level has the right output", {
   expect_match( class( climex::return.level( x.block.fit ) ), "numeric" )
@@ -117,15 +122,13 @@ test_that( "return.level get the error estimation right for MLE", {
       climex::return.level( x.block.fit,
                            return.period = c( 10, 100, 332 ),
                            error.estimation = "MLE" )$errors ),
-      c( 0.028197, 0.06443386, 0.1015562 - 2.23e-08 ) )
-  ## These are absurdly big errors. I already wrote a Github issue
-  ## regarding it.
+      c( 0.0281913645577, 0.0643674174564, 0.1014328231061 ) )
   expect_equal( as.numeric(
       climex::return.level( x.thresh.fit, return.period = c( 42, 637 ),
                            error.estimation = "MLE", threshold = 29,
-                           total.length = length( temp.potsdam )
                            )$errors ),
-      c( 65.491125, 4.063711 ) )
+      c( 0.0458864778135, 0.0872790180993 ),
+      tolerance = 5E-4 )
 })
 test_that( "return.level get the error estimation right for MC", { 
   expect_equal( as.numeric(
@@ -137,7 +140,7 @@ test_that( "return.level get the error estimation right for MC", {
   expect_equal( as.numeric(
       climex::return.level( x.thresh.fit, return.period = 42,
                            error.estimation = "MC", threshold = 29,
-                           monte.carlo.sample.size = 100 )$errors ),
+                           monte.carlo.sample.size = 10 )$errors ),
       0.3445054, tolerance = .1 )
   expect_warning(
       climex::return.level( x.thresh.fit$par, return.period = 42,

@@ -1,32 +1,40 @@
-##' @title Performing a fit to the GEV function.
+##' @title Robust maximum-likelihood fit of the GEV distribution
 ##'
-##' @details Custom fitting of the GEV function including the
-##' estimation of the initial conditions. Per default the
-##' optimization is run twice to prevent getting trapped in local
-##' minima of the negative log-likelihood function. The output is
-##' of optim style. But the errors of the fitting are also provided
-##' as well as the estimates and the errors of some specified return
-##' levels. I had some problems with the optim implementation of the
-##' simulated annealing implementation. The optimization just kept
-##' its value and nothing happened. That's why I switched to the
-##' \code{\link{GenSA}} package. More for convenience and due to its
-##' use in the animation of the climex shiny app I also introduced a
-##' slightly modified version of the dfoptim package's 'nmk' function.
-##' But I do not recommend using it since they produce slightly worse
-##' results and seem to be numerical more unstable.
+##' @description This function fits the Generalized Extreme Value (GEV)
+##' distribution to the supplied data, which has to be composed of
+##' block maxima (preferably without trend and correlations). The
+##' determination of the starting point for the optimization and the
+##' calculation of the return level and the all the corresponding
+##' estimates of the fitting errors will be done internally.
+##'
+##' @details The optimization is performed using the augmented Lagrangian
+##' method. Within this framework the log-likelihood function of the GEV
+##' distribution gets augmented with N+2 constraints, where N is the
+##' number of points in the time series. N+1 of those constraints ensure
+##' the log-likelihood (containing two logarithms) to be always defined.
+##' The remaining constraints ensures for the shape parameter to be
+##' always bigger than -1 for the maximum likelihood to be defined in the
+##' first place. The penalty in the log-likelihood function is the sum of
+##' all squared constrain violations plus an additional term linear in
+##' the constraint violation to ensure well-conditioning. Using this
+##' penalty term the problem becomes unconstrained again and can be
+##' solved using \code{\link{stats::optim}}. After each of those inner
+##' routines the weighting parameter of the penalty is being increased
+##' until some convergence conditions are fulfilled.
+##'
+##' Since it usually takes just four to five outer iterations this
+##' functions needs only double the time a pure call to the stats::optim
+##' function would need.
+##'
+##' The negative log-likelihood of the Gumbel distribution is just fitted
+##' if the shape parameter is exactly equal to zero.
 ##'
 ##' @param x Blocked time series to which the GEV distribution should
 ##' be fitted.
 ##' @param initial Initial values for the GEV parameters. Has to be
-##' provided as 3x1 vector. If NULL the parameters are estimated with
-##' the function \code{\link{likelihood.initials}}. Default = NULL
-##' @param rerun The optimization will be started again using the
-##' results of the first optimization run. If the "Nelder-Mead"
-##' algorithm is used for optimization (as it is here) this can be
-##' useful to escape local minima. When choosing simulated annealing as
-##' method the rerun will be skipped. Provide a different number of runs
-##' directly to the GenSA function via ... instead. Default = TRUE
-##' @param optim.function Function which is going to be optimized.
+##' provided as 3x1 vector. If NULL the parameters are estimated using
+##' \code{\link{likelihood.initials}}. Default = NULL
+##' @param likelihood.function Function, which is going to be optimized.
 ##' Default: \code{\link{likelihood}}
 ##' @param gradient.function If NULL a finite difference method is
 ##' invoked. Default: \code{\link{likelihood.gradient}}
@@ -35,27 +43,31 @@
 ##' parameters will be calculated as the square roots of the diagonal
 ##' elements of the inverse of the hessian matrix calculated with the MLE
 ##' of the GEV parameters. The standard error of the return level is
-##' calculated using the Delta method and the MLE of the GEV parameters.
+##' calculated using the Delta method and the maximum likelihood
+##' estimates (MLE) of the GEV parameters.
+##' 
 ##' Alternative one can use Monte Carlo simulations with "MC" for which
-##' 1000 samples of the same size as x will be drawn from a GEV distribution
-##' constituted by the obtained MLE of the GEV parameters of x. The standard
-##' error is then calculated via the square of the variance of all fitted
-##' GEV parameters and calculated return levels. Sometimes the inversion
-##' of the hessian fails (since the are some NaN in the hessian) (which is
-##' also the reason why the ismev package occasionally does not work). In
-##' such cases the Monte Carlo method is used. Option "none" just skips
-##' the calculation of the error. Default = "none".
-##' @param method Through the argument 'method' (which is passed to the
-##' optim function) the optimization algorithm is chosen. The default one
-##' is the "Nelder-Mead".
+##' monte.carlo.sample.size samples of the same size as x will be drawn
+##' from a GEV distribution constituted by the obtained MLE of the GEV
+##' parameters of x. The standard error is then calculated via the square
+##' of the variance of all fitted GEV parameters and calculated return
+##' levels.
+##'
+##' Sometimes the inversion of the hessian fails (since the are some NaN
+##' in the hessian) (which is also the reason why the ismev package
+##' occasionally does not work). In such cases the Monte Carlo method is
+##' used. Option "none" just skips the calculation of the error.
+##' Default = "none".
+##' @param optim.method Choosing the optimization algorithm used within
+##' \code{\link{stats::optim}}. The default one is the "Nelder-Mead".
 ##' @param monte.carlo.sample.size Number of samples used to obtain the
-##' Monte Carlo estimate of the standard error of the fitting. Default = 1000
-##' @param return.period Quantiles at which the return level is going to be
-##' evaluated. Class "numeric". Default = 100.
+##' Monte Carlo estimate of the standard error of the fitting.
+##' Default = 100.
+##' @param return.period Quantiles at which the return level is going to
+##' be evaluated. Class "numeric". Default = 100.
 ##' @param silent Determines whether or not warning messages shall be
-##' displayed. Default = TRUE.
-##' @param ... Additional arguments for the optim() or GenSA::GenSA()
-##' function. Depending on the chosen method.
+##' displayed and results shall be reported. Default = TRUE.
+##' @param ... Additional arguments for the optim() function.
 ##' 
 ##' @family optimization
 ##' 
@@ -65,172 +77,100 @@
 ##'  \item{ par = MLE of the GEV parameters }
 ##'  \item{ value = Value of the negative log-likelihood evaluated
 ##' at the MLE }
-##'  \item{ counts = Number of function evaluations during the
-##' optimization }
-##'  \item{ convergence = Specifies the state of the convergence
-##' (see \code{\link{optim}})) }
-##'  \item{ message = see \code{\link{optim}} }
-##'  \item{ hessian = Hessian or the observed information matrix
-##' evaluated at the MLE }
+##'  \item{ counts = Number of evaluations of the likelihood
+##' function and its gradient during optimization (inner routine) }
+##'  \item{ outer.iteration = Number of updates of the penalty and
+##' the Lagrangian parameter to fine-tune the impact of the
+##' constraints on the optimization (outer routine) }
 ##'  \item{ return.level = Estimate of the return levels at the
 ##' provided return periods }
 ##'  \item{ se = Standard error of the GEV parameters and the return
 ##' levels }
 ##'  \item{ x = Original time series }
-##'  \item{ updates = A data.frame either the first and last step
-##' ( !'nmk' )
-##'         containing all the optimization steps visited during the
-##' call. }
+##'  \item{ control = Parameter and options used during optimization }
 ##' }
 ##' @author Philipp Mueller
 ##' @export
 ##' @importFrom xts xts
+##' @importFrom alabama auglag
 ##' @examples
 ##' potsdam.anomalies <- anomalies( temp.potsdam )
 ##' potsdam.blocked <- block( potsdam.anomalies )
 ##' fit.gev( potsdam.blocked )
-fit.gev <- function( x, initial = NULL, rerun = TRUE,
-                    optim.function = likelihood,
+fit.gev <- function( x, initial = NULL,
+                    likelihood.function = likelihood,
                     gradient.function = likelihood.gradient,
-                    error.estimation = c( "none", "MLE", "MC" ),
-                    method = c( "Nelder-Mead",
-                               "BFGS", "CG", "SANN", "nmk" ),
-                    monte.carlo.sample.size = 1000, return.period = 100,
+                    error.estimation = c( "MLE", "MC", "none" ),
+                    optim.method = c( "Nelder-Mead","BFGS", "CG" ),
+                    monte.carlo.sample.size = 100, return.period = 100,
                     silent = TRUE, ... ){
-  ## Since there are some problems with the simulated annealing
-  ## algorithm I intersect the method argument and switch to another
-  ## package if necessary
-  if ( missing( method ) )
-    method <- "Nelder-Mead"
-  method <- match.arg( method )    
-  ## Default values if no initial parameters are supplied
+  ## I found the Nelder-Mead method to be more robust to starting
+  ## points more far away from the global optimum. This also holds
+  ## for the inner routine of the augmented Lagrangian method.
+  if ( missing( optim.method ) )
+    optim.method <- "Nelder-Mead"
+  optim.method <- match.arg( optim.method )    
+  ## Default values if no initial parameters were supplied
   if ( is.null( initial ) )
-    initial <- likelihood.initials( x )
+    initial <- likelihood.initials( x, model = "gev" )
   if ( is.null( error.estimation ) )
     error.estimation <- "MLE"
   error.estimation <- match.arg( error.estimation )
-  ## if the error.estimation is not required, do not calculate the
-  ## hessian
-  if ( error.estimation == "none" ){
-    hessian.calculate <- FALSE
-  } else
-    hessian.calculate <- TRUE
   ## Optimization
-  if ( method %in% c( "Nelder-Mead", "BFGS", "CG" ) ){
-    suppressWarnings(
-        res.optim <- stats::optim( initial, optim.function,
-                                  gr = gradient.function, x = x,
-                                  hessian = hessian.calculate,
-                                  method = method, ... ) )
-  } else if ( method == "SANN" ){
-    ## Since this implementation didn't yielded nice results I switch
-    ## to another package
-    aux <- GenSA::GenSA( as.numeric( initial ), optim.function,
-                        lower = c( -Inf, 0, -Inf ),
-                        upper = c( Inf, Inf, Inf ), x = x, ... )
-    ## Sometime the simulated annealing using the GenSA package fails
-    ## and it is either not able to calculate all of the parameters
-    ## or at least one of the initial parameters is not updated at all
-    ## (exactly equal)
-    if ( any( is.nan( aux$par ) ) || sum( aux$par %in% initial ) > 1 ){
-      ## When GenSA fails, just use the stats::optim implementation
-      ## instead.
-      if ( !silent ){
-        warning( "The Simulated Annealing using the GenSA package didn't work. The implementation in stats::optim was used as a fallback instead." )
-      }
-      suppressWarnings(
-          res.optim <- stats::optim( initial, optim.function,
-                                    gr = gradient.function, x = x,
-                                    hessian = hessian.calculate,
-                                    method = "SANN", model = "gev",
-                                    ... ) )
-    } else {
-      ## Adjust the output of the GenSA function to correspond to
-      ## the structure of the stats::optim output
-      res.optim <- list( par = aux$par, value = aux$value,
-                        counts = aux$counts,
-                        hessian = if ( hessian.calculate ){
-                                    numDeriv::hessian( optim.function,
-                                                      x = aux$par,
-                                                      x.in = x )
-                                  } else NULL,
-                        convergence = 0, message = NULL )
-    }
-  } else if ( method == "nmk" ){
-    ## The benefit of the nmk method is that its code base is written
-    ## in R. So I could easily modify it and display the progress of
-    ## the optimization.
-    ## In principle I would recommend using the default optim procedures.
-    aux <- dfoptim::nmk( par = initial, fn = likelihood, x = x,
-                        model = "gev", MODIFIED = TRUE,
-                        WARNINGS = FALSE )
-    res.optim <- list( par = aux$par, value = aux$value,
-                      counts = aux$feval, convergence = 0,
-                      message = NULL, updates = aux$x.updates,
-                      hessian = if ( hessian.calculate ){
-                                  numDeriv::hessian( optim.function,
-                                                    x = aux$par,
-                                                    x.in = x )
-                                } else NULL )
-    res.optim$counts[ 2 ] <- NA
-    names( res.optim$counts ) <- c( "function", "gradient" )   
-  }
-  if ( rerun && method != "SANN" ){
-    ## Rerunning the optimization for the simulated annealing makes no
-    ## sense. Just increase the number of iterations for this method.
-    if ( method %in% c( "Nelder-Mead", "BFGS", "CG" ) ){
-      suppressWarnings(
-          res.optim.rerun <- try( stats::optim( par = res.optim$par,
-                                               fn = optim.function,
-                                               gr = gradient.function,
-                                               x = x,
-                                               hessian =
-                                                 hessian.calculate,
-                                               method = method,
-                                               ... ), silent = TRUE ) )
-    } else if ( method == "nmk" ){
-      aux <- dfoptim::nmk( par = res.optim$par, fn = likelihood, x = x,
-                          model = "gev", MODIFIED = TRUE,
-                          WARNINGS = FALSE )
-      res.optim.rerun <- list( par = aux$par, value = aux$value,
-                              counts = aux$feval, convergence = 0,
-                              message = NULL, updates = aux$x.updates,
-                              hessian = if ( hessian.calculate ){
-                                          numDeriv::hessian(
-                                                        optim.function,
-                                                        x = aux$par,
-                                                        x.in = x )
-                                        } else NULL )
-      res.optim.rerun$counts[ 2 ] <- NA
-      ## When rerun the whole path should be present in the updates
-      res.optim.rerun$updates$step <- seq(
-          res.optim$updates$step[ nrow( res.optim$updates ) ],
-          res.optim$updates$step[ nrow( res.optim$updates ) ] +
-          nrow( res.optim.rerun$updates ) - 1 )
-      res.optim.rerun$updates <- rbind( res.optim$updates,
-                                       res.optim.rerun$updates )
-      names( res.optim.rerun$counts ) <- c( "function", "gradient" )
-    }
-    if ( class( res.optim.rerun ) == "try-error" ){
-      warning( "Rerun failed. Be sure to use the Nelder-Mead method of optimization." )
-    } else
-      res.optim <- res.optim.rerun
-  }
-  ## if no updates element is available add the start and end parameter
-  ## pair. This is just a poor approximation of the optimization route
-  ## but I can do at this moment (without rewriting and linking the
-  ## whole internal calls of optim )
-  if ( is.null( res.optim$updates ) )
-    res.optim$updates <- data.frame(
-        location = c( initial[ 1 ], res.optim$par[ 1 ] ),
-        scale = c( initial[ 2 ], res.optim$par[ 2 ] ),
-        shape = c( initial[ 3 ], res.optim$par[ 3 ] ),
-        step = c( 1, res.optim$counts[ 1 ] ) )
+  ## The augmented Lagrangian method allowing non-linear constraints
+  ## will be used in here. The code depends of the 'alabama' package.
+  ## In principle I could also integrate the routine in here, but let's
+  ## stick to the Linux principle.
+  ## The Rsolnp package did not performed as well as the alabama one.
+  ## It takes two orders of magnitude longer and gets stuck for
+  ## certain initial parameter combinations.
+  ## If the shape parameter is exactly equal to zero and the
+  ## likelihood function switches to the Gumbel distribution, the
+  ## constraints involving the shape parameter become true and are
+  ## redundant anyway.
+  suppressWarnings(
+      res.alabama <- auglag(
+          par = initial, fn = likelihood.function,
+          gr = gradient.function,
+          hin = function( parameters, x.in, ... ){
+            return( as.numeric(
+                c( parameters[ 2 ] - .03,
+                  .95 + parameters[ 3 ]* ( x.in - parameters[ 1 ])/
+                  parameters[ 2 ],
+                  parameters[ 3 ] + .95 ) ) ) },
+          control.outer = list( trace = !silent, method = optim.method ),
+          x.in = x, model = "gev" ) )
+  ## There is no need for the user to deal with all the outputs of the
+  ## auglag function. So let's reduce them. 
+  res.optim <- list( par = res.alabama$par,
+                    value = res.alabama$value,
+                    gradient = res.alabama$gradient,
+                    counts = res.alabama$counts,
+                    outer.iterations = res.alabama$outer.iterations,
+                    control = list(
+                        initial = initial,
+                        return.period = return.period,
+                        likelihood.function = likelihood.function,
+                        gradient.function = gradient.function,
+                        optim.method = optim.method,
+                        hessian = res.alabama$hessian,
+                        monte.carlo.sample.size =
+                          monte.carlo.sample.size,
+                        error.estimation = error.estimation ) )
+  ## Calculate the estimate of the fitting error of the GEV parameters
+  ## and the return levels.
   if ( error.estimation != "none" ){
-    error.covariance <- try( solve( res.optim$hessian ) )
+    ## The error of the fitted parameters are the roots of the
+    ## diagonal entries of the estimated information matrix. The later
+    ## one can be obtained by inverting the hessian. But this obtained
+    ## hessian may be bad conditioned, so I will try to invert it. If
+    ## this is not possible the Monte Carlo-based method will be used
+    ## instead.
+    error.covariance <- try( solve( res.optim$control$hessian ),
+                            silent = silent )
     if ( class( error.covariance ) == "try-error" ||
          error.estimation == "MC" ||
-         any( is.nan( res.optim$hessian ) ) ){
+         any( is.nan( res.optim$control$hessian ) ) ){
       parameter.estimate <- res.optim$par
       number.of.samples <- 1000
       ## Draw a number of samples and fit the GEV parameters for all
@@ -239,16 +179,21 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE,
         climex:::revd( length( x ), location = parameter.estimate[ 1 ],
                       scale = parameter.estimate[ 2 ],
                       shape = parameter.estimate[ 3 ], model = "gev" ) )
-      ## If e.g. via the BFGS method way to big shape parameter are
-      ## estimated the guessing of the initial parameters for the
-      ## optimization won't work anymore since the sampled values
-      ## are way to big (e.g. 1E144)
-      suppressWarnings( 
-          samples.fit <- try( lapply( samples.list, function( y )
-            stats::optim( likelihood.initials( y ), optim.function,
-                         x = y, method = "Nelder-Mead" )$par ) ) )
+      suppressWarnings(
+          samples.fit <- try( lapply( samples.list, function ( y )
+            auglag( par = likelihood.initials( y, model = "gev" ),
+                   fn = likelihood.function,
+                   gr = gradient.function, 
+                   hin = function( parameters, x.in, ... ){
+                     return( as.numeric(
+                         c( parameters[ 2 ] - .03,
+                           .95 + parameters[ 3 ]* ( x.in - parameters[ 1 ])/
+                           parameters[ 2 ],
+                           parameters[ 3 ] + .95 ) ) ) },
+                   control.outer = list( trace = FALSE, method = optim.method ),
+                   x.in = y, model = "gev" )$par ) ) )
       if ( class( samples.fit ) == "try-error" ){
-        errors <- c( NaN, NaN, NaN, NaN )
+        errors <- c( NaN, NaN, NaN, rep( NaN, length( return.period ) ) )
       } else {
         errors <- data.frame(
             sqrt( stats::var( Reduce( rbind, samples.fit )[ , 1 ] ) ),
@@ -262,6 +207,7 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE,
                   climex::return.level( z,                                                                    return.period = return.period[ rr ]
                                        ) ) ) ) ) ) )
       }
+      errors <- as.numeric( errors )
       names( errors ) <- c( "location", "scale", "shape",
                            paste0( return.period, ".rlevel" ) )
     } else {
@@ -285,6 +231,8 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE,
                            paste0( return.period, ".rlevel" ) )
     }
     res.optim$se <- errors
+  } else {
+    res.optim$se <- rep( NaN, ( 3 + length( return.period ) ) )
   }
   ## Naming of the resulting fit parameter (necessary for a correct
   ## conversion with as.fevd)
@@ -293,83 +241,101 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE,
   class( res.optim ) <- c( "list", "climex.fit.gev" )
   
   ## adding the return levels
-  res.optim$return.level <- Reduce( c, lapply( return.period,
-                                              function( y )
-                                                climex::return.level(
-                                                            res.optim,
-                                                            y ) ) )
+  res.optim$return.level <- Reduce(
+      c, lapply( return.period,
+                function( y ) climex::return.level( res.optim,
+                                                   y ) ) )
   names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
   res.optim$x <- x
+
+  if ( !silent )
+    summary( res.optim )
   return( res.optim )
 }
 
-##' @title Performing a fit to the GPD function.
+##' @title Robust maximum-likelihood fit of the GPD distribution
 ##'
-##' @details Custom fitting of the generalized Pareto distribution (GPD)
-##' function including the estimation of the initial conditions. Per
-##' default the optimization is run twice to prevent getting trapped in
-##' local minima of the negative log-likelihood function. The output is
-##' of optim style. But the errors of the fitting are also provided as
-##' well as the estimates and the errors of some specified return levels.
-##' I had some problems with the optim implementation of the simulated
-##' annealing implementation. The optimization just kept its value and
-##' nothing happened. That's why I switched to the \code{\link{GenSA}}
-##' package. More for convenience and due to its use in the animation of
-##' the climex shiny app I also introduced a slightly modified version of
-##' the dfoptim package's 'nmk' function. But I do not recommend using it
-##' since they produce slightly worse results and seem to be numerical
-##' more unstable.
+##' @description This function fits the Generalized Pareto distribution
+##' (GPD) to the supplied data, which have to be threshold exceedances
+##' with the corresponding threshold already subtracted. The
+##' determination of the starting point for the optimization and the
+##' calculation of the return level and the all the corresponding
+##' estimates of the fitting errors will be done internally.
 ##'
-##' @param x Blocked time series to which the GPD distribution should be
-##' fitted.
+##' @details The optimization is performed using the augmented Lagrangian
+##' method. Within this framework the log-likelihood function of the GPD
+##' gets augmented with N+2 constraints, where N is the
+##' number of points in the time series. N+1 of those constraints ensure
+##' the log-likelihood (containing two logarithms) to be always defined.
+##' The remaining constraints ensures for the shape parameter to be
+##' always bigger than -1 for the maximum likelihood to be defined in the
+##' first place. The penalty in the log-likelihood function is the sum of
+##' all squared constrain violations plus an additional term linear in
+##' the constraint violation to ensure well-conditioning. Using this
+##' penalty term the problem becomes unconstrained again and can be
+##' solved using \code{\link{stats::optim}}. After each of those inner
+##' routines the weighting parameter of the penalty is being increased
+##' until some convergence conditions are fulfilled.
+##'
+##' Since it usually takes just four to five outer iterations this
+##' functions needs only double the time a pure call to the stats::optim
+##' function would need.
+##'
+##' The 'total.length' argument refers to the length of the original time
+##' series before the thresholding was applied. If present it will be used
+##' to calculate the maximum likelihood estimate of the probability of an
+##' observation to be a threshold exceedance (necessary to determine the
+##' estimation errors for the calculated return levels). Else an estimator
+##' based on mean number of exceedances per year will be used.
+##' 
+##' @param x Threshold exceedances with the threshold already subtracted.
 ##' @param initial Initial values for the GPD parameters. Has to be
 ##' provided as 2x1 vector. If NULL the parameters are estimated with the
 ##' function \code{\link{likelihood.initials}}. Default = NULL
-##' @param threshold Optional threshold for the GPD model. If present it
-##' will be added to the return level to produce a value which fits to
-##' underlying time series. Default = NULL.
-##' @param rerun The optimization will be started again using the results
-##' of the first optimization run. If the "Nelder-Mead" algorithm is used
-##' for optimization (as it is here) this can be useful to escape local
-##' minima. When choosing simulated annealing as method the rerun will be
-##' skipped. Provide a different number of runs directly to the GenSA
-##' function via ... instead. Default = TRUE
-##' @param optim.function Function which is going to be optimized. Default:
-##' \code{\link{likelihood}}
-##' @param gradient.function If NULL a finite difference method is invoked.
-##' To use the derived formula from the GPD likelihood gradient provide
-##' \code{\link{likelihood.gradient}}.
+##' @param threshold Optional threshold used to extract the exceedances
+##' x from the original series. If present it will be added to the
+##' return level to produce a value which fits to underlying time series.
+##' Default = NULL.
+##' @param likelihood.function Function which is going to be optimized.
+##' Default: \code{\link{likelihood}}
+##' @param gradient.function If NULL a finite difference method is
+##' invoked. To use the derived formula from the GPD likelihood gradient
+##' provide \code{\link{likelihood.gradient}}.
 ##' Default = climex:::likelihood.gradient.
 ##' @param error.estimation Method for calculating the standard errors of
 ##' the fitted results. Using the option "MLE" the errors of the GPD
 ##' parameters will be calculated as the square roots of the diagonal
 ##' elements of the inverse of the hessian matrix calculated with the MLE
 ##' of the GPD parameters. The standard error of the return level is
-##' calculated using the Delta method and the MLE of the GPD parameters.
+##' calculated using the Delta method and the maximum likelihood
+##' estimates (MLE) of the GPD parameters.
+##' 
 ##' Alternative one can use Monte Carlo simulations with "MC" for which
-##' 1000 samples of the same size as x will be drawn from a GPD constituted
-##' by the obtained MLE of the GPD parameters of x. The standard error is
-##' then calculated via the square of the variance of all fitted GPD
-##' parameters and calculated return levels. Sometimes the inversion of the
-##' hessian fails (since the are some NaN in the hessian) (which is also the
-##' reason why the ismev package occasionally does not work). In such cases
-##' the Monte Carlo method is used. Option "none" just skips the calculation
-##' of the error. Default = "none".
-##' @param method Through the argument 'method' (which is passed to the optim
-##' function) the optimization algorithm is chosen. The default one is the
-##' "Nelder-Mead".
-##' @param monte.carlo.sample.size Number of samples used to obtain the Monte
-##' Carlo estimate of the standard error of the fitting. Default = 1000
-##' @param return.period Quantiles at which the return level is going to be
-##' evaluated. Class "numeric". Default = 100.
-##' @param total.length Total number of observations in the time series the
-##' exceedance were obtained from. This argument is needed to calculate the
-##' standard error of the return level via the delta method of the MLE.
-##' Default = NULL.
-##' @param silent If TRUE, avoid the warning in case of a missing total.length
-##' parameter. Default = TRUE.
-##' @param ... Additional arguments for the optim() or GenSA::GenSA() function.
-##' Depending on the chosen method.
+##' monte.carlo.sample.size samples of the same size as x will be drawn
+##' from a GPD distribution constituted by the obtained MLE of the GPD
+##' parameters of x. The standard error is then calculated via the square
+##' of the variance of all fitted GPD parameters and calculated return
+##' levels.
+##'
+##' Sometimes the inversion of the hessian fails (since the are some NaN
+##' in the hessian) (which is also the reason why the ismev package
+##' occasionally does not work). In such cases the Monte Carlo method is
+##' used. Option "none" just skips the calculation of the error.
+##' Default = "MLE".
+##' @param optim.method Choosing the optimization algorithm used within
+##' \code{\link{stats::optim}}. The default one is the "Nelder-Mead".
+##' @param monte.carlo.sample.size Number of samples used to obtain the
+##' Monte Carlo estimate of the standard error of the fitting.
+##' Default = 100.
+##' @param return.period Quantiles at which the return level is going to
+##' be evaluated. Class "numeric". Default = 100.
+##' @param total.length Uses the maximum likelihood estimator to calculate
+##' the probability of a measurement to be an exceedance. Else an estimate
+##' based on the mean number of exceedances in the available years (time
+##' stamps of the class 'xts' time series) will be used. Default = NULL.
+##' @param silent Determines whether or not warning messages shall be
+##' displayed and results shall be reported. Default = TRUE.
+##' @param ... Additional arguments for the optim() function.
 ##' 
 ##' @family optimization
 ##' 
@@ -379,221 +345,117 @@ fit.gev <- function( x, initial = NULL, rerun = TRUE,
 ##'  \item{ par = MLE of the GPD parameters }
 ##'  \item{ value = Value of the negative log-likelihood
 ##' evaluated at the MLE }
-##'  \item{ counts = Number of function evaluations during the
-##' optimization }
-##'  \item{ convergence = Specifies the state of the convergence
-##' (see \code{\link{optim}})) }
-##'  \item{ message = see \code{\link{optim}} }
-##'  \item{ hessian = Hessian or the observed information matrix
-##' evaluated at the MLE }
+##'  \item{ counts = Number of evaluations of the likelihood
+##' function and its gradient during optimization (inner routine) }
+##'  \item{ outer.iteration = Number of updates of the penalty and
+##' the Lagrangian parameter to fine-tune the impact of the
+##' constraints on the optimization (outer routine) }
 ##'  \item{ return.level = Estimate of the return levels at the provided
 ##' return periods }
 ##'  \item{ se = Standard error of the GPD parameters and the return
 ##' levels }
-##'  \item{ x = Original time series }
-##'  \item{ updates = A data.frame either the first and last step
-##' ( !'nmk' )
-##'         containing all the optimization steps visited during the
-##' call. }
+##'  \item{ x = Threshold exceedances }
+##'  \item{ threshold = Value which had to be exceeded }
+##'  \item{ control = Parameter and options used during optimization }
 ##' }
 ##' @author Philipp Mueller
 ##' @export
 ##' @importFrom xts xts
+##' @importFrom alabama auglag
 ##' @examples
 ##' potsdam.anomalies <- anomalies( temp.potsdam )
 ##' potsdam.extremes <- threshold( potsdam.anomalies, threshold = 10,
 ##'                                decluster = TRUE )
 ##' fit.gpd( potsdam.extremes )
-fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
-                    optim.function = likelihood,
+fit.gpd <- function( x, initial = NULL, threshold = NULL,
+                    likelihood.function = likelihood,
                     gradient.function = climex:::likelihood.gradient,                    
-                    error.estimation = c( "none", "MLE", "MC" ),
-                    method = c( "Nelder-Mead", "BFGS", "CG",
-                               "SANN", "nmk" ),
-                    monte.carlo.sample.size = 1000, return.period = 100,
+                    error.estimation = c( "MLE", "MC", "none" ),
+                    optim.method = c( "Nelder-Mead", "BFGS", "CG" ),
+                    monte.carlo.sample.size = 100, return.period = 100,
                     total.length = NULL, silent = TRUE, ... ){
-  if ( missing( method ) )
-    method <- "Nelder-Mead"
-  method <- match.arg( method )    
+  ## I found the Nelder-Mead method to be more robust to starting
+  ## points more far away from the global optimum. This also holds
+  ## for the inner routine of the augmented Lagrangian method.
+  if ( missing( optim.method ) )
+    optim.method <- "Nelder-Mead"
+  optim.method <- match.arg( optim.method )    
   ## Default values if no initial parameters are supplied
   if ( is.null( initial ) )
     initial <- likelihood.initials( x, model = "gpd" )
   if ( is.null( error.estimation ) )
     error.estimation <- "MLE"
   error.estimation <- match.arg( error.estimation )
-  ## if the error.estimation is not required, do not calculate the
-  ## hessian
-  if ( error.estimation == "none" ){
-    hessian.calculate <- FALSE
-  } else
-    hessian.calculate <- TRUE
   ## Optimization
-  if ( method %in% c( "Nelder-Mead", "BFGS", "CG" ) ){
-    suppressWarnings(
-        res.optim <- try(
-            stats::optim( initial, optim.function,
-                         gr = gradient.function, x = x,
-                         hessian = hessian.calculate,
-                         method = method,
-                         model = "gpd", ... ),
-            silent = TRUE ) )
-    if ( class( res.optim ) == "try-error" ){
-      ## Sometimes (e.g. for absurdly low thresholds) the optimization
-      ## fails due to the calculation of the hessian. In this case reset
-      ## the error estimation and return missing errors
-      error.estimation <- "none"
-      hessian.calculate <- FALSE
-      suppressWarnings(
-          res.optim <- stats::optim( initial, optim.function,
-                                    gr = gradient.function, x = x,
-                                    hessian = hessian.calculate,
-                                    method = method,
-                                    model = "gpd", ... ) )
-      res.optim$errors <- rep( NaN, 3 + length( return.period ) )
-      names( res.optim$errors ) <- c( "scale", "shape",
-                                     paste0( return.period, ".rlevel" ) )
-    }
-  } else if ( method == "SANN" ){
-    ## Since this implementation didn't yielded nice results I switch
-    ## to another package
-    aux <- suppressWarnings(
-        GenSA::GenSA( as.numeric( initial ), optim.function,
-                     lower = c( 0, -Inf ), upper = c( Inf, Inf ),
-                     x = x, model = "gpd", ... ) )
-    ## Sometime the simulated annealing using the GenSA package fails
-    ## and it is either not able to calculate all of the parameters
-    ## or at least one of the initial parameters is not updated at all
-    ## (exactly equal)
-    if ( any( is.nan( aux$par ) ) || sum( aux$par %in% initial ) > 1 ){
-      ## When GenSA fails, just use the stats::optim implementation
-      ## instead.
-      if ( !silent ){
-        warning( "The Simulated Annealing using the GenSA package didn't work. The implementation in stats::optim was used as a fallback instead." )
-      }
-      suppressWarnings(
-          res.optim <- stats::optim( initial, optim.function,
-                                    gr = gradient.function, x = x,
-                                    hessian = hessian.calculate,
-                                    method = "SANN", model = "gpd",
-                                    ... ) )
-    } else {
-      res.optim <- list( par = aux$par, value = aux$value,
-                        counts = aux$counts,
-                        hessian = if ( hessian.calculate ){
-                                    numDeriv::hessian( optim.function,
-                                                      x = aux$par,
-                                                      x.in = x,
-                                                      model = "gpd", ... )
-                                  } else NULL,
-                        convergence = 0, message = NULL )
-    }
-  } else if ( method == "nmk" ){
-    ## The benefit of the nmk method is that its code base is written
-    ## in R. So I could easily modify it and display the progress of
-    ## the optimization.
-    ## In principle I would recommend using the default optim procedures.
-    aux <- suppressWarnings(
-        dfoptim::nmk( par = initial, fn = likelihood, x = x,
-                     MODIFIED = TRUE, WARNINGS = FALSE,
-                     model = "gpd", ... ) )
-    res.optim <- list( par = aux$par, value = aux$value,
-                      counts = aux$feval, convergence = 0,
-                      message = NULL, updates = aux$x.updates,
-                      hessian = if ( hessian.calculate ){
-                                  numDeriv::hessian( optim.function,
-                                                    x = aux$par,
-                                                    x.in = x,
-                                                    model = "gpd", ... )
-                                } else NULL )
-    res.optim$counts[ 2 ] <- NA
-    names( res.optim$counts ) <- c( "function", "gradient" )   
-  }
-  
-  if ( rerun && method != "SANN" ){
-    ## Rerunning the optimization for the simulated annealing makes
-    ## no sense. Just increase the number of iterations for this method.
-    if ( method %in% c( "Nelder-Mead", "BFGS", "CG" ) ){
-      suppressWarnings(
-          res.optim.rerun <- try(
-              stats::optim( par = res.optim$par, fn = optim.function,
-                           gr = gradient.function, x = x,
-                           hessian = hessian.calculate, method = method,
-                           model = "gpd", ... ), silent = TRUE ) )
-    } else if ( method == "nmk" ){
-      aux <- suppressWarnings(
-          dfoptim::nmk( par = res.optim$par, fn = likelihood, x = x,
-                       MODIFIED = TRUE, WARNINGS = FALSE,
-                       model = "gpd", ... ) )
-      res.optim.rerun <- list( par = aux$par, value = aux$value,
-                              counts = aux$feval,
-                              convergence = 0, message = NULL,
-                              updates = aux$x.updates,
-                              hessian = if ( hessian.calculate ){
-                                          numDeriv::hessian(
-                                                        optim.function,
-                                                        x = aux$par,
-                                                        x.in = x )
-                                        } else NULL, model = "gpd", ... )
-      res.optim.rerun$counts[ 2 ] <- NA
-      ## When rerun the whole path should be present in the updates
-      res.optim.rerun$updates$step <- seq(
-          res.optim$updates$step[ nrow( res.optim$updates ) ],
-          res.optim$updates$step[ nrow( res.optim$updates ) ] +
-          nrow( res.optim.rerun$updates ) - 1 )
-      res.optim.rerun$updates <- rbind( res.optim$updates,
-                                       res.optim.rerun$updates )
-      names( res.optim.rerun$counts ) <- c( "function", "gradient" )
-    }
-    if ( class( res.optim.rerun ) == "try-error" ){
-      warning( "Rerun failed. Be sure to use the Nelder-Mead method of optimization." )
-    } else
-      res.optim <- res.optim.rerun
-  }
-  ## adding the time series and threshold to the result
-  res.optim$x <- x
-  res.optim$threshold <- threshold
+  ## The augmented Lagrangian method allowing non-linear constraints
+  ## will be used in here. The code depends of the 'alabama' package.
+  ## In principle I could also integrate the routine in here, but let's
+  ## stick to the Linux principle.
+  ## The Rsolnp package did not performed as well as the alabama one.
+  ## It takes two orders of magnitude longer and gets stuck for
+  ## certain initial parameter combinations.
+  ## For shape parameter equal to zero only the first constraint is
+  ## relevant and the other ones can not be violated anymore. So no
+  ## need to remove them.
+  suppressWarnings(
+      res.alabama <- auglag(
+          par = initial, fn = likelihood.function,
+          gr = gradient.function,
+          hin = function( parameters, x.in, ... ){
+            return( as.numeric(
+                c( parameters[ 1 ] - .03,
+                  .95 + parameters[ 2 ]* ( x.in )/ parameters[ 1 ],
+                  parameters[ 2 ] + .95 ) ) ) },
+          control.outer = list( trace = !silent, method = optim.method ),
+          x.in = x, model = "gpd" ) )
+  ## There is no need for the user to deal with all the outputs of the
+  ## auglag function. So let's reduce them. 
+  res.optim <- list( par = res.alabama$par,
+                    value = res.alabama$value,
+                    gradient = res.alabama$gradient,
+                    counts = res.alabama$counts,
+                    outer.iterations = res.alabama$outer.iterations,
+                    x = x,
+                    threshold = threshold,
+                    control = list(
+                        initial = initial,
+                        likelihood.function = likelihood.function,
+                        gradient.function = gradient.function,
+                        optim.method = optim.method,
+                        hessian = res.alabama$hessian,
+                        monte.carlo.sample.size =
+                          monte.carlo.sample.size,
+                        error.estimation = error.estimation,
+                        total.length = total.length,
+                        return.period = return.period ) )
   ## For an adequate calculation of the return level
-  if ( is.null( total.length ) && !silent )
-    warning( "The estimation of the return level of the GP distribution does need the total length 'total.length' of the time series the exceedance are extracted from! Please supply it or use the Monte Carlo approach!" ) 
-  ##
-  ## Regarding the animation in the climex web app
-  ##
-  ## If no updates element is available add the start and end parameter
-  ## pair.
-  ## This is just a poor approximation of the optimization route but I
-  ## can do at this moment (without rewriting and linking the whole
-  ## internal calls of optim )
-  if ( is.null( res.optim$updates ) )
-    res.optim$updates <- data.frame(
-        scale = c( initial[ 1 ], res.optim$par[ 1 ] ),
-        shape = c( initial[ 2 ], res.optim$par[ 2 ] ),
-        step = c( 1, res.optim$counts[ 1 ] ) )
-  ##
   ## Error estimation
-  ##
   if ( error.estimation != "none" ){
-    error.covariance <- try( solve( res.optim$hessian ) )
+    error.covariance <- try( solve( res.optim$control$hessian ) )
     if ( class( error.covariance ) == "try-error" ||
          error.estimation == "MC" ||
-         any( is.nan( res.optim$hessian ) ) ){
+         any( is.nan( res.optim$control$hessian ) ) ){
       parameter.estimate <- res.optim$par
       number.of.samples <- 1000
       ## Draw a number of samples and fit the GPD parameters for all
-      ## of them
+      ## of them.
       samples.list <- lapply( 1 : number.of.samples, function( y )
         climex:::revd( length( x ), scale = parameter.estimate[ 1 ],
                       shape = parameter.estimate[ 2 ], model = "gpd",
                       silent = TRUE ) )
-      ## If e.g. via the BFGS method way to big shape parameter are
-      ## estimated the guessing of the initial parameters for the
-      ## optimization won't work anymore since the sampled values
-      ## are way to big (e.g. 1E144)
-      suppressWarnings( 
+      suppressWarnings(
           samples.fit <- try( lapply( samples.list, function( y )
-            stats::optim( likelihood.initials( y, model = "gpd" ),
-                         optim.function, x = y,
-                         method = "Nelder-Mead", model = "gpd",
-                         ... )$par ) ) )
+            auglag( par = likelihood.initials( y, model = "gpd" ),
+                   fn = likelihood.function,
+                   gr = gradient.function,
+                   hin = function( parameters, x.in, ... ){
+                     return( as.numeric(
+                         c( parameters[ 1 ] - .03,
+                           .95 + parameters[ 2 ]* ( x.in )/ parameters[ 1 ],
+                           parameters[ 2 ] + .95 ) ) ) },
+                   control.outer = list( trace = FALSE,
+                                        method = optim.method ),
+                   x.in = y, model = "gpd" )$par ) ) )
       if ( class( samples.fit ) == "try-error" ){
         errors <- c( NaN, NaN, NaN )
       } else {
@@ -617,43 +479,42 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL, rerun = TRUE,
                            paste0( return.period, ".rlevel" ) )
     } else {
       ## Calculating the errors using the MLE
+      ## The supplied 'return.period' are of the unit 'per year'.
+      ## In order to be used with the GP return levels they have to
+      ## be transformed in 'per observation (of the original series)'.
+      if ( !is.null( total.length ) ){
+        ## The maximum likelihood estimate of the probability of an
+        ## exceedance to occur per year will be used.
+        zeta <- length( x )/ total.length
+        m <- return.period* 365.25* zeta
+      } else {
+        ## m-observation return level = return.period* the mean number of
+        ## exceedance per year. This way the unit of the provided return
+        ## level and its error are  not 'per observation' but 'per year'.
+        ## In this step we harness the power of the 'xts' package
+        m <- return.period* mean( apply.yearly( x,
+                                               function( y ) length( y ) ) )
+      }
       errors.aux <- sqrt( diag( error.covariance ) ) # GPD parameters
       errors <- data.frame( errors.aux[ 1 ], errors.aux[ 2 ] )
       ## Delta method for the return level
       parameter.estimate <- res.optim$par
       ## Formula according to Stuart Coles p. 82
-      if ( is.null( total.length ) ){
-        errors <- cbind( errors, rep( NaN, length( return.period ) ) )
-      } else {
-        for ( rr in 1 : length( return.period ) ){
-          ## probability of an exceedance
-          zeta <- length( x )/ total.length 
-          ## m-observation return level = return.period* the mean
-          ## number of exceedance per year. This way the unit of the
-          ## provided return level and its error are  not 'per
-          ## observation' but 'per year'.
-          ## In this step we harness the power of the 'xts' package
-          m <- return.period* mean( apply.yearly( x, function( y )
-            length( y ) ) )
-          ## In addition the uncertainty of zeta has to be part of the
-          ## error covariance matrix
-          error.covariance.2 <- matrix( 0, 3, 3 )
-          error.covariance.2[ 1 , 1 ] <- zeta*( 1 - zeta )/ total.length
-          error.covariance.2[ 2 : 3, 2 : 3 ] <- error.covariance
+      for ( rr in 1 : length( return.period ) ){
           scale <- parameter.estimate[ 1 ]
           shape <- parameter.estimate[ 2 ]
-          dz <- c( scale* m^shape* zeta^{ shape - 1 },
-                  shape^{ -1 }* ( ( m* zeta )^shape - 1 ),
-                  -scale* shape^{ -2 }* ( ( m* zeta )^ shape - 1 ) +
-                  scale* shape^{ -1 }* ( m* zeta )^shape*
-                  log( m* zeta ) )
-          errors <- cbind( errors, dz %*% error.covariance.2 %*% dz )
-        }
+          dz <- c( ( m[ rr ]^ shape - 1 )/ shape,
+                  -scale* shape^{ -2 }*( m[ rr ]^shape - 1 ) +
+                  scale/shape*m[ rr ]^shape* log( m[ rr ] ) )
+          errors <- cbind( errors, dz %*% error.covariance %*% dz )
       }
       names( errors ) <- c( "scale", "shape",
                            paste0( return.period, ".rlevel" ) )
     }
     res.optim$se <- errors
+  } else {
+    ## No error estimation required.
+    res.optim$se <- rep( NA, length( return.period ) + 2 )
   }
   names( res.optim$par ) <- c( "scale", "shape" )
   ## introducing a new data type for handling fits done with climex
@@ -734,31 +595,120 @@ likelihood <- function( parameters = NULL, x.in,
     y <- x.in
   z <- 1 + y* gamma
 
-  if ( model == "gev" ){
-    if ( shape == 0 ){
-      ## Using the Gumbel distribution. But only when the shape parameter
-      ## is exactly 0
-      negloglikelihood <- length( x.in )*log( scale ) +
-        sum( y )/ scale + sum( exp( -y/ scale ) )
-    } else {
-      suppressWarnings( {
+  suppressWarnings( {
+    if ( model == "gev" ){
+      if ( shape == 0 ){
+        ## Using the Gumbel distribution. But only when the shape parameter
+        ## is exactly 0
+        negloglikelihood <- length( x.in )*log( scale ) +
+          sum( y )/ scale + sum( exp( -y/ scale ) )
+      } else {
         negloglikelihood <- length( x.in )* log( scale ) +
           alpha* sum( log( z ) ) + sum( z^{ -1/ shape } )
-      } )
-    }
-  } else {
-    if ( shape == 0 ){
-      ## Again: just for a shape exactly equal to 0
-      negloglikelihood <- length( x.in )* log( scale ) +
-        sum( y )/scale 
+      }
     } else {
-      negloglikelihood <- length( x.in )* log( scale ) +
-        alpha* sum( log( z ) )
+      if ( shape == 0 ){
+        ## Again: just for a shape exactly equal to 0
+        negloglikelihood <- length( x.in )* log( scale ) +
+          sum( y )/scale 
+      } else {
+        negloglikelihood <- length( x.in )* log( scale ) +
+          alpha* sum( log( z ) )
+      }
     }
-  }
+  } )
   names( negloglikelihood ) <- NULL
   return( negloglikelihood )
 }
+
+##' @title Calculated the augmented negative log likelihood of the
+##' GEV or GPD function.
+##'
+##' @description This function uses the \code{\link{likelihood}}
+##' function and adds the linear constraints used in
+##' \code{\link{fit.gev}} and \code{\link{fit.gpd}} to produce the
+##' augmented Lagrangian version of the GEV or GP negative
+##' log-likelihood function. 
+##'
+##' @details A convenience function not used by the fitting routines.
+##'
+##' It is only meant to work with constant parameters
+##' and no covariates.
+##'
+##' 'x.in' is not called "x" anymore since the call
+##' grad( func = likelihood, x = parameters, ... ) wouldn't be possible.
+##'
+##' @param parameters Vector containing the location, scale and shape
+##' parameter for the GEV or the scale and shape parameter for the GPD.
+##' If NULL the \code{\link{likelihood.initials}} is used. Default = NULL
+##' @param x.in Time series.
+##' @param model Determining whether to calculate the initial parameters
+##' of the GEV or GPD function. Default = "gev"
+##' @param lagrangian.multiplier Lagrangian multipliers used to weight
+##' the linear contribution of the constraints. In most cases all of them
+##' are zero, since optimization of the GEV/GP likelihood usually doesn't
+##' take place inside a region of constraint violations. When supplying
+##' this parameter it has to have the same length as present number of
+##' constraints: number of points in x.in + 2.
+##' Default = 0 for all constraints.
+##' @param penalty.parameter Penalty parameter used to weight the
+##' quadratic contribution of the constraints. In the end of a typical
+##' constrained GEV or GP optimization this parameter is 1000.
+##' Default = 1000.
+##' 
+##' @family optimization
+##'
+##' @export
+##' @return Numerical value of the augmented negative log likelihood.
+##' @author Philipp Mueller
+likelihood.augmented <- function( parameters, x.in,
+                                 model = c( "gev", "gpd" ),
+                                 lagrangian.multiplier =
+                                   rep( 0, length( x.in ) + 2 ),
+                                 penalty.parameter = 1000 ){
+  if ( missing( model ) )
+    model <- "gev"
+  ## Defining the constraints
+  constraints <- function( parameters, x.in, model ){
+    if ( model == "gev" ){
+      return( as.numeric(
+          c( parameters[ 2 ] - .03,
+            .95 + parameters[ 3 ]*
+            ( x.in - parameters[ 1 ])/ parameters[ 2 ],
+            parameters[ 3 ] + .95 ) ) )
+    } else {
+      return( as.numeric(
+          c( parameters[ 1 ] - .03,
+            .95 + parameters[ 2 ]*
+            ( x.in )/ parameters[ 1 ],
+            parameters[ 2 ] + .95 ) ) )
+      
+    } }
+  ## Right here I will use the code of the alabama::auglag2 function.
+  constraint.violation <- constraints( parameters, x.in, model )
+  constraint.violation.threshold <- constraint.violation
+  ## Mark a constraint as inactive if its value is smaller than
+  ## the initial Lagrangian parameter divided by the scale
+  ## parameter for the penalty (Lagrangian) term. In addition
+  ## replace all values of the constraint function exceeding this
+  ## threshold by the threshold itself.
+  inactive <- ( 1 : length( constraint.violation ) )[
+    ( constraint.violation > lagrangian.multiplier[
+                                 1 : length( constraint.violation ) ]/
+      penalty.parameter ) ]
+  constraint.violation.threshold[ inactive ] <- lagrangian.multiplier[ inactive ] /
+    penalty.parameter
+  ## Augmenting the Lagrangian to penalize constraint violations
+  ## by squaring the infeasibilites and an explicit estimate of the
+  ## Lagrange multipliers to avoid a systematic perturbation.
+  ## Nocedal P. 514; (17.36)
+  return( as.numeric(
+      climex::likelihood( parameters, x.in = x.in, model = model ) -
+      sum( lagrangian.multiplier* constraint.violation.threshold ) + 
+      penalty.parameter/2 * sum( constraint.violation.threshold *
+                                 constraint.violation.threshold ) ) )
+}
+
 
 ##' @title Calculates the gradient of the negative log likelihood of the
 ##' GEV or GPD function.
@@ -850,6 +800,129 @@ likelihood.gradient <- function( parameters, x.in,
   return( gradient )
 }
 
+##' @title Calculated the gradient of the augmented negative log
+##' likelihood of the GEV or GPD function.
+##'
+##' @description This function uses the \code{\link{likelihood.gradient}}
+##' function and adds the linear constraints used in
+##' \code{\link{fit.gev}} and \code{\link{fit.gpd}} to produce the
+##' augmented Lagrangian version of the GEV or GP negative
+##' log-likelihood function. 
+##'
+##' @details A convenience function not used by the fitting routines.
+##'
+##' It is only meant to work with constant parameters
+##' and no covariates.
+##'
+##' @param parameters Vector containing the location, scale and shape
+##' parameter for the GEV or the scale and shape parameter for the GPD.
+##' If NULL the \code{\link{likelihood.initials}} is used. Default = NULL
+##' @param x.in Time series.
+##' @param model Determining whether to calculate the initial parameters
+##' of the GEV or GPD function. Default = "gev"
+##' @param lagrangian.multiplier Lagrangian multipliers used to weight
+##' the linear contribution of the constraints. In most cases all of them
+##' are zero, since optimization of the GEV/GP likelihood usually doesn't
+##' take place inside a region of constraint violations. When supplying
+##' this parameter it has to have the same length as present number of
+##' constraints: number of points in x.in + 2, with the last two
+##' constraints handling the lower bound of the scale and the shape
+##' parameter. Default = 0 for all constraints.
+##' @param penalty.parameter Penalty parameter used to weight the
+##' quadratic contribution of the constraints. In the end of a typical
+##' constrained GEV or GP optimization this parameter is 1000.
+##' Default = 1000.
+##' 
+##' @family optimization
+##'
+##' @export
+##' @return Numerical value of the gradient of the augmented negative
+##' log likelihood.
+##' @author Philipp Mueller
+likelihood.gradient.augmented <- function( parameters, x.in,
+                               model = c( "gev", "gpd" ),
+                               lagrangian.multiplier = 
+                                 rep( 0, length( x.in ) + 2 ),
+                               penalty.parameter = 1000 ){
+  ## The augmented gradient consists of the GEV/GP likelihood
+  ## gradient and some additive term for the constraint violations.
+  ## Defining the constraints
+  constraints <- function( parameters, x.in, model ){
+    if ( model == "gev" ){
+      return( as.numeric(
+          c( parameters[ 2 ] - .03,
+            .95 + parameters[ 3 ]*
+            ( x.in - parameters[ 1 ])/ parameters[ 2 ],
+            parameters[ 3 ] + .95 ) ) )
+    } else {
+      return( as.numeric(
+          c( parameters[ 1 ] - .03,
+            .95 + parameters[ 2 ]*
+            ( x.in )/ parameters[ 1 ],
+            parameters[ 2 ] + .95 ) ) )
+    }
+  }
+  gradient <- climex:::likelihood.gradient( parameters = parameters,
+                                           x.in = x.in, model = model )
+  ## Check whether a constraint is violated and at its contribution to
+  ## the gradient
+  if ( model == "gev" ){
+    for ( ii in 1 : length( x.in ) ){
+      constraint <- parameters[ 3 ]*
+        ( x.in[ ii ] - parameters[ 1 ])/ parameters[ 2 ]
+      if ( constraint <= -.95 ){
+        gradient[ 1 ] <- gradient[ 1 ] -
+          lagrangian.multiplier[ ii ]* parameters[ 3 ]/ parameters[ 2 ] -
+          penalty.parameter* constraint* parameters[ 3 ]/ parameters[ 2 ]
+        gradient[ 2 ] <- gradient[ 2 ] -
+          lagrangian.multiplier[ ii ]* parameters[ 3 ]*
+          ( x.in[ ii ] - parameters[ 1 ] )/ parameters[ 2 ]^ 2 -
+          penalty.parameter* constraint* parameters[ 3 ]*
+          ( x.in[ ii ] - parameters[ 1 ] )/ parameters[ 2 ]^ 2
+        gradient[ 3 ] <- gradient[ 3 ] +
+          lagrangian.multiplier[ ii ]*
+          ( x.in[ ii ] - parameters[ 1 ] )/ parameters[ 2 ] +
+          penalty.parameter* constraint*
+          ( x.in[ ii ] - parameters[ 1 ] )/ parameters[ 2 ]
+      }
+    }
+    if ( parameters[ 2 ] <= .05 ){
+      gradient[ 2 ] <- gradient[ 2 ] +
+        lagrangian.multiplier[ length( x.in ) + 1 ] +
+        penalty.parameter* parameters[ 2 ]
+    }
+    if ( parameters[ 3 ] <= -.95 ){
+      gradient[ 3 ] <- gradient[ 3 ] +
+        lagrangian.multiplier[ length( x.in ) + 2 ] +
+        penalty.parameter* parameters[ 3 ]
+    }
+  } else {
+    ## Generalized Pareto version
+    for ( ii in 1 : length( x.in ) ){
+      constraint <- parameters[ 2 ]* x.in[ ii ]/ parameters[ 1 ]
+      if ( constraint <= -.95 ){
+        gradient[ 1 ] <- gradient[ 1 ] -
+          lagrangian.multiplier[ ii ]* constraint/ parameters[ 1 ] -
+          penalty.parameter* constraint^ 2/ parameters[ 1 ]
+        gradient[ 2 ] <- gradient[ 2 ] +
+          lagrangian.multiplier[ ii ]* x.in[ ii ]/ parameters[ 1 ] +
+          penalty.parameter* constraint* x.in[ ii ]/ parameters[ 1 ]
+      }
+    }
+    if ( parameters[ 1 ] <= .05 ){
+      gradient[ 1 ] <- gradient[ 1 ] +
+        lagrangian.multiplier[ length( x.in ) + 1 ] +
+        penalty.parameter* parameters[ 1 ]
+    }
+    if ( parameters[ 2 ] <= -.95 ){
+      gradient[ 2 ] <- gradient[ 2 ] +
+        lagrangian.multiplier[ length( x.in ) + 2 ] +
+        penalty.parameter* parameters[ 2 ]
+    }
+  }   
+  return( gradient )
+}
+
 ##' @title Estimates the initial GEV or GPD parameters of a time series.
 ##'
 ##' @details Two main methods are used for the estimation: the L-moments
@@ -859,23 +932,19 @@ likelihood.gradient <- function( parameters, x.in,
 ##' and with respect to some heuristic thresholds a shape parameter
 ##' between -.4 and .2 is assigned for the GEV distribution. In case of
 ##' the GP one, the sign of the skewness matches the sign of the series'
-##' shape parameter. Warning: both methods do not work
-##' for samples with diverging (or pretty big) mean or variance. For
-##' this reason the restrict argument is included. If the estimates are
-##' bigger than the corresponding restrict.thresholds, they will be
-##' replaced by this specific value.
+##' shape parameter.
+##'
+##' Warning: both methods do not work for samples with diverging (or
+##' pretty big) mean or variance.
+##'
+##' If no working initial parameter combination could be found using
+##' those methods, the function will perform a constrained random
+##' walk on the parameters until a working pair is found.
 ##'
 ##' @param x Time series/numeric.
 ##' @param model Determining whether to calculate the initial parameters
 ##' of the GEV or GPD function. Default = "gev"
-##' @param type Which method should be used to calculate the initial
-##' parameters. "best" combines all methods, in addition samples 100
-##' different shape values around the one determined by type 'mom' and
-##' returns the result with the least likelihood. "mom" - method of
-##' moments returns an approximation according to the first two moments
-##' of the Gumbel distribution. "lmom" - returns an estimate according
-##' to the Lmoments method. Default = "best"
-##' @param modified Determines if the skewness is getting used to
+##' @param use.skewness Determines if the skewness is getting used to
 ##' determine the initial shape parameter. Default = TRUE.
 ##'
 ##' @family optimization
@@ -886,19 +955,15 @@ likelihood.gradient <- function( parameters, x.in,
 ##' method = "gpd".
 ##' @author Philipp Mueller
 likelihood.initials <- function( x, model = c( "gev", "gpd" ),
-                                type = c( "best", "mom", "lmom" ),
-                                modified = TRUE ){
+                                use.skewness = TRUE ){
   if ( missing( model ) )
     model <- "gev"
   model <- match.arg( model )
-  if ( missing( type ) )
-    type <- "best"
-  type <- match.arg( type )
   if ( model == "gev" ){
     ## Method of moments
     sc.init <- sqrt( 6* stats::var( x ) )/ pi
     loc.init <- mean( x ) - 0.57722* sc.init
-    if ( modified ){
+    if ( use.skewness ){
       x.skewness <- moments::skewness( x )
       ## When, for some reason, the time series consists of just a
       ## sequence of one unique number the calculation of the skewness
@@ -929,8 +994,7 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
       ## No modification with respect to the ismev package
       sh.init <- .1
     }
-    if ( type == "mom" )
-      return( c( loc.init, sc.init, sh.init ) )    
+    initial.mom <- c( loc.init, sc.init, sh.init )
     ## Approximationg using the Lmoments method of Hosking, Wallis
     ## and Wood (1985). Therefore I will use the interior of the
     ## extRemes:::initializer.lmoments function
@@ -948,29 +1012,6 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
       xi <- -kappa
       initial.lmom <- c( mu, sigma, xi )
     }
-    if ( type == "lmom" )
-      return( initial.lmom )
-    ## Instead of taking just a default shape parameter, pick a bunch
-    ## of them and query for the one resulting in the lowest negative
-    ## log-likelihood. In addition to the range of different shape
-    ## parameter the determined estimate from before as well as the
-    ## heuristics of the extRemes (1e-8) and ismev (.1) package are
-    ## evaluated as well.
-    number.init.parameters <- 30
-    sh.init.vector <- c( seq( sh.init - .3, sh.init + .3, ,
-                             number.init.parameters - 3 ),
-                        sh.init, 1e-8, .1 )
-    parameter.vector <- rbind(
-        data.frame( location = rep( loc.init, length( sh.init.vector ) ),
-                   scale = rep( sc.init, length( sh.init.vector ) ),
-                   shape = sh.init.vector ),
-        initial.lmom )
-    suppressWarnings( initials.likelihood <- apply(
-                          parameter.vector, 1, function( ss )
-                            climex::likelihood( c( ss[ 1 ], ss[ 2 ],
-                                                  ss[ 3 ] ),
-                                               x.in = x,
-                                               model = "gev" ) ) )
   } else {
     ## model == "gpd"
     ## Approximationg using the Lmoments method
@@ -989,12 +1030,9 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
       xi <- -kappa
       initial.lmom <- c( sigma, xi )
     }
-    if ( type == "lmom" )
-      return( initial.lmom )
-
     ## Approximation using the method of moments
     sc.init <- sqrt( var( x ) )
-    if ( modified ){
+    if ( use.skewness ){
       ## For positive shape parameters the skewness to the time series is
       ## positive as well. For negative it's negative. This way at least
       ## the sign of the shape (but unfortunately not the magnitude) can
@@ -1025,36 +1063,38 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
     } else {
       sh.init <- .1
     }
-    if ( type == "mom" )
-      return( c( sc.init, sh.init ) )
-
-    ## Instead of taking just a default shape parameter, pick a bunch
-    ## of them and query for the one resulting in the lowest negative
-    ## log-likelihood. In addition to the range of different shape
-    ## parameter the determined estimate from before as well as the
-    ## heuristics of the extRemes (1e-8) and ismev (.1) package are
-    ## evaluated as well.
-    number.init.parameters <- 30
-    sh.init.vector <- c( seq( sh.init - .3, sh.init + .3, ,
-                             number.init.parameters - 3 ),
-                        sh.init, 1e-8, .1 )
-    parameter.vector <- rbind(
-        data.frame( scale = rep( sc.init, length( sh.init.vector ) ),
-                   shape = sh.init.vector ),
-        initial.lmom )
-    suppressWarnings( initials.likelihood <- apply(
-                          parameter.vector, 1, function( ss )
-                            climex::likelihood( c( ss[ 1 ], ss[ 2 ] ),
-                                               x.in = x,
-                                               model = "gpd" ) ) )
+    initial.mom <- c( sc.init, sh.init )
   }
+  ## Calculate the likelihood of the initial parameter obtained by
+  ## the two methods and pick the one yielding the lowest value.
+  initials <- list( initial.lmom, initial.mom )
+  initials.likelihood <- Reduce( c, lapply( initials, function( ii )
+    suppressWarnings( likelihood( as.numeric( ii ), x.in = x,
+                                 model = model ) ) ) )
   if ( !all( is.nan( as.numeric( initials.likelihood ) ) ) ){
-    ## Returning the set of initial parameters which is yielding the
-    ## lowest negative log-likelihood
-    ## the second value will tend to fluctuate a lot!
-    return( as.numeric( parameter.vector[ which.min(
-        initials.likelihood ), ] ) )
-  } else
-    ## Well, what to do now?
-    stop( "The GEV likelihood couldn't be evaluated at all of the suggested initials parameter positions" )
+    return( as.numeric( initials[[ which.min(
+        initials.likelihood ) ]] ) )
+  } else {
+    ## None of the methods above yielded reasonable initial parameters.
+    ## In order to perform the optimization after all, let's slightly
+    ## change the values (Markov chain) until they can be evaluated.
+    x.initial <- initial.mom
+    suppressWarnings({
+      while ( is.na( climex::likelihood( x.initial, x.in = x,
+                                        model = model ) ) ){
+        if ( model == "gev" ){
+          x.initial[ 1 ] <- x.initial[ 1 ] + rnorm( 1, sd = .4 )
+          x.initial[ 2 ] <- max( x.initial[ 2 ] + rnorm( 1, sd = .4 ),
+                                .05 )
+          x.initial[ 3 ] <- min( -.95, max( .95, x.initial[ 3 ] +
+                                                 rnorm( 1, sd = .2 ) ) )
+        } else {
+          x.initial[ 1 ] <- max( x.initial[ 1 ] + rnorm( 1, sd = .4 ),
+                                .05 )
+          x.initial[ 2 ] <- min( -.95, max( .95, x.initial[ 2 ] +
+                                                 rnorm( 1, sd = .2 ) ) )
+        }}
+    })
+    return( as.numeric( x.initial ) )
+  }
 }

@@ -28,7 +28,10 @@ shape for GPD) direction.
 }
 \seealso{
 Other optimization: \code{\link{fit.gev}},
-  \code{\link{fit.gpd}}, \code{\link{likelihood.initials}},
+  \code{\link{fit.gpd}},
+  \code{\link{likelihood.augmented}},
+  \code{\link{likelihood.gradient.augmented}},
+  \code{\link{likelihood.initials}},
   \code{\link{likelihood}}
 }
 \author{

@@ -4,9 +4,8 @@
 \alias{data.fitting}
 \title{Reactive value performing the GEV/GP fit.}
 \usage{
-data.fitting(reactive.extreme, reactive.initials, reactive.rows,
-  fit.interactive, radioEvdStatistics, selectOptimization, buttonMinMax,
-  checkboxRerun, sliderThreshold, selectDataBase)
+data.fitting(reactive.extreme, reactive.rows, fit.interactive,
+  radioEvdStatistics, buttonMinMax, sliderThreshold, selectDataBase)
 }
 \arguments{
 \item{reactive.extreme}{Reactive value returning a list containing
@@ -24,19 +23,9 @@ fit. \code{\link{fit.interactive}}}
 the GEV or GP distribution shall be fitted to the data. Choices:
 c( "GEV", "GP" ), default = "GEV".}
 
-\item{selectOptimization}{Character (select) input to determine which
-optimization routine/method is going to be used when fitting the
-maximum likelihood function of the GEV/GP distribution. The choices
-are given in \code{\link{generalFittingRoutineInput}} and the default
-value is set to "Nelder-Mead".}
-
 \item{buttonMinMax}{Character (radio) input determining whether
 the GEV/GP distribution shall be fitted to the smallest or biggest
 vales. Choices: c( "Max", "Min ), default = "Max".}
-
-\item{checkboxRerun}{Logical (checkbox) input from the Likelihood tab.
-It determines whether or not to start the optimization at the results
-of the first run again to escape local minima.}
 
 \item{sliderThreshold}{Numerical (slider) input determining the
 threshold used within the GP fit and the extraction of the extreme
@@ -52,10 +41,6 @@ service (see \code{link{download.data.dwd}}). The third one allows
 the user to produce random numbers distributed according to the GEV
 or GP distribution. Determined by menuSelectDataBase.
 Default = "DWD".}
-
-\item{reactive.initial}{Reactive value holding the initial parameters
-to start the time series fit at. \code{\link{data.initials}}. Those can
-be specified in the top right box of the Likelihood tab.}
 }
 \value{
 Reactive value holding a fitted object of class
@@ -69,11 +54,9 @@ removed.
 }
 \seealso{
 Other climex-fitting: \code{\link{color.table}},
-  \code{\link{data.initials}},
   \code{\link{fit.interactive}},
   \code{\link{generalFitStatisticsTable}},
-  \code{\link{generalFitStatistics}},
-  \code{\link{generalFittingRoutineInput}}
+  \code{\link{generalFitStatistics}}
 }
 \author{
 Philipp Mueller

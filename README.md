@@ -1,83 +1,84 @@
 # Features
-![leaflet map to handle a lot of station data](res/climex_map.png)
+![leaflet map to handle a lot of station data](res/climex_map.jpeg)
 ![control all the different steps involved in the extreme value analysis](res/climex_time-series.png)
-![verify the results using an animation of the fitting procedure](res/climex_animation.png)
+![explore the station data with your mobile device](res/climex_mobile.jpeg)
 
 ## An interactive web app
 
 ![map-icon](res/glyphicons-2-leaf.png)
 - You can perform extreme value analysis on a large number of
-  climate time series from different stations.
-- You can calculate return.levels of arbitrary lengths for all 
-  chosen stations and display the results comprehensively on a 
-  map.
+  climatic time series from different stations
+- You can calculate arbitrary return levels for all 
+  stations and display the results comprehensively on a map
   
 ![general-icon](res/glyphicons-42-charts.png)
-- You have full control of all the steps involved in extreme value fitting via an intuitive
+- You have full control over all steps involved in the extreme value 
+  analysis of the station data via an intuitive
   GUI in a persistent way (changes will be applied to the
-  analysis of all following time series).
+  analysis of all following time series)
 - Both the Generalized Extreme Value (GEV) and the Generalized
-  Pareto (GP) approach are supported.
-- You can exclude single points or whole parts of your time series 
-  and the whole analysis will be updated immediately.
-- The fitting is done using a maximum likelihood procedure especially
-  tuned to produce the best possible results.
-  
-![likelihood-icon](res/glyphicons-199-ok-circle.png)
-- For a better control over the fitting procedure, you can interactively
-  set the starting points of the MLE optimization.
-- Using a set of different starting points, you also check for local minima.
-  If all of them result in the same parameter combination, everything is worked.
+  Pareto (GP) approach are supported
+- You can exclude single points or whole parts of a time series 
+  with the entire analysis updated immediately
+- The fitting is done using a nonlinear constrained maximum likelihood 
+  procedure based on the augmented Lagrangian method. Using this approach
+  none of your fits will produce numerical artifacts
   
 [Try it!](http://climex.pks.mpg.de)
 
-## Robust and sophisticated optimization (or why to use this package over others)
+## A robust and sophisticated optimization (or why to use this package over others)
 
-When searching for the best candidate to use among all the different extreme value packages in R, I noticed that almost all of them just called the stats::optim function with its default arguments. None of them thought about how to perform the actual fit as good as possible. The only exception (in summer 2016) was the **extRemes** package which uses a more sophisticated heuristics to determine the starting points of the optimization and the *BFGS* algorithm. But the later one does make the fitting numerically unstable.
+The fitting of GEV and GP parameters using unconstrained optimization (done by all other R packages on extreme value statistics) tends to produce numerical artifacts. This is due to the presence of logarithms in the negative log-likelihood and a limited range of shape parameters for which the likelihood estimator is defined. While producing absurdly large parameters or causing the optimization to fail when using the **BFGS** algorithm (*extRemes*) the differences using the **Nelder-Mead** algorithm (all other packages) might be small, barely noticeable, and totally plausible. 
 
-In addition I found it quite hard to apply the **ismev** or **extRemes** to a large amount of time series in parallel. Both of them tend to throw errors quite frequently. The former one because it fails to invert the calculated hessian to estimate variance of the parameters and the later one due to the instability of the BFGS algorithm.
+In order to avoid those numerical artifacts, the **augmented Lagrangian method** is used to incorporate both the logarithms and the limited range of shape parameters as nonlinear constraints. With this approach the optimization can be started at arbitrary initial parameter combinations and will always converge to the global optimum. 
 
-To overcome these two problems, I decided to write my own version of the stationary GEV/GP fitting with a more sophisticated best practice in the optimization (paper in submission) and an extended error handling.
+This solves two of the remaining problems of the extreme value analysis:
+1. The user does not have to worry about the numerical optimization anymore. It will always produce the correct results
+2. The optimization itself becomes more robust and can now be used in massive parallel applications
 
-## Convenient access to station data of the DWD
+## Convenient access to the station data of the DWD
 
-In order to obtain loads of data to perform my analysis on and to power the web application, I wrote some functions scrapping the web side of the German weather service (DWD). Even if you don't want to use this package, you can still use either the .Rdata objects containing all these time series (of class *xts*) or the exported .csv version of the individual stations.
+In order to obtain loads of data to perform the analysis on and to power the web application, this package contains some functions scrapping the web page of the German weather service (DWD). Even if you don't want to use the web app or the optimization routines, you might still appreciate either the .Rdata objects containing all these time series (of class *xts*) or the exported .csv versions of the individual station data.
 
 # Installation
 
-Since this shiny based web app uses rather new features of the R programming language, you have to have **at least R-3.3.0** or newer (what you can check by running `R --version` in the terminal). If you don't fulfill this condition yet, be sure to get a binary or the source of an appropriate R version via [CRAN](https://cran.r-project.org/).
+Since the [Shiny](https://shiny.rstudio.com/)-based web app uses rather new features of the R programming language, you have to have **at least R-3.3.0** or newer (you can check your version by running `R --version` in the terminal). If you don't fulfill this condition yet, be sure to get the binary or source of an appropriate R version via [CRAN](https://cran.r-project.org/).
 
-This package is not part of the CRAN package collection yet. In order to install it you have to use the *install_github* function from the **devtools** package.
+In order to install this package you have to use the *install_github* function from the **devtools** package.
 
 Just open a R shell on your computer and type the following commands
 
 ```
-## Installing the devtools package. 
+## Installing the devtools package (in case your haven't done it yet).
 install.packages( "devtools" )
 
 ## Installing the climex package from Github.
 devtools::install_github( "theGreatWhiteShark/climex" )
 ```
 
-This will install the climex package residing on the **master** branch of this git repository. If you instead want to download and install a different version of the package, use the *ref* argument to specify it. E.g. 
+This will install the climex package residing on the **master** branch of this git repository. If you instead want to download and install a different branch, use the *ref* argument to specify it. E.g. 
 
 ```
-devtools::install_github( "theGreatWhiteShark/climex", ref = "release-1.0.0" )
+devtools::install_github( "theGreatWhiteShark/climex", ref = "v1.0" )
 ```
 
 Even if you do not intend to use the full capabilities of the package but just parts like the download of the DWD data, be sure to nevertheless install the whole package via the above commands. It just uses 1.4 MB of space and you this way you ensure that all required packages will be installed and all environmental variables will be set.
+
+### Server-side installation of the Climex web application
+
+You want to run your own version of the Climex web application on one of your servers so others can access it too? Then check out [this](res/shiny-server/README.md) configuration guide.
 
 # Usage
 
 You are new to **R**? Then check out the [compiled list of resources](https://www.rstudio.com/online-learning/#R) from RStudio or the [official introduction](https://cran.r-project.org/doc/manuals/R-intro.pdf).
 
-An in-depth introduction to the [general usage](vignettes/data_dwd_and_usage.Rmd) of the package and the shiny-based [web application](vignettes/climex_app.Rmd) can be found in the package's [vignettes](vignettes/).
+An in-depth introduction to the [general usage](vignettes/data_dwd_and_usage.Rmd) of the package and the Shiny-based [web application](vignettes/climex_app.Rmd) can be found in the package's [vignettes](vignettes/).
 
 When using this package in your own analysis, keep in mind that its functions expect your time series to be of class [xts](https://cran.r-project.org/web/packages/xts/index.html) and not numeric!
 
 ### Why is this not on [CRAN](https://cran.r-project.org/)?
 
-The CRAN project has some special requirements a package has to fulfill to be hosted on their web page. One of those is for the package to complete the R package check without raising a single warning. Unfortunately I don't see a way right now to rewrite the function _climex::climex_ in such a way it fulfills this requirement and I most certainly don't want to drop it. CRAN is just not meant to host a variety of more complex shiny apps yet. ;)
+The CRAN project has some special requirements a package has to fulfill to be hosted on their web page. One of those is for the package to complete the R package check without raising a single warning. Unfortunately I don't see a way right now to rewrite the function _climex::climex_ in such a way it fulfills this requirement and I most certainly don't want to drop it. CRAN is just not meant to host a variety of more complex Shiny apps yet. ;)
 
 ---
 

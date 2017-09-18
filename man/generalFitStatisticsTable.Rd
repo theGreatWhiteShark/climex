@@ -15,10 +15,9 @@ but is not a proper Shiny module.
 }
 \seealso{
 Other climex-fitting: \code{\link{color.table}},
-  \code{\link{data.fitting}}, \code{\link{data.initials}},
+  \code{\link{data.fitting}},
   \code{\link{fit.interactive}},
-  \code{\link{generalFitStatistics}},
-  \code{\link{generalFittingRoutineInput}}
+  \code{\link{generalFitStatistics}}
 }
 \author{
 Philipp Mueller

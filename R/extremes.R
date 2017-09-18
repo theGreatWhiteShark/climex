@@ -415,6 +415,7 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
 ##' @export
 ##'
 ##' @importFrom xts apply.yearly
+##' @importFrom numDeriv hessian
 ##' @family extremes
 ##' 
 ##'
@@ -432,13 +433,24 @@ return.level <- function( x, return.period = 100,
     model <- "gev"
     return.levels <- Reduce( c, lapply( return.period, function( y )
       as.numeric( climex:::rlevd( y, x$par[ 1 ], x$par[ 2 ], x$par[ 3 ],
-                                 model = "gev", silent = TRUE ) ) ) )
+                                 model = "gev", silent = silent ) ) ) )
   } else if ( any( class( x ) == "climex.fit.gpd" ) ){
     model <- "gpd"
+    if ( !is.null( total.length ) ){
+      if ( !silent && !is.null( x$control$total.length ) ){
+        warning( "return.level: The total.length argument is already present in the supplied fitting object and will be overwritten." )
+      }
+      x$control$total.length <- total.length
+    }
     if ( !is.xts( x$x ) ){
       if ( !silent )
         warning( "return.level: Since the original time series was not supplied the return level will be not per once every x year but once every x observation" )
       m <- return.period
+    } else if ( !is.null( x$control$total.length ) ){
+      ## The maximum likelihood estimate of the probability of an
+      ## exceedance to occur per year will be used.
+      zeta <- length( x$x )/ x$control$total.length
+      m <- return.period* 365.25* zeta
     } else {
       ## m-observation return level = return.period* the mean number of
       ## exceedance per year. This way the unit of the provided return
@@ -446,6 +458,14 @@ return.level <- function( x, return.period = 100,
       ## In this step we harness the power of the 'xts' package
       m <- return.period* mean( apply.yearly( x$x,
                                              function( y ) length( y ) ) )
+    }
+    ## The determined 'm' always have to be bigger than one
+    if ( any( m < 1 ) ){
+      if ( !silent ){
+        warning( "return.level: at least one of the m-observation return levels is smaller than one. Those will be omitted." )
+      }
+      return.period <- return.period[ -which( m < 1 ) ]
+      m <- m[ -which( m < 1 ) ]
     }
     ## When a threshold is supplied, the one in the fitted object will be
     ## overwritten
@@ -455,7 +475,7 @@ return.level <- function( x, return.period = 100,
       as.numeric( climex:::rlevd( y, scale = x$par[ 1 ],
                                  shape = x$par[ 2 ],
                                  model = "gpd", threshold = x$threshold,
-                                 silent = TRUE ) ) ) )
+                                 silent = silent ) ) ) )
   } else if ( any( class( x ) == "numeric" ) ){
     ## Neither a object from fit.gev nor from fit.gpd but a numerical
     ## vector containing the GEV/GPD parameters was supplied
@@ -471,23 +491,30 @@ return.level <- function( x, return.period = 100,
         as.numeric( climex:::rlevd( y, x[ 1 ], x[ 2 ], x[ 3 ],
                                    model = "gev" ) ) ) )
     } else {
-      ## m-observation return level = return.period* the mean number of
-      ## exceedance per year. This way the unit of the provided return
-      ## level and its error are  not 'per observation' but 'per year'.
-      ## In this step we harness the power of the 'xts' package
       if ( !is.null( thresholded.time.series ) ){
-        m <- return.period* mean( apply.yearly(
-                                thresholded.time.series,
-                                function( y ) length( y ) ) )
+        if ( !is.null( total.length ) ){
+          ## The maximum likelihood estimate of the probability of an
+          ## exceedance to occur per year will be used.
+          zeta <- length( thresholded.time.series )/ total.length
+          m <- return.period* 365.25* zeta
+        } else {
+          ## m-observation return level = return.period* the mean number of
+          ## exceedance per year. This way the unit of the provided return
+          ## level and its error are  not 'per observation' but 'per year'.
+          ## In this step we harness the power of the 'xts' package
+          m <- return.period* mean( apply.yearly(
+                                  thresholded.time.series,
+                                  function( tt ) length( tt ) ) )
+        }
       } else {
         if ( !silent )
           warning( "return.level: Since the original time series was not supplied the return level will be not per once every x year but once every x observation" )
         m <- return.period
       }
-      return.levels <- Reduce( c, lapply( m, function( y )
-        as.numeric( climex:::rlevd( y, scale = x[ 1 ], shape = x[ 2 ],
+      return.levels <- Reduce( c, lapply( m, function( mm )
+        as.numeric( climex:::rlevd( mm, scale = x[ 1 ], shape = x[ 2 ],
                                    model = "gpd", threshold = threshold,
-                                   silent = TRUE ) ) ) )
+                                   silent = silent ) ) ) )
     }
   } else
     stop( "return.level is not implemented for this class of input values!" )
@@ -497,7 +524,7 @@ return.level <- function( x, return.period = 100,
   if ( error.estimation == "none" || class( x ) == "numeric" ){
     return( return.levels )
   } else if ( error.estimation == "MLE" ){
-    if ( is.null( total.length ) && model == "gpd" ){
+    if ( is.null( x$control$total.length ) && model == "gpd" ){
       warning( "The error estimation of the return level of the GP distribution does need the total length 'total.length' of the time series the exceedance are extracted from! Please supply it or use the Monte Carlo approach!" )
       return( list( return.levels = return.levels,
                    errors = rep( NaN, length( return.period ) ) ) )
@@ -517,20 +544,21 @@ return.level <- function( x, return.period = 100,
                              total.length = total.length )$hessian
       }
     }
-    if ( is.null( x$hessian ) ||
-         any( is.nan( x$hessian ) ) ){
-      ## If there are NaN in the hessian, the return levels
-      ## can not be calculated. So try the numDeriv instead.
-      x$hessian <- numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
-                                     model = model )
-    }
-    if ( any( is.nan( x$hessian ) ) ){
-      ## If there are still NaN, let it be.
-      warning( "return level: NaN in the hessian. Error estimates can not be calculated via the maximum likelihood estimates" )
-      return( c( NaN, NaN, NaN ) )
-    }
+    ## Sometimes the obtained hessian is not invertible. If this is the
+    ## case, recalculate it in order to access the fitting error
+    ## estimates. Caution: this one will be without the constraints!
     ## Calculating the errors using the MLE
-    error.covariance <- solve( x$hessian )
+    error.covariance <- try( solve( x$control$hessian ), silent = silent )
+    if ( class( error.covariance ) == "try-error" ){
+      x.hessian <- numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
+                                     model = model )
+      error.covariance <- solve( x.hessian )
+      if ( any( is.nan( x.hessian ) ) ){
+        ## If there are still NaN, let it be.
+        warning( "return level: NaN in the hessian. Error estimates can not be calculated via the maximum likelihood estimates" )
+        return( c( NaN, NaN, NaN ) )
+      }
+    }
     ## Delta method for the return level
     parameter.estimate <- x$par
     errors <- data.frame( a = 0 )
@@ -548,20 +576,15 @@ return.level <- function( x, return.period = 100,
     } else {
       ## Formula according to Stuart Coles p. 82
       for ( rr in 1 : length( return.period ) ){
-        zeta <- length( x )/ total.length # probability of an exceedance
-        ## In addition the uncertainty of zeta has to be part of the
-        ## error covariance matrix
-        error.covariance.2 <- matrix( 0, 3, 3 )
-        error.covariance.2[ 1 , 1 ] <- zeta*( 1 - zeta )/ total.length
-        error.covariance.2[ 2 : 3, 2 : 3 ] <- error.covariance
+        ## I omit the error estimation of the zeta in here. I don't
+        ## sew how the error of exceedance probability will help the
+        ## user.
         scale <- parameter.estimate[ 1 ]
         shape <- parameter.estimate[ 2 ]
-        dz <- c( scale* m[ rr ]^shape* zeta^{ shape - 1 },
-                shape^{ -1 }* ( ( m[ rr ]* zeta )^shape - 1 ),
-                -scale* shape^{ -2 }* ( ( m[ rr ]* zeta )^ shape - 1 ) +
-                scale* shape^{ -1 }* (
-                  m[ rr ]* zeta )^shape* log( m[ rr ]* zeta ) )
-        errors <- cbind( errors, dz %*% error.covariance.2 %*% dz )
+        dz <- c( ( m[ rr ]^ shape - 1 )/ shape,
+                -scale* shape^{ -2 }*( m[ rr ]^shape - 1 ) +
+                scale/shape*m[ rr ]^shape* log( m[ rr ] ) )
+        errors <- cbind( errors, dz %*% error.covariance %*% dz )
       }
     }
     errors <- errors[ , -1 ]

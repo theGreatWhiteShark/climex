@@ -1,3 +1,5 @@
+# v1.1.0
+All the optimization is now relying on the augmented Lagrangian method implemented in the 'alabama' package. Therefore the 'dfoptim' dependence, all traces of rerunning the algorithm and the third tab of the Climex app were removed. Additional functions for the augmented likelihood and its gradient were added. Changes of the API of the DWD were incorporated.
 # v1.0.3
 The GenSA function is not that robust. Therefore I added the stats::optim( method = "SANN" ) implementation as a fallback function in case the former one does not work. In addition I updated the documentation to the tile control panel in the leaflet tab of the climex app and fixed a bug in the likelihood.gradient function.
 # v1.0.2
