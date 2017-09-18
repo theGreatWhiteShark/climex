@@ -8,10 +8,7 @@ Authors@R: person("Philipp","Developer", role = c("aut","cre"),
     email = "thetruephil@googlemail.com")
 Author: Philipp Mueller
 Maintainer: Philipp Mueller <thetruephil@googlemail.com>
-Description: This package has three purposes:
-1. It provides robust and easy to use functions for the Maximum Likelihood fitting of GEV and GP distributions based on nonlinear constrained optimization,
-2. It contains a Shiny app enabling the user to analyse a large amount of data interactively, and
-3. It provides a webscrapper automating the download the daily station data of the German weather service.
+Description: This package has three purposes: 1. It provides robust and easy to use functions for the Maximum Likelihood fitting of GEV and GP distributions based on nonlinear constrained optimization, 2. It contains a Shiny app enabling the user to analyse a large amount of data interactively, and 3. It provides a webscrapper automating the download the daily station data of the German weather service.
 URL: https://github.com/theGreatWhiteShark/climex
 Depends:
     R(>= 3.3.0),
