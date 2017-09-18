@@ -271,11 +271,12 @@ table.table-bordered.dataTable {
 /* boxes and elements in the leaflet map */
 /**/
 #leaflet-box, #leaflet-markerBox {
-  background-color: #FF8C00DD !important;
+  background-color: #FF8C00 !important;
   padding: 8px;
   border-radius: 9px;
   width: 350px !important;
   right: 15px !important;
+  opacity: 0.85 !important;
 }
 #leaflet-box .form-group {
   margin-bottom: 0px !important;
@@ -286,7 +287,7 @@ table.table-bordered.dataTable {
   height: 250px !important;
 }
 .leaflet-control-layers {
-  background-color: #FF8C00DD !important;
+  background-color: #FF8C00 !important;
   width: 320px !important;
   /* here I assume the size of #leaflet-markerBox not to change + 10px margin + 17px license */
   bottom: 170.85px !important;
@@ -295,6 +296,7 @@ table.table-bordered.dataTable {
   margin-right: 0px !important;
   margin-bottom: 0px !important;
   border-radius: 9px !important;
+  opacity: 0.85 !important;
 }
 /* make the input sliders fill the whole box */
 .shiny-input-container:not(.shiny-input-container-inline) {
@@ -636,7 +638,7 @@ table {
   #fit-plotFitEvd {
     height: 200px !important;
   }
-  #boxGevStatistics {
+chr  #boxGevStatistics {
     height: 352px !important;
     margin-bottom: 10px !important;
   }
