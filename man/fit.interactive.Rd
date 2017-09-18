@@ -4,34 +4,20 @@
 \alias{fit.interactive}
 \title{Function to perform the GEV/GP fit within the Climex app.}
 \usage{
-fit.interactive(x.kept, x.initial = NULL, radioEvdStatistics,
-  selectOptimization, buttonMinMax, checkboxRerun, sliderThreshold,
+fit.interactive(x.kept, radioEvdStatistics, buttonMinMax, sliderThreshold,
   selectDataBase)
 }
 \arguments{
 \item{x.kept}{Time series of class 'xts'. Removing clicked or brushed
 values has to be done beforehand.}
 
-\item{x.initial}{Initial parameters to start the fitting routine at. See
-\code{\link{likelihood.initials}}. Default = NULL.}
-
 \item{radioEvdStatistics}{Character (radio) input determining whether
 the GEV or GP distribution shall be fitted to the data. Choices:
 c( "GEV", "GP" ), default = "GEV".}
 
-\item{selectOptimization}{Character (select) input to determine which
-optimization routine/method is going to be used when fitting the maximum
-likelihood function of the GEV/GP distribution. The choices are given in
-\code{\link{generalFittingRoutineInput}} and the default value is set to
-"Nelder-Mead".}
-
 \item{buttonMinMax}{Character (radio) input determining whether
 the GEV/GP distribution shall be fitted to the smallest or biggest
 vales. Choices: c( "Max", "Min ), default = "Max".}
-
-\item{checkboxRerun}{Logical (checkbox) input from the Likelihood tab.
-It determines whether or not to start the optimization at the results
-of the first run again to escape local minima.}
 
 \item{sliderThreshold}{Numerical (slider) input determining the
 threshold used within the GP fit and the extraction of the extreme
@@ -60,10 +46,9 @@ first.
 }
 \seealso{
 Other climex-fitting: \code{\link{color.table}},
-  \code{\link{data.fitting}}, \code{\link{data.initials}},
+  \code{\link{data.fitting}},
   \code{\link{generalFitStatisticsTable}},
-  \code{\link{generalFitStatistics}},
-  \code{\link{generalFittingRoutineInput}}
+  \code{\link{generalFitStatistics}}
 }
 \author{
 Philipp Mueller

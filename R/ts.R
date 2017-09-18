@@ -40,7 +40,7 @@ bic <- function( x ){
 ##'
 ##' @family ts
 ##' @export
-##' @import xts
+##' @importFrom xts xts
 ##' @import lubridate
 ##' 
 ##' @return Time series of class xts
@@ -86,7 +86,7 @@ remove.incomplete.years <- function( x ){
 ##'
 ##' @family ts
 ##'
-##' @import xts
+##' @importFrom xts xts
 ##' @import lubridate
 ##' @return Deseasonalized time series of class "xts".
 ##' @author Philipp Mueller
@@ -210,7 +210,7 @@ mode <- function( x ){
 ##'
 ##' @family ts
 ##' @export
-##' @import xts
+##' @importFrom xts xts
 ##' @importFrom lubridate yday
 ##' 
 ##' @return Time series of the class 'xts' of the same length as x containing the anomalies of the series.

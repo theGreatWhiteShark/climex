@@ -27,7 +27,10 @@ grad( func = likelihood, x = parameters, ... ) wouldn't be possible.
 }
 \seealso{
 Other optimization: \code{\link{fit.gev}},
-  \code{\link{fit.gpd}}, \code{\link{likelihood.gradient}},
+  \code{\link{fit.gpd}},
+  \code{\link{likelihood.augmented}},
+  \code{\link{likelihood.gradient.augmented}},
+  \code{\link{likelihood.gradient}},
   \code{\link{likelihood.initials}}
 }
 \author{

@@ -9,7 +9,7 @@ precipitation data.}
 download.data.dwd(save.downloads = TRUE, csv.export = FALSE,
   data.type = c("default", "temp.max", "temp.min", "prec", "temp.mean",
   "vapor.pressure", "cloud.amount", "air.pressure", "relative.humidity",
-  "wind.speed", "temp.min.at.ground", "wind.speed.peak", "prec.type",
+  "wind.speed", "temp.min.at.ground", "wind.speed.peak", "prec.type", "quality",
   "sunshine.duration", "snow.height"), download.path = NULL)
 }
 \arguments{
@@ -26,6 +26,12 @@ downloaded files should be extracted. This input can be a character
 vector  The options are: temp.max, temp.min, prec, default (for both
 the daily maximum and minimum temperature and the precipitation),
 temp.mean, vapor.pressure, cloud.amount, air.pressure,
+quality (-999 = faulty or suspicious, 1 = superficially checked,
+2 = checked according to individual criterion, 3 = old automated
+check and correction, 5 = historical and subjective check, 7 =
+additional second check but without correction, 8 = quality check
+outside of the routine (?, just quoting the manual), 9 = not all
+parameters are corrected, 10 = fully checked and corrected),
 relative.humidity, wind.speed, temp.min.at.ground, wind.speed.peak,
 prec.type (0 = no precipitation, 1 = only rain (before 1979), 2 =
 unknown, 4 = only rain (after 1979), 7 = only snow, 8 = snow or rain),

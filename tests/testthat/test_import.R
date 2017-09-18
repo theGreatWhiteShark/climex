@@ -45,15 +45,11 @@ data <- utils::read.table( data.file,
                               paste( "wc -l", data.file, "| awk '{print $1}'" ),
                               intern = TRUE ) ) - 2 )
 test_that( "data format provided by the DWD is still the same", {
-  expect_equal( ncol( data ), 18 )
+  expect_equal( ncol( data ), 19 )
   expect_equal( names( data ),
-               c( "STATIONS_ID",  "MESS_DATUM", "QUALITAETS_NIVEAU",
-                 "LUFTTEMPERATUR", "DAMPFDRUCK", "BEDECKUNGSGRAD",
-                 "LUFTDRUCK_STATIONSHOEHE", "REL_FEUCHTE", "WINDGESCHWINDIGKEIT",
-                 "LUFTTEMPERATUR_MAXIMUM", "LUFTTEMPERATUR_MINIMUM",
-                 "LUFTTEMP_AM_ERDB_MINIMUM", "WINDSPITZE_MAXIMUM",
-                 "NIEDERSCHLAGSHOEHE", "NIEDERSCHLAGSHOEHE_IND",
-                 "SONNENSCHEINDAUER", "SCHNEEHOEHE", "eor" ) )
+               c( "STATIONS_ID", "MESS_DATUM", "QN_3", "FX", "FM", "QN_4",
+                 "RSK", "RSKF", "SDK", "SHK_TAG", "NM", "VPM", "PM", "TMK",
+                 "UPM", "TXK", "TNK", "TGK", "eor" ) )
 })
 
 ## download description and format the description file

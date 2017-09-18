@@ -84,10 +84,16 @@ generalExtremeExtraction <- function( radioEvdStatistics,
       sliderInput( "sliderBlockLength", "Box length in days", 1,
                   365*3, 365 )
     } else {
+      ## Set the threshold in such a way remaining.fraction of the
+      ## data are still available for the fit
+      remaining.fraction <- 0.01
+      threshold.default <- sort( as.numeric( x.deseasonalized ),
+                        decreasing = TRUE )[
+          round( length( x.deseasonalized )* remaining.fraction ) ] 
       sliderInput( "sliderThreshold", "Threshold:",
                   round( min( x.deseasonalized, na.rm = TRUE ) ),
                   round( max( x.deseasonalized, na.rm = TRUE ) ),
-                  round( 0.8* max( x.deseasonalized, na.rm = TRUE ) ),
+                  round( threshold.default ),
                   step = 0.1 )
     }
   } )

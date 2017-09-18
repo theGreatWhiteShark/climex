@@ -449,7 +449,7 @@ sidebarSeriesLength <- function( selectDataBase ){
 ##'
 ##' @family sidebar
 ##'
-##' @import xts
+##' @importFrom xts xts
 ##' @import shiny
 ##'
 ##' @return Reactive value containing a 'xts' class time series.

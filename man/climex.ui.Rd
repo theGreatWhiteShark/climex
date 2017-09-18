@@ -4,7 +4,7 @@
 \alias{climex.ui}
 \title{The user interface for the \code{\link{climex}} function.}
 \usage{
-climex.ui(selected = c("Map", "General", "Likelihood"))
+climex.ui(selected = c("Map", "General"))
 }
 \arguments{
 \item{selected}{Choose which tab is supposed to be selected when
