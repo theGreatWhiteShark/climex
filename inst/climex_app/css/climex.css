@@ -429,12 +429,18 @@ table {
   }
   #boxGevStatistics {
     width: 33.333333% !important;
+    height: 340px !important;
+    margin-bottom: 20px !important;
+  }
+  #plotEvd, #plotGOF {
+    padding: 0px !important;
   }
   #plotEvd {
     width: 66.666666% !important;
   }
   #plotGOF {
     width: 33.333333% !important;
+    left: -5px !important;
   }
   #boxGevResults{
     width: 40% !important;
@@ -464,6 +470,53 @@ table {
 }
 
 @media screen and (max-width: 1080px){
+  .skin-blue {
+    margin: 0px !important;
+  }
+  #boxHeuristic, #boxStartingPoints, #boxGevResults, #boxTimeSeries, #boxGevStatistics, #boxPlotFit {
+    display: block !important;
+    width: 100% !important;
+  }
+  /* display the animation plots in one column if the display is getting go narrow */
+  .animationClimex {
+    display: block;
+    width: 100% !important;
+  }
+  /* adjusting the size of the boxes on the leaflet map */
+  #leaflet-box, #leaflet-markerBox {
+    width: 250px !important;
+  }
+  .leaflet-control-layers {
+    width: 250px !important;
+  }
+  #leaflet-buttonDrawMarkers {
+    left: 0% !important;
+  }
+  #boxPlotFit, #boxGevResults {
+    padding-right: 15px !important;
+  }
+  #boxGevStatistics .box-solid {
+    height: 340px !important;
+    margin-bottom: 20px !important;
+  }
+  #plotEvd, #plotGOF {
+    padding: 0px 15px 0px 15px !important;
+  }
+  #plotGOF {
+    left: 0px !important;
+  }
+}
+
+@media screen and (max-width: 820px){
+  .skin-blue {
+    margin: 0px !important;
+  }
+  .main-sidebar, .main-header .logo {
+    width: 180px !important;
+  }
+  .content-wrapper, .main-header > .navbar {
+    margin-left: 180px !important;
+  }
   /* assigning individual classes to the box objects in shiny won't do any good, since the
      class definition only enters an inner box and not the parent */
   #boxHeuristic, #boxStartingPoints, #boxGevResults, #boxTimeSeries, #boxGevStatistics, #boxPlotFit {
@@ -488,61 +541,87 @@ table {
   #boxPlotFit, #boxGevResults {
     padding-right: 15px !important;
   }
+  #plotEvd, #plotGOF {
+    padding: 0px !important;
+  }
+  #plotGOF {
+    left: -5px !important;
+  }
+  #boxGevStatistics .box-solid {
+    height: 340px !important;
+    margin-bottom: 20px !important;
+  }
 }
 
 @media screen and (max-width: 750px){
-  #boxHeuristic, #boxStartingPoints, #boxGevResults, #boxTimeSeries, #boxGevStatistics, #boxPlotFit {
-    display: block !important;
-    width: 100% !important;
-  }
-  /* display the animation plots in one column if the display is getting go narrow */
-  .animationClimex {
-    display: block;
-    width: 100% !important;
-  }
-  /* adjusting the size of the boxes on the leaflet map */
-  #leaflet-box, #leaflet-markerBox {
-    width: 250px !important;
-  }
-  .leaflet-control-layers {
-    width: 250px !important;
-  }
-  #leaflet-buttonDrawMarkers {
-    left: 0% !important;
-  }
-  #boxPlotFit, #boxGevResults {
-    padding-right: 15px !important;
-  }
-
-}
-
-@media screen and (max-width: 500px){
-  /* Due to reordering and a fixed height the slider and the 
-     table in the leaflet map are partly covered */
-  #leaflet-box {
-    top: 100px !important;
-    right: 0px !important;
-    margin: 5px 5px 0px 0px !important;
-  }
   .skin-blue {
     margin: 0px !important;
+  }
+  .content-wrapper, .main-header > .navbar {
+    margin-left: 0px !important;
+  }
+  .main-header .logo {
+    width: 100% !important;
   }
   .content {
     padding: 0px !important;
   }
-  /* adjusting the size of the boxes on the leaflet map */
+  .sidebar-open .content-wrapper, .sidebar-open .main-footer, .sidebar-open .right-side {
+    transform: translate(180px,0) !important;
+  }
+  /* Adjust the leaflet map for the small display by moving the
+     panels above or below the map */
+  #shiny-tab-tabMap {
+    height: calc(100vh - 80px + 143.85px + 215px) !important;
+  }
   #leaflet-box, #leaflet-markerBox {
-    width: 200px !important;
+    right: 0px !important;
+    margin: 0px !important;
+    padding-right: 15px !important;
+    border-radius: 0px !important;
+    width: 100% !important;
+  }
+  #leaflet-markerBox {
+    bottom: 0px !important;
   }
   .leaflet-control-layers {
-    width: 200px !important;
+    right: 0px !important;
+    margin: 0px !important;
+    border: 0px !important;
+    top: calc(100vh - 268px) !important;
+    border-radius: 9px 0px 0px 0px !important;
+    position: relative !important;
+    width: 148px !important;
+    padding: 0px 10px 2px 6px !important;
+  }
+  .leaflet-control-layers label {
+    margin: 0px !important;
+  }
+  .leaflet-control-layers-separator {
+    margin: 0px !important;
+  }
+  #leaflet-box {
+    top: 100px !important;
+    height: 215px !important;
+    font-size: 84% !important;
+  }
+  #leaflet-table .table {
+    width: 100% !important;
+    margin: auto !important;
+  }
+  #leaflet-map {
+    top: 215px !important;
   }
   #leaflet-buttonDrawMarkers {
     left: 0% !important;
-  }  
+  }
+  .leaflet-control-attribution {
+    font-size: 75% !important;
+  }
+  /* Rearrange the plots */
   #boxPlotFit, #boxGevResults, #boxGevStatistics, #boxTimeSeries {
-    padding-right: 0px !important;
-    padding-left: 0px !important;
+    padding-right: 15px !important;
+    padding-left: 15px !important;
   }
   #boxPlotFit .box {
     height: 703px !important;
@@ -559,6 +638,7 @@ table {
   }
   #boxGevStatistics {
     height: 352px !important;
+    margin-bottom: 10px !important;
   }
   #boxGevStatistics .box-solid {
     height: 340px !important;
@@ -568,11 +648,5 @@ table {
   }
   #boxTimeSeries {
     font-size: 98% !important;
-  }
-  #leaflet-box {
-    font-size: 84% !important;
-  }
-  .leaflet-control-attribution {
-    font-size: 75% !important;
   }
 }
