@@ -2,7 +2,7 @@
 % Please edit documentation in R/extremes.R
 \name{gpd.density}
 \alias{gpd.density}
-\title{Port of the ismev::gpd.dens function}
+\title{Probability density function of GP distribution}
 \usage{
 gpd.density(parameters, threshold, z)
 }
@@ -17,11 +17,13 @@ density of the GP distribution.}
 \value{
 Numerical vector of same length as z.
 }
+\description{
+Calculate the probability density function for the generalized Pareto (GP) distribution at a given point or at a number of points (provided as a numerical vector).
+}
 \details{
-It might not to be called by the user, but I can
-certainly write some lines about it. This function takes
-the fitted parameters of a GP distribution and calculates
-its density at specified sites z.
+If you want to calculate the density of the exponential distribution, please stick to the c( scale, shape ) scheme of the `parameters' argument while setting the shape parameter to zero.
+
+Port of the ismev::gpd.dens function.
 }
 \seealso{
 Other extremes: \code{\link{block}},

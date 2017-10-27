@@ -2,13 +2,13 @@
 % Please edit documentation in R/extremes.R
 \name{gev.density}
 \alias{gev.density}
-\title{Port of the ismev::gev.dens function}
+\title{Probability density function of GEV distribution}
 \usage{
 gev.density(parameters, z)
 }
 \arguments{
 \item{parameters}{Fitted GEV parameters c( location, scale,
-shape )}
+shape ).}
 
 \item{z}{Numerical vector of sites where to evaluate the
 density of the GEV distribution.}
@@ -16,11 +16,13 @@ density of the GEV distribution.}
 \value{
 Numerical vector of same length as z.
 }
+\description{
+Calculate the probability density function for the generalized extreme value (GEV) distribution at a given point or at a number of points (provided as a numerical vector).
+}
 \details{
-It might not to be called by the user, but I can
-certainly write some lines about it. This function takes
-the fitted parameters of a GEV distribution and calculates
-its density at specified sites z.
+If you want to calculate the density of the Gumbel distribution, please stick to the c( location, scale, shape ) scheme of the first argument while setting the shape parameter to zero.
+
+Port of the ismev::gev.dens function.
 }
 \seealso{
 Other extremes: \code{\link{block}},

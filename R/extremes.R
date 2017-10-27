@@ -825,14 +825,15 @@ revd <- function ( n, location = NULL, scale = NULL, shape = NULL,
   return( result )
 }
 
-##' @title Port of the ismev::gev.dens function
-##' @details It might not to be called by the user, but I can
-##' certainly write some lines about it. This function takes
-##' the fitted parameters of a GEV distribution and calculates
-##' its density at specified sites z.
+##' @title Probability density function of GEV distribution
+##' @description Calculate the probability density function for the generalized extreme value (GEV) distribution at a given point or at a number of points (provided as a numerical vector).
+##' 
+##' @details If you want to calculate the density of the Gumbel distribution, please stick to the c( location, scale, shape ) scheme of the first argument while setting the shape parameter to zero.
+##'
+##' Port of the ismev::gev.dens function.
 ##'
 ##' @param parameters Fitted GEV parameters c( location, scale,
-##' shape )
+##' shape ).
 ##' @param z Numerical vector of sites where to evaluate the
 ##' density of the GEV distribution.
 ##'
@@ -841,23 +842,43 @@ revd <- function ( n, location = NULL, scale = NULL, shape = NULL,
 ##' @return Numerical vector of same length as z.
 ##' @author Philipp Mueller
 gev.density <- function ( parameters, z ){
-  if ( class( parameters ) != "numeric" ||
-       length( parameters ) != 3 )
+  if ( class( parameters ) != "numeric" || length( parameters ) != 3 ){
     stop( "gev.density: Please provide a numerical vector of the form c( location, scale, shape )")
+  }
   location <- parameters[ 1 ]
   scale <- parameters[ 2 ]
+  ## Small sanity check
+  if ( scale < 0 ){
+    stop( "The supplied scale parameter in climex:::gev.density is less than zero!" )
+  }
   shape <- parameters[ 3 ]
-  ( exp( -( 1 + ( shape* ( z - location ) )/
-            scale )^( -1/ shape ) )*
-    ( 1 + ( shape* ( z - location ) ) /
-      scale )^( -1/ shape - 1) )/scale
+  if ( shape != 0 ){
+    ## There are certain ranges the PDF is defined in. If (some of the) z
+    ## happens to be outside of this range, replace it with NaN
+    if ( shape < 0 ){
+      z[ z > ( ( location - 1 )* scale/ shape ) ] <- NaN
+    } else {
+      z[ z < ( ( location - 1 )* scale/ shape ) ] <- NaN
+    }
+    density <- ( exp( -( 1 + ( shape* ( z - location ) )/
+                         scale )^( -1/ shape ) )*
+                 ( 1 + ( shape* ( z - location ) ) /
+                   scale )^( -1/ shape - 1) )/scale
+  } else {
+    ## The Gumbel distribution is only considered if the shape parameter
+    ## matches exactly zero.
+    density <- exp( - exp( - ( z - location )/ scale ) )*
+      exp( - ( z - location )/scale )/ scale
+  }
+  return( density )
 }
 
-##' @title Port of the ismev::gpd.dens function
-##' @details It might not to be called by the user, but I can
-##' certainly write some lines about it. This function takes
-##' the fitted parameters of a GP distribution and calculates
-##' its density at specified sites z.
+##' @title Probability density function of GP distribution
+##' @description Calculate the probability density function for the generalized Pareto (GP) distribution at a given point or at a number of points (provided as a numerical vector).
+##' 
+##' @details If you want to calculate the density of the exponential distribution, please stick to the c( scale, shape ) scheme of the `parameters' argument while setting the shape parameter to zero.
+##'
+##' Port of the ismev::gpd.dens function.
 ##'
 ##' @param parameters Fitted GP parameters c( scale, shape )
 ##' @param threshold Threshold used to fit the GP distribution.
@@ -873,7 +894,29 @@ gpd.density <- function( parameters, threshold, z ) {
        length( parameters ) != 2 )
     stop( "gpd.density: Please provide a numerical vector of the form c( scale, shape )")
   scale <- parameters[ 1 ]
+  ## Small sanity check
+  if ( scale < 0 ){
+    stop( "The supplied scale parameter in climex:::gpd.density is less than zero!" )
+  }
   shape <- parameters[ 2 ]
-  ( 1 + ( shape* ( z - threshold ) )
-    / scale )^( -1/shape - 1 )/ scale
+  if ( shape != 0 ){
+    ## There are certain ranges the PDF is defined in. If (some of the) z
+    ## happens to be outside of this range, replace it with NaN.
+    if ( shape < 0 ){
+      z[ z < threshold | z > ( threshold - scale/ shape ) ] <- NaN
+    } else {
+      z[ z < threshold ] <- NaN
+    }
+    density <- ( 1 + ( shape* ( z - threshold ) )
+      / scale )^( -1/shape - 1 )/ scale
+  } else {
+    ## The exponential distribution is only considered if the shape
+    ## parameter is exactly equal to zero.
+    
+    ## There are certain ranges the PDF is defined in. If (some of the) z
+    ## happens to be outside of this range, replace it with NaN.
+    z[ z < threshold ] <- NaN
+    density <- exp( -( z - threshold/ scale ) )/ scale
+  }
+  return( density )
 }
