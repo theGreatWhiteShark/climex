@@ -409,9 +409,8 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
 ##' the thresholded.time.series is not supplied. Since this can be annoying
 ##' one can also disable it. Default = FALSE.
 ##'
-##' @return If error.estimation == "none" a numerical vector containing
-##' the estimates of the return levels will be returned. Else a list
-##' containing the estimates and their standard errors will be returned.
+##' @return A list containing the estimates "return.level" and their
+##'   standard errors "error".
 ##' @export
 ##'
 ##' @importFrom xts apply.yearly
@@ -428,7 +427,8 @@ return.level <- function( x, return.period = 100,
                          model = c( "gev", "gpd" ),
                          monte.carlo.sample.size = 1000,
                          threshold = NULL, total.length = NULL,
-                         thresholded.time.series = NULL, silent = FALSE ){
+                         thresholded.time.series = NULL,
+                         silent = FALSE ){
   if ( any( class( x ) == "climex.fit.gev" ) ){
     model <- "gev"
     return.levels <- Reduce( c, lapply( return.period, function( y )
@@ -446,6 +446,10 @@ return.level <- function( x, return.period = 100,
       if ( !silent )
         warning( "return.level: Since the original time series was not supplied the return level will be not per once every x year but once every x observation" )
       m <- return.period
+      ## Since the exceedances aren't provided there is not way to
+      ## estimate the exceedance probability. Therefore the errors
+      ## will be m-th observation-based instead of m-th year-based.
+      zeta <- FALSE
     } else if ( !is.null( x$control$total.length ) ){
       ## The maximum likelihood estimate of the probability of an
       ## exceedance to occur per year will be used.
@@ -456,8 +460,10 @@ return.level <- function( x, return.period = 100,
       ## exceedance per year. This way the unit of the provided return
       ## level and its error are  not 'per observation' but 'per year'.
       ## In this step we harness the power of the 'xts' package
-      m <- return.period* mean( apply.yearly( x$x,
-                                             function( y ) length( y ) ) )
+      m <- return.period* mean( apply.yearly(
+                              x$x,
+                              function( y ) length( y ) ) )
+      zeta <- NULL
     }
     ## The determined 'm' always have to be bigger than one
     if ( any( m < 1 ) ){
@@ -467,8 +473,8 @@ return.level <- function( x, return.period = 100,
       return.period <- return.period[ -which( m < 1 ) ]
       m <- m[ -which( m < 1 ) ]
     }
-    ## When a threshold is supplied, the one in the fitted object will be
-    ## overwritten
+    ## When a threshold is supplied, the one in the fitted object will
+    ## be overwritten
     if ( !is.null( threshold ) )
       x$threshold <- threshold
     return.levels <- Reduce( c, lapply( m, function( y )
@@ -498,37 +504,49 @@ return.level <- function( x, return.period = 100,
           zeta <- length( thresholded.time.series )/ total.length
           m <- return.period* 365.25* zeta
         } else {
-          ## m-observation return level = return.period* the mean number of
-          ## exceedance per year. This way the unit of the provided return
-          ## level and its error are  not 'per observation' but 'per year'.
+          ## m-observation return level = return.period* the mean
+          ## number of exceedance per year. This way the unit of the
+          ## provided return level and its error are  not 'per
+          ## observation' but 'per year'. 
           ## In this step we harness the power of the 'xts' package
           m <- return.period* mean( apply.yearly(
                                   thresholded.time.series,
                                   function( tt ) length( tt ) ) )
+          zeta <- NULL
         }
       } else {
         if ( !silent )
-          warning( "return.level: Since the original time series was not supplied the return level will be not per once every x year but once every x observation" )
+          warning(
+              "return.level: Since the original time series was not supplied the return level will be not per once every m year but once every m observation" )
+        ## Neither the amount of threshold exceedances nor the length of
+        ## the original series is supplied. Now there is no other
+        ## chance than to calculate the observation-based return level.
         m <- return.period
+        zeta <- FALSE
       }
       return.levels <- Reduce( c, lapply( m, function( mm )
         as.numeric( climex:::rlevd( mm, scale = x[ 1 ], shape = x[ 2 ],
                                    model = "gpd", threshold = threshold,
                                    silent = silent ) ) ) )
     }
-  } else
-    stop( "return.level is not implemented for this class of input values!" )
+  } else {
+    stop(
+        "return.level is not implemented for this class of input values!" )
+  }
   ##
   ## Error estimation of the return level
   ##
   if ( error.estimation == "none" || class( x ) == "numeric" ){
-    return( return.levels )
-  } else if ( error.estimation == "MLE" ){
-    if ( is.null( x$control$total.length ) && model == "gpd" ){
-      warning( "The error estimation of the return level of the GP distribution does need the total length 'total.length' of the time series the exceedance are extracted from! Please supply it or use the Monte Carlo approach!" )
-      return( list( return.levels = return.levels,
-                   errors = rep( NaN, length( return.period ) ) ) )
+    ## Dummy holding NaN instead of the return level errors.
+    ## (Since there was not enough information supplied to calculate
+    ## them).
+    if ( model == "gev" ){
+      errors <- rep( NaN, 3 + length( return.period ) )
+    } else {
+      errors <- rep( NaN, 2 + length( return.period ) )
     }
+    return( list( return.level = return.levels, error = errors ) )
+  } else if ( error.estimation == "MLE" ){
     if ( !any( names( x ) == "hessian" ) ){
       ## fit again and let stats::optim calculate the hessian. It's way
       ## more save this way
@@ -561,6 +579,7 @@ return.level <- function( x, return.period = 100,
     }
     ## Delta method for the return level
     parameter.estimate <- x$par
+    parameter.error.estimate <- as.numeric( x$se )
     errors <- data.frame( a = 0 )
     if ( model == "gev" ){
       ## Formula according to Stuart Coles p. 56
@@ -568,10 +587,19 @@ return.level <- function( x, return.period = 100,
         yp <- -log( 1 - 1/return.period[ rr ] )
         scale <- parameter.estimate[ 2 ]
         shape <- parameter.estimate[ 3 ]
-        dz <- c( 1, -shape^{ -1 }* ( 1 - yp^{ -shape } ),
-                scale* shape^{ -2 }* ( 1 - yp^{ -shape } ) -
-                scale* shape^{ -1 }* yp^{ -shape }* log( yp ) )
-        errors <- cbind( errors, dz %*% error.covariance %*% dz )
+        if ( shape != 0 ){
+          ## GEV distribution
+          dz <- c( 1, -shape^{ -1 }* ( 1 - yp^{ -shape } ),
+                  scale* shape^{ -2 }* ( 1 - yp^{ -shape } ) -
+                  scale* shape^{ -1 }* yp^{ -shape }* log( yp ) )
+          errors <- cbind( errors, dz %*% error.covariance %*% dz )
+        } else {
+          ## Gumbel distribution
+          dz <- c( 1, -log( yp ) )
+          errors <- cbind( errors,
+                          dz %*% error.covariance[ 1 : 2, 1 : 2 ] %*%
+                          dz )
+        }
       }
     } else {
       ## Formula according to Stuart Coles p. 82
@@ -581,10 +609,73 @@ return.level <- function( x, return.period = 100,
         ## user.
         scale <- parameter.estimate[ 1 ]
         shape <- parameter.estimate[ 2 ]
-        dz <- c( ( m[ rr ]^ shape - 1 )/ shape,
-                -scale* shape^{ -2 }*( m[ rr ]^shape - 1 ) +
-                scale/shape*m[ rr ]^shape* log( m[ rr ] ) )
-        errors <- cbind( errors, dz %*% error.covariance %*% dz )
+        if ( is.null( zeta ) ){
+          ## Calculate the exceedance probability in case only the
+          ## threshold exceedances and not the original time series
+          ## was supplied.
+          zeta <- m[ rr ]/ ( return.period[ rr ]* 365.25 )
+        }
+        if ( !is.numeric( zeta ) ){
+          ## In case zeta was set to FALSE neither the original time
+          ## series nor the threshold exceedances were
+          ## supplied. Therefor there is no way to estimate the mean
+          ## exceedance probability and the zeta term has to be
+          ## excluded from the error calculation.
+          if ( shape != 0 ){
+            ## GP distribution
+            dz <- c( ( m[ rr ]^ shape - 1 )/ shape,
+                    -scale* shape^{ -2 }*( m[ rr ]^shape - 1 ) +
+                    scale/shape*m[ rr ]^shape* log( m[ rr ] ) )
+            errors <- cbind( errors, dz %*% error.covariance %*% dz )
+          } else {
+            ## Exponential distribution
+            dz <- log( m[ rr ] )
+            errors <- cbind( errors, dz %*%
+                                     parameter.error.estimate[ 1 ] %*%
+                                     dz )
+          }
+        } else {
+          if ( shape != 0 ){
+            ## GP distribution
+            dz <- c( scale* m[ rr ]^shape* zeta^{ shape - 1 },
+            ( m[ rr ]^ shape - 1 )/ shape,
+            -scale* shape^{ -2 }*( m[ rr ]^shape - 1 ) +
+            scale/shape*m[ rr ]^shape* log( m[ rr ] ) )
+            ## Generate a dummy variance matrix to incorporate the
+            ## uncertainty of zeta.
+            error.matrix <- matrix( rep( 0, 9 ), nrow = 3, ncol = 3 )
+            if ( !is.null( total.length ) ){
+              ## If the total length of the underlying series BEFORE
+              ## thresholding is provided, we are glad to use it.
+              error.matrix[ 1, 1 ] <- zeta*( 1 - zeta )/ total.length
+            } else {
+              ## If not we have to estimate it using the MLE of zeta
+              ## number of exceedances/ total length.
+              error.matrix[ 1, 1 ] <- zeta^2*( 1 - zeta )/
+                length( x$x )
+            }
+            error.matrix[ 2 : 3, 2 : 3 ] <- error.covariance 
+            errors <- cbind( errors, dz %*% error.matrix %*% dz )
+          } else {
+            ## Exponential distribution
+            dz <- c( scale/ zeta, log( m[ rr ] ) )
+            ## Generate a dummy variance matrix to incorporate the
+            ## uncertainty of zeta.
+            error.matrix <- matrix( rep( 0, 4 ), nrow = 2, ncol = 2 )
+            if ( !is.null( total.length ) ){
+              ## If the total length of the underlying series BEFORE
+              ## thresholding is provided, we are glad to use it.
+              error.matrix[ 1, 1 ] <- zeta*( 1 - zeta )/ total.length
+            } else {
+              ## If not we have to estimate it using the MLE of zeta
+              ## number of exceedances/ total length.
+              error.matrix[ 1, 1 ] <- zeta^2*( 1 - zeta )/
+                length( x$x )
+            }
+            error.matrix[ 2, 2 ] <- parameter.error.estimate[ 1 ]
+            errors <- cbind( errors, dz %*% error.matrix %*% dz )
+          }
+        }
       }
     }
     errors <- errors[ , -1 ]
@@ -619,15 +710,23 @@ return.level <- function( x, return.period = 100,
     for ( rr in 1 : length( return.period ) )
       errors <- cbind(
           errors, 
-          sqrt( stats::var( Reduce( c, lapply( samples.fit,
-                                              function( z )
-               climex::return.level( z, return.period = r.period[ rr ],
-                                    error.estimation = "none",
-                                    silent = TRUE ) ) ) ) ) )
+          sqrt( stats::var( Reduce(
+                           c, lapply(
+                                  samples.fit,
+                                  function( z )
+                                    climex::return.level(
+                                                z,
+                                                return.period =
+                                                  r.period[ rr ],
+                                                error.estimation =
+                                                  "none",
+                                                silent = TRUE
+                                            )$return.level
+                              ) ) ) ) )
     errors <- errors[ , -1 ]   
     names( errors ) <- paste0( return.period, ".rlevel" )
   }
-  return( list( return.levels = return.levels, errors = errors ) )
+  return( list( return.level = return.levels, error = errors ) )
 }
 
 ##' @title Internal function to calculate the return level of GEV or GP
@@ -856,9 +955,9 @@ gev.density <- function ( parameters, z ){
     ## There are certain ranges the PDF is defined in. If (some of the) z
     ## happens to be outside of this range, replace it with NaN
     if ( shape < 0 ){
-      z[ z > ( ( location - 1 )* scale/ shape ) ] <- NaN
+      z[ z > ( ( location ) - scale/ shape ) ] <- NaN
     } else {
-      z[ z < ( ( location - 1 )* scale/ shape ) ] <- NaN
+      z[ z < ( ( location ) - scale/ shape ) ] <- NaN
     }
     density <- ( exp( -( 1 + ( shape* ( z - location ) )/
                          scale )^( -1/ shape ) )*
