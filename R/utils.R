@@ -54,7 +54,6 @@ print.climex.fit.gev <- function( x ){
 summary.climex.fit.gev <- function( x ){
   cat( "\n" )
   cat( paste( length( x$x ), "block maxima fitted using then " ) )
-  cat( paste( x$control$optim.method, "\noptimization routine." ) )
   if ( x$control$error.estimation != "none" ){
     cat( paste( " Errors using",
                x$control$error.estimation, "approach." ) )
@@ -101,7 +100,7 @@ print.climex.fit.gpd <- function( x ){
 summary.climex.fit.gpd <- function( x ){
   cat( "\n" )
   cat( paste( length( x$x ), "exceedances over the threshold",
-             x$threshold, "using the", x$control$optim.method ) )
+             x$threshold ) )
   cat( "\noptimization routine." )
   if ( x$control$error.estimation != "none" ){
     cat( paste( " Errors using",

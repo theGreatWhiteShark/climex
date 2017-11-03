@@ -22,18 +22,9 @@ test_that( "fit.gev has the correct output format", {
   expect_equal( class( x.block.fit$return.level ), "numeric" )
   expect_equal( length( x.block.fit$return.level ), 1 )
 })
-test_that( "fit.gev's actual fitting works for all methods", {
+test_that( "fit.gev's actual fitting works", {
   expect_equal( as.numeric( climex::fit.gev( x.block )$par ),
                c( 11.727058700107, 1.429260028751, -0.260793037231 ) )
-  expect_equal( as.numeric(
-      climex::fit.gev( x.block, optim.method = "Nelder-Mead" )$par ),
-      c( 11.727058700107, 1.429260028751, -0.260793037231 ) )
-  expect_equal( as.numeric( climex::fit.gev( x.block,
-                                            optim.method = "BFGS" )$par ),
-               c( 11.726997127023, 1.429208110952, -0.260763842774 ) )
-  expect_equal( as.numeric( climex::fit.gev( x.block,
-                                            optim.method = "CG" )$par ),
-               c( 11.72699708626, 1.42920804573, -0.26076369704 ) )
 })
 test_that( "the handing over of initial parameters works", {
   expect_equal( as.numeric(
@@ -77,28 +68,12 @@ test_that( "fit.gpd has the correct output format", {
   expect_equal( class( x.thresh.fit$return.level ), "numeric" )
   expect_equal( length( x.thresh.fit$return.level ), 1 )
 })
-test_that( "fit.gpd's actual fitting works for all methods", {
+test_that( "fit.gpd's actual fitting works", {
   expect_equal( as.numeric( climex::fit.gpd( x.thresh,
                                             total.length = length(
                                                 temp.potsdam ) )$par ),
                c( 4.282747985860, -0.423731344794 ),
                tolerance = 5E-4 )
-  expect_equal( as.numeric( climex::fit.gpd( x.thresh,
-                                            optim.method = "Nelder-Mead",
-                                            total.length = length(
-                                                temp.potsdam ) )$par ),
-               c( 4.282789734412, -0.423708700144 ),
-               tolerance = 5E-4 )
-  expect_equal( as.numeric(
-      climex::fit.gpd( x.thresh, optim.method = "BFGS",
-                      total.length = length( temp.potsdam ) )$par ),
-      c( 4.282352838928, -0.423670486691 ),
-               tolerance = 5E-4 )
-  ## expect_equal( as.numeric(
-  ##     climex::fit.gpd( x.thresh, optim.method = "CG",
-  ##                     total.length = length( temp.potsdam ) )$par ),
-  ##     c( 4.282614490266, -0.423702047173 ),
-  ##              tolerance = 5E-4 )
 })
 test_that( "the handing over of initial parameters works", {
   expect_equal( as.numeric(

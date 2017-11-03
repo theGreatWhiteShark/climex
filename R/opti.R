@@ -29,6 +29,13 @@
 ##' The negative log-likelihood of the Gumbel distribution is just fitted
 ##' if the shape parameter is exactly equal to zero.
 ##'
+##' I found the Nelder-Mead method to be more robust to starting
+##' points more far away from the global optimum. This also holds
+##' for the inner routine of the augmented Lagrangian method. Since
+##' other routines, like CG and BFGS only cause problems in the
+##' extreme value analysis, there won't be an option to choose them
+##' in this package.
+##'
 ##' @param x Blocked time series to which the GEV distribution should
 ##' be fitted.
 ##' @param initial Initial values for the GEV parameters. Has to be
@@ -58,8 +65,6 @@
 ##' occasionally does not work). In such cases the Monte Carlo method is
 ##' used. Option "none" just skips the calculation of the error.
 ##' Default = "none".
-##' @param optim.method Choosing the optimization algorithm used within
-##' \code{\link{stats::optim}}. The default one is the "Nelder-Mead".
 ##' @param monte.carlo.sample.size Number of samples used to obtain the
 ##' Monte Carlo estimate of the standard error of the fitting.
 ##' Default = 100.
@@ -101,15 +106,8 @@ fit.gev <- function( x, initial = NULL,
                     likelihood.function = likelihood,
                     gradient.function = likelihood.gradient,
                     error.estimation = c( "MLE", "MC", "none" ),
-                    optim.method = c( "Nelder-Mead","BFGS", "CG" ),
                     monte.carlo.sample.size = 100, return.period = 100,
                     silent = TRUE, ... ){
-  ## I found the Nelder-Mead method to be more robust to starting
-  ## points more far away from the global optimum. This also holds
-  ## for the inner routine of the augmented Lagrangian method.
-  if ( missing( optim.method ) )
-    optim.method <- "Nelder-Mead"
-  optim.method <- match.arg( optim.method )    
   ## Default values if no initial parameters were supplied
   if ( is.null( initial ) )
     initial <- likelihood.initials( x, model = "gev" )
@@ -117,6 +115,14 @@ fit.gev <- function( x, initial = NULL,
     error.estimation <- "MLE"
   error.estimation <- match.arg( error.estimation )
   ## Optimization
+  ## 
+  ## I found the Nelder-Mead method to be more robust to starting
+  ## points more far away from the global optimum. This also holds
+  ## for the inner routine of the augmented Lagrangian method. Since
+  ## other routines, like CG and BFGS only cause problems in the
+  ## extreme value analysis, there won't be an option to choose them
+  ## in this package.
+  ##
   ## The augmented Lagrangian method allowing non-linear constraints
   ## will be used in here. The code depends of the 'alabama' package.
   ## In principle I could also integrate the routine in here, but let's
@@ -128,6 +134,14 @@ fit.gev <- function( x, initial = NULL,
   ## likelihood function switches to the Gumbel distribution, the
   ## constraints involving the shape parameter become true and are
   ## redundant anyway.
+  ##
+  ## The auglag optimization function seems to produce results
+  ## reliable only up to the 5E-4 and I can't see why this is
+  ## happening. Adding various additional options and tolerances to
+  ## both auglag and optim doesn't change the matter. Since these
+  ## deviations are minor ones and the actual MLE estimates of the GEV
+  ## and GP parameters are way bigger, I will just leave it this
+  ## way. 
   suppressWarnings(
       res.alabama <- auglag(
           par = initial, fn = likelihood.function,
@@ -138,7 +152,8 @@ fit.gev <- function( x, initial = NULL,
                   .95 + parameters[ 3 ]* ( x.in - parameters[ 1 ])/
                   parameters[ 2 ],
                   parameters[ 3 ] + .95 ) ) ) },
-          control.outer = list( trace = !silent, method = optim.method ),
+          control.outer = list( trace = !silent,
+                               method = "Nelder-Mead" ),
           x.in = x, model = "gev" ) )
   ## There is no need for the user to deal with all the outputs of the
   ## auglag function. So let's reduce them. 
@@ -152,7 +167,6 @@ fit.gev <- function( x, initial = NULL,
                         return.period = return.period,
                         likelihood.function = likelihood.function,
                         gradient.function = gradient.function,
-                        optim.method = optim.method,
                         hessian = res.alabama$hessian,
                         monte.carlo.sample.size =
                           monte.carlo.sample.size,
@@ -187,10 +201,12 @@ fit.gev <- function( x, initial = NULL,
                    hin = function( parameters, x.in, ... ){
                      return( as.numeric(
                          c( parameters[ 2 ] - .03,
-                           .95 + parameters[ 3 ]* ( x.in - parameters[ 1 ])/
+                           .95 + parameters[ 3 ]*
+                           ( x.in - parameters[ 1 ])/
                            parameters[ 2 ],
                            parameters[ 3 ] + .95 ) ) ) },
-                   control.outer = list( trace = FALSE, method = optim.method ),
+                   control.outer = list( trace = FALSE,
+                                        method = "Nelder-Mead" ),
                    x.in = y, model = "gev" )$par ) ) )
       if ( class( samples.fit ) == "try-error" ){
         errors <- c( NaN, NaN, NaN, rep( NaN, length( return.period ) ) )
@@ -204,8 +220,10 @@ fit.gev <- function( x, initial = NULL,
               errors,
               sqrt( stats::var( Reduce( c, lapply( samples.fit, (
                 function( z )
-                  climex::return.level( z,                                                                    return.period = return.period[ rr ]
-                                       )$return.level ) ) ) ) ) )
+                  climex::return.level(
+                              z,
+                              return.period = return.period[ rr ]
+                          )$return.level ) ) ) ) ) )
       }
       errors <- as.numeric( errors )
       names( errors ) <- c( "location", "scale", "shape",
@@ -295,8 +313,16 @@ fit.gev <- function( x, initial = NULL,
 ##' series before the thresholding was applied. If present it will be used
 ##' to calculate the maximum likelihood estimate of the probability of an
 ##' observation to be a threshold exceedance (necessary to determine the
-##' estimation errors for the calculated return levels). Else an estimator
-##' based on mean number of exceedances per year will be used.
+##' estimation errors for the calculated return levels). Else an
+##' estimator based on mean number of exceedances per year will be
+##' used.
+##'
+##' I found the Nelder-Mead method to be more robust to starting
+##' points more far away from the global optimum. This also holds
+##' for the inner routine of the augmented Lagrangian method. Since
+##' other routines, like CG and BFGS only cause problems in the
+##' extreme value analysis, there won't be an option to choose them
+##' in this package.
 ##' 
 ##' @param x Threshold exceedances with the threshold already subtracted.
 ##' @param initial Initial values for the GPD parameters. Has to be
@@ -332,17 +358,16 @@ fit.gev <- function( x, initial = NULL,
 ##' occasionally does not work). In such cases the Monte Carlo method is
 ##' used. Option "none" just skips the calculation of the error.
 ##' Default = "MLE".
-##' @param optim.method Choosing the optimization algorithm used within
-##' \code{\link{stats::optim}}. The default one is the "Nelder-Mead".
 ##' @param monte.carlo.sample.size Number of samples used to obtain the
 ##' Monte Carlo estimate of the standard error of the fitting.
 ##' Default = 100.
 ##' @param return.period Quantiles at which the return level is going to
 ##' be evaluated. Class "numeric". Default = 100.
-##' @param total.length Uses the maximum likelihood estimator to calculate
-##' the probability of a measurement to be an exceedance. Else an estimate
-##' based on the mean number of exceedances in the available years (time
-##' stamps of the class 'xts' time series) will be used. Default = NULL.
+##' @param total.length Uses the maximum likelihood estimator to
+##'   calculate the probability of a measurement to be an
+##'   exceedance. Else an estimate based on the mean number of
+##'   exceedances in the available years (time stamps of the class
+##'   'xts' time series) will be used. Default = NULL. 
 ##' @param silent Determines whether or not warning messages shall be
 ##' displayed and results shall be reported. Default = TRUE.
 ##' @param ... Additional arguments for the optim() function.
@@ -381,15 +406,8 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
                     likelihood.function = likelihood,
                     gradient.function = climex:::likelihood.gradient,                    
                     error.estimation = c( "MLE", "MC", "none" ),
-                    optim.method = c( "Nelder-Mead", "BFGS", "CG" ),
                     monte.carlo.sample.size = 100, return.period = 100,
                     total.length = NULL, silent = TRUE, ... ){
-  ## I found the Nelder-Mead method to be more robust to starting
-  ## points more far away from the global optimum. This also holds
-  ## for the inner routine of the augmented Lagrangian method.
-  if ( missing( optim.method ) )
-    optim.method <- "Nelder-Mead"
-  optim.method <- match.arg( optim.method )    
   ## Default values if no initial parameters are supplied
   if ( is.null( initial ) )
     initial <- likelihood.initials( x, model = "gpd" )
@@ -407,6 +425,14 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
   ## For shape parameter equal to zero only the first constraint is
   ## relevant and the other ones can not be violated anymore. So no
   ## need to remove them.
+  ##
+  ## The auglag optimization function seems to produce results
+  ## reliable only up to the 5E-4 and I can't see why this is
+  ## happening. Adding various additional options and tolerances to
+  ## both auglag and optim doesn't change the matter. Since these
+  ## deviations are minor ones and the actual MLE estimates of the GEV
+  ## and GP parameters are way bigger, I will just leave it this
+  ## way. 
   suppressWarnings(
       res.alabama <- auglag(
           par = initial, fn = likelihood.function,
@@ -416,7 +442,8 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
                 c( parameters[ 1 ] - .03,
                   .95 + parameters[ 2 ]* ( x.in )/ parameters[ 1 ],
                   parameters[ 2 ] + .95 ) ) ) },
-          control.outer = list( trace = !silent, method = optim.method ),
+          control.outer = list( trace = !silent,
+                               method = "Nelder-Mead" ),
           x.in = x, model = "gpd" ) )
   ## There is no need for the user to deal with all the outputs of the
   ## auglag function. So let's reduce them. 
@@ -431,7 +458,6 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
                         initial = initial,
                         likelihood.function = likelihood.function,
                         gradient.function = gradient.function,
-                        optim.method = optim.method,
                         hessian = res.alabama$hessian,
                         monte.carlo.sample.size =
                           monte.carlo.sample.size,
@@ -461,10 +487,11 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
                    hin = function( parameters, x.in, ... ){
                      return( as.numeric(
                          c( parameters[ 1 ] - .03,
-                           .95 + parameters[ 2 ]* ( x.in )/ parameters[ 1 ],
+                           .95 + parameters[ 2 ]*
+                           ( x.in )/ parameters[ 1 ],
                            parameters[ 2 ] + .95 ) ) ) },
                    control.outer = list( trace = FALSE,
-                                        method = optim.method ),
+                                        method = "Nelder-Mead" ),
                    x.in = y, model = "gpd" )$par ) ) )
       if ( class( samples.fit ) == "try-error" ){
         errors <- c( NaN, NaN, NaN )
@@ -475,15 +502,23 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
         for ( rr in 1 : length( return.period ) )
           errors <- cbind(
               errors,
-              sqrt( stats::var( Reduce( c, lapply( samples.fit,
-                                                  function( z )
-                return.level( z, return.period = return.period[ rr ],
-                             error.estimation = "none", model = "gpd",
-                             threshold = threshold,
-                             total.length = total.length,
-                             thresholded.time.series = x,
-                             silent = silent )$return.level
-                ) ) ) ) )
+              sqrt( stats::var( Reduce(
+                               c,
+                               lapply( samples.fit,
+                                      function( z )
+                                        return.level(
+                                            z,
+                                            return.period =
+                                              return.period[ rr ],
+                                            error.estimation = "none",
+                                            model = "gpd",
+                                            threshold = threshold,
+                                            total.length =
+                                              total.length,
+                                            thresholded.time.series =
+                                              x, 
+                                            silent = silent
+                                        )$return.level ) ) ) ) )
       }
       names( errors ) <- c( "scale", "shape",
                            paste0( return.period, ".rlevel" ) )
@@ -521,9 +556,9 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
         if ( shape != 0 ){
           ## GP distribution
           dz <- c( scale* m^shape* zeta^{ shape - 1 },
-                  ( m[ rr ]^ shape - 1 )/ shape,
-                  -scale* shape^{ -2 }*( m[ rr ]^shape - 1 ) +
-                  scale/shape*m[ rr ]^shape* log( m[ rr ] ) )
+          ( m[ rr ]^ shape - 1 )/ shape,
+          -scale* shape^{ -2 }*( m[ rr ]^shape - 1 ) +
+          scale/shape*m[ rr ]^shape* log( m[ rr ] ) )
           ## Generate a dummy variance matrix to incorporate the
           ## uncertainty of zeta.
           error.matrix <- matrix( rep( 0, 9 ), nrow = 3, ncol = 3 )
@@ -745,8 +780,8 @@ likelihood.augmented <- function( parameters, x.in,
     ( constraint.violation > lagrangian.multiplier[
                                  1 : length( constraint.violation ) ]/
       penalty.parameter ) ]
-  constraint.violation.threshold[ inactive ] <- lagrangian.multiplier[ inactive ] /
-    penalty.parameter
+  constraint.violation.threshold[ inactive ] <-
+    lagrangian.multiplier[ inactive ] / penalty.parameter
   ## Augmenting the Lagrangian to penalize constraint violations
   ## by squaring the infeasibilites and an explicit estimate of the
   ## Lagrange multipliers to avoid a systematic perturbation.
@@ -889,10 +924,10 @@ likelihood.gradient <- function( parameters, x.in,
 ##' log likelihood.
 ##' @author Philipp Mueller
 likelihood.gradient.augmented <- function( parameters, x.in,
-                               model = c( "gev", "gpd" ),
-                               lagrangian.multiplier = 
-                                 rep( 0, length( x.in ) + 2 ),
-                               penalty.parameter = 1000 ){
+                                          model = c( "gev", "gpd" ),
+                                          lagrangian.multiplier = 
+                                            rep( 0, length( x.in ) + 2 ),
+                                          penalty.parameter = 1000 ){
   ## The augmented gradient consists of the GEV/GP likelihood
   ## gradient and some additive term for the constraint violations.
   ## Defining the constraints
@@ -1121,7 +1156,7 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
                                  model = model ) ) ) )
   if ( !all( is.nan( as.numeric( initials.likelihood ) ) ) ){
     return( as.numeric( initials[[ which.min(
-        initials.likelihood ) ]] ) )
+                                     initials.likelihood ) ]] ) )
   } else {
     ## None of the methods above yielded reasonable initial parameters.
     ## In order to perform the optimization after all, let's slightly
@@ -1134,20 +1169,28 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
     ## a quite tedious thing to do).
     set.seed( 33221 )
     suppressWarnings({
-      while ( is.na( climex::likelihood( x.initial, x.in = x,
-                                        model = model ) ) ){
-        if ( model == "gev" ){
-          x.initial[ 1 ] <- x.initial[ 1 ] + rnorm( 1, sd = .4 )
-          x.initial[ 2 ] <- max( x.initial[ 2 ] + rnorm( 1, sd = .4 ),
+      while ( is.na(
+          climex::likelihood(
+                      x.initial, x.in = x,
+                      model = model ) ) ){
+                        if ( model == "gev" ){
+                          x.initial[ 1 ] <-
+                            x.initial[ 1 ] +  rnorm( 1, sd = .4 )
+                          x.initial[ 2 ] <- max( x.initial[ 2 ] +
+                                                 rnorm( 1, sd = .4 ),
+                                                .05 )
+                          x.initial[ 3 ] <-
+                            min( -.95, max( .95, x.initial[ 3 ] +
+                                                 rnorm( 1, sd = .2 ) )
+                                ) 
+                        } else {
+                          x.initial[ 1 ] <-
+                            max( x.initial[ 1 ] + rnorm( 1, sd = .4 ), 
                                 .05 )
-          x.initial[ 3 ] <- min( -.95, max( .95, x.initial[ 3 ] +
-                                                 rnorm( 1, sd = .2 ) ) )
-        } else {
-          x.initial[ 1 ] <- max( x.initial[ 1 ] + rnorm( 1, sd = .4 ),
-                                .05 )
-          x.initial[ 2 ] <- min( -.95, max( .95, x.initial[ 2 ] +
-                                                 rnorm( 1, sd = .2 ) ) )
-        }}
+                          x.initial[ 2 ] <-
+                            min( -.95, max( .95, x.initial[ 2 ] +
+                                                 rnorm( 1, sd = .2 ) )
+                                ) } }
     })
     return( as.numeric( x.initial ) )
   }
