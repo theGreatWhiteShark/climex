@@ -149,14 +149,14 @@ test_that( "return.level get GP error estimation right for MLE", {
                            return.period = c( 42, 637 ),
                            error.estimation = "MLE", threshold = 29,
                            )$error ),
-      c( 0.09884516, 0.09228944 ),
+      c( 0.09892881, 0.09249856 ),
       tolerance = 1E-6 )
   ## With total.length supplied
   expect_equal( as.numeric(
       climex::return.level( x.thresh.fit, return.period = c( 42, 637 ),
                            error.estimation = "MLE", threshold = 29,
                            )$error ),
-      c( 0.09858862, 0.09231206 ),
+      c( 0.09867242, 0.09252132 ),
       tolerance = 1E-6 )
 })
 ## Dummy Exponential fit with shape = 0 or/and not total.length
@@ -173,14 +173,14 @@ test_that( "return.level get Exponential (GP with shape = 0) error estimation ri
                            return.period = c( 42, 637 ),
                            error.estimation = "MLE", threshold = 29,
                            )$error ),
-      c( 5.972949, 14.593353 ),
+      c( 5.974137, 14.596265 ),
       tolerance = 1E-6)
   ## With total.length supplied
   expect_equal( as.numeric(
       climex::return.level( x.exp, return.period = c( 42, 637 ),
                            error.estimation = "MLE", threshold = 29,
                            )$error ),
-      c( 5.980925, 14.60585 ),
+      c( 5.982115, 14.608766 ),
       tolerance = 1E-6 )
 })
 test_that( "return.level get the error estimation right for MC", { 

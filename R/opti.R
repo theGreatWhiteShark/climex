@@ -1063,13 +1063,12 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
     }
   } else {
     ## model == "gpd"
-    ## Approximationg using the Lmoments method
+    ## Approximation using the Lmoments method.
     ## Since I decided to not calculate the threshold inside the
     ## fitting (or even inside this function - for the sake of the
     ## Linux principle), I will use the interior of the
     ## extRemes:::initializer.lmoments function
     lambda <- try( Lmoments::Lmoments( x ), silent = TRUE )
-    
     if ( class( lambda ) == "try-error" ){
       initial.lmom <- c( Inf, Inf, Inf )
     } else {
@@ -1126,8 +1125,14 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
   } else {
     ## None of the methods above yielded reasonable initial parameters.
     ## In order to perform the optimization after all, let's slightly
-    ## change the values (Markov chain) until they can be evaluated.
+    ## change the values until they can be evaluated.
     x.initial <- initial.mom
+    ## In order to ensure that this functions provides the same values
+    ## in a deterministic sense, a seed is set. This pseudo-random
+    ## exploration of the negative log-likelihood space is necessary
+    ## since we would had to tune three parameters at a time (which is
+    ## a quite tedious thing to do).
+    set.seed( 33221 )
     suppressWarnings({
       while ( is.na( climex::likelihood( x.initial, x.in = x,
                                         model = model ) ) ){
