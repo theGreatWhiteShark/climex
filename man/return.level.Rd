@@ -62,9 +62,8 @@ the thresholded.time.series is not supplied. Since this can be annoying
 one can also disable it. Default = FALSE.}
 }
 \value{
-If error.estimation == "none" a numerical vector containing
-the estimates of the return levels will be returned. Else a list
-containing the estimates and their standard errors will be returned.
+A list containing the estimates "return.level" and their
+  standard errors "error".
 }
 \details{
 Uses the climex:::rlevd function at its core (a port from

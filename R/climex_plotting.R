@@ -616,33 +616,33 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
     ## In case some of the return periods have been omitted in the
     ## GP case because their were to small, one has to discard the
     ## corresponding return.periods too
-    if ( length( x.return.levels$return.levels ) <
+    if ( length( x.return.levels$return.level ) <
          length( x.period ) ){
       x.period <- x.period[ length( x.period ) - 1 -
                             length(
-                                x.return.levels$return.levels ) :
+                                x.return.levels$return.level ) :
                             length( x.period ) ]
     }
     if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" &&
          radioEvdStatistics() == "GEV" ){
-      x.return.levels$return.levels <-
-        x.return.levels$return.levels* ( -1 )
-      x.return.levels$ci.low <- x.return.levels$return.levels +
-        as.numeric( x.return.levels$errors )
-      x.return.levels$ci.high <- x.return.levels$return.levels -
-        as.numeric( x.return.levels$errors )
+      x.return.levels$return.level <-
+        x.return.levels$return.level* ( -1 )
+      x.return.levels$ci.low <- x.return.levels$return.level +
+        as.numeric( x.return.levels$error )
+      x.return.levels$ci.high <- x.return.levels$return.level -
+        as.numeric( x.return.levels$error )
     } else {
-      x.return.levels$ci.low <- x.return.levels$return.levels -
-        as.numeric( x.return.levels$errors )
-      x.return.levels$ci.high <- x.return.levels$return.levels +
-        as.numeric( x.return.levels$errors )
+      x.return.levels$ci.low <- x.return.levels$return.level -
+        as.numeric( x.return.levels$error )
+      x.return.levels$ci.high <- x.return.levels$return.level +
+        as.numeric( x.return.levels$error )
     }
     ## Generate a data.frame for the return level plot.
     if ( radioEvdStatistics() == "GEV" ){
       plot.data <- data.frame(
           x = Reduce( c, lapply( x.period, function( xx )
             -log( 1/ xx ) ) ),
-          y = x.return.levels$return.levels,
+          y = x.return.levels$return.level,
           y.low = x.return.levels$ci.low,
           y.high = x.return.levels$ci.high )
     } else {
@@ -650,7 +650,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       plot.data <- data.frame(
           x = Reduce( c, lapply( x.period, function( xx )
             -log( 1/ xx ) ) ),
-          y = x.return.levels$return.levels,
+          y = x.return.levels$return.level,
           y.low = x.return.levels$ci.low,
           y.high = x.return.levels$ci.high )
     }
@@ -660,13 +660,14 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
                 colour = colour.ts, na.rm = TRUE ) +
       geom_point( aes( y = y ), colour = colour.ts,
                  shape = 1, size = 2, alpha = 0.8, na.rm = TRUE ) +
-      geom_line( aes( y = y.low ),
-                linetype = 2, colour = colour.extremes, na.rm = TRUE ) +
-      geom_line( aes( y = y.high ),
-                linetype = 2, colour = colour.extremes, na.rm = TRUE ) +
+      geom_line( aes( y = y.low ), linetype = 2,
+                colour = colour.extremes, na.rm = TRUE ) +
+      geom_line( aes( y = y.high ), linetype = 2,
+                colour = colour.extremes, na.rm = TRUE ) +
       xlab( "return period" ) + ylab( "return level" ) +
-      theme_bw() + scale_x_log10( breaks = plot.data$x[ c( 1, 2, 4, 11 ) ],
-                                 labels = function( ll ) round( exp( ll ) ) ) +
+      theme_bw() + scale_x_log10(
+                       breaks = plot.data$x[ c( 1, 2, 4, 11 ) ],
+                       labels = function( ll ) round( exp( ll ) ) ) +
       theme( axis.title = element_text( size = 15, colour = colour.ts ),
             axis.text = element_text( size = 12, colour = colour.ts ) )
     if ( !is.null( buttonMinMax() ) ){

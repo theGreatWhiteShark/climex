@@ -289,7 +289,8 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                                model = model, error.estimation = "none",
                                total.length = length(
                                    data.selected[[ 1 ]][[ rr ]] ),
-                               threshold = threshold )
+                               threshold = threshold
+                               )$return.level
       }
     } else {
       ## Calculating the return levels for the minimal extremes
@@ -307,7 +308,8 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                                model = model, error.estimation = "none",
                                total.length = length(
                                    data.selected[[ 1 ]][[ rr ]] ),
-                               threshold = threshold )
+                               threshold = threshold
+                               )$return.level
       }
     }
     data.selected[[ 2 ]]$return.level <- return.level.vector
@@ -420,16 +422,18 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                                     model = model,
                                     error.estimation = "none",
                                     threshold = x.fit.gev$threshold,
-                                    total.length = x.data[[ 1 ]] )
-    } else
-      x.return.level <- ( -1 )* climex:::return.level(
-                                             c( -1* x.fit.evd$par[ 1 ],
-                                               x.fit.evd$par[ 2 ],
-                                               x.fit.evd$par[ 3 ] ),
-                                             return.period = c( 100,
-                                                               50, 20 ),
-                                             model = model,
-                                             error.estimation = "none" )
+                                    total.length = x.data[[ 1 ]]
+                                )$return.level
+    } else {
+      x.return.level <- ( -1 )*
+        climex:::return.level(
+                     c( -1* x.fit.evd$par[ 1 ],
+                       x.fit.evd$par[ 2 ],
+                       x.fit.evd$par[ 3 ] ),
+                     return.period = c( 100, 50, 20 ),
+                     model = model,
+                     error.estimation = "none" )$return.level
+    }
     x.df <- data.frame( names = c( "100y return level",
                                   "50y return level",
                                   "20y return level" ),

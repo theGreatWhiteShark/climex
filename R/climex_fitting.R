@@ -266,7 +266,8 @@ generalFitStatistics <- function( reactive.fitting, reactive.extreme,
                                              x.fit.evd$par[ 2 ],
                                              x.fit.evd$par[ 3 ] ),
                                           error.estimation = "none",
-                                          model = "gev" ) )
+                                          model = "gev"
+                                          )$return.level )
       } else {
         current <- c( x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
                      x.fit.evd$par[ 3 ],
@@ -274,7 +275,8 @@ generalFitStatistics <- function( reactive.fitting, reactive.extreme,
                      climex:::bic( x.fit.evd ),
                      climex::return.level( x.fit.evd$par,
                                           error.estimation = "none",
-                                          model = "gev" ) )
+                                          model = "gev"
+                                          )$return.level )
       }
     } else {
       current <- c( sliderThreshold(), x.fit.evd$par[ 1 ], x.fit.evd$par[ 2 ],
@@ -285,7 +287,8 @@ generalFitStatistics <- function( reactive.fitting, reactive.extreme,
                                error.estimation = "none",
                                threshold = sliderThreshold(),
                                model = "gpd",
-                               total.length = length( x.data[[ 2 ]] ) ) )
+                               total.length = length( x.data[[ 2 ]] )
+                           )$return.level )
     }
     ## Negating the return level to get the correct results for
     ## the minimum
