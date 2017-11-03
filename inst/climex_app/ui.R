@@ -1,1 +1,1 @@
-shinyUI( climex.ui() )
+shinyUI( climex::climex.ui() )

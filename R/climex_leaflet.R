@@ -281,7 +281,6 @@ leafletClimex <- function( input, output, session, reactive.chosen,
       for ( rr in 1 : length( data.blocked ) ){
         return.level.vector[ rr ] <-
           climex::return.level( fit.interactive( data.blocked[[ rr ]],
-                                                x.initial = NULL,
                                                 radioEvdStatistics,
                                                 buttonMinMax,
                                                 sliderThreshold ),
@@ -296,7 +295,6 @@ leafletClimex <- function( input, output, session, reactive.chosen,
       ## Calculating the return levels for the minimal extremes
       for ( rr in 1 : length( data.blocked ) ){
         auxiliary.fit <- fit.interactive( data.blocked[[ rr ]],
-                                         x.initial = NULL,
                                          radioEvdStatistics,
                                          buttonMinMax,
                                          sliderThreshold )
