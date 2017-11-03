@@ -1,3 +1,13 @@
+# v1.2.0
+The `return.level` function now returns a list containing both the
+estimates and the approximated errors, regardless of whether an error
+estimation was selected or not. The error estimate for the **GP return
+level** can now be obtained without supplying the *total.length*
+variable. Its value will be estimated. The `fit.gev` function is able
+to directly fit a **Gumbel distribution** by supplying an initial
+parameter combination with a shape parameter equal to zero. In the
+same fashion the **exponential distribution** can be fitted via the
+`fit.gpd` function.
 # v1.1.0
 All the optimization is now relying on the augmented Lagrangian method implemented in the 'alabama' package. Therefore the 'dfoptim' dependence, all traces of rerunning the algorithm and the third tab of the Climex app were removed. Additional functions for the augmented likelihood and its gradient were added. Changes of the API of the DWD were incorporated.
 # v1.0.3
