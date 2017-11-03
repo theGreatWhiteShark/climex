@@ -7,16 +7,18 @@
 fit.gpd(x, initial = NULL, threshold = NULL,
   likelihood.function = likelihood,
   gradient.function = climex:::likelihood.gradient,
-  error.estimation = c("MLE", "MC", "none"), optim.method = c("Nelder-Mead",
-  "BFGS", "CG"), monte.carlo.sample.size = 100, return.period = 100,
-  total.length = NULL, silent = TRUE, ...)
+  error.estimation = c("MLE", "MC", "none"), monte.carlo.sample.size = 100,
+  return.period = 100, total.length = NULL, silent = TRUE, ...)
 }
 \arguments{
 \item{x}{Threshold exceedances with the threshold already subtracted.}
 
 \item{initial}{Initial values for the GPD parameters. Has to be
-provided as 2x1 vector. If NULL the parameters are estimated with the
-function \code{\link{likelihood.initials}}. Default = NULL}
+provided as 2x1 vector. If NULL the parameters are estimated
+with the function \code{\link{likelihood.initials}}. If the
+shape parameter is set to 0 the exponential distribution instead
+of the GP one is fitted. But this its strongly discouraged to do
+so! Default = NULL}
 
 \item{threshold}{Optional threshold used to extract the exceedances
 x from the original series. If present it will be added to the
@@ -52,9 +54,6 @@ occasionally does not work). In such cases the Monte Carlo method is
 used. Option "none" just skips the calculation of the error.
 Default = "MLE".}
 
-\item{optim.method}{Choosing the optimization algorithm used within
-\code{\link{stats::optim}}. The default one is the "Nelder-Mead".}
-
 \item{monte.carlo.sample.size}{Number of samples used to obtain the
 Monte Carlo estimate of the standard error of the fitting.
 Default = 100.}
@@ -62,10 +61,11 @@ Default = 100.}
 \item{return.period}{Quantiles at which the return level is going to
 be evaluated. Class "numeric". Default = 100.}
 
-\item{total.length}{Uses the maximum likelihood estimator to calculate
-the probability of a measurement to be an exceedance. Else an estimate
-based on the mean number of exceedances in the available years (time
-stamps of the class 'xts' time series) will be used. Default = NULL.}
+\item{total.length}{Uses the maximum likelihood estimator to
+calculate the probability of a measurement to be an
+exceedance. Else an estimate based on the mean number of
+exceedances in the available years (time stamps of the class
+'xts' time series) will be used. Default = NULL.}
 
 \item{silent}{Determines whether or not warning messages shall be
 displayed and results shall be reported. Default = TRUE.}
@@ -125,8 +125,22 @@ The 'total.length' argument refers to the length of the original time
 series before the thresholding was applied. If present it will be used
 to calculate the maximum likelihood estimate of the probability of an
 observation to be a threshold exceedance (necessary to determine the
-estimation errors for the calculated return levels). Else an estimator
-based on mean number of exceedances per year will be used.
+estimation errors for the calculated return levels). Else an
+estimator based on mean number of exceedances per year will be
+used.
+
+
+If the user instead wants to fit just the exponential distribution
+and not the entire GP distribution, the shape parameter of the
+`initial' has to be set to 0. But in practice this is strongly
+discouraged since it will yield inferior results.
+
+I found the Nelder-Mead method to be more robust to starting
+points more far away from the global optimum. This also holds
+for the inner routine of the augmented Lagrangian method. Since
+other routines, like CG and BFGS only cause problems in the
+extreme value analysis, there won't be an option to choose them
+in this package.
 }
 \examples{
 potsdam.anomalies <- anomalies( temp.potsdam )

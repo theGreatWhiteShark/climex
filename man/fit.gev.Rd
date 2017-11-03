@@ -6,16 +6,19 @@
 \usage{
 fit.gev(x, initial = NULL, likelihood.function = likelihood,
   gradient.function = likelihood.gradient, error.estimation = c("MLE", "MC",
-  "none"), optim.method = c("Nelder-Mead", "BFGS", "CG"),
-  monte.carlo.sample.size = 100, return.period = 100, silent = TRUE, ...)
+  "none"), monte.carlo.sample.size = 100, return.period = 100,
+  silent = TRUE, ...)
 }
 \arguments{
 \item{x}{Blocked time series to which the GEV distribution should
 be fitted.}
 
 \item{initial}{Initial values for the GEV parameters. Has to be
-provided as 3x1 vector. If NULL the parameters are estimated using
-\code{\link{likelihood.initials}}. Default = NULL}
+provided as 3x1 vector. If NULL the parameters are estimated
+using \code{\link{likelihood.initials}}. If the shape parameter
+is set to 0 the exponential distribution instead of the GP one
+is fitted. But this its strongly discouraged to do so! Default =
+NULL.}
 
 \item{likelihood.function}{Function, which is going to be optimized.
 Default: \code{\link{likelihood}}}
@@ -43,9 +46,6 @@ in the hessian) (which is also the reason why the ismev package
 occasionally does not work). In such cases the Monte Carlo method is
 used. Option "none" just skips the calculation of the error.
 Default = "none".}
-
-\item{optim.method}{Choosing the optimization algorithm used within
-\code{\link{stats::optim}}. The default one is the "Nelder-Mead".}
 
 \item{monte.carlo.sample.size}{Number of samples used to obtain the
 Monte Carlo estimate of the standard error of the fitting.
@@ -109,6 +109,18 @@ function would need.
 
 The negative log-likelihood of the Gumbel distribution is just fitted
 if the shape parameter is exactly equal to zero.
+
+If the user instead wants to fit just the Gumbel distribution and
+not the entire GEV distribution, the shape parameter of the
+`initial' has to be set to 0. But in practice this is strongly
+discouraged since it will yield inferior results.
+
+I found the Nelder-Mead method to be more robust to starting
+points more far away from the global optimum. This also holds
+for the inner routine of the augmented Lagrangian method. Since
+other routines, like CG and BFGS only cause problems in the
+extreme value analysis, there won't be an option to choose them
+in this package.
 }
 \examples{
 potsdam.anomalies <- anomalies( temp.potsdam )

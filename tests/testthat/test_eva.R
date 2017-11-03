@@ -5,6 +5,16 @@ x.thresh <- climex::threshold( temp.potsdam, threshold = 29 )
 x.block.fit <- fit.gev( x.block )
 x.thresh.fit <- fit.gpd( x.thresh, threshold = 29,
                         total.length = length( temp.potsdam ) )
+## Deal with the special cases of shape = 0 separately.
+initial.gumbel <- c( climex::likelihood.initials(
+                                 x.block, model = "gev" )[ 1 : 2 ], 
+                    0 )
+x.gumbel.fit <- climex::fit.gev( x.block, initial = initial.gumbel )
+initial.exp <- c( climex::likelihood.initials(
+                              x.thresh, model = "gpd" )[ 1 ], 0 )
+x.exp.fit <- climex::fit.gpd( x.thresh, initial = initial.exp,
+                             threshold = 29,
+                             total.length = length( temp.potsdam ) )
 
 test_that( "block's block length argument works", {
   expect_equal( length( climex::block( temp.potsdam ) ), 124 )
@@ -83,11 +93,24 @@ test_that( "return.level of fit results and GEV/GP parameters as input", {
                15.556303455 )
   expect_equal( climex::return.level( x.block.fit$par )$return.level,
                15.556303455 )
+  expect_equal( climex::return.level( x.gumbel.fit )$return.level,
+               17.9901487 )
+  expect_equal( climex::return.level( x.gumbel.fit$par )$return.level,
+               17.9901487 )
+  expect_equal( climex::return.level( x.thresh.fit )$return.level,
+               38.1899770466, tolerance = 5E-4 )
   expect_equal( climex::return.level( x.thresh.fit$par, model = "gpd",
                                      threshold = 29,
                                      thresholded.time.series =
                                        x.thresh )$return.level,
                38.1899770466, tolerance = 5E-4 )
+  expect_equal( climex::return.level( x.exp.fit )$return.level,
+               46.2283425, tolerance = 5E-4 )
+  expect_equal( climex::return.level( x.exp.fit$par, model = "gpd",
+                                     threshold = 29,
+                                     thresholded.time.series =
+                                       x.thresh )$return.level,
+               46.2283425, tolerance = 5E-4 )
   ## The next one uses a more accurate estimate for the probability of
   ## a threshold exceedance.
   expect_equal( climex::return.level(
@@ -126,21 +149,13 @@ test_that( "return.level get GEV error estimation right for MLE", {
                            return.period = c( 10, 100, 332 ),
                            error.estimation = "MLE" )$error ),
       c( 0.0281913645577, 0.0643674174564, 0.1014328231061 ) )
-})
-## A dummy object where x.block.fit "pretends" to be of Gumbel type
-x.block.fit.gumbel <- x.block.fit
-x.block.fit.gumbel$par[ 3 ] <- 0
-test_that( "return.level get Gumbel error estimation right for MLE", {
   expect_equal( as.numeric(
-      climex::return.level( x.block.fit.gumbel,
+      climex::return.level( x.gumbel.fit,
                            return.period = c( 10, 100, 332 ),
                            error.estimation = "MLE" )$error ),
-      c( 0.06641291, 0.2155336, 0.3314469 ), tolerance = 1E-6 )
+      c( 0.0786997134, 0.2326657115, 0.3473161352 ) )
 })
-## Dummy threshold fit holding no total.length parameter
-x.thresh.fit <- fit.gpd( x.thresh, threshold = 29,
-                        total.length = length( temp.potsdam ) )
-x.thresh.fit.no.total.length <- x.thresh.fit
+## A dummy object without the total.length argument
 x.thresh.fit.no.total.length$control$total.length <- NULL
 test_that( "return.level get GP error estimation right for MLE", {
   ## Without the total.length supplied (has to be estimated)
@@ -158,29 +173,12 @@ test_that( "return.level get GP error estimation right for MLE", {
                            )$error ),
       c( 0.09867242, 0.09252132 ),
       tolerance = 1E-6 )
-})
-## Dummy Exponential fit with shape = 0 or/and not total.length
-## this is of course just a stupid scenario and no real exponential
-## fit since the Hessian was not modified.
-x.exp <- x.thresh.fit
-x.exp$par[ 2 ] <- 0
-x.exp.no.total.length <- x.exp
-x.exp.no.total.length$control$total.length <- NULL
-test_that( "return.level get Exponential (GP with shape = 0) error estimation right for MLE", {
-  ## Without the total.length supplied (has to be estimated)
+  ## Exponential
   expect_equal( as.numeric(
-      climex::return.level( x.exp.no.total.length,
-                           return.period = c( 42, 637 ),
+      climex::return.level( x.exp.fit, return.period = c( 42, 637 ),
                            error.estimation = "MLE", threshold = 29,
                            )$error ),
-      c( 5.974137, 14.596265 ),
-      tolerance = 1E-6)
-  ## With total.length supplied
-  expect_equal( as.numeric(
-      climex::return.level( x.exp, return.period = c( 42, 637 ),
-                           error.estimation = "MLE", threshold = 29,
-                           )$error ),
-      c( 5.982115, 14.608766 ),
+      c( 3.73152007, 9.12151866 ),
       tolerance = 1E-6 )
 })
 test_that( "return.level get the error estimation right for MC", { 

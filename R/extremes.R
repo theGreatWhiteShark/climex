@@ -566,7 +566,43 @@ return.level <- function( x, return.period = 100,
     ## case, recalculate it in order to access the fitting error
     ## estimates. Caution: this one will be without the constraints!
     ## Calculating the errors using the MLE
-    error.covariance <- try( solve( x$control$hessian ), silent = silent )
+    ##
+    ## If the shape parameter is exactly zero and the Gumbel
+    ## distribution was fitted, the third row and column were just
+    ## augmented by 0.
+    if ( model == "gev" ){
+      if ( x$par[ 3 ] != 0 ){
+        error.covariance <- try( solve( x$control$hessian ),
+                                silent = silent )
+      } else {
+        ## Omit the augmentation
+        error.covariance <- try( solve(
+            x$control$hessian[ 1 : 2, 1 : 2 ] ),
+            silent = silent )
+        ## Augment the result again to ensure compatibility
+        if ( class( error.covariance ) != "try-error" ){
+          dummy.matrix <- matrix( rep( 0, 9 ), nrow = 3, ncol = 3 )
+          dummy.matrix[ 1 : 2, 1 : 2 ] <- error.covariance
+          error.covariance <- dummy.matrix
+        }
+      }
+    } else {
+      if ( x$par[ 2 ] != 0 ){
+        error.covariance <- try( solve( x$control$hessian ),
+                                silent = silent )
+      } else {
+        ## Omit the augmentation
+        error.covariance <- try( solve(
+            x$control$hessian[ 1 ] ),
+            silent = silent )
+        ## Augment the result again to ensure compatibility
+        if ( class( error.covariance ) != "try-error" ){
+          dummy.matrix <- matrix( rep( 0, 4 ), nrow = 2, ncol = 2 )
+          dummy.matrix[ 1 ] <- error.covariance
+          error.covariance <- dummy.matrix
+        }
+      }
+    }
     if ( class( error.covariance ) == "try-error" ){
       x.hessian <- numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
                                      model = model )

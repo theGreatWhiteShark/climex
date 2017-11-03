@@ -29,6 +29,11 @@
 ##' The negative log-likelihood of the Gumbel distribution is just fitted
 ##' if the shape parameter is exactly equal to zero.
 ##'
+##' If the user instead wants to fit just the Gumbel distribution and
+##' not the entire GEV distribution, the shape parameter of the
+##' `initial' has to be set to 0. But in practice this is strongly
+##' discouraged since it will yield inferior results.
+##'
 ##' I found the Nelder-Mead method to be more robust to starting
 ##' points more far away from the global optimum. This also holds
 ##' for the inner routine of the augmented Lagrangian method. Since
@@ -39,8 +44,11 @@
 ##' @param x Blocked time series to which the GEV distribution should
 ##' be fitted.
 ##' @param initial Initial values for the GEV parameters. Has to be
-##' provided as 3x1 vector. If NULL the parameters are estimated using
-##' \code{\link{likelihood.initials}}. Default = NULL
+##'   provided as 3x1 vector. If NULL the parameters are estimated
+##'   using \code{\link{likelihood.initials}}. If the shape parameter
+##'   is set to 0 the exponential distribution instead of the GP one
+##'   is fitted. But this its strongly discouraged to do so! Default =
+##'   NULL.
 ##' @param likelihood.function Function, which is going to be optimized.
 ##' Default: \code{\link{likelihood}}
 ##' @param gradient.function If NULL a finite difference method is
@@ -122,39 +130,68 @@ fit.gev <- function( x, initial = NULL,
   ## other routines, like CG and BFGS only cause problems in the
   ## extreme value analysis, there won't be an option to choose them
   ## in this package.
-  ##
-  ## The augmented Lagrangian method allowing non-linear constraints
-  ## will be used in here. The code depends of the 'alabama' package.
-  ## In principle I could also integrate the routine in here, but let's
-  ## stick to the Linux principle.
-  ## The Rsolnp package did not performed as well as the alabama one.
-  ## It takes two orders of magnitude longer and gets stuck for
-  ## certain initial parameter combinations.
-  ## If the shape parameter is exactly equal to zero and the
-  ## likelihood function switches to the Gumbel distribution, the
-  ## constraints involving the shape parameter become true and are
-  ## redundant anyway.
-  ##
-  ## The auglag optimization function seems to produce results
-  ## reliable only up to the 5E-4 and I can't see why this is
-  ## happening. Adding various additional options and tolerances to
-  ## both auglag and optim doesn't change the matter. Since these
-  ## deviations are minor ones and the actual MLE estimates of the GEV
-  ## and GP parameters are way bigger, I will just leave it this
-  ## way. 
-  suppressWarnings(
-      res.alabama <- auglag(
-          par = initial, fn = likelihood.function,
-          gr = gradient.function,
-          hin = function( parameters, x.in, ... ){
-            return( as.numeric(
-                c( parameters[ 2 ] - .03,
-                  .95 + parameters[ 3 ]* ( x.in - parameters[ 1 ])/
-                  parameters[ 2 ],
-                  parameters[ 3 ] + .95 ) ) ) },
-          control.outer = list( trace = !silent,
-                               method = "Nelder-Mead" ),
-          x.in = x, model = "gev" ) )
+
+  if ( as.numeric( initial[ 3 ] ) != 0 ){
+    ## Fitting the negative log-likelihood of the GEV distribution.
+    ## The augmented Lagrangian method allowing non-linear constraints
+    ## will be used in here. The code depends of the 'alabama' package.
+    ## In principle I could also integrate the routine in here, but let's
+    ## stick to the Linux principle.
+    ## The Rsolnp package did not performed as well as the alabama one.
+    ## It takes two orders of magnitude longer and gets stuck for
+    ## certain initial parameter combinations.
+    ## If the shape parameter is exactly equal to zero and the
+    ## likelihood function switches to the Gumbel distribution, the
+    ## constraints involving the shape parameter become true and are
+    ## redundant anyway.
+    ##
+    ## The auglag optimization function seems to produce results
+    ## reliable only up to the 5E-4 and I can't see why this is
+    ## happening. Adding various additional options and tolerances to
+    ## both auglag and optim doesn't change the matter. Since these
+    ## deviations are minor ones and the actual MLE estimates of the GEV
+    ## and GP parameters are way bigger, I will just leave it this
+    ## way. 
+    suppressWarnings(
+        res.alabama <- auglag(
+            par = initial, fn = likelihood.function,
+            gr = gradient.function,
+            hin = function( parameters, x.in, ... ){
+              return( as.numeric(
+                  c( parameters[ 2 ] - .03,
+                    .95 + parameters[ 3 ]* ( x.in - parameters[ 1 ])/
+                    parameters[ 2 ],
+                    parameters[ 3 ] + .95 ) ) ) },
+            control.outer = list( trace = !silent,
+                                 method = "Nelder-Mead" ),
+            x.in = x, model = "gev" ) )
+  } else {
+    ## If the shape parameter in the initial parameter combination was
+    ## set to zero, the users want to fit to the pure Gumbel
+    ## distribution instead to the GEV distribution. Some changes to
+    ## the auglag call are necessary since the algorithm can 'escape'
+    ## the Gumbel likelihood if it encounters it during the very
+    ## beginning of the optimization.
+    suppressWarnings(
+        res.alabama <- auglag(
+            par = initial[1:2], fn =  function( parameters, ... ){
+              likelihood( c( as.numeric( parameters ), 0 ), ... ) },
+            gr = function( parameters, ... ){
+              likelihood.gradient(
+                  c( as.numeric( parameters ), 0 ), ... )[ 1 : 2 ] },
+            hin = function( parameters, x.in, ... ){
+              return( parameters[ 2 ] - .03 ) },
+            control.outer = list( trace = !silent,
+                                 method = "Nelder-Mead" ),
+            x.in = x, model = "gev" ) )
+    ## Add a couple of zeros for the shape parameter to ensure
+    ## compatibility to the other parts of the code.
+    res.alabama$par <- c( res.alabama$par, 0 )
+    res.alabama$gradient <- c( res.alabama$gradient, 0 )
+    dummy.hessian <- matrix( rep( 0, 9 ), nrow = 3, ncol = 3 )
+    dummy.hessian[ 1 : 2, 1 : 2 ] <- res.alabama$hessian
+    res.alabama$hessian <- dummy.hessian
+  }
   ## There is no need for the user to deal with all the outputs of the
   ## auglag function. So let's reduce them. 
   res.optim <- list( par = res.alabama$par,
@@ -180,8 +217,25 @@ fit.gev <- function( x, initial = NULL,
     ## hessian may be bad conditioned, so I will try to invert it. If
     ## this is not possible the Monte Carlo-based method will be used
     ## instead.
-    error.covariance <- try( solve( res.optim$control$hessian ),
-                            silent = silent )
+    ##
+    ## If the shape parameter is exactly zero and the Gumbel
+    ## distribution was fitted, the third row and column were just
+    ## augmented by 0.
+    if ( res.optim$par[ 3 ] != 0 ){
+      error.covariance <- try( solve( res.optim$control$hessian ),
+                              silent = silent )
+    } else {
+      ## Omit the augmentation
+      error.covariance <- try( solve(
+          res.optim$control$hessian[ 1 : 2, 1 : 2 ] ),
+          silent = silent )
+      ## Augment the result again to ensure compatibility
+      if ( class( error.covariance ) != "try-error" ){
+        dummy.matrix <- matrix( rep( 0, 9 ), nrow = 3, ncol = 3 )
+        dummy.matrix[ 1 : 2, 1 : 2 ] <- error.covariance
+        error.covariance <- dummy.matrix
+      }
+    }
     if ( class( error.covariance ) == "try-error" ||
          error.estimation == "MC" ||
          any( is.nan( res.optim$control$hessian ) ) ){
@@ -317,6 +371,12 @@ fit.gev <- function( x, initial = NULL,
 ##' estimator based on mean number of exceedances per year will be
 ##' used.
 ##'
+##'
+##' If the user instead wants to fit just the exponential distribution
+##' and not the entire GP distribution, the shape parameter of the
+##' `initial' has to be set to 0. But in practice this is strongly
+##' discouraged since it will yield inferior results.
+##' 
 ##' I found the Nelder-Mead method to be more robust to starting
 ##' points more far away from the global optimum. This also holds
 ##' for the inner routine of the augmented Lagrangian method. Since
@@ -326,8 +386,11 @@ fit.gev <- function( x, initial = NULL,
 ##' 
 ##' @param x Threshold exceedances with the threshold already subtracted.
 ##' @param initial Initial values for the GPD parameters. Has to be
-##' provided as 2x1 vector. If NULL the parameters are estimated with the
-##' function \code{\link{likelihood.initials}}. Default = NULL
+##'   provided as 2x1 vector. If NULL the parameters are estimated
+##'   with the function \code{\link{likelihood.initials}}. If the
+##'   shape parameter is set to 0 the exponential distribution instead
+##'   of the GP one is fitted. But this its strongly discouraged to do
+##'   so! Default = NULL
 ##' @param threshold Optional threshold used to extract the exceedances
 ##' x from the original series. If present it will be added to the
 ##' return level to produce a value which fits to underlying time series.
@@ -415,36 +478,74 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
     error.estimation <- "MLE"
   error.estimation <- match.arg( error.estimation )
   ## Optimization
-  ## The augmented Lagrangian method allowing non-linear constraints
-  ## will be used in here. The code depends of the 'alabama' package.
-  ## In principle I could also integrate the routine in here, but let's
-  ## stick to the Linux principle.
-  ## The Rsolnp package did not performed as well as the alabama one.
-  ## It takes two orders of magnitude longer and gets stuck for
-  ## certain initial parameter combinations.
-  ## For shape parameter equal to zero only the first constraint is
-  ## relevant and the other ones can not be violated anymore. So no
-  ## need to remove them.
-  ##
-  ## The auglag optimization function seems to produce results
-  ## reliable only up to the 5E-4 and I can't see why this is
-  ## happening. Adding various additional options and tolerances to
-  ## both auglag and optim doesn't change the matter. Since these
-  ## deviations are minor ones and the actual MLE estimates of the GEV
-  ## and GP parameters are way bigger, I will just leave it this
-  ## way. 
-  suppressWarnings(
-      res.alabama <- auglag(
-          par = initial, fn = likelihood.function,
-          gr = gradient.function,
-          hin = function( parameters, x.in, ... ){
-            return( as.numeric(
-                c( parameters[ 1 ] - .03,
-                  .95 + parameters[ 2 ]* ( x.in )/ parameters[ 1 ],
-                  parameters[ 2 ] + .95 ) ) ) },
-          control.outer = list( trace = !silent,
-                               method = "Nelder-Mead" ),
-          x.in = x, model = "gpd" ) )
+  ## 
+  ## I found the Nelder-Mead method to be more robust to starting
+  ## points more far away from the global optimum. This also holds
+  ## for the inner routine of the augmented Lagrangian method. Since
+  ## other routines, like CG and BFGS only cause problems in the
+  ## extreme value analysis, there won't be an option to choose them
+  ## in this package.
+
+  if ( as.numeric( initial[ 2 ] ) != 0 ){
+    ## Maximization of the negative log-likelihood of the GP
+    ## distribution.
+    ## The augmented Lagrangian method allowing non-linear constraints
+    ## will be used in here. The code depends of the 'alabama' package.
+    ## In principle I could also integrate the routine in here, but let's
+    ## stick to the Linux principle.
+    ## The Rsolnp package did not performed as well as the alabama one.
+    ## It takes two orders of magnitude longer and gets stuck for
+    ## certain initial parameter combinations.
+    ## For shape parameter equal to zero only the first constraint is
+    ## relevant and the other ones can not be violated anymore. So no
+    ## need to remove them.
+    ##
+    ## The auglag optimization function seems to produce results
+    ## reliable only up to the 5E-4 and I can't see why this is
+    ## happening. Adding various additional options and tolerances to
+    ## both auglag and optim doesn't change the matter. Since these
+    ## deviations are minor ones and the actual MLE estimates of the GEV
+    ## and GP parameters are way bigger, I will just leave it this
+    ## way. 
+    suppressWarnings(
+        res.alabama <- auglag(
+            par = initial, fn = likelihood.function,
+            gr = gradient.function,
+            hin = function( parameters, x.in, ... ){
+              return( as.numeric(
+                  c( parameters[ 1 ] - .03,
+                    .95 + parameters[ 2 ]* ( x.in )/ parameters[ 1 ],
+                    parameters[ 2 ] + .95 ) ) ) },
+            control.outer = list( trace = !silent,
+                                 method = "Nelder-Mead" ),
+            x.in = x, model = "gpd" ) )
+  } else {
+    ## If the shape parameter in the initial parameter combination was
+    ## set to zero, the users want to fit to the pure exponential
+    ## distribution instead to the GP distribution. Some changes to
+    ## the auglag call are necessary since the algorithm can 'escape'
+    ## the exponential likelihood if it encounters it during the very
+    ## beginning of the optimization.
+    suppressWarnings(
+        res.alabama <- auglag(
+            par = initial[ 1 ], fn =  function( parameters, ... ){
+              likelihood( c( as.numeric( parameters ), 0 ), ... ) },
+            gr = function( parameters, ... ){
+              likelihood.gradient(
+                  c( as.numeric( parameters ), 0 ), ... )[ 1 ] },
+            hin = function( parameters, x.in, ... ){
+              return( parameters[ 1 ] - .03 ) },
+            control.outer = list( trace = !silent,
+                                 method = "Nelder-Mead" ),
+            x.in = x, model = "gpd" ) )
+    ## Add a couple of zeros for the shape parameter to ensure
+    ## compatibility to the other parts of the code.
+    res.alabama$par <- c( res.alabama$par, 0 )
+    res.alabama$gradient <- c( res.alabama$gradient, 0 )
+    dummy.hessian <- matrix( rep( 0, 4 ), nrow = 2, ncol = 2 )
+    dummy.hessian[ 1 ] <- res.alabama$hessian
+    res.alabama$hessian <- dummy.hessian
+  }
   ## There is no need for the user to deal with all the outputs of the
   ## auglag function. So let's reduce them. 
   res.optim <- list( par = res.alabama$par,
@@ -466,8 +567,26 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
                         return.period = return.period ) )
   ## For an adequate calculation of the return level
   ## Error estimation
+  
   if ( error.estimation != "none" ){
-    error.covariance <- try( solve( res.optim$control$hessian ) )
+    ## If the shape parameter is exactly zero and the Gumbel
+    ## distribution was fitted, the third row and column were just
+    ## augmented by 0.
+    if ( res.optim$par[ 2 ] != 0 ){
+      error.covariance <- try( solve( res.optim$control$hessian ),
+                              silent = silent )
+    } else {
+      ## Omit the augmentation
+      error.covariance <- try( solve(
+          res.optim$control$hessian[ 1 ] ),
+          silent = silent )
+      ## Augment the result again to ensure compatibility
+      if ( class( error.covariance ) != "try-error" ){
+        dummy.matrix <- matrix( rep( 0, 4 ), nrow = 2, ncol = 2 )
+        dummy.matrix[ 1 ] <- error.covariance
+        error.covariance <- dummy.matrix
+      }
+    }
     if ( class( error.covariance ) == "try-error" ||
          error.estimation == "MC" ||
          any( is.nan( res.optim$control$hessian ) ) ){
