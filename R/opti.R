@@ -205,7 +205,7 @@ fit.gev <- function( x, initial = NULL,
               sqrt( stats::var( Reduce( c, lapply( samples.fit, (
                 function( z )
                   climex::return.level( z,                                                                    return.period = return.period[ rr ]
-                                       ) ) ) ) ) ) )
+                                       )$return.level ) ) ) ) ) )
       }
       errors <- as.numeric( errors )
       names( errors ) <- c( "location", "scale", "shape",
@@ -222,10 +222,19 @@ fit.gev <- function( x, initial = NULL,
         yp <- -log( 1 - 1/return.period[ rr ] )
         scale <- parameter.estimate[ 2 ]
         shape <- parameter.estimate[ 3 ]
-        dz <- c( 1, -shape^{ -1 }* ( 1 - yp^{ -shape } ),
-                scale* shape^{ -2 }* ( 1 - yp^{ -shape } ) -
-                scale* shape^{ -1 }* yp^{ -shape }* log( yp ) )
-        errors <- cbind( errors, dz %*% error.covariance %*% dz )
+        if ( shape != 0 ){
+          ## GEV distribution
+          dz <- c( 1, -shape^{ -1 }* ( 1 - yp^{ -shape } ),
+                  scale* shape^{ -2 }* ( 1 - yp^{ -shape } ) -
+                  scale* shape^{ -1 }* yp^{ -shape }* log( yp ) )
+          errors <- cbind( errors, dz %*% error.covariance %*% dz )
+        } else {
+          ## Gumbel distribution
+          dz <- c( 1, -log( yp ) )
+          errors <- cbind( errors,
+                          dz %*% error.covariance[ 1 : 2, 1 : 2 ] %*%
+                          dz )
+        }
       }
       names( errors ) <- c( "location", "scale", "shape",
                            paste0( return.period, ".rlevel" ) )
@@ -243,8 +252,9 @@ fit.gev <- function( x, initial = NULL,
   ## adding the return levels
   res.optim$return.level <- Reduce(
       c, lapply( return.period,
-                function( y ) climex::return.level( res.optim,
-                                                   y ) ) )
+                function( y )
+                  climex::return.level( res.optim, y
+                                       )$return.level ) )
   names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
   res.optim$x <- x
 
@@ -472,7 +482,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
                              threshold = threshold,
                              total.length = total.length,
                              thresholded.time.series = x,
-                             silent = silent )
+                             silent = silent )$return.level
                 ) ) ) ) )
       }
       names( errors ) <- c( "scale", "shape",
@@ -492,8 +502,9 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
         ## exceedance per year. This way the unit of the provided return
         ## level and its error are  not 'per observation' but 'per year'.
         ## In this step we harness the power of the 'xts' package
-        m <- return.period* mean( apply.yearly( x,
-                                               function( y ) length( y ) ) )
+        m <- return.period*
+          mean( apply.yearly( x, function( y ) length( y ) ) )
+        zeta <- NULL
       }
       errors.aux <- sqrt( diag( error.covariance ) ) # GPD parameters
       errors <- data.frame( errors.aux[ 1 ], errors.aux[ 2 ] )
@@ -501,12 +512,50 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
       parameter.estimate <- res.optim$par
       ## Formula according to Stuart Coles p. 82
       for ( rr in 1 : length( return.period ) ){
-          scale <- parameter.estimate[ 1 ]
-          shape <- parameter.estimate[ 2 ]
-          dz <- c( ( m[ rr ]^ shape - 1 )/ shape,
+        scale <- parameter.estimate[ 1 ]
+        shape <- parameter.estimate[ 2 ]
+        if ( is.null( zeta ) ){
+          ## Calculate the exceedance probability
+          zeta <- m[ rr ]/ ( return.period[ rr ]* 365.25 )
+        }
+        if ( shape != 0 ){
+          ## GP distribution
+          dz <- c( scale* m^shape* zeta^{ shape - 1 },
+                  ( m[ rr ]^ shape - 1 )/ shape,
                   -scale* shape^{ -2 }*( m[ rr ]^shape - 1 ) +
                   scale/shape*m[ rr ]^shape* log( m[ rr ] ) )
-          errors <- cbind( errors, dz %*% error.covariance %*% dz )
+          ## Generate a dummy variance matrix to incorporate the
+          ## uncertainty of zeta.
+          error.matrix <- matrix( rep( 0, 9 ), nrow = 3, ncol = 3 )
+          if ( !is.null( total.length ) ){
+            ## If the total length of the underlying series BEFORE
+            ## thresholding is provided, we are glad to use it.
+            error.matrix[ 1, 1 ] <- zeta*( 1 - zeta )/ total.length
+          } else {
+            ## If not we have to estimate it using the MLE of zeta
+            ## number of exceedances/ total length.
+            error.matrix[ 1, 1 ] <- zeta^2*( 1 - zeta )/ length( x )
+          }
+          error.matrix[ 2 : 3, 2 : 3 ] <- error.covariance 
+          errors <- cbind( errors, dz %*% error.matrix %*% dz )
+        } else {
+          ## Exponential distribution
+          dz <- c( scale/ zeta, log( m[ rr ] ) )
+          ## Generate a dummy variance matrix to incorporate the
+          ## uncertainty of zeta.
+          error.matrix <- matrix( rep( 0, 4 ), nrow = 2, ncol = 2 )
+          if ( !is.null( total.length ) ){
+            ## If the total length of the underlying series BEFORE
+            ## thresholding is provided, we are glad to use it.
+            error.matrix[ 1, 1 ] <- zeta*( 1 - zeta )/ total.length
+          } else {
+            ## If not we have to estimate it using the MLE of zeta
+            ## number of exceedances/ total length.
+            error.matrix[ 1, 1 ] <- zeta^2*( 1 - zeta )/ length( x )
+          }
+          error.matrix[ 2, 2 ] <- as.numeric( errors[ 1 ] )
+          errors <- cbind( errors, dz %*% error.matrix %*% dz )
+        }
       }
       names( errors ) <- c( "scale", "shape",
                            paste0( return.period, ".rlevel" ) )
@@ -526,7 +575,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
         climex::return.level( res.optim, y, error.estimation = "none",
                              model = "gpd", threshold = threshold,
                              total.length = total.length,
-                             silent = silent ) ) )
+                             silent = silent )$return.level ) )
   names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
   return( res.optim )
 }
