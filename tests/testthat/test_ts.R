@@ -30,8 +30,8 @@ test_that( "remove.incomplete.years works as expected", {
   expect_error( climex::remove.incomplete.years(
                             as.numeric( temp.potsdam ) ) )
 })
-x.removed[ 1 ] <- -999
-test_that( "remove.incomplete.years get's rid of -999 in time series (like in the DWD for missing data",{
+x.removed[ 1 ] <- NA
+test_that( "remove.incomplete.years get's rid of NA in time series",{
   expect_equal( min( climex::remove.incomplete.years( x.removed ) ),
                -16 )
   expect_equal( length( climex::remove.incomplete.years( x.removed ) ),

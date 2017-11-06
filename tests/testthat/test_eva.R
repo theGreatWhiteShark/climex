@@ -156,6 +156,7 @@ test_that( "return.level get GEV error estimation right for MLE", {
       c( 0.0786997134, 0.2326657115, 0.3473161352 ) )
 })
 ## A dummy object without the total.length argument
+x.thresh.fit.no.total.length <- x.thresh.fit
 x.thresh.fit.no.total.length$control$total.length <- NULL
 test_that( "return.level get GP error estimation right for MLE", {
   ## Without the total.length supplied (has to be estimated)

@@ -2,15 +2,27 @@
 % Please edit documentation in R/ts.R
 \name{remove.incomplete.years}
 \alias{remove.incomplete.years}
-\title{Removes all years which contain either a NA or -999 or are incomplete.}
+\title{Removes all years, which contain either a NA or are
+  incomplete.}
 \usage{
-remove.incomplete.years(x)
+remove.incomplete.years(x, time.unit = 1)
 }
 \arguments{
-\item{x}{Time series. Currently only works with the class xts since reference date in other objects is rather hard to get.}
+\item{x}{Time series. Currently only works with the class xts
+since reference date in other objects is rather hard to get.}
+
+\item{time.unit}{Minimal differences found when applying the
+`diff' function to `x'. Default = 1.}
 }
 \value{
 Time series of class xts
+}
+\details{
+Since incomplete years are detected via the
+  difference in the time stamps of neighbouring points, the user
+  has to provide the basic time unit. (Numerical value of the
+  result of the `diff' function applied to two consecutive
+  points.) For daily data the value is 1.
 }
 \seealso{
 \code{\link{remove.seasonality}}
