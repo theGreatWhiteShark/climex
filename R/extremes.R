@@ -541,9 +541,9 @@ return.level <- function( x, return.period = 100,
     ## (Since there was not enough information supplied to calculate
     ## them).
     if ( model == "gev" ){
-      errors <- rep( NaN, 3 + length( return.period ) )
+      errors <- rep( NA, length( return.period ) )
     } else {
-      errors <- rep( NaN, 2 + length( return.period ) )
+      errors <- rep( NA, length( return.period ) )
     }
     return( list( return.level = return.levels, error = errors ) )
   } else if ( error.estimation == "MLE" ){
@@ -610,7 +610,7 @@ return.level <- function( x, return.period = 100,
       if ( any( is.nan( x.hessian ) ) ){
         ## If there are still NaN, let it be.
         warning( "return level: NaN in the hessian. Error estimates can not be calculated via the maximum likelihood estimates" )
-        return( c( NaN, NaN, NaN ) )
+        return( rep( NA, length( return.period ) ) )
       }
     }
     ## Delta method for the return level
