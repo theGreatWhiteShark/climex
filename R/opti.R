@@ -240,7 +240,7 @@ fit.gev <- function( x, initial = NULL,
          error.estimation == "MC" ||
          any( is.nan( res.optim$control$hessian ) ) ){
       parameter.estimate <- res.optim$par
-      number.of.samples <- 1000
+      number.of.samples <- monte.carlo.sample.size
       ## Draw a number of samples and fit the GEV parameters for all
       ## of them
       samples.list <- lapply( 1 : number.of.samples, function( y )
@@ -591,13 +591,14 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
          error.estimation == "MC" ||
          any( is.nan( res.optim$control$hessian ) ) ){
       parameter.estimate <- res.optim$par
-      number.of.samples <- 1000
+      number.of.samples <- monte.carlo.sample.size
       ## Draw a number of samples and fit the GPD parameters for all
       ## of them.
       samples.list <- lapply( 1 : number.of.samples, function( y )
         climex:::revd( length( x ), scale = parameter.estimate[ 1 ],
                       shape = parameter.estimate[ 2 ], model = "gpd",
                       silent = TRUE ) )
+      
       suppressWarnings(
           samples.fit <- try( lapply( samples.list, function( y )
             auglag( par = likelihood.initials( y, model = "gpd" ),
@@ -612,6 +613,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
                    control.outer = list( trace = FALSE,
                                         method = "Nelder-Mead" ),
                    x.in = y, model = "gpd" )$par ) ) )
+      
       if ( class( samples.fit ) == "try-error" ){
         errors <- c( NaN, NaN, NaN )
       } else {
@@ -1288,29 +1290,26 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
     ## a quite tedious thing to do).
     set.seed( 33221 )
     suppressWarnings({
-      while ( is.na(
-          climex::likelihood(
-                      x.initial, x.in = x,
-                      model = model ) ) ){
-                        if ( model == "gev" ){
-                          x.initial[ 1 ] <-
-                            x.initial[ 1 ] +  rnorm( 1, sd = .4 )
-                          x.initial[ 2 ] <- max( x.initial[ 2 ] +
-                                                 rnorm( 1, sd = .4 ),
-                                                .05 )
-                          x.initial[ 3 ] <-
-                            min( -.95, max( .95, x.initial[ 3 ] +
-                                                 rnorm( 1, sd = .2 ) )
-                                ) 
-                        } else {
-                          x.initial[ 1 ] <-
-                            max( x.initial[ 1 ] + rnorm( 1, sd = .4 ), 
-                                .05 )
-                          x.initial[ 2 ] <-
-                            min( -.95, max( .95, x.initial[ 2 ] +
-                                                 rnorm( 1, sd = .2 ) )
+      while ( is.na( climex::likelihood( x.initial, x.in = x,
+                                        model = model ) ) ){
+        if ( model == "gev" ){
+          x.initial[ 1 ] <- x.initial[ 1 ] +
+            rnorm( 1, sd = .2* x.initial[ 2 ] )
+          x.initial[ 2 ] <- max( x.initial[ 2 ] +
+                                 rnorm( 1, sd = .2* x.initial[ 2 ] ),
+                                .05 ) 
+          x.initial[ 3 ] <-
+            min( -.95, max( .95, x.initial[ 3 ] +
+                                 rnorm( 1, sd = .2* x.initial[ 2 ] ) ) )
+        } else {
+          x.initial[ 1 ] <- max( x.initial[ 1 ] +
+                                 rnorm( 1, sd = .2* x.initial[ 1 ] ),
+                                .05 ) 
+          x.initial[ 2 ] <-
+            min( -.95, max( .95, x.initial[ 2 ] +
+                                 rnorm( 1, sd = .2* x.initial[ 1 ] ) )
                                 ) } }
-    })
+    } )
     return( as.numeric( x.initial ) )
   }
 }

@@ -165,21 +165,21 @@ test_that( "return.level get GP error estimation right for MLE", {
                            return.period = c( 42, 637 ),
                            error.estimation = "MLE", threshold = 29,
                            )$error ),
-      c( 0.09892881, 0.09249856 ),
+      c( 0.09898939, 0.09264045 ),
       tolerance = 1E-6 )
   ## With total.length supplied
   expect_equal( as.numeric(
       climex::return.level( x.thresh.fit, return.period = c( 42, 637 ),
                            error.estimation = "MLE", threshold = 29,
                            )$error ),
-      c( 0.09867242, 0.09252132 ),
+      c( 0.09873307, 0.09266329 ),
       tolerance = 1E-6 )
   ## Exponential
   expect_equal( as.numeric(
       climex::return.level( x.exp.fit, return.period = c( 42, 637 ),
                            error.estimation = "MLE", threshold = 29,
                            )$error ),
-      c( 3.73152007, 9.12151866 ),
+      c( 3.731791, 9.122182 ),
       tolerance = 1E-6 )
 })
 test_that( "return.level get the error estimation right for MC", { 

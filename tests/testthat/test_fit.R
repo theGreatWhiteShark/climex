@@ -123,8 +123,8 @@ test_that( "fit.gpd's error estimation works", {
   expect_equal( as.numeric(
       climex::fit.gpd( x.thresh, error.estimation = "MC",
                       total.length = length( temp.potsdam ),
-                      monte.carlo.sample.size = 10 )$se ),
-      c( 0.2680637375583, 0.0409491757803, 0.2666002006646 ),
+                      monte.carlo.sample.size = 100 )$se ),
+      c( 0.25406002, 0.03777357, 0.26423247 ),
       tolerance = 8E-2 )
 })
 test_that( "fit.gpd's threshold argument affect the result the way it is supposed to", {
