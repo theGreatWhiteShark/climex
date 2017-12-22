@@ -72,7 +72,7 @@ leafletClimexUI <- function( id ){
 ##' number of years.
 ##'
 ##' @param input Namespace input. For more details check out
-##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html } }
+##' \url{http://shiny.rstudio.com/articles/modules.html}
 ##' @param output Namespace output.
 ##' @param session Namespace session.
 ##' @param reactive.chosen Reactive value containing a list of the list
@@ -134,7 +134,7 @@ leafletClimexUI <- function( id ){
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
@@ -499,7 +499,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".

@@ -25,7 +25,7 @@ sidebarDataBaseInput <- function(){
 ##' accessed from outside of this context.
 ##'
 ##' @param session Namespace session. For details check out
-##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html}}
+##' \url{http://shiny.rstudio.com/articles/modules.html}
 ##' 
 ##' @import shiny
 ##'
@@ -77,7 +77,7 @@ sidebarDataSourceInput <- function(){
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
@@ -177,7 +177,7 @@ sidebarDataTypeInput <- function(){
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
@@ -239,13 +239,13 @@ sidebarLoadingInput <- function(){
 ##' additional station data.
 ##'
 ##' @param session Namespace session. For details check out
-##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html}} 
+##' \url{ http://shiny.rstudio.com/articles/modules.html}
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
@@ -309,7 +309,7 @@ sidebarCleaningInput <- function(){
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
@@ -370,7 +370,7 @@ sidebarSeriesLengthInput <- function(){
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
@@ -417,7 +417,7 @@ sidebarSeriesLength <- function( selectDataBase ){
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
@@ -582,7 +582,7 @@ file.loading <- function( fileInputSelection ){
 }
 
 ##' @title Showing a Gif in the sidebar while the app is processing/on hold
-##' @details Rendering of \code{link{sidebarLoadingGif}}.
+##' @details Rendering of \code{\link{sidebarLoadingGif}}.
 ##'
 ##' @param id Namespace prefix
 ##'
@@ -609,7 +609,7 @@ sidebarLoadingGifOutput <- function( id ){
 ##' and the corresponding gif file.
 ##'
 ##' @param input Namespace input. For more details check out
-##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html } }
+##' \url{http://shiny.rstudio.com/articles/modules.html}
 ##' @param output Namespace output.
 ##' @param session Namespace session.
 ##'
@@ -644,7 +644,7 @@ sidebarLoadingGif <- function( input, output, session ){
 ##' @details Whenever the web app is run using shiny-server a link to
 ##' an arbitrary HTML page (preferably an imprint) will be rendered.
 ##' Else just an empty div will be added.
-##' Rendering of \code{link{sidebarImprint}}.
+##' Rendering of \code{\link{sidebarImprint}}.
 ##'
 ##' @family sidebar
 ##'
@@ -662,7 +662,7 @@ sidebarImprintInput <- function(){
 ##' Else just an empty div will be added.
 ##'
 ##' @param session Namespace session. For details check out
-##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html}} 
+##' \url{http://shiny.rstudio.com/articles/modules.html}
 ##'
 ##' @family sidebar
 ##'

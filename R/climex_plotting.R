@@ -10,7 +10,7 @@
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
@@ -87,7 +87,7 @@ generalTimeSeriesPlotOutput <- function( id ){
 ##' handled by a reactive value returned by this function.
 ##'
 ##' @param input Namespace input. For more details check out
-##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html } }
+##' \url{http://shiny.rstudio.com/articles/modules.html}
 ##' @param output Namespace output.
 ##' @param session Namespace session.
 ##' @param reactive.extreme Reactive value containing a list of the
@@ -99,7 +99,7 @@ generalTimeSeriesPlotOutput <- function( id ){
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
@@ -311,7 +311,7 @@ generalFitPlotOutput <- function( id ){
 ##' @details All four plots are rendered using the ggplot2 package.
 ##'
 ##' @param input Namespace input. For more details check out
-##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html } }
+##' \url{http://shiny.rstudio.com/articles/modules.html}
 ##' @param output Namespace output.
 ##' @param session Namespace session.
 ##' @param reactive.extreme Reactive value containing a list of the
@@ -337,7 +337,7 @@ generalFitPlotOutput <- function( id ){
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
