@@ -2,3 +2,6 @@
 #~
 /src/*.o
 /src/*.dll
+
+## Ignore build vignettes
+inst/doc/*
