@@ -199,3 +199,16 @@ test_that( "return.level get the error estimation right for MC", {
                            error.estimation = "MC", threshold = 29,
                            monte.carlo.sample.size = 10 ) )
 })
+test_that( "return.level get the error estimation right for bootstrap", { 
+  expect_equal( as.numeric(
+      climex::return.level( x.block.fit,
+                           return.period = c( 10, 100, 332 ),
+                           error.estimation = "bootstrap",
+                           bootstrap.sample.size = 100 )$error ),
+      c( 0.186546387962, 0.421330036318, 0.543310951990 ), tolerance = .15 )
+  expect_equal( as.numeric(
+      climex::return.level( x.thresh.fit, return.period = 42,
+                           error.estimation = "bootstrap", threshold = 29,
+                           bootstrap.sample.size = 10 )$error ),
+      0.276584961888, tolerance = .15 )
+})
