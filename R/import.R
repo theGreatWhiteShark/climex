@@ -216,17 +216,17 @@ download.data.dwd <- function( save.downloads = TRUE,
   ## since its not possible to have ensure the correct encoding while
   ## importing the artifacts have to be replaced by hand
   file.d.1 <- lapply( file.description.aux, function( x )
-    gsub( "\xfc", "ü", x ) )
+    gsub( "\xfc", "\uFC", x ) )
   file.d.2 <- lapply( file.d.1, function( x )
-    gsub( "\xf6", "ö", x ) ) 
+    gsub( "\xf6", "\uF6", x ) ) 
   file.d.3 <- lapply( file.d.2, function( x )
-    gsub( "\xe4", "ä", x ) )  
+    gsub( "\xe4", "\uE4", x ) )  
   file.d.4 <- lapply( file.d.3, function( x )
-    gsub( "\xdf", "ß", x ) )  
+    gsub( "\xdf", "\uDF", x ) )  
   file.d.5 <- lapply( file.d.4, function( x )
-    gsub( "\U3e63643c", "Ü", x ) )  
+    gsub( "\U3e63643c", "\uDC", x ) )  
   file.description <- lapply( file.d.5, function( x )
-    gsub( "\U3e36643c", "Ö", x ) )      
+    gsub( "\U3e36643c", "\uD6", x ) )      
 
   ## extract a vector of all unique station IDs seen in the .zip files
   list.station.ids <- as.list( unique( c(

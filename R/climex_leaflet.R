@@ -192,7 +192,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
       ## unstable. Therefore the user has the option to choose the
       ## regular OSM map instead.
       addTiles( "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-               attribution = '<code> Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a> </code>)',
+               attribution = "<code> Kartendaten: \uA9 <a href='https://openstreetmap.org/copyright'>OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: \uA9 <a href='http://opentopomap.org'>OpenTopoMap</a> (<a href='https://creativecommons.org/licenses/by-sa/3.0/'>CC-BY-SA</a> </code>)",
                group = "OpenTopoMaps" ) %>%
       addTiles( group = "OpenStreetMaps" ) %>%
       addLayersControl(
