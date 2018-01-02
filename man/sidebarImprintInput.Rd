@@ -13,7 +13,7 @@ menuItemOutput
 Whenever the web app is run using shiny-server a link to
 an arbitrary HTML page (preferably an imprint) will be rendered.
 Else just an empty div will be added.
-Rendering of \code{link{sidebarImprint}}.
+Rendering of \code{\link{sidebarImprint}}.
 }
 \seealso{
 Other sidebar: \code{\link{data.selection}},

@@ -87,7 +87,7 @@ This argument is needed to calculate the standard error of the
 return level via the delta method of the MLE in the GPD model.
 Default = NULL.}
 
-\item{thresholded.time.series}{Time series used with \code{link{fit.gpd}}
+\item{thresholded.time.series}{Time series used with \code{\link{fit.gpd}}
 on which already a threshold (the one supplied here as well) was
 applied. Necessary to transform the return level for numerical input
 and the GPD model from m-th observation return level to annual return

@@ -13,7 +13,7 @@ sidebarLoadingGifOutput(id)
 div
 }
 \details{
-Rendering of \code{link{sidebarLoadingGif}}.
+Rendering of \code{\link{sidebarLoadingGif}}.
 }
 \seealso{
 Other sidebar: \code{\link{data.selection}},

@@ -8,7 +8,7 @@ sidebarDataBase(session)
 }
 \arguments{
 \item{session}{Namespace session. For details check out
-\link{ \url{ http://shiny.rstudio.com/articles/modules.html}}}
+\url{http://shiny.rstudio.com/articles/modules.html}}
 }
 \value{
 renderMenu

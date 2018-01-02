@@ -8,7 +8,7 @@ sidebarLoadingGif(input, output, session)
 }
 \arguments{
 \item{input}{Namespace input. For more details check out
-\link{ \url{ http://shiny.rstudio.com/articles/modules.html } }}
+\url{http://shiny.rstudio.com/articles/modules.html}}
 
 \item{output}{Namespace output.}
 

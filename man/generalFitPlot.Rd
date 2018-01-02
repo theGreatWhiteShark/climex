@@ -11,7 +11,7 @@ generalFitPlot(input, output, session, reactive.extreme, reactive.rows,
 }
 \arguments{
 \item{input}{Namespace input. For more details check out
-\link{ \url{ http://shiny.rstudio.com/articles/modules.html } }}
+\url{http://shiny.rstudio.com/articles/modules.html}}
 
 \item{output}{Namespace output.}
 
@@ -45,7 +45,7 @@ source. In the default installation there are three options:
 c( "Input", "DWD", "Artificial data" ). The first one uses the data
 provided as an argument to the call of the \code{\link{climex}}
 function. The second one uses the database of the German weather
-service (see \code{link{download.data.dwd}}). The third one allows
+service (see \code{\link{download.data.dwd}}). The third one allows
 the user to produce random numbers distributed according to the GEV
 or GP distribution. Determined by menuSelectDataBase.
 Default = "DWD".}

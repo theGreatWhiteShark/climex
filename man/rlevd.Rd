@@ -32,7 +32,7 @@ Numerical vector of the same length as 'period'.
 \details{
 Port from the extRemes package to ensure compatibility and
 to make the threshold argument obligatory. This is just for internal
-usage. Please use the \link{\code{return.level}} function instead!
+usage. Please use the \code{\link{return.level}} function instead!
 }
 \seealso{
 Other extremes: \code{\link{block}},
