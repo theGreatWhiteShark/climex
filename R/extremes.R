@@ -357,8 +357,8 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
 
 ##' @title Calculation of the return levels.
 ##'
-##' @details Uses the climex:::rlevd function at its core (a port from
-##' the extRemes package) but also can handle the outputs of the
+##' @details Uses the \code{\link{levd}} function at its core (a port from
+##' the \pkg{extRemes} package) but also can handle the outputs of the
 ##' \code{\link{fit.gev}} and \code{\link{fit.gpd}} function, is capable
 ##' of calculating numerous return levels at once and also calculates the
 ##' errors of the return levels. For the errors the ML fit is using the
@@ -370,27 +370,62 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
 ##' climex.fit.gpd.
 ##' @param return.period Numeric vector of the return periods in years.
 ##' Default = 100.
-##' @param error.estimation Method of calculating the standard errors of
-##' the return levels. Using option "MLE" it is calculated using the
-##' Delta method and the MLE of the GEV/GPD parameters. For the GPD type
-##' the total length of the original time series has to be provided as
-##' well or the MLE error estimation will not be able to work.
-##' Alternative one can use Monte Carlo simulations with "MC" for which
-##' monte.carlo.sample.size samples of the same size as x will be drawn
-##' from a GEV/GP distribution constituted by the obtained MLE of the
-##' GEV/GPD parameters of x. The standard error is then calculated via
-##' the square of the variance of the calculated return levels. Sometimes
-##' the inversion of the hessian fails (since the are some NaN in the
-##' hessian) (which is also the reason why the ismev package occasionally
-##' does not work). Option "none" just skips the calculation of the error
-##' and return just a numeric value of the estimate. To avoid broken
-##' dependencies  with existing code this option will be default.
-##' Default = "none".
+##' @param error.estimation Method for calculating the standard errors of
+##' the fitted results. The errors of the GEV/GPD parameters will be
+##' calculated as the square roots of the diagonal elements of the
+##' inverse of the hessian matrix. The latter will be evaluated at the
+##' maximum likelihood estimates (MLE) of the GEV/GPD parameters.
+##' For all three methods of estimating the fitting errors of the
+##'   return levels underlying series of threshold exceedances or
+##'   block maxima is required. In case the user supplies numerical
+##'   values to specify GEV/GPD parameters and not the output of
+##'   either the  \code{\link{fit.gev}} or \code{\link{fit.gpd}}
+##'   function no error estimation for the return level can be
+##'   performed. 
+##'
+##' \strong{MLE}: The standard error of the return level is
+##' calculated using the Delta method and the maximum likelihood
+##' estimates of the GPD parameters. Note: For positive shape
+##'   parameters bigger than 0.3 this approach tends to highly
+##'   overestimates the errors of the return levels.
+##' 
+##' \strong{MC}: Alternative one can use a Monte Carlo method for which
+##' \emph{monte.carlo.sample.size} samples of the same size as \emph{x} will be drawn
+##' from a GEV/GPD distribution constituted by the obtained MLE of the GEV/GPD
+##' parameters of \emph{x}. The standard error is then calculated via the square
+##' of the variance of all fitted GEV/GPD parameters and calculated return
+##' levels. Note: In its essence this approach is not an estimation of
+##'   the error involved in fitting the time series to a GEV/GPD
+##'   distribution. It is rather the mean error of fitting a
+##'   GPD-distribution with the same length and parameters as
+##'   estimated ones.
+##'
+##' \strong{bootstrap}: Using this option the provided time series
+##'   \emph{x} will be sampled with replacement
+##'   \emph{bootstrap.sample.size} times and with the same length as
+##'   the original time series. The standard errors of the GEV/GPD
+##'   parameters and return levels of all those sampled series is
+##'   calculated and returned as an estimate of the fitting error.
+##'   Note: Since the data is (hopefully) GEV/GPD-distributed, such a
+##'   sampling has to be treated with a lot of care.
+##'
+##' Sometimes the inversion of the hessian fails (since the are some NaN
+##' in the hessian) when calculating the error estimates using the
+##'   maximum likelihood approach (MLE) (which is also the reason why
+##'   the ismev package occasionally does not work). In such cases the
+##'   Monte Carlo (MC) method is used as a fallback. Option
+##'
+##' \strong{none} skips the calculation of the error. 
+##' Default = "MLE".
 ##' @param model Determining whether to calculate the initial parameters
 ##' of the GEV or GPD function. Default = "gev".
 ##' @param monte.carlo.sample.size Number of samples used to obtain the
 ##' Monte Carlo estimate of the standard error of the fitting.
 ##' Default = 1000.
+##' @param bootstrap.sample.size Number of samples with replacements
+##'   to drawn from the original series \emph{x} in order to determine
+##'   the standard errors for the GPD parameters and return
+##'   levels. Default = 100.
 ##' @param threshold Optional threshold for the GPD model. If present it
 ##' will be added to the return level to produce a value which fits to
 ##' underlying time series. Default = NULL.
@@ -406,7 +441,7 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
 ##' level. If omitted the return level will be per observation.
 ##' Default = NULL.
 ##' @param silent Throws an warning whenever the "gpd" model is used and
-##' the thresholded.time.series is not supplied. Since this can be annoying
+##' the \emph{thresholded.time.series} is not supplied. Since this can be annoying
 ##' one can also disable it. Default = FALSE.
 ##'
 ##' @return A list containing the estimates "return.level" and their
@@ -423,9 +458,11 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
 ##' return.level( fit.results, return.period = c( 10, 50, 100 ),
 ##'               error.estimation = "MLE" )
 return.level <- function( x, return.period = 100,
-                         error.estimation = c( "none", "MC", "MLE" ),
+                         error.estimation = c( "none", "MC", "MLE",
+                                              "bootstrap" ),
                          model = c( "gev", "gpd" ),
                          monte.carlo.sample.size = 1000,
+                         bootstrap.sample.size = 100,
                          threshold = NULL, total.length = NULL,
                          thresholded.time.series = NULL,
                          silent = FALSE ){
@@ -546,6 +583,53 @@ return.level <- function( x, return.period = 100,
       errors <- rep( NA, length( return.period ) )
     }
     return( list( return.level = return.levels, error = errors ) )
+  } else if ( error.estimation == "bootstrap" ){
+    ## As a simple alternative the threshold exceedances will be
+    ## sampled with replacement and the parameters and return levels
+    ## are calculated for all of the resampled series. The bootstrap
+    ## error is than calculated as the standard error of all the
+    ## GEV parameters and return levels.
+    bootstrap.sample.list <-
+      lapply( c( 1 : bootstrap.sample.size ), function( xx )
+        sample( x$x, size = length( x$x ), replace = TRUE ) )
+    ## Fitting the GEV parameters (recursively)
+    if ( model == "gev" ){
+      fitted.list <- lapply( bootstrap.sample.list, function( xx ){
+        fit.gev( x = xx, initial = x$control$initial,
+                likelihood.function = x$control$likelihood.function,
+                gradient.function = x$control$gradient.function,
+                error.estimation = "none",
+                return.period = return.period,
+                total.length = x$control$total.length,
+                silent = TRUE ) } )
+    } else {
+      fitted.list <- lapply( bootstrap.sample.list, function( xx ){
+        fit.gpd( x = xx, initial = x$control$initial,
+                threshold = x$control$threshold,
+                likelihood.function = x$control$likelihood.function,
+                gradient.function = x$control$gradient.function,
+                error.estimation = "none",
+                return.period = return.period,
+                total.length = x$control$total.length,
+                silent = TRUE ) } )
+    }
+    ## Calculate the standard errors of all the fitted return
+    ## levels.
+    fitted.parameters <-
+      Reduce( rbind, lapply( fitted.list, function( xx )
+        xx$par ) )
+    fitted.return.levels <-
+      Reduce( rbind, lapply( fitted.list, function( xx )
+        xx$return.level ) )
+    ## Calculate the standard errors
+    errors <- apply( cbind( fitted.parameters,
+                           fitted.return.levels ), 2, sd )
+    ## Extracting the errors of the return levels.
+    if ( model == "gev" ){
+      errors <- errors[ 4 : ( 3 + length( return.period ) ) ]
+    } else {
+      errors <- errors[ 3 : ( 2 + length( return.period ) ) ]
+    }
   } else if ( error.estimation == "MLE" ){
     if ( !any( names( x ) == "hessian" ) ){
       ## fit again and let stats::optim calculate the hessian. It's way

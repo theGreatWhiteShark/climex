@@ -65,14 +65,24 @@ test_that( "fit.gev's error estimation works", {
   expect_equal(
       as.numeric( climex::fit.gev( x.block,
                                   error.estimation = "MLE",
+                                  return.period = c( 100, 200 ),
                                   initial = initial.gumbel )$se ),
-      c( 0.1337865978, 0.0914901808, 0.0000000000, 0.2326657115 ) )
+      c( 0.1337865978, 0.0914901808, 0.0000000000, 0.2326657115,
+        0.2959816668173 ) )
   expect_equal(
       as.numeric( climex::fit.gev( x.block,
                                   error.estimation = "MC",
+                                  return.period = c( 100, 200 ),
                                   monte.carlo.sample.size = 100 )$se ),
       c( 0.1445030146928, 0.0968594982045, 0.0581169970019,
-        0.3178739721512 ), tolerance = 4E-2 )
+        0.3178739721512, 0.3673455192856 ), tolerance = 4E-2 )
+  expect_equal(
+      as.numeric( climex::fit.gev( x.block,
+                                  error.estimation = "bootstrap",
+                                  return.period = c( 100, 200 ),
+                                  bootstrap.sample.size = 100 )$se ),
+      c( 0.1646659951656, 0.0868258622212, 0.0907993677156,
+        0.4499639755108, 0.5248481922853 ), tolerance = 4E-2 )
 })
 
 test_that( "fit.gpd has the correct output format", {
@@ -116,16 +126,25 @@ test_that( "fit.gpd's error estimation works", {
       tolerance = 5E-4 )
   expect_equal( as.numeric(
       climex::fit.gpd( x.thresh, error.estimation = "MLE",
+                      return.period = c( 100, 200 ),
                       initial = initial.exp,
                       total.length = length( temp.potsdam ) )$se ),
-      c(  0.160953584, 0.000000000, 5.192609146 ),
+      c(  0.160953584, 0.000000000, 5.192609146, 6.534631464912 ),
       tolerance = 5E-4 )
   expect_equal( as.numeric(
       climex::fit.gpd( x.thresh, error.estimation = "MC",
+                      return.period = c( 100, 200 ),
                       total.length = length( temp.potsdam ),
                       monte.carlo.sample.size = 100 )$se ),
-      c( 0.25406002, 0.03777357, 0.26423247 ),
+      c( 0.25406002, 0.03777357, 0.26423247, 0.2920621314167 ),
       tolerance = 8E-2 )
+  expect_equal( as.numeric(
+      climex::fit.gpd( x.block, error.estimation = "bootstrap",
+                      return.period = c( 100, 200 ),
+                      total.length = length( temp.potsdam ),
+                      bootstrap.sample.size = 100 )$se ),
+      c( 7.27448170583e-01, 8.95632920876e-06, 7.56097936060e-01,
+        7.60732930106e-01 ), tolerance = 4E-2 )
 })
 test_that( "fit.gpd's threshold argument affect the result the way it is supposed to", {
   expect_equal( as.numeric(

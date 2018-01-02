@@ -7,8 +7,10 @@
 ##' calculation of the return level and the all the corresponding
 ##' estimates of the fitting errors will be done internally.
 ##'
-##' @details The optimization is performed using the augmented Lagrangian
-##' method. Within this framework the log-likelihood function of the GEV
+##' @details The optimization is performed by the augmented Lagrangian
+##' method using the \code{\link{auglag}} function of the
+##'   \pkg{alabama} package. Within this framework the log-likelihood
+##'   function of the GEV 
 ##' distribution gets augmented with N+2 constraints, where N is the
 ##' number of points in the time series. N+1 of those constraints ensure
 ##' the log-likelihood (containing two logarithms) to be always defined.
@@ -31,7 +33,7 @@
 ##'
 ##' If the user instead wants to fit just the Gumbel distribution and
 ##' not the entire GEV distribution, the shape parameter of the
-##' `initial' has to be set to 0. But in practice this is strongly
+##' \emph{initial} has to be set to 0. But in practice this is strongly
 ##' discouraged since it will yield inferior results.
 ##'
 ##' I found the Nelder-Mead method to be more robust to starting
@@ -54,28 +56,52 @@
 ##' @param gradient.function If NULL a finite difference method is
 ##' invoked. Default: \code{\link{likelihood.gradient}}
 ##' @param error.estimation Method for calculating the standard errors of
-##' the fitted results. Using the option "MLE" the errors of the GEV
-##' parameters will be calculated as the square roots of the diagonal
-##' elements of the inverse of the hessian matrix calculated with the MLE
-##' of the GEV parameters. The standard error of the return level is
+##' the fitted results. The errors of the GEV parameters will be
+##' calculated as the square roots of the diagonal elements of the
+##' inverse of the hessian matrix. The latter will be evaluated at the
+##' maximum likelihood estimates (MLE) of the GEV parameters.
+##'
+##' \strong{MLE}: The standard error of the return level is
 ##' calculated using the Delta method and the maximum likelihood
-##' estimates (MLE) of the GEV parameters.
+##' estimates of the GPD parameters. Note: For positive shape
+##'   parameters bigger than 0.3 this approach tends to highly
+##'   overestimates the errors of the return levels.
 ##' 
-##' Alternative one can use Monte Carlo simulations with "MC" for which
-##' monte.carlo.sample.size samples of the same size as x will be drawn
+##' \strong{MC}: Alternative one can use a Monte Carlo method for which
+##' \emph{monte.carlo.sample.size} samples of the same size as \emph{x} will be drawn
 ##' from a GEV distribution constituted by the obtained MLE of the GEV
-##' parameters of x. The standard error is then calculated via the square
+##' parameters of \emph{x}. The standard error is then calculated via the square
 ##' of the variance of all fitted GEV parameters and calculated return
-##' levels.
+##' levels. Note: In its essence this approach is not an estimation of
+##'   the error involved in fitting the time series to a GEV
+##'   distribution. It is rather the mean error of fitting a
+##'   GPD-distribution with the same length and parameters as
+##'   estimated ones.
+##'
+##' \strong{bootstrap}: Using this option the provided time series
+##'   \emph{x} will be sampled with replacement
+##'   \emph{bootstrap.sample.size} times and with the same length as
+##'   the original time series. The standard errors of the GEV
+##'   parameters and return levels of all those sampled series is
+##'   calculated and returned as an estimate of the fitting error.
+##'   Note: Since the data is (hopefully) GEV-distributed, such a
+##'   sampling has to be treated with a lot of care.
 ##'
 ##' Sometimes the inversion of the hessian fails (since the are some NaN
-##' in the hessian) (which is also the reason why the ismev package
-##' occasionally does not work). In such cases the Monte Carlo method is
-##' used. Option "none" just skips the calculation of the error.
-##' Default = "none".
+##' in the hessian) when calculating the error estimates using the
+##'   maximum likelihood approach (MLE) (which is also the reason why
+##'   the ismev package occasionally does not work). In such cases the
+##'   Monte Carlo (MC) method is used as a fallback. Option
+##'
+##' \strong{none} skips the calculation of the error. 
+##' Default = "MLE".
 ##' @param monte.carlo.sample.size Number of samples used to obtain the
 ##' Monte Carlo estimate of the standard error of the fitting.
 ##' Default = 100.
+##' @param bootstrap.sample.size Number of samples with replacements
+##'   to drawn from the original series \emph{x} in order to determine
+##'   the standard errors for the GPD parameters and return
+##'   levels. Default = 100.
 ##' @param return.period Quantiles at which the return level is going to
 ##' be evaluated. Class "numeric". Default = 100.
 ##' @param silent Determines whether or not warning messages shall be
@@ -113,8 +139,11 @@
 fit.gev <- function( x, initial = NULL,
                     likelihood.function = likelihood,
                     gradient.function = likelihood.gradient,
-                    error.estimation = c( "MLE", "MC", "none" ),
-                    monte.carlo.sample.size = 100, return.period = 100,
+                    error.estimation = c( "MLE", "MC", "bootstrap",
+                                         "none" ),
+                    monte.carlo.sample.size = 100,
+                    bootstrap.sample.size = 100,
+                    return.period = 100,
                     silent = TRUE, ... ){
   ## Default values if no initial parameters were supplied
   if ( is.null( initial ) )
@@ -130,7 +159,6 @@ fit.gev <- function( x, initial = NULL,
   ## other routines, like CG and BFGS only cause problems in the
   ## extreme value analysis, there won't be an option to choose them
   ## in this package.
-
   if ( as.numeric( initial[ 3 ] ) != 0 ){
     ## Fitting the negative log-likelihood of the GEV distribution.
     ## The augmented Lagrangian method allowing non-linear constraints
@@ -207,10 +235,46 @@ fit.gev <- function( x, initial = NULL,
                         hessian = res.alabama$hessian,
                         monte.carlo.sample.size =
                           monte.carlo.sample.size,
+                        bootstrap.sample.size =
+                          bootstrap.sample.size,
                         error.estimation = error.estimation ) )
   ## Calculate the estimate of the fitting error of the GEV parameters
   ## and the return levels.
-  if ( error.estimation != "none" ){
+  if ( error.estimation == "none" ){
+    res.optim$se <- rep( NaN, ( 3 + length( return.period ) ) )
+  } else  if ( error.estimation == "bootstrap" ){
+    ## As a simple alternative the threshold exceedances will be
+    ## sampled with replacement and the parameters and return levels
+    ## are calculated for all of the resampled series. The bootstrap
+    ## error is than calculated as the standard error of all the
+    ## GEV parameters and return levels.
+    bootstrap.sample.list <-
+      lapply( c( 1 : bootstrap.sample.size ), function( xx )
+        sample( x, size = length( x ), replace = TRUE ) )
+    ## Fitting the GEV parameters (recursively)
+    fitted.list <- lapply( bootstrap.sample.list, function( xx ){
+      fit.gev( x = xx, initial = initial,
+              likelihood.function = likelihood.function,
+              gradient.function = gradient.function,
+              error.estimation = "none",
+              return.period = return.period,
+              total.length = total.length,
+              silent = silent ) } )
+    ## Calculate the standard errors of all the fitted return
+    ## levels.
+    fitted.parameters <-
+      Reduce( rbind, lapply( fitted.list, function( xx )
+        xx$par ) )
+    fitted.return.levels <-
+      Reduce( rbind, lapply( fitted.list, function( xx )
+        xx$return.level ) )
+    ## Calculate the standard errors
+    errors <- apply( cbind( fitted.parameters,
+                           fitted.return.levels ), 2, sd )
+    res.optim$se <- errors
+  } else { 
+    ## MLE and MC error estimation
+    ##
     ## The error of the fitted parameters are the roots of the
     ## diagonal entries of the estimated information matrix. The later
     ## one can be obtained by inverting the hessian. But this obtained
@@ -312,15 +376,12 @@ fit.gev <- function( x, initial = NULL,
                            paste0( return.period, ".rlevel" ) )
     }
     res.optim$se <- errors
-  } else {
-    res.optim$se <- rep( NaN, ( 3 + length( return.period ) ) )
   }
   ## Naming of the resulting fit parameter (necessary for a correct
   ## conversion with as.fevd)
   names( res.optim$par ) <- c( "location", "scale", "shape" )
   ## introducing a new data type for handling fits done with climex
   class( res.optim ) <- c( "list", "climex.fit.gev" )
-  
   ## adding the return levels
   res.optim$return.level <- Reduce(
       c, lapply( return.period,
@@ -329,7 +390,6 @@ fit.gev <- function( x, initial = NULL,
                                        )$return.level ) )
   names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
   res.optim$x <- x
-
   if ( !silent )
     summary( res.optim )
   return( res.optim )
@@ -344,8 +404,10 @@ fit.gev <- function( x, initial = NULL,
 ##' calculation of the return level and the all the corresponding
 ##' estimates of the fitting errors will be done internally.
 ##'
-##' @details The optimization is performed using the augmented Lagrangian
-##' method. Within this framework the log-likelihood function of the GPD
+##' @details The optimization is performed by the augmented Lagrangian
+##' method using the \code{\link{auglag}} function of the
+##'   \pkg{alabama} package. Within this framework the log-likelihood
+##'   function of the GPD 
 ##' gets augmented with N+2 constraints, where N is the
 ##' number of points in the time series. N+1 of those constraints ensure
 ##' the log-likelihood (containing two logarithms) to be always defined.
@@ -363,7 +425,7 @@ fit.gev <- function( x, initial = NULL,
 ##' functions needs only double the time a pure call to the stats::optim
 ##' function would need.
 ##'
-##' The 'total.length' argument refers to the length of the original time
+##' The \emph{total.length} argument refers to the length of the original time
 ##' series before the thresholding was applied. If present it will be used
 ##' to calculate the maximum likelihood estimate of the probability of an
 ##' observation to be a threshold exceedance (necessary to determine the
@@ -371,10 +433,9 @@ fit.gev <- function( x, initial = NULL,
 ##' estimator based on mean number of exceedances per year will be
 ##' used.
 ##'
-##'
 ##' If the user instead wants to fit just the exponential distribution
 ##' and not the entire GP distribution, the shape parameter of the
-##' `initial' has to be set to 0. But in practice this is strongly
+##' \emph{initial} has to be set to 0. But in practice this is strongly
 ##' discouraged since it will yield inferior results.
 ##' 
 ##' I found the Nelder-Mead method to be more robust to starting
@@ -392,7 +453,7 @@ fit.gev <- function( x, initial = NULL,
 ##'   of the GP one is fitted. But this its strongly discouraged to do
 ##'   so! Default = NULL
 ##' @param threshold Optional threshold used to extract the exceedances
-##' x from the original series. If present it will be added to the
+##' from the provided series \emph{x}. If present it will be added to the
 ##' return level to produce a value which fits to underlying time series.
 ##' Default = NULL.
 ##' @param likelihood.function Function which is going to be optimized.
@@ -402,35 +463,59 @@ fit.gev <- function( x, initial = NULL,
 ##' provide \code{\link{likelihood.gradient}}.
 ##' Default = climex:::likelihood.gradient.
 ##' @param error.estimation Method for calculating the standard errors of
-##' the fitted results. Using the option "MLE" the errors of the GPD
-##' parameters will be calculated as the square roots of the diagonal
-##' elements of the inverse of the hessian matrix calculated with the MLE
-##' of the GPD parameters. The standard error of the return level is
+##' the fitted results. The errors of the GPD parameters will be
+##' calculated as the square roots of the diagonal elements of the
+##' inverse of the hessian matrix. The latter will be evaluated at the
+##' maximum likelihood estimates (MLE) of the GPD parameters.
+##'
+##' \strong{MLE}: The standard error of the return level is
 ##' calculated using the Delta method and the maximum likelihood
-##' estimates (MLE) of the GPD parameters.
+##' estimates of the GPD parameters. Note: For positive shape
+##'   parameters bigger than 0.3 this approach tends to highly
+##'   overestimates the errors of the return levels.
 ##' 
-##' Alternative one can use Monte Carlo simulations with "MC" for which
-##' monte.carlo.sample.size samples of the same size as x will be drawn
+##' \strong{MC}: Alternative one can use a Monte Carlo method for which
+##' \emph{monte.carlo.sample.size} samples of the same size as \emph{x} will be drawn
 ##' from a GPD distribution constituted by the obtained MLE of the GPD
-##' parameters of x. The standard error is then calculated via the square
+##' parameters of \emph{x}. The standard error is then calculated via the square
 ##' of the variance of all fitted GPD parameters and calculated return
-##' levels.
+##' levels. Note: In its essence this approach is not an estimation of
+##'   the error involved in fitting the time series to a GPD
+##'   distribution. It is rather the mean error of fitting a
+##'   GPD-distribution with the same length and parameters as
+##'   estimated ones.
+##'
+##' \strong{bootstrap}: Using this option the provided time series
+##'   \emph{x} will be sampled with replacement
+##'   \emph{bootstrap.sample.size} times and with the same length as
+##'   the original time series. The standard errors of the GPD
+##'   parameters and return levels of all those sampled series is
+##'   calculated and returned as an estimate of the fitting error.
+##'   Note: Since the data is (hopefully) GPD-distributed, such a
+##'   sampling has to be treated with a lot of care.
 ##'
 ##' Sometimes the inversion of the hessian fails (since the are some NaN
-##' in the hessian) (which is also the reason why the ismev package
-##' occasionally does not work). In such cases the Monte Carlo method is
-##' used. Option "none" just skips the calculation of the error.
+##' in the hessian) when calculating the error estimates using the
+##'   maximum likelihood approach (MLE) (which is also the reason why
+##'   the ismev package occasionally does not work). In such cases the
+##'   Monte Carlo (MC) method is used as a fallback. Option
+##'
+##' \strong{none} skips the calculation of the error. 
 ##' Default = "MLE".
 ##' @param monte.carlo.sample.size Number of samples used to obtain the
 ##' Monte Carlo estimate of the standard error of the fitting.
 ##' Default = 100.
+##' @param bootstrap.sample.size Number of samples with replacements
+##'   to drawn from the original series \emph{x} in order to determine
+##'   the standard errors for the GPD parameters and return
+##'   levels. Default = 100.
 ##' @param return.period Quantiles at which the return level is going to
 ##' be evaluated. Class "numeric". Default = 100.
 ##' @param total.length Uses the maximum likelihood estimator to
 ##'   calculate the probability of a measurement to be an
 ##'   exceedance. Else an estimate based on the mean number of
 ##'   exceedances in the available years (time stamps of the class
-##'   'xts' time series) will be used. Default = NULL. 
+##'   "xts" time series) will be used. Default = NULL. 
 ##' @param silent Determines whether or not warning messages shall be
 ##' displayed and results shall be reported. Default = TRUE.
 ##' @param ... Additional arguments for the optim() function.
@@ -468,8 +553,11 @@ fit.gev <- function( x, initial = NULL,
 fit.gpd <- function( x, initial = NULL, threshold = NULL,
                     likelihood.function = likelihood,
                     gradient.function = climex:::likelihood.gradient,                    
-                    error.estimation = c( "MLE", "MC", "none" ),
-                    monte.carlo.sample.size = 100, return.period = 100,
+                    error.estimation = c( "MLE", "MC",
+                                         "bootstrap", "none" ),
+                    monte.carlo.sample.size = 100,
+                    bootstrap.sample.size = 100,
+                    return.period = 100,
                     total.length = NULL, silent = TRUE, ... ){
   ## Default values if no initial parameters are supplied
   if ( is.null( initial ) )
@@ -567,8 +655,41 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
                         return.period = return.period ) )
   ## For an adequate calculation of the return level
   ## Error estimation
-  
-  if ( error.estimation != "none" ){
+  if ( error.estimation == "none" ){
+    res.optim$se <- rep( NaN, ( 2 + length( return.period ) ) )
+  } else  if ( error.estimation == "bootstrap" ){
+    ## As a simple alternative the threshold exceedances will be
+    ## sampled with replacement and the parameters and return levels
+    ## are calculated for all of the resampled series. The bootstrap
+    ## error is than calculated as the standard error of all the
+    ## GPD parameters and return levels.
+    bootstrap.sample.list <-
+      lapply( c( 1 : bootstrap.sample.size ), function( xx )
+        sample( x, size = length( x ), replace = TRUE ) )
+    ## Fitting the GEV parameters (recursively)
+    fitted.list <- lapply( bootstrap.sample.list, function( xx ){
+      fit.gpd( x = xx, initial = initial, threshold = threshold,
+              likelihood.function = likelihood.function,
+              gradient.function = gradient.function,
+              error.estimation = "none",
+              return.period = return.period,
+              total.length = total.length,
+              silent = silent ) } )
+    ## Calculate the standard errors of all the fitted return
+    ## levels.
+    fitted.parameters <-
+      Reduce( rbind, lapply( fitted.list, function( xx )
+        xx$par ) )
+    fitted.return.levels <-
+      Reduce( rbind, lapply( fitted.list, function( xx )
+        xx$return.level ) )
+    ## Calculate the standard errors
+    errors <- apply( cbind( fitted.parameters,
+                           fitted.return.levels ), 2, sd )
+    res.optim$se <- errors
+  } else {
+    ## MC and MLE methods.
+    ##
     ## If the shape parameter is exactly zero and the Gumbel
     ## distribution was fitted, the third row and column were just
     ## augmented by 0.
@@ -717,10 +838,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
                            paste0( return.period, ".rlevel" ) )
     }
     res.optim$se <- errors
-  } else {
-    ## No error estimation required.
-    res.optim$se <- rep( NA, length( return.period ) + 2 )
-  }
+  } 
   names( res.optim$par ) <- c( "scale", "shape" )
   ## introducing a new data type for handling fits done with climex
   class( res.optim ) <- c( "list", "climex.fit.gpd" )

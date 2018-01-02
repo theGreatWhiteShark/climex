@@ -6,8 +6,8 @@
 \usage{
 fit.gev(x, initial = NULL, likelihood.function = likelihood,
   gradient.function = likelihood.gradient, error.estimation = c("MLE", "MC",
-  "none"), monte.carlo.sample.size = 100, return.period = 100,
-  silent = TRUE, ...)
+  "bootstrap", "none"), monte.carlo.sample.size = 100,
+  bootstrap.sample.size = 100, return.period = 100, silent = TRUE, ...)
 }
 \arguments{
 \item{x}{Blocked time series to which the GEV distribution should
@@ -27,29 +27,54 @@ Default: \code{\link{likelihood}}}
 invoked. Default: \code{\link{likelihood.gradient}}}
 
 \item{error.estimation}{Method for calculating the standard errors of
-the fitted results. Using the option "MLE" the errors of the GEV
-parameters will be calculated as the square roots of the diagonal
-elements of the inverse of the hessian matrix calculated with the MLE
-of the GEV parameters. The standard error of the return level is
-calculated using the Delta method and the maximum likelihood
-estimates (MLE) of the GEV parameters.
+the fitted results. The errors of the GEV parameters will be
+calculated as the square roots of the diagonal elements of the
+inverse of the hessian matrix. The latter will be evaluated at the
+maximum likelihood estimates (MLE) of the GEV parameters.
 
-Alternative one can use Monte Carlo simulations with "MC" for which
-monte.carlo.sample.size samples of the same size as x will be drawn
+\strong{MLE}: The standard error of the return level is
+calculated using the Delta method and the maximum likelihood
+estimates of the GPD parameters. Note: For positive shape
+  parameters bigger than 0.3 this approach tends to highly
+  overestimates the errors of the return levels.
+
+\strong{MC}: Alternative one can use a Monte Carlo method for which
+\emph{monte.carlo.sample.size} samples of the same size as \emph{x} will be drawn
 from a GEV distribution constituted by the obtained MLE of the GEV
-parameters of x. The standard error is then calculated via the square
+parameters of \emph{x}. The standard error is then calculated via the square
 of the variance of all fitted GEV parameters and calculated return
-levels.
+levels. Note: In its essence this approach is not an estimation of
+  the error involved in fitting the time series to a GEV
+  distribution. It is rather the mean error of fitting a
+  GPD-distribution with the same length and parameters as
+  estimated ones.
+
+\strong{bootstrap}: Using this option the provided time series
+  \emph{x} will be sampled with replacement
+  \emph{bootstrap.sample.size} times and with the same length as
+  the original time series. The standard errors of the GEV
+  parameters and return levels of all those sampled series is
+  calculated and returned as an estimate of the fitting error.
+  Note: Since the data is (hopefully) GEV-distributed, such a
+  sampling has to be treated with a lot of care.
 
 Sometimes the inversion of the hessian fails (since the are some NaN
-in the hessian) (which is also the reason why the ismev package
-occasionally does not work). In such cases the Monte Carlo method is
-used. Option "none" just skips the calculation of the error.
-Default = "none".}
+in the hessian) when calculating the error estimates using the
+  maximum likelihood approach (MLE) (which is also the reason why
+  the ismev package occasionally does not work). In such cases the
+  Monte Carlo (MC) method is used as a fallback. Option
+
+\strong{none} skips the calculation of the error. 
+Default = "MLE".}
 
 \item{monte.carlo.sample.size}{Number of samples used to obtain the
 Monte Carlo estimate of the standard error of the fitting.
 Default = 100.}
+
+\item{bootstrap.sample.size}{Number of samples with replacements
+to drawn from the original series \emph{x} in order to determine
+the standard errors for the GPD parameters and return
+levels. Default = 100.}
 
 \item{return.period}{Quantiles at which the return level is going to
 be evaluated. Class "numeric". Default = 100.}
@@ -88,8 +113,10 @@ calculation of the return level and the all the corresponding
 estimates of the fitting errors will be done internally.
 }
 \details{
-The optimization is performed using the augmented Lagrangian
-method. Within this framework the log-likelihood function of the GEV
+The optimization is performed by the augmented Lagrangian
+method using the \code{\link{auglag}} function of the
+  \pkg{alabama} package. Within this framework the log-likelihood
+  function of the GEV 
 distribution gets augmented with N+2 constraints, where N is the
 number of points in the time series. N+1 of those constraints ensure
 the log-likelihood (containing two logarithms) to be always defined.
@@ -112,7 +139,7 @@ if the shape parameter is exactly equal to zero.
 
 If the user instead wants to fit just the Gumbel distribution and
 not the entire GEV distribution, the shape parameter of the
-`initial' has to be set to 0. But in practice this is strongly
+\emph{initial} has to be set to 0. But in practice this is strongly
 discouraged since it will yield inferior results.
 
 I found the Nelder-Mead method to be more robust to starting
