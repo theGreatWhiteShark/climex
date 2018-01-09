@@ -268,7 +268,8 @@ extremal.index <- function( x, threshold, silent = FALSE ){
   } else {
     theta <- 2* sum( exceedances.distance - 1 )^ 2/
       ( ( exceedances.number - 1 )*
-        sum( ( exceedances.distance - 2 )^2 ) )
+        sum( ( exceedances.distance - 1 )*
+             ( exceedances.distance - 2 ) ) )
   }
   ## Sanity check
   if ( theta > 1 ){
