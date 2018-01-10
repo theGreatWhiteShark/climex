@@ -23,6 +23,7 @@
 ##' @author Philipp Mueller
 ##' @export
 ##' @importFrom xts xts
+##' @importFrom zoo index
 ##'
 ##' @family extremes
 ##' 

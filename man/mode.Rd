@@ -6,6 +6,9 @@
 \usage{
 mode(x)
 }
+\arguments{
+\item{x}{Numerical input.}
+}
 \value{
 Numerical
 }

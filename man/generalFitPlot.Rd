@@ -19,12 +19,17 @@ generalFitPlot(input, output, session, reactive.extreme, reactive.rows,
 
 \item{reactive.extreme}{Reactive value containing a list of the
 extracted extreme events of a time series, the deseasonalized and the
-pure version of this very time series. All three elements are provided
-as class 'xts'.}
+pure version of this very time series. All three elements are
+  provided as class 'xts'.}
 
-\item{reactive.rows}{Reactive value holding a logical vector indicating
-which values of the time series provided by \code{\link{data.extremes}}
-to use after clicking and brushing.}
+\item{reactive.rows}{Reactive value holding a logical vector
+indicating which values of the time series provided by
+\code{\link{data.extremes}} to use after clicking and brushing.}
+
+\item{reactive.fitting}{Reactive value containing the results of the
+fit (\code{\link{fit.gev}} or \code{\link{fit.gpd}} depending on
+radioEvdStatistic) to the blocked time series in
+reactive.extreme()[[ 1 ]].}
 
 \item{buttonMinMax}{Character (radio) input determining whether
 the GEV/GP distribution shall be fitted to the smallest or biggest

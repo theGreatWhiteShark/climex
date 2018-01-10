@@ -4,7 +4,17 @@
 \alias{print.climex.fit.gpd}
 \title{Summary of the fit results}
 \usage{
-\method{print}{climex.fit.gpd}(x)
+\method{print}{climex.fit.gpd}(x, ...)
+}
+\arguments{
+\item{x}{Object of class \strong{climex.fit.gpd}.}
+
+\item{...}{Additional parameters. They won't be handled in the
+function. This argument is only present to ensure S3 generic
+consistency with respect to the `print()` function.}
+}
+\value{
+`invisible()`
 }
 \author{
 Philipp Mueller

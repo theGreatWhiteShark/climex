@@ -97,7 +97,7 @@ data( temp.potsdam )
 ## convenience function for plotting xts class time series using ggplot2
 ttplot( temp.potsdam )
 ```
-![potsdam-plot](../res/vignette-potsdam-plot.png)
+![potsdam-plot](res/vignette-potsdam-plot.png)
 
 ## The GEV distribution
 
@@ -117,7 +117,7 @@ ttplot( temp.potsdam.complete )
 
 ```
 
-![potsdam-plot-complete](../res/vignette-potsdam-plot-complete.png)
+![potsdam-plot-complete](res/vignette-potsdam-plot-complete.png)
 
 #### Discard short time series
 
@@ -143,7 +143,7 @@ temp.potsdam.anomalies <- anomalies( temp.potsdam.complete )
 ttplot( temp.potsdam.anomalies )
 
 ```
-![potsdam-plot-anomalies](../res/vignette-potsdam-plot-anomalies.png)
+![potsdam-plot-anomalies](res/vignette-potsdam-plot-anomalies.png)
 
 
 Though you have way more data contributing to the analysis (you can
@@ -168,7 +168,7 @@ ttplot( temp.potsdam.blocked )
 
 ```
 
-![potsdam-plot-blocked](../res/vignette-potsdam-plot-blocked.png)
+![potsdam-plot-blocked](res/vignette-potsdam-plot-blocked.png)
 
 
 #### Fitting the GEV distribution
@@ -191,7 +191,7 @@ multiplot( plotlist = list( ttplot( temp.potsdam.blocked ),
 
 ```
 
-![potsdam-plot-fit](../res/vignette-potsdam-plot-fit.png)
+![potsdam-plot-fit](res/vignette-potsdam-plot-fit.png)
 
 
 ## The GP distribution
@@ -218,7 +218,7 @@ temp.potsdam.declustered <- threshold( temp.potsdam, threshold = 33 )
 ttplot( temp.potsdam.declustered )
 ```
 
-![potsdam-plot-blocked](../res/vignette-potsdam-plot-declustered.png)
+![potsdam-plot-blocked](res/vignette-potsdam-plot-declustered.png)
 
 #### Fitting the GP distribution
 
@@ -242,4 +242,4 @@ multiplot( plotlist = list( ttplot( temp.potsdam.declustered ),
           main = "Declustered daily maximum temperature and its GP fit" )
 ```
 
-![potsdam-plot-blocked](../res/vignette-potsdam-plot-fit-gpd.png)
+![potsdam-plot-blocked](res/vignette-potsdam-plot-fit-gpd.png)

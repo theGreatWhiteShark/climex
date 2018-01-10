@@ -4,7 +4,17 @@
 \alias{print.climex.fit.gev}
 \title{Summary of the fit results}
 \usage{
-\method{print}{climex.fit.gev}(x)
+\method{print}{climex.fit.gev}(x, ...)
+}
+\arguments{
+\item{x}{Object of class \strong{climex.fit.gev}.}
+
+\item{...}{Additional parameters. They won't be handled in the
+function. This argument is only present to ensure S3 generic
+consistency with respect to the `print()` function.}
+}
+\value{
+`invisible()`
 }
 \author{
 Philipp Mueller

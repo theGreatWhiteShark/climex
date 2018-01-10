@@ -29,10 +29,11 @@
 ##' @author Philipp Mueller 
 climex <- function(){
   source.data( pick.default = TRUE, import = "global" )
+  globalVariables(
+      names = c( "stations.temp.max", "stations.temp.min",
+                "stations.prec", "station.positions" ),
+      package = "climex", add = TRUE )
   climex.path <- getOption( "climex.path" )
-  ## will contain the folder in which the images of the animation
-  ## can be found
-  image.folder <<- paste0( climex.path, "app/www/images" )
   ## this is unfortunately necessary since some JavaScript scripts
   ## are written out and some images are plotted which have to be
   ## accessible within the shiny app.
@@ -86,7 +87,13 @@ climex <- function(){
 ##' provide a local and a server side variant of the code which is
 ##' maintained in the same place. I do not really like the idea of
 ##' installing the newest version of the code from Github and than
-##' copy/pasting the code in some files somewhere in /srv/shiny-server.
+##' copy/pasting the code in some files somewhere in
+##'   /srv/shiny-server.
+##'
+##' @param input Namespace input. For more details check out
+##' \url{http://shiny.rstudio.com/articles/modules.html}
+##' @param output Namespace output.
+##' @param session Namespace session.
 ##'
 ##' @return Function acting as the shiny server.
 ##' @import shiny
@@ -240,6 +247,9 @@ climex.server <- function( input, output, session ){
   ## store the previous results of the GEV/GP fitting. This is
   ## unfortunately necessary in order to highlight the progress in the
   ## table red or green.
+  globalVariables( names = c( "last.values", "last.1", "last.2",
+                             "last.3" ),
+                  package = "climex", add = TRUE )
   last.values <<- last.1 <<- last.2 <<- last.3 <<- rep( 0,  )
   output$generalFitStatistics <-
     climex:::generalFitStatistics( reactive.fitting, reactive.extreme,

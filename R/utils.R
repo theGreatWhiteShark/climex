@@ -1,18 +1,20 @@
 ##' @title Convert data into dates and back.
-##' @description Converts class 'numeric' into 'Date' and back and also
-##' transforms the DWD input (class 'integer') into class 'Date'.
+##' @description Converts class 'numeric' into 'Date' and back and
+##'   also transforms the DWD input (class 'integer') into class
+##'   'Date'. 
 ##' @details The date entry has to be provided in the first column.
-##' Generic function for the following input classes: stations, years,
+##' Generic function for the following input classes: stations, years, 
 ##' bulk, integer, numeric, character and Date. For an easy way to
 ##' produce a specific date a string ala "20140101" can be provided.
 ##'
 ##' @param input.data Data containing a date entry in its first column.
 ##' @param origin Sets origin date for the transformation of numerical
-##' data into class 'Date'. Per default its set to "1970-01-01" like its
-##' the convention in many software including R.
+##' data into class 'Date'. Per default its set to "1970-01-01" like
+##'   its the convention in many software including R.
 ##' @family conversion utils
 ##'
-##' @return Returns input in same format with second column of class date
+##' @return Returns input in same format with second column of class
+##'   date 
 ##' @import lubridate
 ##' @author Philipp Mueller
 convert.date <- function( input.data, origin = "1970-01-01" ){
@@ -42,95 +44,123 @@ convert.date.Date <- function( input.data, origin = "1970-01-01"  ){
 }
 
 ##' @title Summary of the fit results
+##'
+##' @param x Object of class \strong{climex.fit.gev}.
+##' @param ... Additional parameters. They won't be handled in the
+##'   function. This argument is only present to ensure S3 generic
+##'   consistency with respect to the `print()` function.
 ##' @export
+##'
+##' @return `invisible()`
 ##' @author Philipp Mueller
-print.climex.fit.gev <- function( x ){
+print.climex.fit.gev <- function( x, ... ){
   summary( x )
   invisible()
 }
 ##' @title Summary of the fit results
+##'
+##' @param object Object of class \strong{climex.fit.gev}.
+##' @param ... Additional parameters. They won't be handled in the
+##'   function. This argument is only present to ensure S3 generic
+##'   consistency with respect to the `summary()` function.
 ##' @export
+##'
+##' @return `invisible()`
 ##' @author Philipp Mueller
-summary.climex.fit.gev <- function( x ){
+summary.climex.fit.gev <- function( object, ... ){
   cat( "\n" )
-  cat( paste( length( x$x ), "block maxima fitted using then " ) )
-  if ( x$control$error.estimation != "none" ){
+  cat( paste( length( object$x ), "block maxima fitted using then " ) )
+  if ( object$control$error.estimation != "none" ){
     cat( paste( " Errors using",
-               x$control$error.estimation, "approach." ) )
+               object$control$error.estimation, "approach." ) )
   }
   cat( "\n\n" )
   cat( "\t\tFunction evaluations:\n" )
-  print( data.frame( function.eval = as.numeric( x$counts[ 1 ] ),
-                    gradient.eval = ifelse( is.na( x$counts[ 2 ] ), 0,
-                                           as.numeric( x$counts[ 2 ] ) ),
-                    penalty.updates = x$outer.iteration,
+  print( data.frame( function.eval = as.numeric( object$counts[ 1 ] ),
+                    gradient.eval =
+                      ifelse( is.na( object$counts[ 2 ] ), 0,
+                             as.numeric( object$counts[ 2 ] ) ),
+                    penalty.updates = object$outer.iteration,
                     row.names = "eval" ) )
   cat( "\n" )
   cat( "\t\tFit statistics:\n" )
-  print( data.frame( nllh = x$value,
-                    AIC = climex:::aic( x ),
-                    BIC = climex:::bic( x ),
+  print( data.frame( nllh = object$value,
+                    AIC = climex:::aic( object ),
+                    BIC = climex:::bic( object ),
                     row.names = "augmented fit" ) )
   cat( "\n" )
   cat( "\t\tEstimated parameters:\n" )
-  print( data.frame( parameter = x$par,
-                    fitting.error = as.numeric( x$se[ 1 : 3 ] ),
+  print( data.frame( parameter = object$par,
+                    fitting.error = as.numeric( object$se[ 1 : 3 ] ),
                     row.names = c( "location", "scale", "shape" ) ) )
   cat( "\n" )
   cat( "\t\tEstimated return levels:\n" )
-  print( data.frame( return.level = x$return.level,
+  print( data.frame( return.level = object$return.level,
                     fitting.error = as.numeric(
-                        x$se[ 4 : length( x$se ) ] ),
+                        object$se[ 4 : length( object$se ) ] ),
                     row.names = paste( as.character(
-                        x$control$return.period ),
+                        object$control$return.period ),
                         "block return level" ) ) )
   cat( "\n" )
   invisible()
 }
 ##' @title Summary of the fit results
+##' @param x Object of class \strong{climex.fit.gpd}.
+##' @param ... Additional parameters. They won't be handled in the
+##'   function. This argument is only present to ensure S3 generic
+##'   consistency with respect to the `print()` function.
 ##' @export
+##'
+##' @return `invisible()`
 ##' @author Philipp Mueller
-print.climex.fit.gpd <- function( x ){
+print.climex.fit.gpd <- function( x, ... ){
   summary( x )
   invisible()
 }
 ##' @title Summary of the fit results
+##' @param object Object of class \strong{climex.fit.gpd}.
+##' @param ... Additional parameters. They won't be handled in the
+##'   function. This argument is only present to ensure S3 generic
+##'   consistency with respect to the `summary()` function.
 ##' @export
+##'
+##' @return `invisible()`
 ##' @author Philipp Mueller
-summary.climex.fit.gpd <- function( x ){
+summary.climex.fit.gpd <- function( object, ... ){
   cat( "\n" )
-  cat( paste( length( x$x ), "exceedances over the threshold",
-             x$threshold ) )
+  cat( paste( length( object$x ), "exceedances over the threshold",
+             object$threshold ) )
   cat( "\noptimization routine." )
-  if ( x$control$error.estimation != "none" ){
+  if ( object$control$error.estimation != "none" ){
     cat( paste( " Errors using",
-               x$control$error.estimation, "approach." ) )
+               object$control$error.estimation, "approach." ) )
   }
   cat( "\n\n" )
   cat( "\t\tFunction evaluations:\n" )
-  print( data.frame( function.eval = as.numeric( x$counts[ 1 ] ),
-                    gradient.eval = ifelse( is.na( x$counts[ 2 ] ), 0,
-                                           as.numeric( x$counts[ 2 ] ) ),
-                    penalty.updates = x$outer.iteration,
+  print( data.frame( function.eval = as.numeric( object$counts[ 1 ] ),
+                    gradient.eval =
+                      ifelse( is.na( object$counts[ 2 ] ), 0,
+                             as.numeric( object$counts[ 2 ] ) ),
+                    penalty.updates = object$outer.iteration,
                     row.names = "eval" ) )
   cat( "\n" )
   cat( "\t\tFit statistics:\n" )
-  print( data.frame( nllh = x$value,
-                    AIC = climex:::aic( x ),
-                    BIC = climex:::bic( x ),
+  print( data.frame( nllh = object$value,
+                    AIC = climex:::aic( object ),
+                    BIC = climex:::bic( object ),
                     row.names = "augmented fit" ) )
   cat( "\n" )
   cat( "\t\tEstimated parameters:\n" )
-  print( data.frame( parameter = x$par,
-                    fitting.error = as.numeric( x$se[ 1 : 2 ] ),
+  print( data.frame( parameter = object$par,
+                    fitting.error = as.numeric( object$se[ 1 : 2 ] ),
                     row.names = c( "scale", "shape" ) ) )
   cat( "\n" )
   cat( "\t\tEstimated return levels:\n" )
-  print( data.frame( return.level = x$return.level,
+  print( data.frame( return.level = object$return.level,
                     fitting.error = as.numeric(
-                        x$se[ 3 : length( x$se ) ] ),
+                        object$se[ 3 : length( object$se ) ] ),
                     row.names = paste( as.character(
-                        x$control$return.period ),
+                        object$control$return.period ),
                         "year return level" ) ) )
   cat( "\n" )
   invisible()

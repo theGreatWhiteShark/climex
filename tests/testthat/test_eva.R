@@ -82,7 +82,7 @@ test_that( "decluster works as expected", {
 
 test_that( "extremal.index calculates correct results and throws warnings", {
   expect_equal( climex:::extremal.index( temp.potsdam, 29 ),
-               c( 0.2413838 - 2.68e-08, 350, 12 ) )
+               c( 0.240429635, 350.000000000, 12.000000000 ) )
   expect_warning( climex:::extremal.index( temp.potsdam, 100 ) )
 })
 

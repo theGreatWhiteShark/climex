@@ -2,34 +2,48 @@
 % Please edit documentation in R/plot.R
 \name{likelihood.plot}
 \alias{likelihood.plot}
-\title{Generates three 2D slices of the likelihood of a provided time series.}
+\title{Generates three 2D slices of the likelihood of a provided
+  time series.}
 \usage{
 likelihood.plot(time.series, location.lim = NULL, scale.lim = NULL,
   shape.lim = NULL, center = NULL, initial = NULL, main = NULL,
   true.minima = NULL)
 }
 \arguments{
-\item{time.series}{Data for which the likelihood function is going to be calculated.}
+\item{time.series}{Data for which the likelihood function is going
+to be calculated.}
 
-\item{location.lim}{Boundaries of the plotted likelihood region. Default = +/- 2.5 times the minimum value.}
+\item{location.lim}{Boundaries of the plotted likelihood
+region. Default = +/- 2.5 times the minimum value.}
 
-\item{scale.lim}{Boundaries of the plotted likelihood region. Default = +/- 2.5 times the minimum value.}
+\item{scale.lim}{Boundaries of the plotted likelihood
+region. Default = +/- 2.5 times the minimum value.}
 
-\item{shape.lim}{Boundaries of the plotted likelihood region. Default = +/- 2.5 times the minimum value.}
+\item{shape.lim}{Boundaries of the plotted likelihood
+region. Default = +/- 2.5 times the minimum value.}
 
-\item{center}{It set this point (3D) will be the new center of the likelihood plot. Default = NULL}
+\item{center}{It set this point (3D) will be the new center of the
+likelihood plot. Default = NULL}
 
-\item{initial}{Initial parameters which can be provided for the fit of the time series.}
+\item{initial}{Initial parameters which can be provided for the
+fit of the time series.}
 
 \item{main}{Title for the multiplot. Default = NULL.}
 
-\item{true.minima}{Provide the true minima of the neg log-likelihood function if fit.gev does not provide it in the first run. Default = NULL.}
+\item{true.minima}{Provide the true minima of the neg
+log-likelihood function if fit.gev does not provide it in the
+first run. Default = NULL.}
 }
 \value{
-returns a multiplot of planes through the negative log-likelihood of the GEV function calculated using the input time series.
+returns a multiplot of planes through the negative
+  log-likelihood of the GEV function calculated using the input
+  time series.
 }
 \details{
-The likelihood will be plotted around its optimal value. To determine it the time series will be fitted via \code{\link{fit.gev}}. Its also possible to provide another point the likelihood will be centered around using 'center'.
+The likelihood will be plotted around its optimal
+  value. To determine it the time series will be fitted via
+  \code{\link{fit.gev}}. Its also possible to provide another
+  point the likelihood will be centered around using 'center'.
 }
 \author{
 Philipp Mueller

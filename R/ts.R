@@ -242,6 +242,8 @@ remove.seasonality <- function( x ){
 
 ##' @title Calculates the mode of a PDF
 ##'
+##' @param x Numerical input.
+##'
 ##' @return Numerical
 ##' @author Philipp Mueller 
 mode <- function( x ){
