@@ -14,7 +14,9 @@
   images in R. Instead they are stripped of all figure links and a
   copy of them is introduced in the *//res/* folder. These ones still
   contain the figure links and are saved as proper .md files (and
-  ignored during build).
+  ignored during build). In the end the *//res/* folder was included
+  again, since *win-builder* tries to build the README.md using
+  **pandoc**. 
 - Fixing a bug in the formula calculating the run.length in the
   `extremal.index` for a threshold distance then 2.
 - Updating the documentation, namespacing, file layout, build ignore,

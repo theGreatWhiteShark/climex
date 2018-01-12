@@ -178,13 +178,11 @@ decluster <- function( x, threshold, cluster.distance = NULL,
     warning( "You are choosing the cluster size by hand instead of relying on the non-parametric version. Proceed with care!" )
   }
   exceedances.position <- x.no.na > threshold
-  ## Böse, böse, böse
   exceedances.position <- exceedances.position
   exceedances <- x.no.na[ exceedances.position ]
   ## Amount of points above the threshold
   exceedances.number <- sum( exceedances.position )
   ## Index of those points in the ts 'x'
-  ## Böse, böse, böse
   exceedances.index <- ( 1 : length( x.no.na ) )[ exceedances.position ] 
   which.cluster <- rep( 1, exceedances.number )
   ## Number of indices the exceedances are apart from each other

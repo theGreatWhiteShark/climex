@@ -73,7 +73,7 @@ download.data.dwd <- function( save.downloads = TRUE,
   old.dir <- getwd()
   ## If the folder does not exists yet, create it.
   if ( !dir.exists( download.path ) ){
-    system2( "mkdir", args = paste( "-p", download.path ) )
+    dir.create( download.path, recursive = TRUE )
   }
   setwd( download.path ) 
   ## paths on the DWD servers

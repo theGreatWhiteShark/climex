@@ -1,4 +1,4 @@
 .gitignore
 ^.git$
 ^cran-comments.md$
-res/
+^.travis.yml$

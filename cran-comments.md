@@ -1,3 +1,9 @@
+## Test environments
+* local Devuan 8.0, R-3.4.0
+* Ubuntu 14.04 (on travis-ci), R-3.3.0
+* win-builder (R-devel), R-3.5.0
+
+
 ## `devtools::check()` results
 
 * checking dependencies in R code ... **NOTE**
@@ -71,3 +77,23 @@ Undefined global functions or variables:
   - All those variables are actually names columns and used within
     **ggplot2** routines.
 	   
+## Downstream dependencies
+
+Everything nice and clean
+
+	> revdep_check()
+	Reverse dependency checks for climex ==========================================
+	Saving check results in `revdep/checks/`
+	Saving install results in `revdep/install/`
+	Computing reverse dependencies... 
+	Installing dependencies for climex to /tmp/RtmptfyV3G/R-lib
+	Installing climex 1.2.0 to /tmp/RtmptfyV3G/revdepfd15d10babe
+	Setting env vars --------------------------------------------------------------
+	NOT_CRAN    : false
+	RGL_USE_NULL: true
+	DISPLAY     : 
+	Saving check results to `revdep/check.rds` ------------------------------------
+	Cleaning up -------------------------------------------------------------------
+	> revdep_check_save_summary()
+	> revdep_check_print_problems()
+	No ERRORs or WARNINGs found :)

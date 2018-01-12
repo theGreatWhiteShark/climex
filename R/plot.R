@@ -31,7 +31,6 @@
 ##' @import grid
 multiplot <- function( tt.title = main, main = NULL, ...,
                       plotlist = NULL, cols = 1, layout = NULL ) {
-  sink( "/dev/null" )
   ## Make a list from the ... arguments and plotlist
   plots <- c( list( ... ), plotlist )
   numPlots = length( plots )
@@ -85,7 +84,6 @@ multiplot <- function( tt.title = main, main = NULL, ...,
       }
     }
   }
-  sink()
   invisible( last_plot() )
 }
 

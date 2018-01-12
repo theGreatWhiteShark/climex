@@ -1,4 +1,6 @@
 language: r
+r:
+  - 3.3.0
 cache: packages
 
 script:
