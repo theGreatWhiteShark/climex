@@ -2,7 +2,7 @@
 % Please edit documentation in R/climex_preprocessing.R
 \name{generalExtremeExtraction}
 \alias{generalExtremeExtraction}
-\title{Extract the extreme events from a given time series.}
+\title{Extracting extreme events in the Climex app}
 \usage{
 generalExtremeExtraction(radioEvdStatistics, deseasonalize.interactive,
   selectDeseasonalize, buttonMinMax, reactive.selection, selectDataBase)
@@ -18,7 +18,7 @@ from a given time series. \code{\link{deseasonalize.interactive}}}
 \item{selectDeseasonalize}{Character (select) input determining which
 deseasonalization method should be used to remove the short-range
 correlations from the provided time series.
-\code{\link{deseasonalizeInput}}}
+\code{\link{deseasonalizeSelectionInput}}}
 
 \item{buttonMinMax}{Character (radio) input determining whether
 the GEV/GP distribution shall be fitted to the smallest or biggest
@@ -40,6 +40,9 @@ Default = "DWD".}
 }
 \value{
 renderMenu
+}
+\description{
+Extract the extreme events from a given time series.
 }
 \details{
 Provides a slider input to determine either the block length

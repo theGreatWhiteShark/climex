@@ -126,13 +126,13 @@ first place. The penalty in the log-likelihood function is the sum of
 all squared constrain violations plus an additional term linear in
 the constraint violation to ensure well-conditioning. Using this
 penalty term the problem becomes unconstrained again and can be
-solved using \code{\link{stats::optim}}. After each of those inner
+solved using \code{\link[stats]{optim}}. After each of those inner
 routines the weighting parameter of the penalty is being increased
 until some convergence conditions are fulfilled.
 
 Since it usually takes just four to five outer iterations this
-functions needs only double the time a pure call to the stats::optim
-function would need.
+functions needs only double the time a pure call to the
+  \code{\link[stats]{optim}} function would need.
 
 The negative log-likelihood of the Gumbel distribution is just fitted
 if the shape parameter is exactly equal to zero.

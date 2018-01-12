@@ -2,8 +2,7 @@
 % Please edit documentation in R/climex_plotting.R
 \name{generalTimeSeriesPlot}
 \alias{generalTimeSeriesPlot}
-\title{TabBox containing a plot of the pure and deseasonalized time
-series as well as one of all its extreme events.}
+\title{Time series plot in the Climex app.}
 \usage{
 generalTimeSeriesPlot(input, output, session, reactive.extreme, selectDataBase,
   selectDataType, function.get.y.label, radioEvdStatistics, sliderThreshold,
@@ -62,12 +61,17 @@ Reactive value holding a logical vector indicating which values
 of the time series provided by \code{\link{data.extremes}} to use after
 clicking and brushing.
 }
+\description{
+TabBox containing a plot of the pure and
+  deseasonalized time series as well as one of all its extreme
+  events.
+}
 \details{
-Both the pure time series and the
-deseasonalized one are rendered using the dygraphs package. The extreme
-events are rendered using the ggplot2 package. For the later one
-clicking or brushing points enables the user to exclude them. This is
-handled by a reactive value returned by this function.
+Both the pure time series and the deseasonalized one are
+  rendered using the dygraphs package. The extreme events are
+  rendered using the ggplot2 package. For the later one clicking
+  or brushing points enables the user to exclude them. This is
+  handled by a reactive value returned by this function.
 }
 \seealso{
 Other climex-plot: \code{\link{function.get.y.label}},

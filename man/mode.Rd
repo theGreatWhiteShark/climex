@@ -12,6 +12,9 @@ mode(x)
 \value{
 Numerical
 }
+\description{
+Calculates the mode of a PDF
+}
 \author{
 Philipp Mueller
 }

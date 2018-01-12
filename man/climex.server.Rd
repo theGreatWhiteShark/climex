@@ -2,7 +2,7 @@
 % Please edit documentation in R/shiny_base.R
 \name{climex.server}
 \alias{climex.server}
-\title{Server-side part of the \code{\link{climex}} function.}
+\title{The Climex app server}
 \usage{
 climex.server(input, output, session)
 }
@@ -16,6 +16,9 @@ climex.server(input, output, session)
 }
 \value{
 Function acting as the shiny server.
+}
+\description{
+Server-side part of the \code{\link{climex}} function.
 }
 \details{
 Since it grew organically most of the features are defined

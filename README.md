@@ -72,7 +72,7 @@ You want to run your own version of the Climex web application on one of your se
 
 You are new to **R**? Then check out the [compiled list of resources](https://www.rstudio.com/online-learning/#R) from RStudio or the [official introduction](https://cran.r-project.org/doc/manuals/R-intro.pdf).
 
-An in-depth introduction to the [general usage](vignettes/data_dwd_and_usage.Rmd) of the package and the Shiny-based [web application](vignettes/climex_app.Rmd) can be found in the package's [vignettes](vignettes/).
+A thorough introduction is provided for the [general usage](res/README_data_dwd_and_usage.Rmd) of the package and the Shiny-based [web application](res/climex_app.Rmd).
 
 When using this package in your own analysis, keep in mind that its functions expect your time series to be of class [xts](https://cran.r-project.org/web/packages/xts/index.html) and not numeric!
 

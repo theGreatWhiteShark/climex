@@ -43,7 +43,8 @@ convert.date.Date <- function( input.data, origin = "1970-01-01"  ){
   return( output.data )
 }
 
-##' @title Summary of the fit results
+##' @title Print details
+##' @description Summary of the GEV fit results
 ##'
 ##' @param x Object of class \strong{climex.fit.gev}.
 ##' @param ... Additional parameters. They won't be handled in the
@@ -57,7 +58,8 @@ print.climex.fit.gev <- function( x, ... ){
   summary( x )
   invisible()
 }
-##' @title Summary of the fit results
+##' @title Summarize details
+##' @description Summary of the GEV fit results
 ##'
 ##' @param object Object of class \strong{climex.fit.gev}.
 ##' @param ... Additional parameters. They won't be handled in the
@@ -85,8 +87,8 @@ summary.climex.fit.gev <- function( object, ... ){
   cat( "\n" )
   cat( "\t\tFit statistics:\n" )
   print( data.frame( nllh = object$value,
-                    AIC = climex:::aic( object ),
-                    BIC = climex:::bic( object ),
+                    AIC = aic( object ),
+                    BIC = bic( object ),
                     row.names = "augmented fit" ) )
   cat( "\n" )
   cat( "\t\tEstimated parameters:\n" )
@@ -104,7 +106,8 @@ summary.climex.fit.gev <- function( object, ... ){
   cat( "\n" )
   invisible()
 }
-##' @title Summary of the fit results
+##' @title Print results
+##' @description Summary of the GPD fit results
 ##' @param x Object of class \strong{climex.fit.gpd}.
 ##' @param ... Additional parameters. They won't be handled in the
 ##'   function. This argument is only present to ensure S3 generic
@@ -117,7 +120,8 @@ print.climex.fit.gpd <- function( x, ... ){
   summary( x )
   invisible()
 }
-##' @title Summary of the fit results
+##' @title Summarize results
+##' @description Summary of the GPD fit results
 ##' @param object Object of class \strong{climex.fit.gpd}.
 ##' @param ... Additional parameters. They won't be handled in the
 ##'   function. This argument is only present to ensure S3 generic
@@ -146,8 +150,8 @@ summary.climex.fit.gpd <- function( object, ... ){
   cat( "\n" )
   cat( "\t\tFit statistics:\n" )
   print( data.frame( nllh = object$value,
-                    AIC = climex:::aic( object ),
-                    BIC = climex:::bic( object ),
+                    AIC = aic( object ),
+                    BIC = bic( object ),
                     row.names = "augmented fit" ) )
   cat( "\n" )
   cat( "\t\tEstimated parameters:\n" )

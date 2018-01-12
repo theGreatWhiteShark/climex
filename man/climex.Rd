@@ -2,13 +2,16 @@
 % Please edit documentation in R/shiny_base.R
 \name{climex}
 \alias{climex}
-\title{Shiny app combining most of the tools used in extreme value
-analysis using GEV fitting via maximum likelihood.}
+\title{The Climex app initialization}
 \usage{
 climex()
 }
 \value{
 starts a shiny app.
+}
+\description{
+Shiny app combining most of the tools used in extreme
+  value analysis using GEV fitting via maximum likelihood.
 }
 \details{
 It possible to provide a time series of type \pkg{xts} to

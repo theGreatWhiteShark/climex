@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{print.climex.fit.gev}
 \alias{print.climex.fit.gev}
-\title{Summary of the fit results}
+\title{Print details}
 \usage{
 \method{print}{climex.fit.gev}(x, ...)
 }
@@ -15,6 +15,9 @@ consistency with respect to the `print()` function.}
 }
 \value{
 `invisible()`
+}
+\description{
+Summary of the GEV fit results
 }
 \author{
 Philipp Mueller

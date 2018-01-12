@@ -2,8 +2,7 @@
 % Please edit documentation in R/climex_plotting.R
 \name{generalFitPlot}
 \alias{generalFitPlot}
-\title{Box containing the plot of the performed GEV/GP fitting as well
-as three goodness-of-fit plots.}
+\title{Plot of the fits in the Climex app}
 \usage{
 generalFitPlot(input, output, session, reactive.extreme, reactive.rows,
   reactive.fitting, buttonMinMax, radioEvdStatistics, function.get.y.label,
@@ -68,6 +67,10 @@ time series (rounded). Default: 0.8* the upper end point.}
 }
 \value{
 Nothing in particular.
+}
+\description{
+Box containing the plot of the performed GEV/GP
+  fitting as well as three goodness-of-fit plots.
 }
 \details{
 All four plots are rendered using the ggplot2 package.

@@ -1,4 +1,3 @@
-
 // includes from the plugin
 #include <RcppArmadillo.h>
 #include <Rcpp.h>
@@ -41,6 +40,13 @@ for ( int ii = 0; ii < sc.size(); ii++ ){
 }                                          
 return Rcpp::wrap( L ); 
 END_RCPP
+}
+
+// Registration
+void R_init_climex( DllInfo* info )
+{
+  R_registerRoutines( info, NULL, NULL, NULL, NULL );
+  R_useDynamicSymbols( info, TRUE );
 }
 
 

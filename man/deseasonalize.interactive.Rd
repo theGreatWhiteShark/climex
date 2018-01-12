@@ -2,8 +2,7 @@
 % Please edit documentation in R/climex_preprocessing.R
 \name{deseasonalize.interactive}
 \alias{deseasonalize.interactive}
-\title{Function for removing the seasonality of a given time series
-within the Climex app.}
+\title{Removing seasonality in the Climex app}
 \usage{
 deseasonalize.interactive(x.xts, selectDeseasonalize, selectDataBase)
 }
@@ -13,8 +12,8 @@ deseasonalize.interactive(x.xts, selectDeseasonalize, selectDataBase)
 \item{selectDeseasonalize}{Character (select) input determining which
 deseasonalization method should be used to remove the short-range
 correlations from the provided time series.
-\code{\link{deseasonalizeInput}}. If NULL climex::anomalies will be
-used.}
+\code{\link{deseasonalizeSelectionInput}}. If NULL \code{\link{anomalies}}
+  will be used.}
 
 \item{selectDataBase}{Character (select) input to determine the data
 source. In the default installation there are three options:
@@ -28,6 +27,10 @@ Default = "DWD".}
 }
 \value{
 Time series of class 'xts'.
+}
+\description{
+Function for removing the seasonality of a given time
+  series within the Climex app.
 }
 \seealso{
 Other preprocessing: \code{\link{cleaning.interactive}},

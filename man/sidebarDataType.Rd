@@ -2,7 +2,7 @@
 % Please edit documentation in R/climex_sidebar.R
 \name{sidebarDataType}
 \alias{sidebarDataType}
-\title{Sidebar menu selection}
+\title{Sidebar menu selection in the Climex app}
 \usage{
 sidebarDataType(selectDataBase, radioEvdStatistics)
 }
@@ -23,6 +23,9 @@ c( "GEV", "GP" ), default = "GEV".}
 }
 \value{
 renderMenu
+}
+\description{
+Sidebar menu selection.
 }
 \details{
 Provides the third selection menu in the sidebar.

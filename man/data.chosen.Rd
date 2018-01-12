@@ -2,10 +2,10 @@
 % Please edit documentation in R/climex_leaflet.R
 \name{data.chosen}
 \alias{data.chosen}
-\title{This functions extracts all stations containing more than a
-specified number of years of data}
+\title{Choosing a data set in the Climex app}
 \usage{
-data.chosen(selectDataBase, sliderYears, selectDataType, reactive.loading)
+data.chosen(selectDataBase, sliderYears, selectDataType, reactive.loading,
+  climex.environment)
 }
 \arguments{
 \item{selectDataBase}{Character (select) input to determine the data
@@ -32,10 +32,19 @@ Determined by menuSelectDataType.}
 \item{reactive.loading}{Reactive value allowing the user to load a
 time series of class "xts" or "list" with "xts" as their elements
 into the climex app. \code{\link{file.loading}}}
+
+\item{climex.environment}{Environment containing the global
+variables used within the climex app. Namely the last values
+displayed in the table and the lists containing the station
+data.}
 }
 \value{
 Reactive list containing a list of all selected stations and
 their positions.
+}
+\description{
+This functions extracts all stations containing more
+  than a specified number of years of data
 }
 \details{
 It uses the current database and returns all stations which

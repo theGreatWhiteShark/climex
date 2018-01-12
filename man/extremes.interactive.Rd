@@ -2,7 +2,7 @@
 % Please edit documentation in R/climex_preprocessing.R
 \name{extremes.interactive}
 \alias{extremes.interactive}
-\title{Function to extract the extreme event from a time series.}
+\title{Extracting extreme events in the Climex app}
 \usage{
 extremes.interactive(x.xts, buttonMinMax, radioEvdStatistics, sliderBlockLength,
   sliderThreshold, checkboxDecluster)
@@ -34,6 +34,10 @@ input$radioEvdStatistics == "GP" and else will be NULL.}
 }
 \value{
 Time series of class 'xts'.
+}
+\description{
+Function to extract the extreme event from a time
+  series.
 }
 \details{
 If the input$radioEvdStatistics is set to "GEV" the time

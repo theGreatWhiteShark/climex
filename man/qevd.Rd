@@ -2,8 +2,7 @@
 % Please edit documentation in R/extremes.R
 \name{qevd}
 \alias{qevd}
-\title{Calculates the quantile of either the GEV or the GPD
-distribution}
+\title{Quantile calculation}
 \usage{
 qevd(p, location = NULL, scale = NULL, shape = NULL, threshold = NULL,
   model = c("gev", "gpd"), lower.tail = TRUE, silent = FALSE)
@@ -31,6 +30,10 @@ P[X > x]. Default = TRUE (first case).}
 }
 \value{
 Numerical vector of the same length as input argument p.
+}
+\description{
+Calculates the quantile of either the GEV or the GPD
+distribution
 }
 \details{
 Port from the extRemes package to (again) get rid of the

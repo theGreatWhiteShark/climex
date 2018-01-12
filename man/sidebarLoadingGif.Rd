@@ -2,7 +2,7 @@
 % Please edit documentation in R/climex_sidebar.R
 \name{sidebarLoadingGif}
 \alias{sidebarLoadingGif}
-\title{Showing a Gif in the sidebar while the app is processing/on hold}
+\title{Gif in the Climex app}
 \usage{
 sidebarLoadingGif(input, output, session)
 }
@@ -16,6 +16,10 @@ sidebarLoadingGif(input, output, session)
 }
 \value{
 div
+}
+\description{
+Showing a Gif in the sidebar while the app is
+  processing/on hold
 }
 \details{
 This module will display a loading gif. Most of the code of

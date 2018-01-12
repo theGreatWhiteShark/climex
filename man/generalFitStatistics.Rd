@@ -2,10 +2,10 @@
 % Please edit documentation in R/climex_fitting.R
 \name{generalFitStatistics}
 \alias{generalFitStatistics}
-\title{Table to display the results of the GEV/GP fitting procedure.}
+\title{Result table in Climex app}
 \usage{
 generalFitStatistics(reactive.fitting, reactive.extreme, sliderThreshold,
-  buttonMinMax, radioEvdStatistics, color.table)
+  buttonMinMax, radioEvdStatistics, color.table, climex.environment)
 }
 \arguments{
 \item{reactive.fitting}{Reactive value containing the results of the
@@ -34,16 +34,26 @@ c( "GEV", "GP" ), default = "GEV".}
 \item{color.table}{Function adding color to the table constructed
 within generalFitStatistics. It will replace some placeholders by
 color tags. \code{\link{color.table}}}
+
+\item{climex.environment}{Environment containing the global
+variables used within the climex app. Namely the last values
+displayed in the table and the lists containing the station
+data.}
 }
 \value{
 renderUI containing a table
 }
+\description{
+Table to display the results of the GEV/GP fitting
+  procedure.
+}
 \details{
-Displaying of AIC, nllh, BIC and fitted parameters as well as
-the difference to the three last fits! (and highlight positive values
-with with green and negative with red). This function will define
-some global variables to hold the results of the former fits. This is
-necessary in order to mark the progress in green or red.
+Displaying of AIC, nllh, BIC and fitted parameters as
+  well as the difference to the three last fits! (and highlight
+  positive values with with green and negative with red). This
+  function will define some global variables to hold the results
+  of the former fits. This is necessary in order to mark the
+  progress in green or red.
 }
 \seealso{
 Other climex-fitting: \code{\link{color.table}},

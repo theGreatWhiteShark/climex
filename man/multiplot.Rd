@@ -2,8 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{multiplot}
 \alias{multiplot}
-\title{This function takes several plot of the ggplot2 and
-  arranges them on one page.}
+\title{Plot multiple time series.}
 \usage{
 multiplot(tt.title = main, main = NULL, ..., plotlist = NULL, cols = 1,
   layout = NULL)
@@ -24,6 +23,10 @@ is ignored.}
 }
 \value{
 print object.
+}
+\description{
+This function takes several plot of the ggplot2 and
+  arranges them on one page.
 }
 \details{
 Well, it is not really related to extreme value fitting

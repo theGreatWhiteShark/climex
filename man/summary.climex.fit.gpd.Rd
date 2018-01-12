@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{summary.climex.fit.gpd}
 \alias{summary.climex.fit.gpd}
-\title{Summary of the fit results}
+\title{Summarize results}
 \usage{
 \method{summary}{climex.fit.gpd}(object, ...)
 }
@@ -15,6 +15,9 @@ consistency with respect to the `summary()` function.}
 }
 \value{
 `invisible()`
+}
+\description{
+Summary of the GPD fit results
 }
 \author{
 Philipp Mueller

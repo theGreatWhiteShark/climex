@@ -1,4 +1,5 @@
-##' @title  Calculates the Akaike information criterion of a climex.fit.gev or climex.fit.gpd object.
+##' @title Akaike information criterion
+##' @description Calculates the Akaike information criterion of a climex.fit.gev or climex.fit.gpd object.
 ##' @details The climex.fit.gev object is of identical structure as the output of the optim() function.
 ##' 
 ##' @param x Optim() like fit of a time series.
@@ -15,7 +16,8 @@ aic <- function( x ){
   2* x$value + 2* length( x$par )
 }
 
-##' @title Calculates the Bayesian information criterion of a climex.fit.gev or climex.fit.gpd object.
+##' @title Bayesian information criterion
+##' @description Calculates the Bayesian information criterion of a climex.fit.gev or climex.fit.gpd object.
 ##' @details The climex.fit.gev object is of identical structure as the output of the optim() function.
 ##'
 ##' @param x Object of class climex.fit.gev or climex.fit.gpd. When ensuring the presence of all additional list elements an output of optim() can also be used.
@@ -32,7 +34,8 @@ bic <- function( x ){
   2* x$value + length( x$par )* log( length( x$x ) )
 }
 
-##' @title Removes all years, which contain either a NA or are
+##' @title Remove incomplete years
+##' @description Removes all years, which contain either a NA or are
 ##'   incomplete. 
 ##'
 ##' @details Since incomplete years are detected via the
@@ -130,9 +133,23 @@ remove.incomplete.years <- function( x, time.unit = 1 ){
   }
 }   
 
-##' @title Calculates the seasonal component of a time series and subtracts it from the original.
+##' @title Remove seasonality
+##' @description Calculates the seasonal component of a time series
+##'   and subtracts it from the original. 
 ##'
-##' @details Only time series of class "xts" are accepted (on purpose because I want to get rid of handling both objects of class "ts" and "xts"). For now stats::stl with s.window = 12 and a conversion of the input into a ts object of daily data is used to calculate the seasonal component. This should be replaced by a more sophisticated solution as soon I digged deeper into the field of deseasonalization. \code{\link{remove.incomplete.years}} is used to remove incomplete years from the data set. This ensures a better calculation of the seasonal component but also requires to forecast it to the length of the original data set and align it at the right place for subtraction.
+##' @details Only time series of class "xts" are accepted (on purpose
+##'   because I want to get rid of handling both objects of class "ts"
+##'   and "xts"). For now \code{\link[stats]{stl}} with s.window = 12
+##'   and a 
+##'   conversion of the input into a ts object of daily data is used
+##'   to calculate the seasonal component. This should be replaced by
+##'   a more sophisticated solution as soon I digged deeper into the
+##'   field of
+##'   deseasonalization. \code{\link{remove.incomplete.years}} is used
+##'   to remove incomplete years from the data set. This ensures a
+##'   better calculation of the seasonal component but also requires
+##'   to forecast it to the length of the original data set and align
+##'   it at the right place for subtraction. 
 ##'
 ##' @param x Time series of class "xts"
 ##'
@@ -241,6 +258,7 @@ remove.seasonality <- function( x ){
 }
 
 ##' @title Calculates the mode of a PDF
+##' @description Calculates the mode of a PDF
 ##'
 ##' @param x Numerical input.
 ##'
@@ -256,10 +274,14 @@ mode <- function( x ){
   return( x.pdf$x[ which.max( x.pdf$y ) ] )
 }
 
-##' @title Calculates the anomalies of a time series.
+##' @title Anomalies of a time series
+##' @description Calculates the anomalies of a time series.
 ##'
-##' @details Construction via the subtraction of the mean (temperature) value of the specific date. I don't really like this one. Maybe try to add a weighting function with sharp bandwidth instead. Uses the lubridate::yday()
-##'
+##' @details Construction via the subtraction of the mean
+##'   (temperature) value of the specific date. I don't really like
+##'   this one. Maybe try to add a weighting function with sharp
+##'   bandwidth instead. Uses the \code{\link[lubridate]{yday}}.
+##' 
 ##' @param x Time series of the class 'xts'.
 ##'
 ##' @family ts

@@ -2,7 +2,7 @@
 % Please edit documentation in R/climex_sidebar.R
 \name{file.loading}
 \alias{file.loading}
-\title{Reactive value listening for a file input via the sidebar}
+\title{File loading in the Climex app}
 \usage{
 file.loading(fileInputSelection)
 }
@@ -15,6 +15,10 @@ Reactive value containing either an xts class time series,
 a list of those time series or a list of those lists and an
 additional data.frame containing meta information about all of the
 named stations in those list.
+}
+\description{
+Reactive value listening for a file input via the
+  sidebar.
 }
 \details{
 To use this function input$selectDataBase has to be set to

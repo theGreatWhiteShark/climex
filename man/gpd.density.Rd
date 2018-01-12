@@ -18,12 +18,17 @@ density of the GP distribution.}
 Numerical vector of same length as z.
 }
 \description{
-Calculate the probability density function for the generalized Pareto (GP) distribution at a given point or at a number of points (provided as a numerical vector).
+Calculate the probability density function for the
+  generalized Pareto (GP) distribution at a given point or at a
+  number of points (provided as a numerical vector).
 }
 \details{
-If you want to calculate the density of the exponential distribution, please stick to the c( scale, shape ) scheme of the `parameters' argument while setting the shape parameter to zero.
+If you want to calculate the density of the exponential
+  distribution, please stick to the c( scale, shape ) scheme of
+  the `parameters' argument while setting the shape parameter to
+  zero. 
 
-Port of the ismev::gpd.dens function.
+Port of the \code{\link[ismev]{gpd.dens}} function.
 }
 \seealso{
 Other extremes: \code{\link{block}},

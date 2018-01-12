@@ -2,12 +2,16 @@
 % Please edit documentation in R/climex_fitting.R
 \name{generalFitStatisticsTable}
 \alias{generalFitStatisticsTable}
-\title{Table to display the results of the GEV/GP fitting procedure.}
+\title{Result table in Climex app}
 \usage{
 generalFitStatisticsTable()
 }
 \value{
 box
+}
+\description{
+Table to display the results of the GEV/GP fitting
+  procedure.
 }
 \details{
 Provides the UI part of \code{\link{generalFitStatistics}}

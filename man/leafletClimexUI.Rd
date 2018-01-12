@@ -2,8 +2,7 @@
 % Please edit documentation in R/climex_leaflet.R
 \name{leafletClimexUI}
 \alias{leafletClimexUI}
-\title{Leaflet interfaces to select stations or visualize spacial
-information.}
+\title{Leaflet interface in Climex app}
 \usage{
 leafletClimexUI(id)
 }
@@ -12,6 +11,10 @@ leafletClimexUI(id)
 }
 \value{
 tagList
+}
+\description{
+Leaflet interfaces to select stations or visualize
+  spacial information.
 }
 \details{
 This function provides the user interface to

@@ -2,7 +2,7 @@
 % Please edit documentation in R/climex_sidebar.R
 \name{sidebarSeriesLength}
 \alias{sidebarSeriesLength}
-\title{Slider to determine the length of an artificial time series}
+\title{Series length in the Climex app}
 \usage{
 sidebarSeriesLength(selectDataBase)
 }
@@ -19,6 +19,9 @@ Default = "DWD".}
 }
 \value{
 menuItemOutput
+}
+\description{
+Slider to determine the length of an artificial time series
 }
 \details{
 Numerical slider which will only be displayed when

@@ -2,7 +2,7 @@
 % Please edit documentation in R/ts.R
 \name{bic}
 \alias{bic}
-\title{Calculates the Bayesian information criterion of a climex.fit.gev or climex.fit.gpd object.}
+\title{Bayesian information criterion}
 \usage{
 bic(x)
 }
@@ -11,6 +11,9 @@ bic(x)
 }
 \value{
 Numeric value
+}
+\description{
+Calculates the Bayesian information criterion of a climex.fit.gev or climex.fit.gpd object.
 }
 \details{
 The climex.fit.gev object is of identical structure as the output of the optim() function.

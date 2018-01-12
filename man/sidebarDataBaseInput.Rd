@@ -2,16 +2,20 @@
 % Please edit documentation in R/climex_sidebar.R
 \name{sidebarDataBaseInput}
 \alias{sidebarDataBaseInput}
-\title{Selecting the database}
+\title{Selecting the database in the Climex app}
 \usage{
 sidebarDataBaseInput()
 }
 \value{
 menuItemOutput
 }
+\description{
+Selecting the database.
+}
 \details{
-Provides the shinydashboard::menuItemOutput for \code{\link{
-sidebarDataBase}}. See the later one for details.
+Provides the \code{\link[shinydashboard]{menuItemOutput}}
+  for \code{\link{sidebarDataBase}}. See the later one for
+  details.
 }
 \seealso{
 Other sidebar: \code{\link{data.selection}},

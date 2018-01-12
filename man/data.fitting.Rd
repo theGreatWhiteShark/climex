@@ -2,26 +2,26 @@
 % Please edit documentation in R/climex_fitting.R
 \name{data.fitting}
 \alias{data.fitting}
-\title{Reactive value performing the GEV/GP fit.}
+\title{Reactive fitting in the Climex app}
 \usage{
 data.fitting(reactive.extreme, reactive.rows, fit.interactive,
   radioEvdStatistics, buttonMinMax, sliderThreshold, selectDataBase)
 }
 \arguments{
 \item{reactive.extreme}{Reactive value returning a list containing
-three elements: 1. the blocked time series, 2. the deseasonalized time
-series, and 3. the pure time series.}
+three elements: 1. the blocked time series, 2. the
+deseasonalized time series, and 3. the pure time series.}
 
-\item{reactive.rows}{Reactive value holding a logical vector indicating
-which values of the time series provided by \code{\link{data.extremes}}
-to use after clicking and brushing.}
+\item{reactive.rows}{Reactive value holding a logical vector
+indicating which values of the time series provided by
+\code{\link{data.extremes}} to use after clicking and brushing.}
 
 \item{fit.interactive}{Function used to perform the actual GEV/GP
 fit. \code{\link{fit.interactive}}}
 
-\item{radioEvdStatistics}{Character (radio) input determining whether
-the GEV or GP distribution shall be fitted to the data. Choices:
-c( "GEV", "GP" ), default = "GEV".}
+\item{radioEvdStatistics}{Character (radio) input determining
+whether the GEV or GP distribution shall be fitted to the
+data. Choices: c( "GEV", "GP" ), default = "GEV".}
 
 \item{buttonMinMax}{Character (radio) input determining whether
 the GEV/GP distribution shall be fitted to the smallest or biggest
@@ -29,28 +29,30 @@ vales. Choices: c( "Max", "Min ), default = "Max".}
 
 \item{sliderThreshold}{Numerical (slider) input determining the
 threshold used within the GP fit and the extraction of the extreme
-events. Boundaries: minimal and maximal value of the deseasonalized
-time series (rounded). Default: 0.8* the upper end point.}
+events. Boundaries: minimal and maximal value of the
+  deseasonalized time series (rounded). Default: 0.8* the upper
+  end point.}
 
-\item{selectDataBase}{Character (select) input to determine the data
-source. In the default installation there are three options:
-c( "Input", "DWD", "Artificial data" ). The first one uses the data
-provided as an argument to the call of the \code{\link{climex}}
-function. The second one uses the database of the German weather
-service (see \code{\link{download.data.dwd}}). The third one allows
-the user to produce random numbers distributed according to the GEV
-or GP distribution. Determined by menuSelectDataBase.
-Default = "DWD".}
+\item{selectDataBase}{Character (select) input to determine the
+data source. In the default installation there are three
+options: c( "Input", "DWD", "Artificial data" ). The first one
+uses the data provided as an argument to the call of the
+\code{\link{climex}} function. The second one uses the database
+of the German weather service (see
+\code{\link{download.data.dwd}}). The third one allows the user
+to produce random numbers distributed according to the GEV or GP
+distribution. Determined by menuSelectDataBase. Default = "DWD".}
 }
 \value{
 Reactive value holding a fitted object of class
 'climex.fit.gev' or 'climex.fit.gpd', depending on the choice of
 input$radioEvdStatistics
 }
+\description{
+A reactive value performing the GEV/GP fit.
+}
 \details{
-The fit is performed using the fit.interactive function. Using
-the reactive.rows input specific points of the time series can be
-removed.
+The fit is performed using the fit.interactive
 }
 \seealso{
 Other climex-fitting: \code{\link{color.table}},

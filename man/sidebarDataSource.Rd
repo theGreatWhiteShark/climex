@@ -2,7 +2,7 @@
 % Please edit documentation in R/climex_sidebar.R
 \name{sidebarDataSource}
 \alias{sidebarDataSource}
-\title{Sidebar menu selection}
+\title{Sidebar menu selection in the Climex app}
 \usage{
 sidebarDataSource(selectDataBase, radioEvdStatistics, reactive.chosen,
   selected.station)
@@ -25,13 +25,17 @@ c( "GEV", "GP" ), default = "GEV".}
 \item{reactive.chosen}{Reactive value containing a list of the list
 of all provided stations and a data.frame containing the meta data.}
 
-\item{selected.station}{Reactive value provided by the \code{\link{
-leafletClimex}} function. It contains the name of the station selected
-by the user by clicking on the leaflet map. It's provided as a
-character and NULL if no click occurred so far.}
+\item{selected.station}{Reactive value provided by the
+\code{\link{leafletClimex}} function. It contains the name of
+the station selected by the user by clicking on the leaflet
+map. It's provided as a character and NULL if no click occurred
+so far.}
 }
 \value{
 renderMenu
+}
+\description{
+Sidebar menu selection.
 }
 \details{
 Provides the second selection menu in the sidebar.
@@ -39,8 +43,8 @@ If input$selectDataBase, provided by \code{\link{sidebarDataBase}},
 was set to "Artificial data", the menu will be a numerical input
 slider to provide the location parameter for the GEV or scale
 parameter for the GP distribution. Else it will be a drop down menu
-listing the names of all available stations (see \code{\link{
-data.chosen}})
+listing the names of all available stations (see
+  \code{\link{data.chosen}})
 }
 \seealso{
 Other sidebar: \code{\link{data.selection}},

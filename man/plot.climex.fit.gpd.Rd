@@ -2,12 +2,12 @@
 % Please edit documentation in R/plot.R
 \name{plot.climex.fit.gpd}
 \alias{plot.climex.fit.gpd}
-\title{Plots the GEV function fitted using \code{\link{fit.gev}}}
+\title{Plot a GPD fit}
 \usage{
 \method{plot}{climex.fit.gpd}(x, bin.factor = NULL, ...)
 }
 \arguments{
-\item{x}{Fitted GEV object.}
+\item{x}{Fitted GPD object.}
 
 \item{bin.factor}{Multiplying the length of x
 by this factor, results in the number of bins
@@ -19,6 +19,10 @@ consistency with respect to the `plot()` function.}
 }
 \value{
 ggplot2 object.
+}
+\description{
+Plots the GPD function fitted using
+  \code{\link{fit.gpd}}
 }
 \details{
 Uses ggplot2. Since I will also use it

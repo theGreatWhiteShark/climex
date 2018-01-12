@@ -2,8 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{ttplot}
 \alias{ttplot}
-\title{Plotting a xts time series with ggplot2 in a convenient
-  format.}
+\title{Plot xts class data}
 \usage{
 ttplot(data.input, main = "Time series", ylab = NULL)
 }
@@ -15,12 +14,14 @@ ttplot(data.input, main = "Time series", ylab = NULL)
 \item{ylab}{Label of the y-axis of the plot to generate. Default =
 NULL}
 
-\item{x.df}{}
-
 \item{...}{Additional parameters for the multiplot function.}
 }
 \value{
 Nothing. The multiplot function is run in the last step.
+}
+\description{
+Plotting a xts time series with ggplot2 in a
+  convenient format.
 }
 \details{
 Plots all objects of class xts. With the main argument a

@@ -1,7 +1,8 @@
 ### All functions and modules related to the plots in the General tab
 
-##' @title Determines the propoper label of the y label of the plots in
-##' the General tab of the Climex app.
+##' @title y plot labels in the Climex app
+##' @description Determines the propoper label of the y label of the
+##'   plots in the General tab of the Climex app.
 ##' @details It's more or less just the input$selectDataType being
 ##' considered. For artificial data the label will be "temperature".
 ##'
@@ -43,12 +44,15 @@ function.get.y.label <- function( selectDataBase, selectDataType ){
     return( y.label )
 }
 
-##' @title TabBox containing a plot of the pure and deseasonalized time
-##' series as well as one of all its extreme events.
+##' @title Time series plot in the Climex app.
+##' @description TabBox containing a plot of the pure and
+##'   deseasonalized time series as well as one of all its extreme
+##'   events. 
 ##' @details This function provides the ouput to
-##' \code{\link{generalTimeSeriesPlot}}. Both the pure time series and the
-##' deseasonalized one are rendered using the dygraphs package. The extreme
-##' events are rendered using the ggplot2 package.
+##'   \code{\link{generalTimeSeriesPlot}}. Both the pure time series
+##'   and the deseasonalized one are rendered using the dygraphs
+##'   package. The extreme events are rendered using the ggplot2
+##'   package. 
 ##'
 ##' @param id Namespace prefix
 ##'
@@ -78,13 +82,15 @@ generalTimeSeriesPlotOutput <- function( id ){
          height = 370 )
 }
 
-##' @title TabBox containing a plot of the pure and deseasonalized time
-##' series as well as one of all its extreme events.
-##' @details Both the pure time series and the
-##' deseasonalized one are rendered using the dygraphs package. The extreme
-##' events are rendered using the ggplot2 package. For the later one
-##' clicking or brushing points enables the user to exclude them. This is
-##' handled by a reactive value returned by this function.
+##' @title Time series plot in the Climex app.
+##' @description TabBox containing a plot of the pure and
+##'   deseasonalized time series as well as one of all its extreme
+##'   events. 
+##' @details Both the pure time series and the deseasonalized one are
+##'   rendered using the dygraphs package. The extreme events are
+##'   rendered using the ggplot2 package. For the later one clicking
+##'   or brushing points enables the user to exclude them. This is
+##'   handled by a reactive value returned by this function. 
 ##'
 ##' @param input Namespace input. For more details check out
 ##' \url{http://shiny.rstudio.com/articles/modules.html}
@@ -279,8 +285,9 @@ generalTimeSeriesPlot <- function( input, output, session,
 
 
 
-##' @title Box containing the plot of the performed GEV/GP fitting as well
-##' as three goodness-of-fit plots.
+##' @title Plot of the fits in the Climex app
+##' @description Box containing the plot of the performed GEV/GP
+##'   fitting as well as three goodness-of-fit plots.
 ##' @details This function provides the ouput to
 ##' \code{\link{generalFitPlot}}. All four plots are rendered using the
 ##' ggplot2 package.
@@ -306,8 +313,9 @@ generalFitPlotOutput <- function( id ){
              plotOutput( ns( "plotFitReturnLevel" ), height = 140 ) ) )
 }
 
-##' @title Box containing the plot of the performed GEV/GP fitting as well
-##' as three goodness-of-fit plots.
+##' @title Plot of the fits in the Climex app
+##' @description Box containing the plot of the performed GEV/GP
+##'   fitting as well as three goodness-of-fit plots.
 ##' @details All four plots are rendered using the ggplot2 package.
 ##'
 ##' @param input Namespace input. For more details check out
@@ -406,7 +414,8 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
     gg1.bins <- ( ( ( length( x.kept ) - 1 )*100/
                     length( x.extreme ) )  %/% 5 )* 0.025
     x.label <- function.get.y.label( selectDataBase, selectDataType )
-    gg.evd <- plot( x.fit.evd, bin.factor = gg1.bins ) + ylab( "density" ) +
+    gg.evd <- graphics::plot( x.fit.evd, bin.factor = gg1.bins ) +
+      ylab( "density" ) +
       xlab( x.label ) + theme( legend.position = "none" ) +
       theme( axis.title = element_text( size = 17, colour = colour.ts ),
             axis.text = element_text( size = 13, colour = colour.ts ) )
@@ -502,7 +511,7 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
   ## drawn from the fitted distribution
   output$plotFitQQ <- renderPlot( {
     if ( is.null( reactive.extreme() ) || is.null( reactive.fitting() ) ||
-        is.null( buttonMinMax() ) ){
+         is.null( buttonMinMax() ) ){
       return( NULL )
     }
     x.extreme <- reactive.extreme()[[ 1 ]]
@@ -516,10 +525,10 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       theoretical <- Reduce(
           c, lapply( stats::ppoints( length( x.kept ), 0 ),
                     function( ss )
-                      climex:::qevd( ss, location = x.fit.evd$par[ 1 ],
-                                    scale = x.fit.evd$par[ 2 ],
-                                    shape = x.fit.evd$par[ 3 ],
-                                    model = "gev" ) ) )
+                      qevd( ss, location = x.fit.evd$par[ 1 ],
+                           scale = x.fit.evd$par[ 2 ],
+                           shape = x.fit.evd$par[ 3 ],
+                           model = "gev" ) ) )
       if ( !is.null( buttonMinMax() ) && buttonMinMax() == "Min" ){
         theoretical <- -1* theoretical
         empirical <- -1* sort( as.numeric( x.kept ) )
@@ -535,13 +544,13 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
         threshold <- sliderThreshold()
       }
       theoretical <- Reduce(
-              c, lapply( stats::ppoints( length( x.kept ), 0 ),
-                        function( ss )
-                          climex:::qevd( ss, threshold = threshold,
-                                        scale = x.fit.evd$par[ 1 ],
-                                        shape = x.fit.evd$par[ 2 ],
-                                        model = "gpd",
-                                        lower.tail = FALSE ) ) )
+          c, lapply( stats::ppoints( length( x.kept ), 0 ),
+                    function( ss )
+                      qevd( ss, threshold = threshold,
+                           scale = x.fit.evd$par[ 1 ],
+                           shape = x.fit.evd$par[ 2 ],
+                           model = "gpd",
+                           lower.tail = FALSE ) ) )
       empirical <- sort( as.numeric( x.kept ) + threshold )
     }
     ## Writing the data in a format used by ggplot2
@@ -559,10 +568,10 @@ generalFitPlot <- function( input, output, session, reactive.extreme,
       annotate( "text", size = 5, color = colour.ts,
                x = min( plot.data$theoretical ) +
                  ( max( plot.data$theoretical ) -
-                        min( plot.data$theoretical ) )* .2,
+                   min( plot.data$theoretical ) )* .2,
                y = min( plot.data$empirical ) +
                  ( max( plot.data$empirical ) -
-                        min( plot.data$empirical ) )* .91,
+                   min( plot.data$empirical ) )* .91,
                label = "Q-Q plot" ) +
       theme( axis.title = element_text( size = 15, colour = colour.ts ),
             axis.text = element_text( size = 12, colour = colour.ts ) )

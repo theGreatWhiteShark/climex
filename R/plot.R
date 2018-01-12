@@ -1,4 +1,5 @@
-##' @title This function takes several plot of the ggplot2 and
+##' @title Plot multiple time series.
+##' @description This function takes several plot of the ggplot2 and
 ##'   arranges them on one page. 
 ##' @details Well, it is not really related to extreme value fitting
 ##'   and I am aware of the fact that its quite bad style to export
@@ -88,8 +89,9 @@ multiplot <- function( tt.title = main, main = NULL, ...,
   invisible( last_plot() )
 }
 
-##' @title Plotting a xts time series with ggplot2 in a convenient
-##'   format. 
+##' @title Plot xts class data
+##' @description Plotting a xts time series with ggplot2 in a
+##'   convenient format. 
 ##'
 ##' @details Plots all objects of class xts. With the main argument a
 ##'   title can be provided. 
@@ -98,7 +100,6 @@ multiplot <- function( tt.title = main, main = NULL, ...,
 ##' @param main Title of the plot to generate. Default: "Time series"
 ##' @param ylab Label of the y-axis of the plot to generate. Default =
 ##'   NULL
-##' @param x.df 
 ##' @param ... Additional parameters for the multiplot function.
 ##'
 ##' @family plot
@@ -137,8 +138,9 @@ ttplot <- function( data.input, main = "Time series", ylab = NULL ){
   return( last_plot() )
 }
 
-##' @title Generates three 2D slices of the likelihood of a provided
-##'   time series. 
+##' @title Plots the GEV likelihood
+##' @description Generates three 2D slices of the likelihood of a
+##'   provided time series. 
 ##'
 ##' @details The likelihood will be plotted around its optimal
 ##'   value. To determine it the time series will be fitted via
@@ -275,7 +277,9 @@ likelihood.plot <- function( time.series, location.lim = NULL,
             main = main )
 }
 
-##' @title Plots the GEV function fitted using \code{\link{fit.gev}}
+##' @title Plots a GEV fit
+##' @description Plots the GEV function fitted using
+##'   \code{\link{fit.gev}} 
 ##'
 ##' @details Uses ggplot2. Since I will also use it
 ##' in the shiny app, where I want to adjust the number
@@ -315,7 +319,7 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL, ... ){
                         x.lim[ 2 ] + x$par[ 2 ]* 10, 0.01 )
   plot.gev.data <- data.frame(
       x.plot = plot.gev.range,
-      y.plot = climex:::gev.density( x$par,
+      y.plot = gev.density( x$par,
                                     plot.gev.range ) )
   ## Removing all NaN to have less points and warnings
   plot.gev.data <- plot.gev.data[
@@ -360,7 +364,7 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL, ... ){
                     max( x.data) + bin.width ) )
   ## Whenever the density gets bigger than one, cut it
   if ( max( plot.gev.data$y.plot ) > 1 ){
-    y.lim <- c( 0, ( max( density( x.data )$y )* 1.5 ) )
+    y.lim <- c( 0, ( max( stats::density( x.data )$y )* 1.5 ) )
   } else {
     y.lim <- NULL
   }
@@ -385,13 +389,15 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL, ... ){
   return( last_plot() )
 }
 
-##' @title Plots the GEV function fitted using \code{\link{fit.gev}}
+##' @title Plot a GPD fit
+##' @description Plots the GPD function fitted using
+##'   \code{\link{fit.gpd}} 
 ##'
 ##' @details Uses ggplot2. Since I will also use it
 ##' in the shiny app, where I want to adjust the number
 ##' of displayed bins, there is a second argument present.
 ##'
-##' @param x Fitted GEV object.
+##' @param x Fitted GPD object.
 ##' @param bin.factor Multiplying the length of x
 ##' by this factor, results in the number of bins
 ##' used in this plot. Default = NULL
@@ -428,7 +434,7 @@ plot.climex.fit.gpd <- function( x, bin.factor = NULL, ... ){
                         x.lim[ 2 ] + x$par[ 1 ]* 10, 0.01 )
   plot.data <- data.frame(
       x.plot = plot.range,
-      y.plot = climex:::gpd.density( x$par, x$threshold,
+      y.plot = gpd.density( x$par, x$threshold,
                                plot.range ) )
   ## Removing all NaN to have less points and warnings
   plot.data <- plot.data[
@@ -484,7 +490,7 @@ plot.climex.fit.gpd <- function( x, bin.factor = NULL, ... ){
                     max( x.data) + bin.width ) )
   ## Whenever the density gets bigger than one, cut it
   if ( max( plot.data$y.plot ) > 1 ){
-    y.lim <- c( 0, ( max( density( x.data )$y )* 1.5 ) )
+    y.lim <- c( 0, ( max( stats::density( x.data )$y )* 1.5 ) )
   } else {
     y.lim <- NULL
   }

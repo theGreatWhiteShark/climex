@@ -2,7 +2,7 @@
 % Please edit documentation in R/ts.R
 \name{aic}
 \alias{aic}
-\title{Calculates the Akaike information criterion of a climex.fit.gev or climex.fit.gpd object.}
+\title{Akaike information criterion}
 \usage{
 aic(x)
 }
@@ -11,6 +11,9 @@ aic(x)
 }
 \value{
 Numeric value
+}
+\description{
+Calculates the Akaike information criterion of a climex.fit.gev or climex.fit.gpd object.
 }
 \details{
 The climex.fit.gev object is of identical structure as the output of the optim() function.

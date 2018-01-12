@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{summary.climex.fit.gev}
 \alias{summary.climex.fit.gev}
-\title{Summary of the fit results}
+\title{Summarize details}
 \usage{
 \method{summary}{climex.fit.gev}(object, ...)
 }
@@ -15,6 +15,9 @@ consistency with respect to the `summary()` function.}
 }
 \value{
 `invisible()`
+}
+\description{
+Summary of the GEV fit results
 }
 \author{
 Philipp Mueller

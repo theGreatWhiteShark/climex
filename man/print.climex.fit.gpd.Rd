@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{print.climex.fit.gpd}
 \alias{print.climex.fit.gpd}
-\title{Summary of the fit results}
+\title{Print results}
 \usage{
 \method{print}{climex.fit.gpd}(x, ...)
 }
@@ -15,6 +15,9 @@ consistency with respect to the `print()` function.}
 }
 \value{
 `invisible()`
+}
+\description{
+Summary of the GPD fit results
 }
 \author{
 Philipp Mueller

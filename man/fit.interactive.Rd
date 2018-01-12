@@ -2,7 +2,7 @@
 % Please edit documentation in R/climex_fitting.R
 \name{fit.interactive}
 \alias{fit.interactive}
-\title{Function to perform the GEV/GP fit within the Climex app.}
+\title{Interactive fits in Climex app}
 \usage{
 fit.interactive(x.kept, radioEvdStatistics, buttonMinMax, sliderThreshold,
   selectDataBase)
@@ -35,14 +35,18 @@ or GP distribution. Determined by menuSelectDataBase.
 Default = "DWD".}
 }
 \value{
-Object of class 'climex.fit.gev' or 'climex.fit.gpd', depending
-on the choice in input$radioEvdStatistics.
+Object of class 'climex.fit.gev' or 'climex.fit.gpd',
+depending on the choice in input$radioEvdStatistics.
+}
+\description{
+Function to perform the GEV/GP fit within the Climex
+  app.
 }
 \details{
 This function does not wait for the initialization of its
-slider, checkbox etc. inputs. This way the fit can be performed with its
-default settings in the leaflet tab without switching to the General tab
-first.
+slider, checkbox etc. inputs. This way the fit can be performed
+  with its default settings in the leaflet tab without switching
+  to the General tab first.
 }
 \seealso{
 Other climex-fitting: \code{\link{color.table}},

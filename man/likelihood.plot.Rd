@@ -2,8 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{likelihood.plot}
 \alias{likelihood.plot}
-\title{Generates three 2D slices of the likelihood of a provided
-  time series.}
+\title{Plots the GEV likelihood}
 \usage{
 likelihood.plot(time.series, location.lim = NULL, scale.lim = NULL,
   shape.lim = NULL, center = NULL, initial = NULL, main = NULL,
@@ -38,6 +37,10 @@ first run. Default = NULL.}
 returns a multiplot of planes through the negative
   log-likelihood of the GEV function calculated using the input
   time series.
+}
+\description{
+Generates three 2D slices of the likelihood of a
+  provided time series.
 }
 \details{
 The likelihood will be plotted around its optimal

@@ -1,8 +1,9 @@
 ### Contains all modules associated with the leaflet map of the Climex
 ### app.
 
-##' @title Leaflet interfaces to select stations or visualize spacial
-##' information.
+##' @title Leaflet interface in Climex app
+##' @description Leaflet interfaces to select stations or visualize
+##'   spacial information.
 ##' @details This function provides the user interface to
 ##' \code{\link{leafletClimex}}. It consists of a leafletOutput and two
 ##' absolutePanels containing the return level and time series length
@@ -60,8 +61,9 @@ leafletClimexUI <- function( id ){
                                  "Calculate return levels" ) ) )
 }
 
-##' @title Leaflet interfaces to select stations or visualize spacial
-##' information.
+##' @title Leaflet interface in Climex app
+##' @description Leaflet interfaces to select stations or visualize
+##'   spacial information.
 ##' @details This module provides an interactive map to display the
 ##' locations of the individual stations. The user can choose
 ##' individual stations by clicking at them. In addition a dialog
@@ -88,8 +90,8 @@ leafletClimexUI <- function( id ){
 ##' is 0 and maximal is 155 (longest one in the DWD database), the
 ##' default value is 65 and the step width is 1.
 ##' @param reactive.extreme Reactive value returning a list containing
-##' three elements: 1. the blocked time series, 2. the deseasonalized time
-##' series, and 3. the pure time series.   
+##' three elements: 1. the blocked time series, 2. the deseasonalized
+##'   time series, and 3. the pure time series.   
 ##' @param reactive.fitting Reactive value containing the results of the
 ##' fit (\code{\link{fit.gev}} or \code{\link{fit.gpd}} depending on
 ##' radioEvdStatistic) to the blocked time series in
@@ -125,7 +127,7 @@ leafletClimexUI <- function( id ){
 ##' @param selectDeseasonalize Character (select) input determining which
 ##' deseasonalization method should be used to remove the short-range
 ##' correlations from the provided time series.
-##' \code{\link{deseasonalizeInput}}
+##' \code{\link{deseasonalizeSelectionInput}}
 ##' @param sliderBlockLength Numerical (slider) input determining the
 ##' block length used in the GEV flavor of extreme value theory. On
 ##' default it is set to one year.
@@ -138,6 +140,10 @@ leafletClimexUI <- function( id ){
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
+##' @param climex.environment Environment containing the global
+##'   variables used within the climex app. Namely the last values
+##'   displayed in the table and the lists containing the station
+##'   data. 
 ##'
 ##' @family leaflet
 ##'
@@ -148,14 +154,15 @@ leafletClimexUI <- function( id ){
 ##' @author Philipp Mueller 
 leafletClimex <- function( input, output, session, reactive.chosen,
                           buttonMinMax, radioEvdStatistics,
-                          sliderYears, reactive.extreme, reactive.fitting,
+                          sliderYears, reactive.extreme,
+                          reactive.fitting,
                           sliderThreshold, fit.interactive,
                           cleaning.interactive,
                           deseasonalize.interactive,
                           extremes.interactive, selectDataSource,
                           checkboxIncompleteYears, checkboxDecluster,
                           selectDeseasonalize, sliderBlockLength,
-                          selectDataBase ){
+                          selectDataBase, climex.environment ){
   ## This variable contains the name of the previously selected station.
   ## It's a little bit ugly since it's global, but right now I'm lacking
   ## an alternative.
@@ -363,7 +370,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                                         baseGroups = c( "OpenTopoMaps",
                                                        "OpenStreetMaps" ),
                                         overlayGroups = c( "stations",
-                                                       "returns" ),
+                                                          "returns" ),
                                         position = "bottomright",
                                         options = layersControlOptions(
                                             collapsed = FALSE ) )
@@ -376,7 +383,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
       } } )
   ## Placeholder to determine the window's width
   output$placeholder <- renderPlot( {
-    ttplot( x.block ) } )
+    ttplot( climex.environment$stations.temp.max[[ 1 ]] ) } )
   ## This chunk both updates/renders the table containing the summary
   ## statistics of an individual station and adds a red icon for the
   ## selected station.
@@ -387,8 +394,8 @@ leafletClimex <- function( input, output, session, reactive.chosen,
     station.name <- selected.station()
     if ( is.null( data.selected ) ||
          is.null( station.name ) || (
-         is.null( input$map_marker_click ) && # dirty flag on changing
-         is.null( selectDataSource() ) ) ) # dirty flag on changing
+           is.null( input$map_marker_click ) && # dirty flag on changing
+           is.null( selectDataSource() ) ) ) # dirty flag on changing
       return( NULL )
     ## If the artificial data was chosen as source, do not display
     ## anything.
@@ -419,18 +426,18 @@ leafletClimex <- function( input, output, session, reactive.chosen,
                                     return.period = c( 100, 50, 20 ),
                                     model = model,
                                     error.estimation = "none",
-                                    threshold = x.fit.gev$threshold,
+                                    threshold = x.fit.evd$threshold,
                                     total.length = x.data[[ 1 ]]
                                 )$return.level
     } else {
       x.return.level <- ( -1 )*
-        climex:::return.level(
-                     c( -1* x.fit.evd$par[ 1 ],
-                       x.fit.evd$par[ 2 ],
-                       x.fit.evd$par[ 3 ] ),
-                     return.period = c( 100, 50, 20 ),
-                     model = model,
-                     error.estimation = "none" )$return.level
+        climex::return.level(
+            c( -1* x.fit.evd$par[ 1 ],
+              x.fit.evd$par[ 2 ],
+              x.fit.evd$par[ 3 ] ),
+            return.period = c( 100, 50, 20 ),
+            model = model,
+            error.estimation = "none" )$return.level
     }
     x.df <- data.frame( names = c( "100y return level",
                                   "50y return level",
@@ -489,8 +496,9 @@ leafletClimex <- function( input, output, session, reactive.chosen,
   return( selected.station )
 }
 
-##' @title This functions extracts all stations containing more than a
-##' specified number of years of data
+##' @title Choosing a data set in the Climex app
+##' @description This functions extracts all stations containing more
+##'   than a specified number of years of data
 ##' @details It uses the current database and returns all stations which
 ##' are at least as long as the value of the input$sliderYears slider.
 ##'
@@ -515,6 +523,10 @@ leafletClimex <- function( input, output, session, reactive.chosen,
 ##' @param reactive.loading Reactive value allowing the user to load a
 ##' time series of class "xts" or "list" with "xts" as their elements
 ##' into the climex app. \code{\link{file.loading}}
+##' @param climex.environment Environment containing the global
+##'   variables used within the climex app. Namely the last values
+##'   displayed in the table and the lists containing the station
+##'   data. 
 ##'
 ##' @family leaflet
 ##'
@@ -524,7 +536,7 @@ leafletClimex <- function( input, output, session, reactive.chosen,
 ##' their positions.
 ##' @author Philipp Mueller 
 data.chosen <- function( selectDataBase, sliderYears, selectDataType,
-                        reactive.loading ){
+                        reactive.loading, climex.environment ){
   data <- reactive( {
     if ( is.null( selectDataBase() ) ||
          is.null( sliderYears() ) )
@@ -532,7 +544,8 @@ data.chosen <- function( selectDataBase, sliderYears, selectDataType,
     ## The generation of the artificial data is handled in the
     ## data.selection reactive function
     if ( selectDataBase() == "Artificial data" ){
-      return( list( stations.temp.max, station.positions ) )
+      return( list( climex.environment$stations.temp.max,
+                   climex.environment$station.positions ) )
     }
     if ( sliderYears() < 20 ){
       ## Display a warning and return for a slider value lesser than 20.
@@ -543,12 +556,16 @@ data.chosen <- function( selectDataBase, sliderYears, selectDataType,
     if ( selectDataBase() == "DWD" ){
       if ( is.null( selectDataType() ) )
         return( NULL )
-      selection.list <- switch( selectDataType(),
-                               "Daily max. temp." = stations.temp.max,
-                               "Daily min. temp." = stations.temp.min,
-                               "Daily precipitation" = stations.prec )
+      selection.list <-
+        switch( selectDataType(),
+               "Daily max. temp." =
+                 climex.environment$stations.temp.max,
+               "Daily min. temp." =
+                 climex.environment$stations.temp.min,
+               "Daily precipitation" =
+                 climex.environment$stations.prec )
       ## to also cope the possibility of importing such position data
-      positions.all <- station.positions
+      positions.all <- climex.environment$station.positions
     } else if ( selectDataBase() == "Input" ){
       x.input <- reactive.loading()
       if ( is.null( x.input ) ){

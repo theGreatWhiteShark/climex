@@ -2,8 +2,7 @@
 % Please edit documentation in R/climex_plotting.R
 \name{function.get.y.label}
 \alias{function.get.y.label}
-\title{Determines the propoper label of the y label of the plots in
-the General tab of the Climex app.}
+\title{y plot labels in the Climex app}
 \usage{
 function.get.y.label(selectDataBase, selectDataType)
 }
@@ -26,6 +25,10 @@ Determined by menuSelectDataType.}
 }
 \value{
 Character
+}
+\description{
+Determines the propoper label of the y label of the
+  plots in the General tab of the Climex app.
 }
 \details{
 It's more or less just the input$selectDataType being

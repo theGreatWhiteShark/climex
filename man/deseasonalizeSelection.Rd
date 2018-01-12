@@ -2,7 +2,7 @@
 % Please edit documentation in R/climex_preprocessing.R
 \name{deseasonalizeSelection}
 \alias{deseasonalizeSelection}
-\title{Removing the seasonality.}
+\title{Removing the seasonality in the Climex app}
 \usage{
 deseasonalizeSelection(selectDataBase)
 }
@@ -19,6 +19,9 @@ Default = "DWD".}
 }
 \value{
 selectInput
+}
+\description{
+Removing the seasonality.
 }
 \details{
 Not a real shiny module, since I have to use this select

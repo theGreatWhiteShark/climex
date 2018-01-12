@@ -2,8 +2,7 @@
 % Please edit documentation in R/ts.R
 \name{remove.incomplete.years}
 \alias{remove.incomplete.years}
-\title{Removes all years, which contain either a NA or are
-  incomplete.}
+\title{Remove incomplete years}
 \usage{
 remove.incomplete.years(x, time.unit = 1)
 }
@@ -16,6 +15,10 @@ since reference date in other objects is rather hard to get.}
 }
 \value{
 Time series of class xts
+}
+\description{
+Removes all years, which contain either a NA or are
+  incomplete.
 }
 \details{
 Since incomplete years are detected via the

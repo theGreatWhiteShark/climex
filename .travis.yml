@@ -1,0 +1,8 @@
+language: r
+cache: packages
+
+script:
+  - R CMD INSTALL .
+  - R -e 'install.packages( "testthat", 
+                           repo = "cloud.r-project.org"  )'
+  - R -e 'testthat::test()'

@@ -2,7 +2,7 @@
 % Please edit documentation in R/climex_sidebar.R
 \name{sidebarCleaning}
 \alias{sidebarCleaning}
-\title{Toggling the cleaning of the time series}
+\title{Data cleaning in the Climex app}
 \usage{
 sidebarCleaning(radioEvdStatistics, selectDataBase)
 }
@@ -23,6 +23,9 @@ Default = "DWD".}
 }
 \value{
 renderMenu
+}
+\description{
+Toggling the cleaning of the time series
 }
 \details{
 A checkbox input. If toggled and the GEV distribution was
