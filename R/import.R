@@ -318,43 +318,38 @@ download.data.dwd <- function( save.downloads = TRUE,
     if ( flag.recent ){
       ## sometimes there is a single delimiter symbol in the last line.
       ## This causes the read.table function to throw a warning and, if
-      ## the file to read just consists of one line, to fail and has to
-      ## be avoided check how many characters are present in the last
-      ## line
-      contains.delimiter.recent <- as.numeric(
-          system( paste( "tail -1", recent.file, "| wc -w" ),
-                 intern = TRUE ) ) == 0
+      ## the file to read just consists of one line, to
+      ## fail. Therefore it has to be avoided by checking how many
+      ## characters are present in the last line.
+      recent.file.read.lines <- readLines( recent.file )
+      contains.delimiter.recent <-
+        nchar( recent.file.read.lines[
+            length( recent.file.read.lines ) ] ) < 10
       if ( contains.delimiter.recent ){
-        ## calls "wc" via bash and counts the lines of the file to read
-        ## in
-        number.of.lines.recent <- as.numeric(
-            system( paste( "wc -l", recent.file, "| awk '{print $1}'" ),
-                   intern = TRUE ) )
         ## only the last line with the potential delimiter will be
         ## omitted minus two because of the omitted header
-        data.ii <- utils::read.table( recent.file, header = TRUE,
-                                     sep = ";",
-                                     nrows = ( number.of.lines.recent -
-                                               2 ) )
-      } else
+        data.ii <-
+          utils::read.table(
+                     recent.file, header = TRUE, sep = ";",
+                     nrows = ( length( recent.file.read.lines ) - 2 ) )
+      } else {
         data.ii <- utils::read.table( recent.file, header = TRUE,
                                      sep = ";" )
+      }
       if ( flag.historical ){
-        contains.delimiter.historical <- as.numeric(
-            system( paste( "tail -1", historical.file, "| wc -w" ),
-                   intern = TRUE ) ) == 0
+        hist.file.read.lines <- readLines( historical.file )
+        contains.delimiter.historical <-
+          nchar( hist.file.read.lines[
+              length( hist.file.read.lines ) ] ) < 10
         if ( contains.delimiter.historical ){
-          number.of.lines.hist <- as.numeric(
-              system( paste( "wc -l", historical.file,
-                            "| awk '{print $1}'" ),
-                     intern = TRUE ) )
-          data.hist <- utils::read.table( historical.file, header = TRUE,
-                                         sep = ";",
-                                         nrows = number.of.lines.hist -
-                                           2 )
-        } else
+          data.hist <-
+            utils::read.table(
+                       historical.file, header = TRUE, sep = ";",
+                       nrows = ( length( hist.file.read.lines ) - 2 ) )
+        } else {
           data.hist <- utils::read.table( historical.file, header = TRUE,
                                          sep = ";" )
+        }
         ## in most cases some data of the recent observations are also
         ## included in the historical ones. But we of course don't want
         ## any duplicates
@@ -364,20 +359,19 @@ download.data.dwd <- function( save.downloads = TRUE,
                               data.ii ) )
       }
     } else {
-      contains.delimiter.historical <- as.numeric(
-          system( paste( "tail -1", historical.file, "| wc -w" ),
-                 intern = TRUE ) ) == 0
+      hist.file.read.lines <- readLines( historical.file )
+      contains.delimiter.historical <-
+        nchar( hist.file.read.lines[
+            length( hist.file.read.lines ) ] ) < 10
       if ( contains.delimiter.historical ){
-        number.of.lines.hist <- as.numeric(
-            system( paste( "wc -l", historical.file,
-                          "| awk '{print $1}'" ),
-                   intern = TRUE ) )
-        data.ii <- utils::read.table( historical.file, header = TRUE,
-                                     sep = ";",
-                                     nrows = number.of.lines.hist - 2 )
-      } else
+        data.ii <-
+          utils::read.table(
+                     historical.file, header = TRUE, sep = ";",
+                     nrows = ( length( hist.file.read.lines ) - 2 ) )
+      } else {
         data.ii <- utils::read.table( historical.file, header = TRUE,
                                      sep = ";" )
+      }
     }
     ## delete the auxiliary folders
     unlink( "./TMPrecent/", recursive = TRUE )
