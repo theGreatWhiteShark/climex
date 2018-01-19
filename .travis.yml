@@ -5,5 +5,5 @@ cache: packages
 
 script:
   - R CMD INSTALL .
-  - R -e 'install.packages( "testthat" )'
-  - R -e 'testthat::test()'
+  - R -e 'install.packages( c( "devtools", "testthat" ) )'
+  - R -e 'devtools::test()'
