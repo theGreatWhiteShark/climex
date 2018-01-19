@@ -5,6 +5,5 @@ cache: packages
 
 script:
   - R CMD INSTALL .
-  - R -e 'install.packages( "testthat", 
-                           repo = "cloud.r-project.org"  )'
+  - R -e 'install.packages( "testthat" )'
   - R -e 'testthat::test()'
