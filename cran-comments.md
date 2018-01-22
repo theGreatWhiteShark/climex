@@ -1,10 +1,27 @@
 ## Test environments
 * local Devuan 8.0, R-3.4.0
 * Ubuntu 14.04 (on travis-ci), R-3.3.0
-* win-builder (R-devel), R-3.5.0
+* win-builder (R-devel), (3.4.3), (3.3.3)
 
 
-## `devtools::check()` results
+## `devtools::check()` results on the local machine
+
+* checking CRAN incoming feasibility ... NOTE
+Maintainer: ‘Philipp Mueller <thetruephil@googlemail.com>’
+
+New submission
+
+Unknown, possibly mis-spelled, fields in DESCRIPTION:
+  ‘Remotes’
+
+* checking top-level files **NOTE**
+   Non-standard file/directory found at top level:
+     ‘res’
+	 
+   - I use this folder to provide e.g. the pictures included in the
+     README.md file. Since the *win-builder* tries to build this file
+     as well, I didn't included the folder in the *.Rbuildignore*
+	 
 
 * checking dependencies in R code ... **NOTE**
 There are ::: calls to the package's namespace in its code. A package
@@ -76,6 +93,7 @@ Undefined global functions or variables:
   
   - All those variables are actually names columns and used within
     **ggplot2** routines.
+	   
 	   
 ## Downstream dependencies
 

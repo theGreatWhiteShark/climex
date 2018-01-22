@@ -41,7 +41,7 @@ This will create a folder in `getOption( "climex.path" )` called **download_dwd*
 containing the mirrored content of the daily measured station data
 from the DWD's FTP server. Those .zip files will be extracted, parsed
 and converted to
-the [xts](https://cran.r-project.org/web/packages/xts/index.html)
+the [xts](https://CRAN.R-project.org/package=xts)
 format one after another. The parsing takes some time and can last for
 several minutes depending on your machine's specifications. 
 

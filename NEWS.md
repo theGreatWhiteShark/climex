@@ -1,4 +1,12 @@
 # v1.2.0.7000
+- Only perform the test of the API of the DWD on Unix-based
+  systems. The *winbuilder* of CRAN just throws non-reproducible error
+  messages. In some way the server is not able to properly download
+  the .zip file. This doesn't seem to be an issue of this package at
+  all. 
+- The test of the API of the FTP server of the DWD is now only
+  performed in case the computer running the tests has a working
+  connection to the internet.
 - Using Travis to run the tests when pushing the package to Github.
 - Registered C++ routines as suggest in
   https://github.com/RcppCore/Rcpp/issues/636.

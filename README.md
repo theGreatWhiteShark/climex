@@ -1,3 +1,5 @@
+[![Travis Build](https://travis-ci.org/theGreatWhiteShark/climex.svg?branch=master)](https://travis-ci.org/theGreatWhiteShark/climex.svg?branch=master)
+
 # Features
 ![leaflet map to handle a lot of station data](res/climex_map.jpeg)
 ![control all the different steps involved in the extreme value analysis](res/climex_time-series.png)
@@ -42,7 +44,7 @@ In order to obtain loads of data to perform the analysis on and to power the web
 
 # Installation
 
-Since the [Shiny](https://shiny.rstudio.com/)-based web app uses rather new features of the R programming language, you have to have **at least R-3.3.0** or newer (you can check your version by running `R --version` in the terminal). If you don't fulfill this condition yet, be sure to get the binary or source of an appropriate R version via [CRAN](https://cran.r-project.org/).
+Since the [Shiny](https://shiny.rstudio.com/)-based web app uses rather new features of the R programming language, you have to have **at least R-3.3.0** or newer (you can check your version by running `R --version` in the terminal). If you don't fulfill this condition yet, be sure to get the binary or source of an appropriate R version via [CRAN](https://CRAN.R-project.org/).
 
 In order to install this package you have to use the *install_github* function from the **devtools** package.
 
@@ -70,13 +72,13 @@ You want to run your own version of the Climex web application on one of your se
 
 # Usage
 
-You are new to **R**? Then check out the [compiled list of resources](https://www.rstudio.com/online-learning/#R) from RStudio or the [official introduction](https://cran.r-project.org/doc/manuals/R-intro.pdf).
+You are new to **R**? Then check out the [compiled list of resources](https://www.rstudio.com/online-learning/#R) from RStudio or the [official introduction](https://CRAN.R-project.org/doc/manuals/R-intro.pdf).
 
 A thorough introduction is provided for the [general usage](res/README_data_dwd_and_usage.Rmd) of the package and the Shiny-based [web application](res/climex_app.Rmd).
 
-When using this package in your own analysis, keep in mind that its functions expect your time series to be of class [xts](https://cran.r-project.org/web/packages/xts/index.html) and not numeric!
+When using this package in your own analysis, keep in mind that its functions expect your time series to be of class [xts](https://CRAN.R-project.org/web/packages/xts/index.html) and not numeric!
 
-### Why is this not on [CRAN](https://cran.r-project.org/)?
+### Why is this not on [CRAN](https://CRAN.R-project.org/)?
 
 The CRAN project has some special requirements a package has to fulfill to be hosted on their web page. One of those is for the package to complete the R package check without raising a single warning. Unfortunately I don't see a way right now to rewrite the function `climex::climex` in such a way it fulfills this requirement and I most certainly don't want to drop it. CRAN is just not meant to host a variety of more complex Shiny apps yet. :wink:
 

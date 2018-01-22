@@ -13,7 +13,6 @@ x.thresh.fit <- climex::fit.gpd(
                             total.length = length( temp.potsdam ) )
 
 ## I don't wanna see the plots
-sink( "/dev/null" )
 
 test_that( "ttplot results in plot object and takes the right inputs", {
   expect_true( is.ggplot( ttplot( temp.potsdam ) ) )
@@ -27,4 +26,3 @@ test_that( "plot.climex.fit.gev works on the result of fit.gev", {
 test_that( "plot.climex.fit.gpd works on the result of fit.gpd", {
   expect_true( is.ggplot( plot( x.thresh.fit ) ) )
 })
-sink()

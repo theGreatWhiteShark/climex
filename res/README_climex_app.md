@@ -130,7 +130,7 @@ If set to *Min*, the GEV distribution will be fitted to the minimal extremes. In
 Using this selector you can choose if and how to get rid of the
 short-range correlations in your time series introduced by the annual
 cycle. Per default the [anomalies](https://en.wikipedia.org/wiki/Anomaly_(natural_sciences)#Atmospheric_sciences) will be calculated. But you can also
-pick other R-based implementations like [stl](https://stat.ethz.ch/R-manual/R-patched/library/stats/html/stl.html), [decompose](https://stat.ethz.ch/R-manual/R-patched/library/stats/html/decompose.html), and the **ds** function from the [deseasonalize](https://cran.r-project.org/web/packages/deseasonalize/deseasonalize.pdf) package.
+pick other R-based implementations like [stl](https://stat.ethz.ch/R-manual/R-patched/library/stats/html/stl.html), [decompose](https://stat.ethz.ch/R-manual/R-patched/library/stats/html/decompose.html), and the **ds** function from the [deseasonalize](https://CRAN.R-project.org/package=deseasonalize) package.
 
 ### *Results* box
 
@@ -151,7 +151,7 @@ time series. The *Deseasonalized* tab uses the former series and
 applies the function specified in the *Deseasonalization method*
 drop-down menu of the **Options** box to it. Both plots contain the
 extracted extreme events as additional orange points and are generated
-using the [dygraphs](https://cran.r-project.org/web/packages/dygraphs/index.html) library. That's why you are also able so zoom
+using the [dygraphs](https://CRAN.R-project.org/package=dygraphs) library. That's why you are also able so zoom
 into specific regions using your mouse.
 
 The *Remaining* tab contains all the events in your time series which
