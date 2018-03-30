@@ -1,25 +1,36 @@
-##' @title This function takes several plot of the ggplot2 and arranges them on one page.
-##' @details Well, it is not really related to extreme value fitting and I am aware of the fact that its quite bad style to export auxiliary functions. But this one is just so handy. If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE), then plot 1 will go in the upper left, 2 will go in the upper right, and 3 will go all the way across the bottom. ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects). Imports the grid library.
+##' @title Plot multiple time series.
+##' @description This function takes several plot of the ggplot2 and
+##'   arranges them on one page. 
+##' @details Well, it is not really related to extreme value fitting
+##'   and I am aware of the fact that its quite bad style to export
+##'   auxiliary functions. But this one is just so handy. If the
+##'   layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+##'   then plot 1 will go in the upper left, 2 will go in the upper
+##'   right, and 3 will go all the way across the bottom. ggplot
+##'   objects can be passed in ..., or to plotlist (as a list of
+##'   ggplot objects). Imports the grid library. 
 ##'
 ##' @param main Title of the overall plot.
 ##' @param tt.title Same as 'main'.
 ##' @param ... objects for ggplot.
 ##' @param plotlist alternative way to pass ggplot objects.
 ##' @param cols Number of columns in layout. Default = 1.
-##' @param layout A matrix specifying the layout. If present, 'cols' is ignored.
+##' @param layout A matrix specifying the layout. If present, 'cols'
+##'   is ignored. 
 ##'
 ##' @family plot
 ##' @author Paul Teetor
 ##' @examples
 ##' anomalies.potsdam <- anomalies( temp.potsdam )
-##' multiplot( anomalies.potsdam, temp.potsdam, cols = 2, main = "Difference between the pure data of the daily maximum temperatures of the Potsdam station and their anomalies" )
+##' multiplot( anomalies.potsdam, temp.potsdam, cols = 2, main =
+##'   "Difference between the pure data of the daily maximum
+##'   temperatures of the Potsdam station and their anomalies" ) 
 ##' @return print object.
 ##' @export
 ##' @import ggplot2
 ##' @import grid
 multiplot <- function( tt.title = main, main = NULL, ...,
                       plotlist = NULL, cols = 1, layout = NULL ) {
-  sink( "/dev/null" )
   ## Make a list from the ... arguments and plotlist
   plots <- c( list( ... ), plotlist )
   numPlots = length( plots )
@@ -44,7 +55,8 @@ multiplot <- function( tt.title = main, main = NULL, ...,
                              c( "lines", rep( "null",
                                              nrow( layout) ) ) ) ) ) )
     } else
-      pushViewport( viewport( layout = grid.layout( nrow( layout ), ncol( layout ) ) ) )
+      pushViewport( viewport( layout = grid.layout( nrow( layout ),
+                                                   ncol( layout ) ) ) )
 
     ## Make each plot, in the correct location
     if ( !is.null( tt.title ) ){
@@ -53,7 +65,8 @@ multiplot <- function( tt.title = main, main = NULL, ...,
                                layout.pos.col = c( 1, ncol( layout ) )
                            ) )
       for (i in 1:numPlots) {
-        ## Get the i,j matrix positions of the regions that contain this subplot
+        ## Get the i,j matrix positions of the regions that contain
+        ## this subplot 
         matchidx <- as.data.frame( which( layout == i, arr.ind = TRUE) )
         print( plots[[ i ]], vp = viewport(
                                  layout.pos.row = matchidx$row + 1,
@@ -61,23 +74,30 @@ multiplot <- function( tt.title = main, main = NULL, ...,
       }
     } else {
       for (i in 1:numPlots) {
-        ## Get the i,j matrix positions of the regions that contain this subplot
-        matchidx <- as.data.frame( which( layout == i, arr.ind = TRUE ) )
+        ## Get the i,j matrix positions of the regions that contain
+        ## this subplot 
+        matchidx <- as.data.frame( which( layout == i,
+                                         arr.ind = TRUE ) )
         print( plots[[ i ]], vp = viewport(
                                  layout.pos.row = matchidx$row,
                                  layout.pos.col = matchidx$col ) )
       }
     }
   }
-  sink()
   invisible( last_plot() )
 }
 
-##' @title Plotting a xts time series with ggplot2 in a convenient format.
+##' @title Plot xts class data
+##' @description Plotting a xts time series with ggplot2 in a
+##'   convenient format. 
 ##'
-##' @details Plots all objects of class xts. With the main argument a title can be provided.
+##' @details Plots all objects of class xts. With the main argument a
+##'   title can be provided. 
 ##'
 ##' @param data.input Time series which should be visualized.
+##' @param main Title of the plot to generate. Default: "Time series"
+##' @param ylab Label of the y-axis of the plot to generate. Default =
+##'   NULL
 ##' @param ... Additional parameters for the multiplot function.
 ##'
 ##' @family plot
@@ -86,8 +106,7 @@ multiplot <- function( tt.title = main, main = NULL, ...,
 ##' @import ggplot2
 ##' @return Nothing. The multiplot function is run in the last step.
 ##' @author Philipp Mueller
-ttplot <- function( data.input, main = "Time series", ylab = NULL,
-                   x.df = NULL ){
+ttplot <- function( data.input, main = "Time series", ylab = NULL ){
   if ( !is.xts( data.input ) )
     stop( "Please supply an object of class 'xts'!" )
   if ( is.null( ylab ) )
@@ -96,8 +115,10 @@ ttplot <- function( data.input, main = "Time series", ylab = NULL,
     ylab <- ""
   ## Checks if the time series has daily values or if it is blocked.
   ## In the latter case the create values can not be provided as the
-  ## input of the x axis because ggplot2 does not know how to scale them.
-  x.time.unit <- index( data.input )[[ 2 ]] - index( data.input )[[ 1 ]]
+  ## input of the x axis because ggplot2 does not know how to scale
+  ## them. 
+  x.time.unit <- index( data.input )[[ 2 ]] -
+    index( data.input )[[ 1 ]]
   if ( class( x.time.unit ) != "difftime" ||
        attributes( x.time.unit )$units != "days" ) {
     x.df <- data.frame( date = as.numeric( index( data.input ) ),
@@ -106,7 +127,8 @@ ttplot <- function( data.input, main = "Time series", ylab = NULL,
     x.df <- data.frame( date = index( data.input ),
                        value = as.numeric( data.input ) )
   ggplot( data = x.df, aes( x = date, y = value ) ) +
-    geom_point( colour = "darkorange" ) + geom_line( colour = "navy" ) +
+    geom_point( colour = "darkorange" ) +
+    geom_line( colour = "navy" ) +
     ggtitle( main ) + xlab( "Time" ) + ylab( ylab ) +
     theme_bw() +
     theme( panel.grid.major = element_line( colour = "grey75" ),
@@ -114,29 +136,45 @@ ttplot <- function( data.input, main = "Time series", ylab = NULL,
   return( last_plot() )
 }
 
-##' @title Generates three 2D slices of the likelihood of a provided time series.
+##' @title Plots the GEV likelihood
+##' @description Generates three 2D slices of the likelihood of a
+##'   provided time series. 
 ##'
-##' @details The likelihood will be plotted around its optimal value. To determine it the time series will be fitted via \code{\link{fit.gev}}. Its also possible to provide another point the likelihood will be centered around using 'center'.
+##' @details The likelihood will be plotted around its optimal
+##'   value. To determine it the time series will be fitted via
+##'   \code{\link{fit.gev}}. Its also possible to provide another
+##'   point the likelihood will be centered around using 'center'. 
 ##'
-##' @param time.series Data for which the likelihood function is going to be calculated.
-##' @param location.lim Boundaries of the plotted likelihood region. Default = +/- 2.5 times the minimum value.
-##' @param scale.lim Boundaries of the plotted likelihood region. Default = +/- 2.5 times the minimum value.
-##' @param shape.lim Boundaries of the plotted likelihood region. Default = +/- 2.5 times the minimum value.
-##' @param center It set this point (3D) will be the new center of the likelihood plot. Default = NULL
-##' @param initial Initial parameters which can be provided for the fit of the time series.
+##' @param time.series Data for which the likelihood function is going
+##'   to be calculated. 
+##' @param location.lim Boundaries of the plotted likelihood
+##'   region. Default = +/- 2.5 times the minimum value. 
+##' @param scale.lim Boundaries of the plotted likelihood
+##'   region. Default = +/- 2.5 times the minimum value. 
+##' @param shape.lim Boundaries of the plotted likelihood
+##'   region. Default = +/- 2.5 times the minimum value. 
+##' @param center It set this point (3D) will be the new center of the
+##'   likelihood plot. Default = NULL 
+##' @param initial Initial parameters which can be provided for the
+##'   fit of the time series. 
 ##' @param main Title for the multiplot. Default = NULL.
-##' @param true.minima Provide the true minima of the neg log-likelihood function if fit.gev does not provide it in the first run. Default = NULL.
-##'
+##' @param true.minima Provide the true minima of the neg
+##'   log-likelihood function if fit.gev does not provide it in the
+##'   first run. Default = NULL. 
+##' 
 ##' @import ggplot2
-##' @return returns a multiplot of planes through the negative log-likelihood of the GEV function calculated using the input time series.
+##' @return returns a multiplot of planes through the negative
+##'   log-likelihood of the GEV function calculated using the input
+##'   time series. 
 ##' @author Philipp Mueller 
 likelihood.plot <- function( time.series, location.lim = NULL,
                             scale.lim = NULL, shape.lim = NULL,
-                            center = NULL, initial = NULL, main = NULL,
-                            true.minima = NULL ){
+                            center = NULL, initial = NULL,
+                            main = NULL, true.minima = NULL ){
   ## determining the center and the limits
   if ( is.null( true.minima ) ){
-    time.series.mle <- fit.gev( x = time.series, initial = initial )$par
+    time.series.mle <- fit.gev( x = time.series,
+                               initial = initial )$par
   } else
     time.series.mle <- true.minima
   if ( is.null( center ) )
@@ -192,9 +230,11 @@ likelihood.plot <- function( time.series, location.lim = NULL,
       warning( "In some regions the likelihood is negative. An offset is used in order to still plot it in a logarithmic way" )
     } else
       max.likelihood.low <- min.likelihood* 1.5
-    par.plane$likelihood <- par.plane$likelihood.low <- likelihood.plane
+    par.plane$likelihood <- par.plane$likelihood.low <-
+      likelihood.plane
     par.plane$likelihood.low[ par.plane$likelihood.low >
-                              max.likelihood.low ] <- max.likelihood.low
+                              max.likelihood.low ] <-
+      max.likelihood.low
     names( par.plane ) <- c( par.plane.names, "likelihood.low",
                             "likelihood" )
     gg.plane <-
@@ -203,7 +243,8 @@ likelihood.plot <- function( time.series, location.lim = NULL,
                              na.rm = TRUE ) +
       geom_contour( data = par.plane,
                    aes( x = x, y = y, z = likelihood.low ),
-                   colour = grDevices::rgb( 1, .55, 0 ), na.rm = TRUE ) +
+                   colour = grDevices::rgb( 1, .55, 0 ),
+                   na.rm = TRUE ) +
       scale_fill_gradientn(
           colours = rev( RColorBrewer::brewer.pal( 7, "Blues" ) ),
           na.value = "white", trans = "log" ) +
@@ -234,7 +275,9 @@ likelihood.plot <- function( time.series, location.lim = NULL,
             main = main )
 }
 
-##' @title Plots the GEV function fitted using \code{\link{fit.gev}}
+##' @title Plots a GEV fit
+##' @description Plots the GEV function fitted using
+##'   \code{\link{fit.gev}} 
 ##'
 ##' @details Uses ggplot2. Since I will also use it
 ##' in the shiny app, where I want to adjust the number
@@ -244,11 +287,14 @@ likelihood.plot <- function( time.series, location.lim = NULL,
 ##' @param bin.factor Multiplying the length of x
 ##' by this factor, results in the number of bins
 ##' used in this plot. Default = NULL
+##' @param ... Additional parameters. They won't be handled in the
+##'   function. This argument is only present to ensure S3 generic
+##'   consistency with respect to the `plot()` function.
 ##'
 ##' @export
 ##' @import ggplot2
 ##' @return ggplot2 object.
-plot.climex.fit.gev <- function( x, bin.factor = NULL  ){
+plot.climex.fit.gev <- function( x, bin.factor = NULL, ... ){
   x.data <- x$x
   if ( is.null( bin.factor ) ){
     bin.factor <- ( ( ( length( x.data ) - 1 )*100/
@@ -271,7 +317,7 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL  ){
                         x.lim[ 2 ] + x$par[ 2 ]* 10, 0.01 )
   plot.gev.data <- data.frame(
       x.plot = plot.gev.range,
-      y.plot = climex:::gev.density( x$par,
+      y.plot = gev.density( x$par,
                                     plot.gev.range ) )
   ## Removing all NaN to have less points and warnings
   plot.gev.data <- plot.gev.data[
@@ -316,7 +362,7 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL  ){
                     max( x.data) + bin.width ) )
   ## Whenever the density gets bigger than one, cut it
   if ( max( plot.gev.data$y.plot ) > 1 ){
-    y.lim <- c( 0, ( max( density( x.data )$y )* 1.5 ) )
+    y.lim <- c( 0, ( max( stats::density( x.data )$y )* 1.5 ) )
   } else {
     y.lim <- NULL
   }
@@ -341,21 +387,26 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL  ){
   return( last_plot() )
 }
 
-##' @title Plots the GEV function fitted using \code{\link{fit.gev}}
+##' @title Plot a GPD fit
+##' @description Plots the GPD function fitted using
+##'   \code{\link{fit.gpd}} 
 ##'
 ##' @details Uses ggplot2. Since I will also use it
 ##' in the shiny app, where I want to adjust the number
 ##' of displayed bins, there is a second argument present.
 ##'
-##' @param x Fitted GEV object.
+##' @param x Fitted GPD object.
 ##' @param bin.factor Multiplying the length of x
 ##' by this factor, results in the number of bins
 ##' used in this plot. Default = NULL
+##' @param ... Additional parameters. They won't be handled in the
+##'   function. This argument is only present to ensure S3 generic
+##'   consistency with respect to the `plot()` function.
 ##'
 ##' @export
 ##' @import ggplot2
 ##' @return ggplot2 object.
-plot.climex.fit.gpd <- function( x, bin.factor = NULL ){
+plot.climex.fit.gpd <- function( x, bin.factor = NULL, ... ){
   if ( is.null( x$threshold ) ){
     stop( "Please provide a threshold argument to fit.gpd() in order to plot the result" )
   }
@@ -381,7 +432,7 @@ plot.climex.fit.gpd <- function( x, bin.factor = NULL ){
                         x.lim[ 2 ] + x$par[ 1 ]* 10, 0.01 )
   plot.data <- data.frame(
       x.plot = plot.range,
-      y.plot = climex:::gpd.density( x$par, x$threshold,
+      y.plot = gpd.density( x$par, x$threshold,
                                plot.range ) )
   ## Removing all NaN to have less points and warnings
   plot.data <- plot.data[
@@ -437,7 +488,7 @@ plot.climex.fit.gpd <- function( x, bin.factor = NULL ){
                     max( x.data) + bin.width ) )
   ## Whenever the density gets bigger than one, cut it
   if ( max( plot.data$y.plot ) > 1 ){
-    y.lim <- c( 0, ( max( density( x.data )$y )* 1.5 ) )
+    y.lim <- c( 0, ( max( stats::density( x.data )$y )* 1.5 ) )
   } else {
     y.lim <- NULL
   }

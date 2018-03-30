@@ -2,19 +2,27 @@
 % Please edit documentation in R/plot.R
 \name{plot.climex.fit.gpd}
 \alias{plot.climex.fit.gpd}
-\title{Plots the GEV function fitted using \code{\link{fit.gev}}}
+\title{Plot a GPD fit}
 \usage{
-\method{plot}{climex.fit.gpd}(x, bin.factor = NULL)
+\method{plot}{climex.fit.gpd}(x, bin.factor = NULL, ...)
 }
 \arguments{
-\item{x}{Fitted GEV object.}
+\item{x}{Fitted GPD object.}
 
 \item{bin.factor}{Multiplying the length of x
 by this factor, results in the number of bins
 used in this plot. Default = NULL}
+
+\item{...}{Additional parameters. They won't be handled in the
+function. This argument is only present to ensure S3 generic
+consistency with respect to the `plot()` function.}
 }
 \value{
 ggplot2 object.
+}
+\description{
+Plots the GPD function fitted using
+  \code{\link{fit.gpd}}
 }
 \details{
 Uses ggplot2. Since I will also use it

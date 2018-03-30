@@ -2,7 +2,7 @@
 % Please edit documentation in R/climex_sidebar.R
 \name{sidebarDataType}
 \alias{sidebarDataType}
-\title{Sidebar menu selection}
+\title{Sidebar menu selection in the Climex app}
 \usage{
 sidebarDataType(selectDataBase, radioEvdStatistics)
 }
@@ -12,7 +12,7 @@ source. In the default installation there are three options:
 c( "Input", "DWD", "Artificial data" ). The first one uses the data
 provided as an argument to the call of the \code{\link{climex}}
 function. The second one uses the database of the German weather
-service (see \code{link{download.data.dwd}}). The third one allows
+service (see \code{\link{download.data.dwd}}). The third one allows
 the user to produce random numbers distributed according to the GEV
 or GP distribution. Determined by menuSelectDataBase.
 Default = "DWD".}
@@ -23,6 +23,9 @@ c( "GEV", "GP" ), default = "GEV".}
 }
 \value{
 renderMenu
+}
+\description{
+Sidebar menu selection.
 }
 \details{
 Provides the third selection menu in the sidebar.

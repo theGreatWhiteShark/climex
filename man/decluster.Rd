@@ -2,7 +2,7 @@
 % Please edit documentation in R/extremes.R
 \name{decluster}
 \alias{decluster}
-\title{Decluster point over threshold data used for GP fitting.}
+\title{Decluster data}
 \usage{
 decluster(x, threshold, cluster.distance = NULL, silent = FALSE)
 }
@@ -24,6 +24,10 @@ are doing! Default = NULL}
 Returns the original time series x with all the elements
 within one cluster having smaller values than the clusters maximum
 being replaced by NA.
+}
+\description{
+Decluster point over threshold data used for GP
+  fitting.
 }
 \details{
 This function determines clusters in a time series and

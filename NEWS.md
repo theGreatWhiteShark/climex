@@ -1,3 +1,43 @@
+# v1.2.0.7000
+- Only perform the test of the API of the DWD on Unix-based
+  systems. The *winbuilder* of CRAN just throws non-reproducible error
+  messages. In some way the server is not able to properly download
+  the .zip file. This doesn't seem to be an issue of this package at
+  all. 
+- The test of the API of the FTP server of the DWD is now only
+  performed in case the computer running the tests has a working
+  connection to the internet.
+- Using Travis to run the tests when pushing the package to Github.
+- Registered C++ routines as suggest in
+  https://github.com/RcppCore/Rcpp/issues/636.
+- Instead of toggling the attachment of the DWD data in the
+  `source.data` function to either the global environment or the one
+  used to call the function, the desired environment can now be
+  provided as an input argument.
+- Fixing the handling of global variables in the shiny app by using a
+  custom environment `climex.environment` instead of true global
+  variables.
+- The vignettes in the *//vignette/* folder are no longer used as the
+  online documentation. There were some problems with them loading
+  images in R. Instead they are stripped of all figure links and a
+  copy of them is introduced in the *//res/* folder. These ones still
+  contain the figure links and are saved as proper .md files (and
+  ignored during build). In the end the *//res/* folder was included
+  again, since *win-builder* tries to build the README.md using
+  **pandoc**. 
+- Fixing a bug in the formula calculating the run.length in the
+  `extremal.index` for a threshold distance then 2.
+- Updating the documentation, namespacing, file layout, build ignore,
+  DESCRIPTION file
+- Using proper UTF-8 encoding
+- With **bootstrap**a third option of calculating the error estimates
+  for the GEV/GP parameters, as well as the return level is now
+  available. 
+- The `likelihood.initials` now uses a proper scaling when searching
+  for an initial parameter combination using a Markov random walk.
+- In the `fit.gev` function the `monte.carlo.sample.size` variable was
+  not handed over properly.
+
 # v1.2.0
 The `return.level` function now returns a list containing both the
 estimates and the approximated errors, regardless of whether an error

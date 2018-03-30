@@ -2,9 +2,22 @@
 % Please edit documentation in R/utils.R
 \name{summary.climex.fit.gpd}
 \alias{summary.climex.fit.gpd}
-\title{Summary of the fit results}
+\title{Summarize results}
 \usage{
-\method{summary}{climex.fit.gpd}(x)
+\method{summary}{climex.fit.gpd}(object, ...)
+}
+\arguments{
+\item{object}{Object of class \strong{climex.fit.gpd}.}
+
+\item{...}{Additional parameters. They won't be handled in the
+function. This argument is only present to ensure S3 generic
+consistency with respect to the `summary()` function.}
+}
+\value{
+`invisible()`
+}
+\description{
+Summary of the GPD fit results
 }
 \author{
 Philipp Mueller

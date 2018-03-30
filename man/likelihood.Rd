@@ -2,8 +2,7 @@
 % Please edit documentation in R/opti.R
 \name{likelihood}
 \alias{likelihood}
-\title{Calculated the negative log likelihood of the GEV or GPD
-function.}
+\title{Likelihood of the GEV and GP distribution}
 \usage{
 likelihood(parameters = NULL, x.in, model = c("gev", "gpd"))
 }
@@ -19,6 +18,10 @@ of the GEV or GPD function. Default = "gev"}
 }
 \value{
 Numerical value of the negative log likelihood.
+}
+\description{
+Calculated the negative log likelihood of the GEV or
+  GPD function.
 }
 \details{
 This function is only meant to work with constant parameters

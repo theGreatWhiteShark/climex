@@ -2,7 +2,7 @@
 % Please edit documentation in R/climex_sidebar.R
 \name{data.selection}
 \alias{data.selection}
-\title{Reactive value selecting an individual time series.}
+\title{Data selection in the Climex app}
 \usage{
 data.selection(reactive.chosen, selectDataSource, selectDataBase,
   sliderThreshold, radioEvdStatistics, sliderArtificialDataLocation,
@@ -23,7 +23,7 @@ source. In the default installation there are three options:
 c( "Input", "DWD", "Artificial data" ). The first one uses the data
 provided as an argument to the call of the \code{\link{climex}}
 function. The second one uses the database of the German weather
-service (see \code{link{download.data.dwd}}). The third one allows
+service (see \code{\link{download.data.dwd}}). The third one allows
 the user to produce random numbers distributed according to the GEV
 or GP distribution. Determined by menuSelectDataBase.
 Default = "DWD".}
@@ -63,11 +63,14 @@ selectDataBase is set to "Artificial data"}
 \value{
 Reactive value containing a 'xts' class time series.
 }
+\description{
+Reactive value selecting an individual time series.
+}
 \details{
 According to the choice in input$selectDataBase an
 artificial time series will be sampled or one from a database will be
 selected. For the latter one the reactive value
-\code{\link{climex:::data.chosen}} will be constulted. The length of
+\code{\link{data.chosen}} will be constulted. The length of
 the generated time series is determined by the
 input$sliderSeriesLength.
 }

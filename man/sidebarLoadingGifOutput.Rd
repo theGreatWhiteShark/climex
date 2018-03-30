@@ -2,7 +2,7 @@
 % Please edit documentation in R/climex_sidebar.R
 \name{sidebarLoadingGifOutput}
 \alias{sidebarLoadingGifOutput}
-\title{Showing a Gif in the sidebar while the app is processing/on hold}
+\title{Gif in the Climex app}
 \usage{
 sidebarLoadingGifOutput(id)
 }
@@ -12,8 +12,12 @@ sidebarLoadingGifOutput(id)
 \value{
 div
 }
+\description{
+Showing a Gif in the sidebar while the app is
+  processing/on hold
+}
 \details{
-Rendering of \code{link{sidebarLoadingGif}}.
+Rendering of \code{\link{sidebarLoadingGif}}.
 }
 \seealso{
 Other sidebar: \code{\link{data.selection}},

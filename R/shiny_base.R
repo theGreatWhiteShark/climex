@@ -1,5 +1,6 @@
-##' @title Shiny app combining most of the tools used in extreme value
-##' analysis using GEV fitting via maximum likelihood.
+##' @title The Climex app initialization
+##' @description Shiny app combining most of the tools used in extreme
+##'   value analysis using GEV fitting via maximum likelihood.
 ##'
 ##' @details It possible to provide a time series of type \pkg{xts} to
 ##' a list of elements of this type. This app need the its own css file.
@@ -28,11 +29,7 @@
 ##' @importFrom xts xts
 ##' @author Philipp Mueller 
 climex <- function(){
-  source.data( pick.default = TRUE, import = "global" )
   climex.path <- getOption( "climex.path" )
-  ## will contain the folder in which the images of the animation
-  ## can be found
-  image.folder <<- paste0( climex.path, "app/www/images" )
   ## this is unfortunately necessary since some JavaScript scripts
   ## are written out and some images are plotted which have to be
   ## accessible within the shiny app.
@@ -78,7 +75,8 @@ climex <- function(){
 }
 
 
-##' @title Server-side part of the \code{\link{climex}} function.
+##' @title The Climex app server
+##' @description Server-side part of the \code{\link{climex}} function.
 ##'
 ##' @details Since it grew organically most of the features are defined
 ##' inside this function. Okay, why did I decided to define the
@@ -86,7 +84,13 @@ climex <- function(){
 ##' provide a local and a server side variant of the code which is
 ##' maintained in the same place. I do not really like the idea of
 ##' installing the newest version of the code from Github and than
-##' copy/pasting the code in some files somewhere in /srv/shiny-server.
+##' copy/pasting the code in some files somewhere in
+##'   /srv/shiny-server.
+##'
+##' @param input Namespace input. For more details check out
+##' \url{http://shiny.rstudio.com/articles/modules.html}
+##' @param output Namespace output.
+##' @param session Namespace session.
 ##'
 ##' @return Function acting as the shiny server.
 ##' @import shiny
@@ -100,6 +104,15 @@ climex <- function(){
 ##' 
 ##' @author Philipp Mueller 
 climex.server <- function( input, output, session ){
+  ## Create a custom environment to host the variables `last.values`,
+  ## `last.1`, `last.2`, and `last.3` in, as well as the station data
+  ## in. By referring to this environment the corresponding variables
+  ## do not have to be defined globally.
+  climex.environment <- new.env( parent = emptyenv() )
+
+  ## Load the station data and assign it to the custom environment.
+  source.data( pick.default = TRUE, envir = climex.environment )
+  
 ########################################################################
 ######### Customizing the sidebar and launching its reactives ##########
 ########################################################################
@@ -153,7 +166,8 @@ climex.server <- function( input, output, session ){
                                   reactive( input$selectDataBase ),
                                   reactive( input$sliderYears ),
                                   reactive( input$selectDataType ),
-                                  reactive.loading )
+                                  reactive.loading,
+                                  climex.environment )
   ## Reactive value selecting a specific time series according to the
   ## choices in the sidebar/leaflet map
   reactive.selection <-
@@ -240,13 +254,21 @@ climex.server <- function( input, output, session ){
   ## store the previous results of the GEV/GP fitting. This is
   ## unfortunately necessary in order to highlight the progress in the
   ## table red or green.
-  last.values <<- last.1 <<- last.2 <<- last.3 <<- rep( 0,  )
+
+  ## Assign the place holder to the custom environment. This way they
+  ## are accessible between function calls without handing them over,
+  ## but are not defined globally either.
+  climex.environment$last.values <-
+    climex.environment$last.1 <-
+      climex.environment$last.2 <-
+        climex.environment$last.3 <- rep( 0,  )
   output$generalFitStatistics <-
     climex:::generalFitStatistics( reactive.fitting, reactive.extreme,
                                   reactive( input$sliderThreshold ),
                                   reactive( input$buttonMinMax ),
                                   reactive( input$radioEvdStatistics ),
-                                  climex:::color.table )
+                                  climex:::color.table,
+                                  climex.environment )
 ########################################################################
 
   ## Module providing the leaflet map tab and returning a reactive value
@@ -265,10 +287,12 @@ climex.server <- function( input, output, session ){
       reactive( input$checkboxDecluster ),
       reactive( input$selectDeseasonalize ),
       reactive( input$sliderBlockLength ),
-      reactive( input$selectDataBase ) )
+      reactive( input$selectDataBase ), climex.environment )
 }
 
-##' @title The user interface for the \code{\link{climex}} function.
+##' @title The Climex app UI
+##' @description The user interface for the \code{\link{climex}}
+##'   function. 
 ##'
 ##' @param selected Choose which tab is supposed to be selected when
 ##' starting the app

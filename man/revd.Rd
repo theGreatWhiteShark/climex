@@ -2,7 +2,7 @@
 % Please edit documentation in R/extremes.R
 \name{revd}
 \alias{revd}
-\title{Drawing random numbers from the GEV or GP distribution}
+\title{Random numbers for GEV and GP}
 \usage{
 revd(n, location = NULL, scale = NULL, shape = NULL, threshold = NULL,
   model = c("gev", "gpd"), silent = FALSE)
@@ -28,6 +28,9 @@ Default = "gev".}
 \value{
 Numerical vector of length n drawn from the corresponding
 distribution.
+}
+\description{
+Drawing random numbers from the GEV or GP distribution
 }
 \details{
 This function was originally part of the extRemes package.

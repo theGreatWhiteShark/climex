@@ -1,11 +1,12 @@
-##' @title Separates the input into blocks of equal size and returns the
-##' maximum or minimum of the block as result.
+##' @title Blocking data
+##' @description Separates the input into blocks of equal size and
+##'   returns the maximum or minimum of the block as result.
 ##'
 ##' @details If 'separation.mode' is set to "years" the data is separated
 ##' according to it's time stamps. If not the size of a block is
 ##' determined by the 'block.length' parameter or calculated via the
 ##' 'block.number' parameter. For calculating the mean of the blocks have
-##' a look at the \code{\link{stats::ave}} function.
+##' a look at the \code{\link[stats]{ave}} function.
 ##'
 ##' @param input.bulk Provided data of class 'xts'.
 ##' @param block.number Specifies the number of blocks the input data is
@@ -23,6 +24,7 @@
 ##' @author Philipp Mueller
 ##' @export
 ##' @importFrom xts xts
+##' @importFrom zoo index
 ##'
 ##' @family extremes
 ##' 
@@ -85,7 +87,9 @@ block <- function( input.bulk,
   return( extremes.xts )
 }
 
-##' @title Decluster point over threshold data used for GP fitting.
+##' @title Decluster data
+##' @description Decluster point over threshold data used for GP
+##'   fitting. 
 ##'
 ##' @details This function determines clusters in a time series and
 ##' extract just their maximal value in order to remove short-range
@@ -161,7 +165,7 @@ decluster <- function( x, threshold, cluster.distance = NULL,
     x[ na.index ][ na.replace ] <- min( x, na.rm = TRUE )
     ## Now we are save to omit the NA for the cluster detection
     x.no.na.index <- which( !is.na( x ) )
-    x.no.na <- na.omit( x )
+    x.no.na <- stats::na.omit( x )
   } else {
     x.no.na <- x
   }
@@ -174,13 +178,11 @@ decluster <- function( x, threshold, cluster.distance = NULL,
     warning( "You are choosing the cluster size by hand instead of relying on the non-parametric version. Proceed with care!" )
   }
   exceedances.position <- x.no.na > threshold
-  ## Böse, böse, böse
   exceedances.position <- exceedances.position
   exceedances <- x.no.na[ exceedances.position ]
   ## Amount of points above the threshold
   exceedances.number <- sum( exceedances.position )
   ## Index of those points in the ts 'x'
-  ## Böse, böse, böse
   exceedances.index <- ( 1 : length( x.no.na ) )[ exceedances.position ] 
   which.cluster <- rep( 1, exceedances.number )
   ## Number of indices the exceedances are apart from each other
@@ -217,7 +219,8 @@ decluster <- function( x, threshold, cluster.distance = NULL,
   return( x )
 }
 
-##' @title Estimates the extremal index of a time series.
+##' @title Extremal index estimation
+##' @description Estimates the extremal index of a time series.
 ##' @details The extremal index can be thought of as the inverse of the
 ##' mean cluster size. It can be calculated by the "blocks" method
 ##' of Ferro and Segers, 2003. I will use the bias-free estimator
@@ -268,7 +271,8 @@ extremal.index <- function( x, threshold, silent = FALSE ){
   } else {
     theta <- 2* sum( exceedances.distance - 1 )^ 2/
       ( ( exceedances.number - 1 )*
-        sum( ( exceedances.distance - 2 )^2 ) )
+        sum( ( exceedances.distance - 1 )*
+             ( exceedances.distance - 2 ) ) )
   }
   ## Sanity check
   if ( theta > 1 ){
@@ -313,7 +317,8 @@ extremal.index <- function( x, threshold, silent = FALSE ){
   return( c( theta, cluster.number, minimal.distance ) )
 }
 
-##' @title Extracts all data above a certain threshold
+##' @title Apply a threshold to data
+##' @description Extracts all data above a certain threshold
 ##' @details Due to the UNIX principle (make each program do one thing
 ##' well) I decided to provide this extra function instead of
 ##' incorporating it into the fitting function. After extracting all data
@@ -350,21 +355,23 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
   x.threshold <- x[ x > threshold ] - threshold
   ## removing the NA
   if ( na.rm )
-    x.threshold <- na.omit( x.threshold )        
+    x.threshold <- stats::na.omit( x.threshold )        
   return( x.threshold )
 }
 
 
 ##' @title Calculation of the return levels.
+##' @description Calculate arbitrary return level and their error
+##'   estimates for GEV and GP distributions.
 ##'
-##' @details Uses the \code{\link{levd}} function at its core (a port from
-##' the \pkg{extRemes} package) but also can handle the outputs of the
-##' \code{\link{fit.gev}} and \code{\link{fit.gpd}} function, is capable
-##' of calculating numerous return levels at once and also calculates the
-##' errors of the return levels. For the errors the ML fit is using the
-##' option hessian=TRUE (if not done already) or uses a Monte Carlo based
-##' approach. If no fitting object is provided, no errors will be
-##' calculated. 
+##' @details Uses the \code{\link{rlevd}} function at its core (a port
+##'   from the \pkg{extRemes} package) but also can handle the outputs
+##'   of the \code{\link{fit.gev}} and \code{\link{fit.gpd}} function,
+##'   is capable of calculating numerous return levels at once and
+##'   also calculates the errors of the return levels. For the errors
+##'   the ML fit is using the option hessian=TRUE (if not done
+##'   already) or uses a Monte Carlo based approach. If no fitting
+##'   object is provided, no errors will be calculated. 
 ##'
 ##' @param x Parameter input. Class numeric, climex.fit.gev or
 ##' climex.fit.gpd.
@@ -434,7 +441,7 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
 ##' This argument is needed to calculate the standard error of the
 ##' return level via the delta method of the MLE in the GPD model.
 ##' Default = NULL.
-##' @param thresholded.time.series Time series used with \code{link{fit.gpd}}
+##' @param thresholded.time.series Time series used with \code{\link{fit.gpd}}
 ##' on which already a threshold (the one supplied here as well) was
 ##' applied. Necessary to transform the return level for numerical input
 ##' and the GPD model from m-th observation return level to annual return
@@ -469,7 +476,7 @@ return.level <- function( x, return.period = 100,
   if ( any( class( x ) == "climex.fit.gev" ) ){
     model <- "gev"
     return.levels <- Reduce( c, lapply( return.period, function( y )
-      as.numeric( climex:::rlevd( y, x$par[ 1 ], x$par[ 2 ], x$par[ 3 ],
+      as.numeric( rlevd( y, x$par[ 1 ], x$par[ 2 ], x$par[ 3 ],
                                  model = "gev", silent = silent ) ) ) )
   } else if ( any( class( x ) == "climex.fit.gpd" ) ){
     model <- "gpd"
@@ -515,7 +522,7 @@ return.level <- function( x, return.period = 100,
     if ( !is.null( threshold ) )
       x$threshold <- threshold
     return.levels <- Reduce( c, lapply( m, function( y )
-      as.numeric( climex:::rlevd( y, scale = x$par[ 1 ],
+      as.numeric( rlevd( y, scale = x$par[ 1 ],
                                  shape = x$par[ 2 ],
                                  model = "gpd", threshold = x$threshold,
                                  silent = silent ) ) ) )
@@ -531,7 +538,7 @@ return.level <- function( x, return.period = 100,
       stop( "return.level: the provided parameters and model argument do not belong to each other!" )
     if ( model == "gev" ){
       return.levels <- Reduce( c, lapply( return.period, function( y )
-        as.numeric( climex:::rlevd( y, x[ 1 ], x[ 2 ], x[ 3 ],
+        as.numeric( rlevd( y, x[ 1 ], x[ 2 ], x[ 3 ],
                                    model = "gev" ) ) ) )
     } else {
       if ( !is.null( thresholded.time.series ) ){
@@ -562,7 +569,7 @@ return.level <- function( x, return.period = 100,
         zeta <- FALSE
       }
       return.levels <- Reduce( c, lapply( m, function( mm )
-        as.numeric( climex:::rlevd( mm, scale = x[ 1 ], shape = x[ 2 ],
+        as.numeric( rlevd( mm, scale = x[ 1 ], shape = x[ 2 ],
                                    model = "gpd", threshold = threshold,
                                    silent = silent ) ) ) )
     }
@@ -623,7 +630,7 @@ return.level <- function( x, return.period = 100,
         xx$return.level ) )
     ## Calculate the standard errors
     errors <- apply( cbind( fitted.parameters,
-                           fitted.return.levels ), 2, sd )
+                           fitted.return.levels ), 2, stats::sd )
     ## Extracting the errors of the return levels.
     if ( model == "gev" ){
       errors <- errors[ 4 : ( 3 + length( return.period ) ) ]
@@ -807,12 +814,12 @@ return.level <- function( x, return.period = 100,
     ## of them
     if ( model == "gev" ){
       samples.list <- lapply( 1 : monte.carlo.sample.size, function( y )
-        climex:::revd( length( x$x ), parameter.estimate[ 1 ],
+        revd( length( x$x ), parameter.estimate[ 1 ],
                       parameter.estimate[ 2 ],
                       parameter.estimate[ 3 ], model = "gev" ) )
     } else { 
       samples.list <- lapply( 1 : monte.carlo.sample.size, function( y )
-        climex:::revd( length( x$x ), scale = parameter.estimate[ 1 ],
+        revd( length( x$x ), scale = parameter.estimate[ 1 ],
                       shape = parameter.estimate[ 2 ], silent = TRUE,
                       threshold = threshold, model = "gpd" ) )
     }
@@ -849,11 +856,12 @@ return.level <- function( x, return.period = 100,
   return( list( return.level = return.levels, error = errors ) )
 }
 
-##' @title Internal function to calculate the return level of GEV or GP
-##' distribution.
+##' @title Return level calculation
+##' @description Internal function to calculate the return level of
+##'   GEV or GP distribution.
 ##' @details Port from the extRemes package to ensure compatibility and
 ##' to make the threshold argument obligatory. This is just for internal
-##' usage. Please use the \link{\code{return.level}} function instead!
+##' usage. Please use the \code{\link{return.level}} function instead!
 ##'
 ##' @param period Return period in years.
 ##' @param location Of the GEV distribution. Default = NULL.
@@ -896,20 +904,22 @@ rlevd <- function ( period, location = NULL, scale = NULL, shape = NULL, thresho
     stop( "rlevd: invalid period argument.  Must be greater than 1." )
   
   if ( model == "gev" ) {   
-    res <- climex:::qevd( p = ( 1 - 1/period ), location = location, scale = scale,
-                    shape = shape, model = "gev", lower.tail = TRUE,
-                    silent = silent )
+    res <- qevd( p = ( 1 - 1/period ), location = location,
+                scale = scale,
+                shape = shape, model = "gev", lower.tail = TRUE,
+                silent = silent )
   } else {
-    res <- climex:::qevd( p = 1/period, location = NULL, scale = scale,
-                         shape = shape, threshold = threshold,
-                         model = "gpd", lower.tail = TRUE,
-                         silent = silent )
+    res <- qevd( p = 1/period, location = NULL, scale = scale,
+                shape = shape, threshold = threshold,
+                model = "gpd", lower.tail = TRUE,
+                silent = silent )
   }
   names( res ) <- as.character( period )
   return( res )
 }
 
-##' @title Calculates the quantile of either the GEV or the GPD
+##' @title Quantile calculation
+##' @description Calculates the quantile of either the GEV or the GPD
 ##' distribution
 ##' @details Port from the extRemes package to (again) get rid of the
 ##' 'threshold' argument to be able to have an separate 'threshold()'
@@ -980,7 +990,8 @@ qevd <- function ( p, location = NULL, scale = NULL, shape = NULL,
   return( q )
 }
 
-##' @title Drawing random numbers from the GEV or GP distribution
+##' @title Random numbers for GEV and GP
+##' @description Drawing random numbers from the GEV or GP distribution
 ##' @details This function was originally part of the extRemes package.
 ##' But since one had to provide the threshold I couldn't use it insight
 ##' the fit.gpd function. In contrast to the original implementation this
@@ -1017,7 +1028,7 @@ revd <- function ( n, location = NULL, scale = NULL, shape = NULL,
     if ( is.null( location ) ||
          is.null( scale ) || is.null( shape ) )
       stop( "Please supply 'location', 'scale' and 'shape'!" )
-    z <- rexp( n )
+    z <- stats::rexp( n )
   } else {
     if ( is.null( scale ) || is.null( shape ) )
       stop( "Please supply 'scale' and 'shape'!" )
@@ -1027,7 +1038,7 @@ revd <- function ( n, location = NULL, scale = NULL, shape = NULL,
       location <- 0
     } else
       location <- threshold
-    z <- runif( n )
+    z <- stats::runif( n )
   }
   if ( as.numeric( shape ) != 0 ){
     result <- as.numeric( location ) + as.numeric( scale )*
@@ -1038,18 +1049,23 @@ revd <- function ( n, location = NULL, scale = NULL, shape = NULL,
         log( z )
     } else {
       result <- as.numeric( location ) +
-        rexp( n, rate = 1/ as.numeric( scale ) )
+        stats::rexp( n, rate = 1/ as.numeric( scale ) )
     }
   }
   return( result )
 }
 
 ##' @title Probability density function of GEV distribution
-##' @description Calculate the probability density function for the generalized extreme value (GEV) distribution at a given point or at a number of points (provided as a numerical vector).
+##' @description Calculate the probability density function for the
+##'   generalized extreme value (GEV) distribution at a given point or
+##'   at a number of points (provided as a numerical vector). 
 ##' 
-##' @details If you want to calculate the density of the Gumbel distribution, please stick to the c( location, scale, shape ) scheme of the first argument while setting the shape parameter to zero.
+##' @details If you want to calculate the density of the Gumbel
+##'   distribution, please stick to the c( location, scale, shape )
+##'   scheme of the first argument while setting the shape parameter
+##'   to zero. 
 ##'
-##' Port of the ismev::gev.dens function.
+##' Port of the \code{\link[ismev]{gev.dens}} function.
 ##'
 ##' @param parameters Fitted GEV parameters c( location, scale,
 ##' shape ).
@@ -1093,11 +1109,16 @@ gev.density <- function ( parameters, z ){
 }
 
 ##' @title Probability density function of GP distribution
-##' @description Calculate the probability density function for the generalized Pareto (GP) distribution at a given point or at a number of points (provided as a numerical vector).
+##' @description Calculate the probability density function for the
+##'   generalized Pareto (GP) distribution at a given point or at a
+##'   number of points (provided as a numerical vector). 
 ##' 
-##' @details If you want to calculate the density of the exponential distribution, please stick to the c( scale, shape ) scheme of the `parameters' argument while setting the shape parameter to zero.
+##' @details If you want to calculate the density of the exponential
+##'   distribution, please stick to the c( scale, shape ) scheme of
+##'   the `parameters' argument while setting the shape parameter to
+##'   zero. 
 ##'
-##' Port of the ismev::gpd.dens function.
+##' Port of the \code{\link[ismev]{gpd.dens}} function.
 ##'
 ##' @param parameters Fitted GP parameters c( scale, shape )
 ##' @param threshold Threshold used to fit the GP distribution.

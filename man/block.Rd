@@ -2,8 +2,7 @@
 % Please edit documentation in R/extremes.R
 \name{block}
 \alias{block}
-\title{Separates the input into blocks of equal size and returns the
-maximum or minimum of the block as result.}
+\title{Blocking data}
 \usage{
 block(input.bulk, block.number = round(length(input.bulk)/50),
   block.length = NULL, block.mode = c("max", "min"),
@@ -29,12 +28,16 @@ Default = "years".}
 \value{
 Of class 'xts'.
 }
+\description{
+Separates the input into blocks of equal size and
+  returns the maximum or minimum of the block as result.
+}
 \details{
 If 'separation.mode' is set to "years" the data is separated
 according to it's time stamps. If not the size of a block is
 determined by the 'block.length' parameter or calculated via the
 'block.number' parameter. For calculating the mean of the blocks have
-a look at the \code{\link{stats::ave}} function.
+a look at the \code{\link[stats]{ave}} function.
 }
 \examples{
 block( temp.potsdam )

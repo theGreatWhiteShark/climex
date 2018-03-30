@@ -2,8 +2,7 @@
 % Please edit documentation in R/climex_preprocessing.R
 \name{data.extremes}
 \alias{data.extremes}
-\title{Reactive value extracting the extreme event of a time series
-and all input.}
+\title{Extracting extremes in the Climex app}
 \usage{
 data.extremes(reactive.selection, radioEvdStatistics, sliderBlockLength,
   sliderThreshold, checkboxDecluster, deseasonalize.interactive,
@@ -38,14 +37,14 @@ from a given time series. \code{\link{deseasonalize.interactive}}}
 \item{selectDeseasonalize}{Character (select) input determining which
 deseasonalization method should be used to remove the short-range
 correlations from the provided time series.
-\code{\link{deseasonalizeInput}}}
+\code{\link{deseasonalizeSelectionInput}}}
 
 \item{selectDataBase}{Character (select) input to determine the data
 source. In the default installation there are three options:
 c( "Input", "DWD", "Artificial data" ). The first one uses the data
 provided as an argument to the call of the \code{\link{climex}}
 function. The second one uses the database of the German weather
-service (see \code{link{download.data.dwd}}). The third one allows
+service (see \code{\link{download.data.dwd}}). The third one allows
 the user to produce random numbers distributed according to the GEV
 or GP distribution. Determined by menuSelectDataBase.
 Default = "DWD".}
@@ -73,6 +72,10 @@ will be NULL.}
 Reactive value containing a names list of the extracted
 extreme events, the deseasonalized and pure time series. All three
 are of class 'xts'.
+}
+\description{
+Reactive value extracting the extreme event of a time
+  series and all input.
 }
 \details{
 First this reactive value will use reactive.selection to

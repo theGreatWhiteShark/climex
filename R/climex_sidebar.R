@@ -1,8 +1,10 @@
 ### Contains all modules associated with the sidebar of the climex app.
 
-##' @title Selecting the database
-##' @details Provides the shinydashboard::menuItemOutput for \code{\link{
-##' sidebarDataBase}}. See the later one for details.
+##' @title Selecting the database in the Climex app
+##' @description Selecting the database.
+##' @details Provides the \code{\link[shinydashboard]{menuItemOutput}}
+##'   for \code{\link{sidebarDataBase}}. See the later one for
+##'   details. 
 ##'
 ##' @importFrom shinydashboard menuItemOutput
 ##'
@@ -14,18 +16,20 @@ sidebarDataBaseInput <- function(){
   menuItemOutput( "sidebarDataBase" )
 }
 
-##' @title Selecting the database
+##' @title Selecting the database in the Climex app
+##' @description Selecting the database.
 ##' @details For now there are three different data sources you can
-##' choose:the input provided when calling climex::climex() on localhost
-##' or a file loaded via the sidebar, the station data of the German
-##' weather service (DWD) and artificial data sampled from a GEV
-##' distribution. When the climex app is used with the shiny-server, the
-##' input option will be disabled. Beware: it's not a true module! Using
-##' the namespaces does not really make sense because it has to be
-##' accessed from outside of this context.
+##' choose:the input provided when calling \code{\link{climex}}() on
+##'   localhost or a file loaded via the sidebar, the station data of
+##'   the German weather service (DWD) and artificial data sampled
+##'   from a GEV distribution. When the climex app is used with the
+##'   shiny-server, the input option will be disabled. Beware: it's
+##'   not a true module! Using the namespaces does not really make
+##'   sense because it has to be accessed from outside of this
+##'   context. 
 ##'
 ##' @param session Namespace session. For details check out
-##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html}}
+##' \url{http://shiny.rstudio.com/articles/modules.html}
 ##' 
 ##' @import shiny
 ##'
@@ -49,9 +53,11 @@ sidebarDataBase <- function( session ){
   } )
 }
 
-##' @title Sidebar menu selection
-##' @details Provides the shinydashboard::menuItemOutput for \code{\link{
-##' sidebarDataSource}}. See the later one for details
+##' @title Sidebar menu selection in the Climex app
+##' @description Sidebar menu selection.
+##' @details Provides the \code{\link[shinydashboard]{menuItemOutput}}
+##'   for \code{\link{sidebarDataSource}}. See the later one for
+##'   details.
 ##'
 ##' @importFrom shinydashboard menuItemOutput
 ##'
@@ -63,21 +69,22 @@ sidebarDataSourceInput <- function(){
   menuItemOutput( "sidebarDataSource" )
 }
 
-##' @title Sidebar menu selection
+##' @title Sidebar menu selection in the Climex app
+##' @description Sidebar menu selection.
 ##' @details Provides the second selection menu in the sidebar.
 ##' If input$selectDataBase, provided by \code{\link{sidebarDataBase}},
 ##' was set to "Artificial data", the menu will be a numerical input
 ##' slider to provide the location parameter for the GEV or scale
 ##' parameter for the GP distribution. Else it will be a drop down menu
-##' listing the names of all available stations (see \code{\link{
-##' data.chosen}})
+##' listing the names of all available stations (see
+##'   \code{\link{data.chosen}}) 
 ##'
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
@@ -86,10 +93,11 @@ sidebarDataSourceInput <- function(){
 ##' c( "GEV", "GP" ), default = "GEV".
 ##' @param reactive.chosen Reactive value containing a list of the list
 ##' of all provided stations and a data.frame containing the meta data.
-##' @param selected.station Reactive value provided by the \code{\link{
-##' leafletClimex}} function. It contains the name of the station selected
-##' by the user by clicking on the leaflet map. It's provided as a
-##' character and NULL if no click occurred so far. 
+##' @param selected.station Reactive value provided by the
+##'   \code{\link{leafletClimex}} function. It contains the name of
+##'   the station selected by the user by clicking on the leaflet
+##'   map. It's provided as a character and NULL if no click occurred
+##'   so far.  
 ##'
 ##' @import shiny
 ##'
@@ -150,9 +158,11 @@ sidebarDataSource <- function( selectDataBase, radioEvdStatistics,
   } )
 }
 
-##' @title Sidebar menu selection
-##' @details Provides the shinydashboard::menuItemOutput for \code{\link{
-##' sidebarDataType}}. See the later one for details
+##' @title Sidebar menu selection in the Climex app
+##' @description Sidebar menu selection.
+##' @details Provides the \code{\link[shinydashboard]{menuItemOutput}}
+##'   for \code{\link{sidebarDataType}}. See the later one for
+##'   details. 
 ##'
 ##' @importFrom shinydashboard menuItemOutput
 ##'
@@ -164,7 +174,8 @@ sidebarDataTypeInput <- function(){
   menuItemOutput( "sidebarDataType" )
 }
 
-##' @title Sidebar menu selection
+##' @title Sidebar menu selection in the Climex app
+##' @description Sidebar menu selection.
 ##' @details Provides the third selection menu in the sidebar.
 ##' If input$selectDataBase, provided by \code{\link{sidebarDataBase}},
 ##' was set to "Artificial data", the menu will be a numerical input
@@ -177,7 +188,7 @@ sidebarDataTypeInput <- function(){
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
@@ -216,9 +227,11 @@ sidebarDataType <- function( selectDataBase, radioEvdStatistics ){
       NULL } )
 }
 
-##' @title Sidebar menu selection
-##' @details Provides the shinydashboard::menuItemOutput for \code{\link{
-##' sidebarLoading}}. See the later one for details
+##' @title Sidebar menu selection in the Climex app
+##' @description Sidebar menu selection.
+##' @details Provides the \code{\link[shinydashboard]{menuItemOutput}}
+##'   for \code{\link{sidebarLoading}}. See the later one for
+##'   details. 
 ##'
 ##' @importFrom shinydashboard menuItemOutput
 ##'
@@ -230,7 +243,8 @@ sidebarLoadingInput <- function(){
   menuItemOutput( "sidebarLoading" )
 }
 
-##' @title Sidebar menu selection
+##' @title Sidebar menu selection in the Climex app
+##' @description Sidebar menu selection.
 ##' @details Provides the fourth selection menu in the sidebar.
 ##' If input$selectDataBase, provided by \code{\link{sidebarDataBase}},
 ##' was set to "Artificial data", the menu will be a numerical input
@@ -239,13 +253,13 @@ sidebarLoadingInput <- function(){
 ##' additional station data.
 ##'
 ##' @param session Namespace session. For details check out
-##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html}} 
+##' \url{ http://shiny.rstudio.com/articles/modules.html}
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
@@ -280,9 +294,11 @@ sidebarLoading <- function( session, selectDataBase,
   } )
 }
 
-##' @title Toggling the cleaning of the time series.
-##' @details Provides the shinydashboard::menuItemOutput for \code{\link{
-##' sidebarCleaning}}. See the later one for details.
+##' @title Data cleaning in the Climex app
+##' @description Toggling the cleaning of the time series.
+##' @details Provides the \code{\link[shinydashboard]{menuItemOutput}}
+##'   for \code{\link{sidebarCleaning}}. See the later one for
+##'   details. 
 ##'
 ##' @importFrom shinydashboard menuItemOutput
 ##'
@@ -294,7 +310,8 @@ sidebarCleaningInput <- function(){
   uiOutput( "sidebarCleaning" )
 }
 
-##' @title Toggling the cleaning of the time series
+##' @title Data cleaning in the Climex app
+##' @description Toggling the cleaning of the time series
 ##' @details A checkbox input. If toggled and the GEV distribution was
 ##' chosen via input$radioEvdStatistics, all incomplete years will be
 ##' removed from the time series. If on the other hand the GP
@@ -309,7 +326,7 @@ sidebarCleaningInput <- function(){
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
@@ -347,9 +364,11 @@ sidebarCleaning <- function( radioEvdStatistics, selectDataBase ){
   })
 }
 
-##' @title Slider to determine the length of an artificial time series
-##' @details Provides the shinydashboard::menuItemOutput for \code{\link{
-##' sidebarSeriesLength}}. See the later one for details
+##' @title Series length in the Climex app
+##' @description Slider to determine the length of an artificial time series
+##' @details Provides the \code{\link[shinydashboard]{menuItemOutput}}
+##'   for \code{\link{sidebarSeriesLength}}. See the later one for
+##'   details.
 ##'
 ##' @importFrom shinydashboard menuItemOutput
 ##'
@@ -361,7 +380,8 @@ sidebarSeriesLengthInput <- function(){
   menuItemOutput( "sidebarSeriesLength" )
 }
 
-##' @title Slider to determine the length of an artificial time series
+##' @title Series length in the Climex app
+##' @description Slider to determine the length of an artificial time series
 ##' @details Numerical slider which will only be displayed when
 ##' "Artificial data" is selected in input$selectDataBase
 ##' 
@@ -370,7 +390,7 @@ sidebarSeriesLengthInput <- function(){
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
@@ -398,11 +418,12 @@ sidebarSeriesLength <- function( selectDataBase ){
   })
 }
 
-##' @title Reactive value selecting an individual time series.
+##' @title Data selection in the Climex app
+##' @description Reactive value selecting an individual time series.
 ##' @details According to the choice in input$selectDataBase an
 ##' artificial time series will be sampled or one from a database will be
 ##' selected. For the latter one the reactive value
-##' \code{\link{climex:::data.chosen}} will be constulted. The length of
+##' \code{\link{data.chosen}} will be constulted. The length of
 ##' the generated time series is determined by the
 ##' input$sliderSeriesLength.
 ##'
@@ -417,7 +438,7 @@ sidebarSeriesLength <- function( selectDataBase ){
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
@@ -496,18 +517,18 @@ data.selection <- function( reactive.chosen, selectDataSource,
         seq( 1, series.length )
       ## Whether to use GEV or GPD data
       if ( is.null( radioEvdStatistics() ) ||
-          radioEvdStatistics() == "GEV" ){
+           radioEvdStatistics() == "GEV" ){
         model <- "gev"
       } else {
         model <- "gpd"
       }
       x.xts <- xts(
-          climex:::revd( n = series.length,
-                        location = sliderArtificialDataLocation(),
-                        scale = sliderArtificialDataScale(),
-                        shape = sliderArtificialDataShape(),
-                        model = model, silent = TRUE,
-                        threshold = 0 ),
+          revd( n = series.length,
+               location = sliderArtificialDataLocation(),
+               scale = sliderArtificialDataScale(),
+               shape = sliderArtificialDataShape(),
+               model = model, silent = TRUE,
+               threshold = 0 ),
           order.by = dates )
     } else {
       ## In all other cases the possible choices are contained in
@@ -528,15 +549,15 @@ data.selection <- function( reactive.chosen, selectDataSource,
           print( "New data source selected." )
         } else
           x.xts <- data.selected[[ 1 ]][[
-            which( names( data.selected[[ 1 ]] ) ==
-              selectDataSource() ) ]]
-      }
-    }
+                     which( names( data.selected[[ 1 ]] ) ==
+                            selectDataSource() ) ]] } }
     return( x.xts )
   } )
 }
 
-##' @title Reactive value listening for a file input via the sidebar
+##' @title File loading in the Climex app
+##' @description Reactive value listening for a file input via the
+##'   sidebar. 
 ##' @details To use this function input$selectDataBase has to be set to
 ##' "Input".
 ##'
@@ -581,8 +602,10 @@ file.loading <- function( fileInputSelection ){
   } )
 }
 
-##' @title Showing a Gif in the sidebar while the app is processing/on hold
-##' @details Rendering of \code{link{sidebarLoadingGif}}.
+##' @title Gif in the Climex app
+##' @description Showing a Gif in the sidebar while the app is
+##'   processing/on hold 
+##' @details Rendering of \code{\link{sidebarLoadingGif}}.
 ##'
 ##' @param id Namespace prefix
 ##'
@@ -600,7 +623,9 @@ sidebarLoadingGifOutput <- function( id ){
       id = "loadingWrapper" )
 } 
 
-##' @title Showing a Gif in the sidebar while the app is processing/on hold
+##' @title Gif in the Climex app
+##' @description Showing a Gif in the sidebar while the app is
+##'   processing/on hold 
 ##' @details This module will display a loading gif. Most of the code of
 ##' this function is already written in a JavaScript script installed
 ##' alongside the climex package. It just determines if the app is run on
@@ -609,7 +634,7 @@ sidebarLoadingGifOutput <- function( id ){
 ##' and the corresponding gif file.
 ##'
 ##' @param input Namespace input. For more details check out
-##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html } }
+##' \url{http://shiny.rstudio.com/articles/modules.html}
 ##' @param output Namespace output.
 ##' @param session Namespace session.
 ##'
@@ -640,11 +665,12 @@ sidebarLoadingGif <- function( input, output, session ){
   } )
 }
 
-##' @title Linking the imprint of the climex application
+##' @title Imprint of the Climex app
+##' @description Linking the imprint of the climex application
 ##' @details Whenever the web app is run using shiny-server a link to
 ##' an arbitrary HTML page (preferably an imprint) will be rendered.
 ##' Else just an empty div will be added.
-##' Rendering of \code{link{sidebarImprint}}.
+##' Rendering of \code{\link{sidebarImprint}}.
 ##'
 ##' @family sidebar
 ##'
@@ -656,13 +682,14 @@ sidebarImprintInput <- function(){
   menuItemOutput( "sidebarImprint" )
 }
 
-##' @title Linking the imprint of the climex application
+##' @title Imprint of the Climex app
+##' @description Linking the imprint of the climex application
 ##' @details Whenever the web app is run using shiny-server a link to
 ##' an arbitrary HTML page (preferably an imprint) will be rendered.
 ##' Else just an empty div will be added.
 ##'
 ##' @param session Namespace session. For details check out
-##' \link{ \url{ http://shiny.rstudio.com/articles/modules.html}} 
+##' \url{http://shiny.rstudio.com/articles/modules.html}
 ##'
 ##' @family sidebar
 ##'

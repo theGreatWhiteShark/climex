@@ -2,9 +2,7 @@
 % Please edit documentation in R/import.R
 \name{download.data.dwd}
 \alias{download.data.dwd}
-\title{Downloads daily weather data from observation stations in
-Germany and extracts minimum and maximum temperature as well as
-precipitation data.}
+\title{Downloads data of the DWD}
 \usage{
 download.data.dwd(save.downloads = TRUE, csv.export = FALSE,
   data.type = c("default", "temp.max", "temp.min", "prec", "temp.mean",
@@ -45,6 +43,11 @@ options( climex.path = "PATH" ) to your .Rprofile path in your home.}
 }
 \value{
 invisible setwd()
+}
+\description{
+Downloads daily weather data from observation
+  stations in Germany and extracts minimum and maximum temperature
+  as well as precipitation data.
 }
 \details{
 The download will be done using 'wget'. Per default the

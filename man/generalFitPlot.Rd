@@ -2,8 +2,7 @@
 % Please edit documentation in R/climex_plotting.R
 \name{generalFitPlot}
 \alias{generalFitPlot}
-\title{Box containing the plot of the performed GEV/GP fitting as well
-as three goodness-of-fit plots.}
+\title{Plot of the fits in the Climex app}
 \usage{
 generalFitPlot(input, output, session, reactive.extreme, reactive.rows,
   reactive.fitting, buttonMinMax, radioEvdStatistics, function.get.y.label,
@@ -11,7 +10,7 @@ generalFitPlot(input, output, session, reactive.extreme, reactive.rows,
 }
 \arguments{
 \item{input}{Namespace input. For more details check out
-\link{ \url{ http://shiny.rstudio.com/articles/modules.html } }}
+\url{http://shiny.rstudio.com/articles/modules.html}}
 
 \item{output}{Namespace output.}
 
@@ -19,12 +18,17 @@ generalFitPlot(input, output, session, reactive.extreme, reactive.rows,
 
 \item{reactive.extreme}{Reactive value containing a list of the
 extracted extreme events of a time series, the deseasonalized and the
-pure version of this very time series. All three elements are provided
-as class 'xts'.}
+pure version of this very time series. All three elements are
+  provided as class 'xts'.}
 
-\item{reactive.rows}{Reactive value holding a logical vector indicating
-which values of the time series provided by \code{\link{data.extremes}}
-to use after clicking and brushing.}
+\item{reactive.rows}{Reactive value holding a logical vector
+indicating which values of the time series provided by
+\code{\link{data.extremes}} to use after clicking and brushing.}
+
+\item{reactive.fitting}{Reactive value containing the results of the
+fit (\code{\link{fit.gev}} or \code{\link{fit.gpd}} depending on
+radioEvdStatistic) to the blocked time series in
+reactive.extreme()[[ 1 ]].}
 
 \item{buttonMinMax}{Character (radio) input determining whether
 the GEV/GP distribution shall be fitted to the smallest or biggest
@@ -45,7 +49,7 @@ source. In the default installation there are three options:
 c( "Input", "DWD", "Artificial data" ). The first one uses the data
 provided as an argument to the call of the \code{\link{climex}}
 function. The second one uses the database of the German weather
-service (see \code{link{download.data.dwd}}). The third one allows
+service (see \code{\link{download.data.dwd}}). The third one allows
 the user to produce random numbers distributed according to the GEV
 or GP distribution. Determined by menuSelectDataBase.
 Default = "DWD".}
@@ -63,6 +67,10 @@ time series (rounded). Default: 0.8* the upper end point.}
 }
 \value{
 Nothing in particular.
+}
+\description{
+Box containing the plot of the performed GEV/GP
+  fitting as well as three goodness-of-fit plots.
 }
 \details{
 All four plots are rendered using the ggplot2 package.

@@ -2,8 +2,7 @@
 % Please edit documentation in R/opti.R
 \name{likelihood.gradient}
 \alias{likelihood.gradient}
-\title{Calculates the gradient of the negative log likelihood of the
-GEV or GPD function.}
+\title{Gradient of the likelihood of the GEV and GP distribution}
 \usage{
 likelihood.gradient(parameters, x.in, model = c("gev", "gpd"))
 }
@@ -23,8 +22,9 @@ Numerical vector containing the derivative of the negative
 log-likelihood in (location, scale, shape for GEV) or (scale,
 shape for GPD) direction.
 }
-\details{
-
+\description{
+Calculates the gradient of the negative log
+  likelihood of the GEV or GPD function.
 }
 \seealso{
 Other optimization: \code{\link{fit.gev}},

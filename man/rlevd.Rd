@@ -2,8 +2,7 @@
 % Please edit documentation in R/extremes.R
 \name{rlevd}
 \alias{rlevd}
-\title{Internal function to calculate the return level of GEV or GP
-distribution.}
+\title{Return level calculation}
 \usage{
 rlevd(period, location = NULL, scale = NULL, shape = NULL,
   threshold = NULL, model = c("gev", "gpd"), silent = FALSE)
@@ -29,10 +28,14 @@ Default = "gev".}
 \value{
 Numerical vector of the same length as 'period'.
 }
+\description{
+Internal function to calculate the return level of
+  GEV or GP distribution.
+}
 \details{
 Port from the extRemes package to ensure compatibility and
 to make the threshold argument obligatory. This is just for internal
-usage. Please use the \link{\code{return.level}} function instead!
+usage. Please use the \code{\link{return.level}} function instead!
 }
 \seealso{
 Other extremes: \code{\link{block}},

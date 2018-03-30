@@ -87,7 +87,7 @@ This argument is needed to calculate the standard error of the
 return level via the delta method of the MLE in the GPD model.
 Default = NULL.}
 
-\item{thresholded.time.series}{Time series used with \code{link{fit.gpd}}
+\item{thresholded.time.series}{Time series used with \code{\link{fit.gpd}}
 on which already a threshold (the one supplied here as well) was
 applied. Necessary to transform the return level for numerical input
 and the GPD model from m-th observation return level to annual return
@@ -102,15 +102,19 @@ one can also disable it. Default = FALSE.}
 A list containing the estimates "return.level" and their
   standard errors "error".
 }
+\description{
+Calculate arbitrary return level and their error
+  estimates for GEV and GP distributions.
+}
 \details{
-Uses the \code{\link{levd}} function at its core (a port from
-the \pkg{extRemes} package) but also can handle the outputs of the
-\code{\link{fit.gev}} and \code{\link{fit.gpd}} function, is capable
-of calculating numerous return levels at once and also calculates the
-errors of the return levels. For the errors the ML fit is using the
-option hessian=TRUE (if not done already) or uses a Monte Carlo based
-approach. If no fitting object is provided, no errors will be
-calculated.
+Uses the \code{\link{rlevd}} function at its core (a port
+  from the \pkg{extRemes} package) but also can handle the outputs
+  of the \code{\link{fit.gev}} and \code{\link{fit.gpd}} function,
+  is capable of calculating numerous return levels at once and
+  also calculates the errors of the return levels. For the errors
+  the ML fit is using the option hessian=TRUE (if not done
+  already) or uses a Monte Carlo based approach. If no fitting
+  object is provided, no errors will be calculated.
 }
 \examples{
 fit.results <- fit.gev( block( anomalies( temp.potsdam ) ) )

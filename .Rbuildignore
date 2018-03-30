@@ -1,5 +1,4 @@
 .gitignore
 ^.git$
-^NEWS.md$
-^res$
-^README.md$
+^cran-comments.md$
+^.travis.yml$

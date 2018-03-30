@@ -2,12 +2,23 @@
 % Please edit documentation in R/shiny_base.R
 \name{climex.server}
 \alias{climex.server}
-\title{Server-side part of the \code{\link{climex}} function.}
+\title{The Climex app server}
 \usage{
 climex.server(input, output, session)
 }
+\arguments{
+\item{input}{Namespace input. For more details check out
+\url{http://shiny.rstudio.com/articles/modules.html}}
+
+\item{output}{Namespace output.}
+
+\item{session}{Namespace session.}
+}
 \value{
 Function acting as the shiny server.
+}
+\description{
+Server-side part of the \code{\link{climex}} function.
 }
 \details{
 Since it grew organically most of the features are defined
@@ -16,7 +27,8 @@ climex.server and the climex.ui function? Since in this way I can
 provide a local and a server side variant of the code which is
 maintained in the same place. I do not really like the idea of
 installing the newest version of the code from Github and than
-copy/pasting the code in some files somewhere in /srv/shiny-server.
+copy/pasting the code in some files somewhere in
+  /srv/shiny-server.
 }
 \seealso{
 Other climex: \code{\link{climex.ui}}, \code{\link{climex}}

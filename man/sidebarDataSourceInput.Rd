@@ -2,16 +2,20 @@
 % Please edit documentation in R/climex_sidebar.R
 \name{sidebarDataSourceInput}
 \alias{sidebarDataSourceInput}
-\title{Sidebar menu selection}
+\title{Sidebar menu selection in the Climex app}
 \usage{
 sidebarDataSourceInput()
 }
 \value{
 menuItemOutput
 }
+\description{
+Sidebar menu selection.
+}
 \details{
-Provides the shinydashboard::menuItemOutput for \code{\link{
-sidebarDataSource}}. See the later one for details
+Provides the \code{\link[shinydashboard]{menuItemOutput}}
+  for \code{\link{sidebarDataSource}}. See the later one for
+  details.
 }
 \seealso{
 Other sidebar: \code{\link{data.selection}},

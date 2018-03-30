@@ -1,9 +1,11 @@
 ### Mostly functions associated with preprocessing the individual time
 ### series. Most of those steps can be controlled via the General tab
 
-##' @title Extract the extreme events from a given time series.
-##' @details Provides the shinydashboard::menuItemOutput for \code{\link{
-##' generalExtremeExtraction}}. See the later one for details.
+##' @title Extracting extreme events in the Climex app
+##' @description Extract the extreme events from a given time series.
+##' @details Provides the \code{\link[shinydashboard]{menuItemOutput}}
+##'   for \code{\link{generalExtremeExtraction}}. See the later one
+##'   for details. 
 ##'
 ##' @importFrom shinydashboard menuItemOutput
 ##'
@@ -15,7 +17,8 @@ generalExtremeExtractionInput <- function(){
   menuItemOutput( "generalExtremeExtraction" )
 }
 
-##' @title Extract the extreme events from a given time series.
+##' @title Extracting extreme events in the Climex app
+##' @description Extract the extreme events from a given time series.
 ##' @details Provides a slider input to determine either the block length
 ##' (in case of the GEV distribution) or the height of the threshold (GP)
 ##' 
@@ -23,11 +26,11 @@ generalExtremeExtractionInput <- function(){
 ##' the GEV or GP distribution shall be fitted to the data. Choices:
 ##' c( "GEV", "GP" ), default = "GEV".
 ##' @param deseasonalize.interactive Function used to remove seasonality
-##' from a given time series. \code{link{deseasonalize.interactive}}
+##' from a given time series. \code{\link{deseasonalize.interactive}}
 ##' @param selectDeseasonalize Character (select) input determining which
 ##' deseasonalization method should be used to remove the short-range
 ##' correlations from the provided time series.
-##' \code{\link{deseasonalizeInput}}
+##' \code{\link{deseasonalizeSelectionInput}}
 ##' @param buttonMinMax Character (radio) input determining whether
 ##' the GEV/GP distribution shall be fitted to the smallest or biggest
 ##' vales. Choices: c( "Max", "Min ), default = "Max".
@@ -39,7 +42,7 @@ generalExtremeExtractionInput <- function(){
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
@@ -99,7 +102,8 @@ generalExtremeExtraction <- function( radioEvdStatistics,
   } )
 }
 
-##' @title Function to get rid of artifacts within the Climex app
+##' @title Cleaning data in the Climex app
+##' @description Function to get rid of artifacts within the Climex app
 ##' @details The app does two things: First it replaces all -999 and NaN
 ##' in the time series by NaN (the former is the default indicator in
 ##' the data of the German weather service for missing values).
@@ -143,12 +147,13 @@ cleaning.interactive <- function( x.xts, checkboxIncompleteYears,
     return( x.xts )
 }
 
-##' @title Whether to determine the minimal or maximal extremes.
+##' @title Minimum or maximum extremes in the Climex app
+##' @description Whether to determine the minimal or maximal extremes.
 ##' @details Not a real shiny module, since I have to use this select
 ##' input outside its namespace. Provides the
-##' shinydashboard::menuItemOutput for \code{\link{
-##' generalButtonMinMaxInput}}
-##' 
+##' \code{\link[shinydashboard]{menuItemOutput}} for
+##'   \code{\link{generalButtonMinMaxInput}}
+##'  
 ##' @importFrom shinydashboard menuItemOutput
 ##'
 ##' @family preprocessing
@@ -158,7 +163,8 @@ cleaning.interactive <- function( x.xts, checkboxIncompleteYears,
 generalButtonMinMaxInput <- function(){
   uiOutput( "generalButtonMinMax" )
 }
-##' @title Whether to determine the minimal or maximal extremes.
+##' @title Minimum or maximum extremes in the Climex app
+##' @description Whether to determine the minimal or maximal extremes.
 ##' @details Not a real shiny module, since I have to use this select
 ##' input outside its namespace. Only when input$radioEvdStatistics
 ##' is set of "GEV" the minimal extremes scan be used.
@@ -202,11 +208,12 @@ generalButtonMinMax <- function( radioEvdStatistics, selectDataType ){
   } )
 }
 
-##' @title Removing the seasonality.
+##' @title Removing the seasonality in the Climex app
+##' @description Removing the seasonality.
 ##' @details Not a real shiny module, since I have to use this select
 ##' input outside its namespace. Provides the
-##' shinydashboard::menuItemOutput for \code{\link{
-##' deseasonalizeSelection}}
+##' \code{\link[shinydashboard]{menuItemOutput}} for
+##'   \code{\link{deseasonalizeSelection}} 
 ##' 
 ##' @importFrom shinydashboard menuItemOutput
 ##'
@@ -218,7 +225,8 @@ deseasonalizeSelectionInput <- function(){
   menuItemOutput( "deseasonalizeSelection" )
 }
 
-##' @title Removing the seasonality.
+##' @title Removing the seasonality in the Climex app
+##' @description Removing the seasonality.
 ##' @details Not a real shiny module, since I have to use this select
 ##' input outside its namespace.
 ##'
@@ -227,7 +235,7 @@ deseasonalizeSelectionInput <- function(){
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".
@@ -253,15 +261,16 @@ deseasonalizeSelection <- function( selectDataBase ){
   })
 }
 
-##' @title Function for removing the seasonality of a given time series
-##' within the Climex app.
+##' @title Removing seasonality in the Climex app
+##' @description Function for removing the seasonality of a given time
+##'   series within the Climex app.
 ##'
 ##' @param x.xts Time series of class 'xts' which has to be cleaned.
 ##' @param selectDeseasonalize Character (select) input determining which
 ##' deseasonalization method should be used to remove the short-range
 ##' correlations from the provided time series.
-##' \code{\link{deseasonalizeInput}}. If NULL climex::anomalies will be
-##' used.
+##' \code{\link{deseasonalizeSelectionInput}}. If NULL \code{\link{anomalies}}
+##'   will be used.
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
@@ -292,7 +301,7 @@ deseasonalize.interactive <- function( x.xts, selectDeseasonalize,
     ## removing the values won't make then run correctly. But the user
     ## is warned to remove the incomplete years.
     if ( any( is.na( x.xts ) ) ){
-      x.no.nan <- na.omit( x.xts )
+      x.no.nan <- stats::na.omit( x.xts )
     } else {
       x.no.nan <- x.xts
     }
@@ -357,13 +366,15 @@ deseasonalize.interactive <- function( x.xts, selectDeseasonalize,
       ## deseasonalization methods themselves produce them. It's a
       ## dirty solution, but just omitting them and informing the user
       ## will work for now.
-      x.deseasonalized <- na.omit( x.deseasonalized )
+      x.deseasonalized <- stats::na.omit( x.deseasonalized )
       print( "NaNs produced during the deseasonalization." )
     }
     return( x.deseasonalized )
 }
 
-##' @title Function to extract the extreme event from a time series.
+##' @title Extracting extreme events in the Climex app
+##' @description Function to extract the extreme event from a time
+##'   series. 
 ##' @details If the input$radioEvdStatistics is set to "GEV" the time
 ##' series will be block. If it's on the other hand set to "GP", all
 ##' values above a certain threshold will be extracted.
@@ -439,8 +450,9 @@ extremes.interactive <- function( x.xts, buttonMinMax,
   }
 }
 
-##' @title Reactive value extracting the extreme event of a time series
-##' and all input.
+##' @title Extracting extremes in the Climex app
+##' @description Reactive value extracting the extreme event of a time
+##'   series and all input.
 ##' @details First this reactive value will use reactive.selection to
 ##' obtain the time series it shall be working on. Afterwards it applies
 ##' both deseasonalize.interactive and extremes.interactive to this time
@@ -468,13 +480,13 @@ extremes.interactive <- function( x.xts, buttonMinMax,
 ##' @param selectDeseasonalize Character (select) input determining which
 ##' deseasonalization method should be used to remove the short-range
 ##' correlations from the provided time series.
-##' \code{\link{deseasonalizeInput}}
+##' \code{\link{deseasonalizeSelectionInput}}
 ##' @param selectDataBase Character (select) input to determine the data
 ##' source. In the default installation there are three options:
 ##' c( "Input", "DWD", "Artificial data" ). The first one uses the data
 ##' provided as an argument to the call of the \code{\link{climex}}
 ##' function. The second one uses the database of the German weather
-##' service (see \code{link{download.data.dwd}}). The third one allows
+##' service (see \code{\link{download.data.dwd}}). The third one allows
 ##' the user to produce random numbers distributed according to the GEV
 ##' or GP distribution. Determined by menuSelectDataBase.
 ##' Default = "DWD".

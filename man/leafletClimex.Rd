@@ -2,19 +2,18 @@
 % Please edit documentation in R/climex_leaflet.R
 \name{leafletClimex}
 \alias{leafletClimex}
-\title{Leaflet interfaces to select stations or visualize spacial
-information.}
+\title{Leaflet interface in Climex app}
 \usage{
 leafletClimex(input, output, session, reactive.chosen, buttonMinMax,
   radioEvdStatistics, sliderYears, reactive.extreme, reactive.fitting,
   sliderThreshold, fit.interactive, cleaning.interactive,
   deseasonalize.interactive, extremes.interactive, selectDataSource,
   checkboxIncompleteYears, checkboxDecluster, selectDeseasonalize,
-  sliderBlockLength, selectDataBase)
+  sliderBlockLength, selectDataBase, climex.environment)
 }
 \arguments{
 \item{input}{Namespace input. For more details check out
-\link{ \url{ http://shiny.rstudio.com/articles/modules.html } }}
+\url{http://shiny.rstudio.com/articles/modules.html}}
 
 \item{output}{Namespace output.}
 
@@ -37,8 +36,8 @@ is 0 and maximal is 155 (longest one in the DWD database), the
 default value is 65 and the step width is 1.}
 
 \item{reactive.extreme}{Reactive value returning a list containing
-three elements: 1. the blocked time series, 2. the deseasonalized time
-series, and 3. the pure time series.}
+three elements: 1. the blocked time series, 2. the deseasonalized
+  time series, and 3. the pure time series.}
 
 \item{reactive.fitting}{Reactive value containing the results of the
 fit (\code{\link{fit.gev}} or \code{\link{fit.gpd}} depending on
@@ -84,7 +83,7 @@ input$radioEvdStatistics == "GP" and else will be NULL.}
 \item{selectDeseasonalize}{Character (select) input determining which
 deseasonalization method should be used to remove the short-range
 correlations from the provided time series.
-\code{\link{deseasonalizeInput}}}
+\code{\link{deseasonalizeSelectionInput}}}
 
 \item{sliderBlockLength}{Numerical (slider) input determining the
 block length used in the GEV flavor of extreme value theory. On
@@ -95,13 +94,22 @@ source. In the default installation there are three options:
 c( "Input", "DWD", "Artificial data" ). The first one uses the data
 provided as an argument to the call of the \code{\link{climex}}
 function. The second one uses the database of the German weather
-service (see \code{link{download.data.dwd}}). The third one allows
+service (see \code{\link{download.data.dwd}}). The third one allows
 the user to produce random numbers distributed according to the GEV
 or GP distribution. Determined by menuSelectDataBase.
 Default = "DWD".}
+
+\item{climex.environment}{Environment containing the global
+variables used within the climex app. Namely the last values
+displayed in the table and the lists containing the station
+data.}
 }
 \value{
 Reactive value holding the selected station.
+}
+\description{
+Leaflet interfaces to select stations or visualize
+  spacial information.
 }
 \details{
 This module provides an interactive map to display the

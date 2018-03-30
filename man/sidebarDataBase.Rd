@@ -2,26 +2,30 @@
 % Please edit documentation in R/climex_sidebar.R
 \name{sidebarDataBase}
 \alias{sidebarDataBase}
-\title{Selecting the database}
+\title{Selecting the database in the Climex app}
 \usage{
 sidebarDataBase(session)
 }
 \arguments{
 \item{session}{Namespace session. For details check out
-\link{ \url{ http://shiny.rstudio.com/articles/modules.html}}}
+\url{http://shiny.rstudio.com/articles/modules.html}}
 }
 \value{
 renderMenu
 }
+\description{
+Selecting the database.
+}
 \details{
 For now there are three different data sources you can
-choose:the input provided when calling climex::climex() on localhost
-or a file loaded via the sidebar, the station data of the German
-weather service (DWD) and artificial data sampled from a GEV
-distribution. When the climex app is used with the shiny-server, the
-input option will be disabled. Beware: it's not a true module! Using
-the namespaces does not really make sense because it has to be
-accessed from outside of this context.
+choose:the input provided when calling \code{\link{climex}}() on
+  localhost or a file loaded via the sidebar, the station data of
+  the German weather service (DWD) and artificial data sampled
+  from a GEV distribution. When the climex app is used with the
+  shiny-server, the input option will be disabled. Beware: it's
+  not a true module! Using the namespaces does not really make
+  sense because it has to be accessed from outside of this
+  context.
 }
 \seealso{
 Other sidebar: \code{\link{data.selection}},

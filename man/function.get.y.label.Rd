@@ -2,8 +2,7 @@
 % Please edit documentation in R/climex_plotting.R
 \name{function.get.y.label}
 \alias{function.get.y.label}
-\title{Determines the propoper label of the y label of the plots in
-the General tab of the Climex app.}
+\title{y plot labels in the Climex app}
 \usage{
 function.get.y.label(selectDataBase, selectDataType)
 }
@@ -13,7 +12,7 @@ source. In the default installation there are three options:
 c( "Input", "DWD", "Artificial data" ). The first one uses the data
 provided as an argument to the call of the \code{\link{climex}}
 function. The second one uses the database of the German weather
-service (see \code{link{download.data.dwd}}). The third one allows
+service (see \code{\link{download.data.dwd}}). The third one allows
 the user to produce random numbers distributed according to the GEV
 or GP distribution. Determined by menuSelectDataBase.
 Default = "DWD".}
@@ -26,6 +25,10 @@ Determined by menuSelectDataType.}
 }
 \value{
 Character
+}
+\description{
+Determines the propoper label of the y label of the
+  plots in the General tab of the Climex app.
 }
 \details{
 It's more or less just the input$selectDataType being

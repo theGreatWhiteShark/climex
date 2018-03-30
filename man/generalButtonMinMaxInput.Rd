@@ -2,18 +2,21 @@
 % Please edit documentation in R/climex_preprocessing.R
 \name{generalButtonMinMaxInput}
 \alias{generalButtonMinMaxInput}
-\title{Whether to determine the minimal or maximal extremes.}
+\title{Minimum or maximum extremes in the Climex app}
 \usage{
 generalButtonMinMaxInput()
 }
 \value{
 menuItemOutput
 }
+\description{
+Whether to determine the minimal or maximal extremes.
+}
 \details{
 Not a real shiny module, since I have to use this select
 input outside its namespace. Provides the
-shinydashboard::menuItemOutput for \code{\link{
-generalButtonMinMaxInput}}
+\code{\link[shinydashboard]{menuItemOutput}} for
+  \code{\link{generalButtonMinMaxInput}}
 }
 \seealso{
 Other preprocessing: \code{\link{cleaning.interactive}},

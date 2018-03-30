@@ -1,6 +1,7 @@
-##' @title Downloads daily weather data from observation stations in
-##' Germany and extracts minimum and maximum temperature as well as
-##' precipitation data.
+##' @title Downloads data of the DWD
+##' @description Downloads daily weather data from observation
+##'   stations in Germany and extracts minimum and maximum temperature
+##'   as well as precipitation data.
 ##'
 ##' @details The download will be done using 'wget'. Per default the
 ##' climex.path variable from the getOption( "climex.path" ) will be
@@ -72,7 +73,7 @@ download.data.dwd <- function( save.downloads = TRUE,
   old.dir <- getwd()
   ## If the folder does not exists yet, create it.
   if ( !dir.exists( download.path ) ){
-    system2( "mkdir", args = paste( "-p", download.path ) )
+    dir.create( download.path, recursive = TRUE )
   }
   setwd( download.path ) 
   ## paths on the DWD servers
@@ -216,17 +217,17 @@ download.data.dwd <- function( save.downloads = TRUE,
   ## since its not possible to have ensure the correct encoding while
   ## importing the artifacts have to be replaced by hand
   file.d.1 <- lapply( file.description.aux, function( x )
-    gsub( "\xfc", "ü", x ) )
+    gsub( "\xfc", "\uFC", x ) )
   file.d.2 <- lapply( file.d.1, function( x )
-    gsub( "\xf6", "ö", x ) ) 
+    gsub( "\xf6", "\uF6", x ) ) 
   file.d.3 <- lapply( file.d.2, function( x )
-    gsub( "\xe4", "ä", x ) )  
+    gsub( "\xe4", "\uE4", x ) )  
   file.d.4 <- lapply( file.d.3, function( x )
-    gsub( "\xdf", "ß", x ) )  
+    gsub( "\xdf", "\uDF", x ) )  
   file.d.5 <- lapply( file.d.4, function( x )
-    gsub( "\U3e63643c", "Ü", x ) )  
+    gsub( "\U3e63643c", "\uDC", x ) )  
   file.description <- lapply( file.d.5, function( x )
-    gsub( "\U3e36643c", "Ö", x ) )      
+    gsub( "\U3e36643c", "\uD6", x ) )      
 
   ## extract a vector of all unique station IDs seen in the .zip files
   list.station.ids <- as.list( unique( c(
@@ -317,43 +318,38 @@ download.data.dwd <- function( save.downloads = TRUE,
     if ( flag.recent ){
       ## sometimes there is a single delimiter symbol in the last line.
       ## This causes the read.table function to throw a warning and, if
-      ## the file to read just consists of one line, to fail and has to
-      ## be avoided check how many characters are present in the last
-      ## line
-      contains.delimiter.recent <- as.numeric(
-          system( paste( "tail -1", recent.file, "| wc -w" ),
-                 intern = TRUE ) ) == 0
+      ## the file to read just consists of one line, to
+      ## fail. Therefore it has to be avoided by checking how many
+      ## characters are present in the last line.
+      recent.file.read.lines <- readLines( recent.file )
+      contains.delimiter.recent <-
+        nchar( recent.file.read.lines[
+            length( recent.file.read.lines ) ] ) < 10
       if ( contains.delimiter.recent ){
-        ## calls "wc" via bash and counts the lines of the file to read
-        ## in
-        number.of.lines.recent <- as.numeric(
-            system( paste( "wc -l", recent.file, "| awk '{print $1}'" ),
-                   intern = TRUE ) )
         ## only the last line with the potential delimiter will be
         ## omitted minus two because of the omitted header
-        data.ii <- utils::read.table( recent.file, header = TRUE,
-                                     sep = ";",
-                                     nrows = ( number.of.lines.recent -
-                                               2 ) )
-      } else
+        data.ii <-
+          utils::read.table(
+                     recent.file, header = TRUE, sep = ";",
+                     nrows = ( length( recent.file.read.lines ) - 2 ) )
+      } else {
         data.ii <- utils::read.table( recent.file, header = TRUE,
                                      sep = ";" )
+      }
       if ( flag.historical ){
-        contains.delimiter.historical <- as.numeric(
-            system( paste( "tail -1", historical.file, "| wc -w" ),
-                   intern = TRUE ) ) == 0
+        hist.file.read.lines <- readLines( historical.file )
+        contains.delimiter.historical <-
+          nchar( hist.file.read.lines[
+              length( hist.file.read.lines ) ] ) < 10
         if ( contains.delimiter.historical ){
-          number.of.lines.hist <- as.numeric(
-              system( paste( "wc -l", historical.file,
-                            "| awk '{print $1}'" ),
-                     intern = TRUE ) )
-          data.hist <- utils::read.table( historical.file, header = TRUE,
-                                         sep = ";",
-                                         nrows = number.of.lines.hist -
-                                           2 )
-        } else
+          data.hist <-
+            utils::read.table(
+                       historical.file, header = TRUE, sep = ";",
+                       nrows = ( length( hist.file.read.lines ) - 2 ) )
+        } else {
           data.hist <- utils::read.table( historical.file, header = TRUE,
                                          sep = ";" )
+        }
         ## in most cases some data of the recent observations are also
         ## included in the historical ones. But we of course don't want
         ## any duplicates
@@ -363,28 +359,27 @@ download.data.dwd <- function( save.downloads = TRUE,
                               data.ii ) )
       }
     } else {
-      contains.delimiter.historical <- as.numeric(
-          system( paste( "tail -1", historical.file, "| wc -w" ),
-                 intern = TRUE ) ) == 0
+      hist.file.read.lines <- readLines( historical.file )
+      contains.delimiter.historical <-
+        nchar( hist.file.read.lines[
+            length( hist.file.read.lines ) ] ) < 10
       if ( contains.delimiter.historical ){
-        number.of.lines.hist <- as.numeric(
-            system( paste( "wc -l", historical.file,
-                          "| awk '{print $1}'" ),
-                   intern = TRUE ) )
-        data.ii <- utils::read.table( historical.file, header = TRUE,
-                                     sep = ";",
-                                     nrows = number.of.lines.hist - 2 )
-      } else
+        data.ii <-
+          utils::read.table(
+                     historical.file, header = TRUE, sep = ";",
+                     nrows = ( length( hist.file.read.lines ) - 2 ) )
+      } else {
         data.ii <- utils::read.table( historical.file, header = TRUE,
                                      sep = ";" )
+      }
     }
     ## delete the auxiliary folders
     unlink( "./TMPrecent/", recursive = TRUE )
     unlink( "./TMPhistorical/", recursive = TRUE )
     ## writing the data into the lists using the xts class
     results.tmp <- xts( data.ii[ , data.column ],
-                       order.by = climex:::convert.date.integer(
-                                               data.ii[ , 2 ] ) )
+                       order.by = convert.date.integer(
+                           data.ii[ , 2 ] ) )
     ## artifacts in the DWD data base are stored as -999
     ## these are converted to NA
     results.tmp[ results.tmp == -999 ] <- NA
@@ -508,7 +503,8 @@ download.data.dwd <- function( save.downloads = TRUE,
 }
 
 
-##' @title Access to the manually imported weather data.
+##' @title Load data of the DWD
+##' @description Access to the manually imported weather data.
 ##' @details Load .RData file generated by
 ##' \code{\link{download.data.dwd}}. This will be done interactively.
 ##' First all .RData files present in the download folder will be
@@ -519,23 +515,22 @@ download.data.dwd <- function( save.downloads = TRUE,
 ##'
 ##' @param pick.default If TRUE it just search for the .RData file with
 ##' "default" in it's name and skips the interactive picking
-##' @param import Specifies if the data should be attached to the
-##' environment the function is called from or to the global one. The
-##' latter is necessary for deploying the app in the shiny server.
-##' Default = "local".
-##' @param download.path Specifies the data will be stored and downloaded
-##' too. It is advised to store it in the path stored in the options(
-##' "climex.path" ),  which is also used for importing the saved data. You
-##' can overwrite its default value of "~/R/climex/" by adding
-##' options( climex.path = "PATH" ) to your .Rprofile path in your home.
+##' @param download.path Specifies the data will be stored and
+##'   downloaded too. It is advised to store it in the path stored in
+##'   the options( "climex.path" ),  which is also used for importing
+##'   the saved data. You can overwrite its default value of
+##'   "~/R/climex/" by adding options( climex.path = "PATH" ) to your
+##'   .Rprofile path in your home.
+##' @param envir Environment the data will be attached to. If
+##'   not specified, the data will be loaded to the environment the
+##'   function is called from. Default = NULL.
 ##' @family import
 ##'  
 ##' @export
 ##' @return Has no specific output but attaches .RData file to search path.
 ##' @author Philipp Mueller
-source.data <- function( pick.default = TRUE,
-                        import = c( "local", "global" ),
-                        download.path = NULL ){
+source.data <- function( pick.default = TRUE, download.path = NULL,
+                        envir = NULL ){
   ## The folder to put all the temporary files of the climex
   ## package in is set in the options(). To modify it,
   ## overwrite the options( climex.path ) in the .Rprofile
@@ -543,10 +538,6 @@ source.data <- function( pick.default = TRUE,
   if ( is.null( download.path ) ){
     download.path <- getOption( "climex.path" )
   }
-  ## save the current path
-  if ( missing( import ) )
-    import <- "local"
-  import <- match.arg( import )
   old.dir <- getwd()
   setwd( paste0( download.path, "downloads_dwd" ) )
   available.files <- grep( ".RData", list.files(), value = TRUE )
@@ -558,10 +549,11 @@ source.data <- function( pick.default = TRUE,
     if ( length( default.file ) == 0 ){
       ## there is no default line. So back to the interactive picking
     } else {
-      if ( import == "global" ){
-        load( file = default.file[ 1 ], envir = .GlobalEnv )
-      } else 
+      if ( is.null( envir ) ){
         load( file = default.file[ 1 ], envir = parent.frame() )
+      } else {
+        load( file = default.file[ 1 ], envir = envir )
+      }
       setwd( old.dir )
       return( invisible() )
     }
@@ -569,10 +561,12 @@ source.data <- function( pick.default = TRUE,
   print( available.files )
   chosen.file <- as.numeric( readline( prompt = "Choose file: " ) )
   print( paste( "loading", available.files[ chosen.file ] ) )
-  if ( import == "global" ){
-    load( file = available.files[ chosen.file ], envir = .GlobalEnv )
-  } else 
-    load( file = available.files[ chosen.file ], envir = parent.frame() )
+  if ( is.null( envir ) ) {
+    load( file = available.files[ chosen.file ],
+         envir = parent.frame() )
+  } else {
+    load( file = available.files[ chosen.file ], envir = envir )
+  } 
   setwd( old.dir )
   invisible( )
 }

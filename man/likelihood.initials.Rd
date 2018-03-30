@@ -2,7 +2,7 @@
 % Please edit documentation in R/opti.R
 \name{likelihood.initials}
 \alias{likelihood.initials}
-\title{Estimates the initial GEV or GPD parameters of a time series.}
+\title{Initial GEV or GP parameters}
 \usage{
 likelihood.initials(x, model = c("gev", "gpd"), use.skewness = TRUE)
 }
@@ -19,6 +19,10 @@ determine the initial shape parameter. Default = TRUE.}
 Numerical vector containing the c( location, scale, shape )
 estimates for method = "gev" or the c( scale, shape ) estimates for
 method = "gpd".
+}
+\description{
+Estimates the initial GEV or GPD parameters of a time
+  series required to start the fitting routine.
 }
 \details{
 Two main methods are used for the estimation: the L-moments

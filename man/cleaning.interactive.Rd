@@ -2,7 +2,7 @@
 % Please edit documentation in R/climex_preprocessing.R
 \name{cleaning.interactive}
 \alias{cleaning.interactive}
-\title{Function to get rid of artifacts within the Climex app}
+\title{Cleaning data in the Climex app}
 \usage{
 cleaning.interactive(x.xts, checkboxIncompleteYears, checkboxDecluster,
   sliderThreshold)
@@ -28,6 +28,9 @@ is only used in declustering the time series.}
 }
 \value{
 Time series of class 'xts'.
+}
+\description{
+Function to get rid of artifacts within the Climex app
 }
 \details{
 The app does two things: First it replaces all -999 and NaN

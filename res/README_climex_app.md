@@ -1,14 +1,3 @@
----
-title: "Usage of the climex web application"
-author: "Philipp Müller"
-date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Usage of the climex web application}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
-
 # About
 This vignette provides an introduction to the climex package's web application run on localhost. It will guide you through both its setup and usage.
 
@@ -54,7 +43,9 @@ Now your R shell will open a server on your computer and the climex app will be 
 
 To **stop the app** just go to your R shell and press Ctrl-c two times in a row.
 
-# Map tab
+# ![map-icon](glyphicons-2-leaf.png) Map tab
+
+![map-screenshot](climex_map.jpeg)
 
 This [leaflet](https://github.com/theGreatWhiteShark/leaflet)-based tab is the default entry point of the climex app and its main purpose is to provide a convenient way of navigation between the data of the different stations. 
 
@@ -80,6 +71,7 @@ Apart from being a selection interface for the station data the **Map** tab feat
   But beware: this can take up to several minutes depending
   an the number of stations displayed! Since all stations selected via the Minimal length slider will be considered in the calculation and not just the ones displayed after zooming in, only a limited amount of stations is supported when running the climex app within a Shiny server.
 
+![map-heatmap-screenshot](climex_heat-map.jpeg)
 
 All the changes to the preprocessing options in the
 **General** tab will be considered while calculating the summary
@@ -95,7 +87,9 @@ Right below all these drop-down menus there is a very important radio button: th
 
 Apart from the time series provided by the German weather service (DWD) you can also perform the analysis on artificial data by selecting *Artificial data* in the **Data base** drop-down menu. Once selected, your time series will be sampled from either the generalized extreme value (GEV) or generalized Pareto (GP) distribution (as chosen within the **Options** box in the **General** tab). You can control the sampling process by adjusting the **Location**, **Scale**, and **Shape** slider for the distribution's parameters and the **Length** one for the number of points to sample from the distribution. Every time you update one of these sliders the time series is getting redrawn. Instead you can also use **Draw** button.
 
-# General tab
+# ![general-icon](glyphicons-42-charts.png) General tab
+
+![general-screenshot](climex_time-series.png)
 
 This tab provides both an interface to change the preprocessing options used throughout the whole application as well as a
 variety of tools to analyze an individual time series. Keep in mind: whenever you change an option within this tab it will affect all the optimization performed in the entire app. 
@@ -169,3 +163,5 @@ ones), you can toggle all the points by clicking them or brush them
 using your mouse. When deactivated they do not contribute to the
 fitting anymore and the optimization is being redone instantly.
 
+---
+Icons: © [Glyphicon](http://glyphicons.com/) [CC-By-SA](https://creativecommons.org/licenses/by-sa/3.0/)

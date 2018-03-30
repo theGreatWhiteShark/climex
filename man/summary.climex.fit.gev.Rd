@@ -2,9 +2,22 @@
 % Please edit documentation in R/utils.R
 \name{summary.climex.fit.gev}
 \alias{summary.climex.fit.gev}
-\title{Summary of the fit results}
+\title{Summarize details}
 \usage{
-\method{summary}{climex.fit.gev}(x)
+\method{summary}{climex.fit.gev}(object, ...)
+}
+\arguments{
+\item{object}{Object of class \strong{climex.fit.gev}.}
+
+\item{...}{Additional parameters. They won't be handled in the
+function. This argument is only present to ensure S3 generic
+consistency with respect to the `summary()` function.}
+}
+\value{
+`invisible()`
+}
+\description{
+Summary of the GEV fit results
 }
 \author{
 Philipp Mueller

@@ -20,13 +20,13 @@
 ##' all squared constrain violations plus an additional term linear in
 ##' the constraint violation to ensure well-conditioning. Using this
 ##' penalty term the problem becomes unconstrained again and can be
-##' solved using \code{\link{stats::optim}}. After each of those inner
+##' solved using \code{\link[stats]{optim}}. After each of those inner
 ##' routines the weighting parameter of the penalty is being increased
 ##' until some convergence conditions are fulfilled.
 ##'
 ##' Since it usually takes just four to five outer iterations this
-##' functions needs only double the time a pure call to the stats::optim
-##' function would need.
+##' functions needs only double the time a pure call to the
+##'   \code{\link[stats]{optim}} function would need.
 ##'
 ##' The negative log-likelihood of the Gumbel distribution is just fitted
 ##' if the shape parameter is exactly equal to zero.
@@ -258,7 +258,6 @@ fit.gev <- function( x, initial = NULL,
               gradient.function = gradient.function,
               error.estimation = "none",
               return.period = return.period,
-              total.length = total.length,
               silent = silent ) } )
     ## Calculate the standard errors of all the fitted return
     ## levels.
@@ -270,7 +269,7 @@ fit.gev <- function( x, initial = NULL,
         xx$return.level ) )
     ## Calculate the standard errors
     errors <- apply( cbind( fitted.parameters,
-                           fitted.return.levels ), 2, sd )
+                           fitted.return.levels ), 2, stats::sd )
     res.optim$se <- errors
   } else { 
     ## MLE and MC error estimation
@@ -308,7 +307,7 @@ fit.gev <- function( x, initial = NULL,
       ## Draw a number of samples and fit the GEV parameters for all
       ## of them
       samples.list <- lapply( 1 : number.of.samples, function( y )
-        climex:::revd( length( x ), location = parameter.estimate[ 1 ],
+        revd( length( x ), location = parameter.estimate[ 1 ],
                       scale = parameter.estimate[ 2 ],
                       shape = parameter.estimate[ 3 ], model = "gev" ) )
       suppressWarnings(
@@ -417,21 +416,21 @@ fit.gev <- function( x, initial = NULL,
 ##' all squared constrain violations plus an additional term linear in
 ##' the constraint violation to ensure well-conditioning. Using this
 ##' penalty term the problem becomes unconstrained again and can be
-##' solved using \code{\link{stats::optim}}. After each of those inner
+##' solved using \code{\link[stats]{optim}}. After each of those inner
 ##' routines the weighting parameter of the penalty is being increased
 ##' until some convergence conditions are fulfilled.
 ##'
 ##' Since it usually takes just four to five outer iterations this
-##' functions needs only double the time a pure call to the stats::optim
-##' function would need.
+##' functions needs only double the time a pure call to the
+##'   \code{\link[stats]{optim}} function would need.
 ##'
-##' The \emph{total.length} argument refers to the length of the original time
-##' series before the thresholding was applied. If present it will be used
-##' to calculate the maximum likelihood estimate of the probability of an
-##' observation to be a threshold exceedance (necessary to determine the
-##' estimation errors for the calculated return levels). Else an
-##' estimator based on mean number of exceedances per year will be
-##' used.
+##'   The \emph{total.length} argument refers to the length of the
+##'   original time series before the thresholding was applied. If
+##'   present it will be used to calculate the maximum likelihood
+##'   estimate of the probability of an observation to be a threshold
+##'   exceedance (necessary to determine the estimation errors for the
+##'   calculated return levels). Else an estimator based on mean
+##'   number of exceedances per year will be used.
 ##'
 ##' If the user instead wants to fit just the exponential distribution
 ##' and not the entire GP distribution, the shape parameter of the
@@ -461,7 +460,7 @@ fit.gev <- function( x, initial = NULL,
 ##' @param gradient.function If NULL a finite difference method is
 ##' invoked. To use the derived formula from the GPD likelihood gradient
 ##' provide \code{\link{likelihood.gradient}}.
-##' Default = climex:::likelihood.gradient.
+##' Default = \code{\link{likelihood.gradient}}.
 ##' @param error.estimation Method for calculating the standard errors of
 ##' the fitted results. The errors of the GPD parameters will be
 ##' calculated as the square roots of the diagonal elements of the
@@ -552,7 +551,7 @@ fit.gev <- function( x, initial = NULL,
 ##' fit.gpd( potsdam.extremes )
 fit.gpd <- function( x, initial = NULL, threshold = NULL,
                     likelihood.function = likelihood,
-                    gradient.function = climex:::likelihood.gradient,                    
+                    gradient.function = likelihood.gradient,                    
                     error.estimation = c( "MLE", "MC",
                                          "bootstrap", "none" ),
                     monte.carlo.sample.size = 100,
@@ -685,7 +684,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
         xx$return.level ) )
     ## Calculate the standard errors
     errors <- apply( cbind( fitted.parameters,
-                           fitted.return.levels ), 2, sd )
+                           fitted.return.levels ), 2, stats::sd )
     res.optim$se <- errors
   } else {
     ## MC and MLE methods.
@@ -716,7 +715,7 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
       ## Draw a number of samples and fit the GPD parameters for all
       ## of them.
       samples.list <- lapply( 1 : number.of.samples, function( y )
-        climex:::revd( length( x ), scale = parameter.estimate[ 1 ],
+        revd( length( x ), scale = parameter.estimate[ 1 ],
                       shape = parameter.estimate[ 2 ], model = "gpd",
                       silent = TRUE ) )
       
@@ -854,8 +853,9 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
   return( res.optim )
 }
 
-##' @title Calculated the negative log likelihood of the GEV or GPD
-##' function.
+##' @title Likelihood of the GEV and GP distribution
+##' @description Calculated the negative log likelihood of the GEV or
+##'   GPD function.
 ##'
 ##' @details This function is only meant to work with constant parameters
 ##' and no covariats. x.in is not called "x" anymore since the call
@@ -1033,10 +1033,9 @@ likelihood.augmented <- function( parameters, x.in,
 }
 
 
-##' @title Calculates the gradient of the negative log likelihood of the
-##' GEV or GPD function.
-##'
-##' @details 
+##' @title Gradient of the likelihood of the GEV and GP distribution
+##' @description Calculates the gradient of the negative log
+##'   likelihood of the GEV or GPD function.
 ##'
 ##' @param parameters Vector containing the location, scale and shape
 ##' parameter for the GEV model or the scale and shape parameter for the
@@ -1185,8 +1184,8 @@ likelihood.gradient.augmented <- function( parameters, x.in,
             parameters[ 2 ] + .95 ) ) )
     }
   }
-  gradient <- climex:::likelihood.gradient( parameters = parameters,
-                                           x.in = x.in, model = model )
+  gradient <- likelihood.gradient( parameters = parameters,
+                                  x.in = x.in, model = model )
   ## Check whether a constraint is violated and at its contribution to
   ## the gradient
   if ( model == "gev" ){
@@ -1246,7 +1245,9 @@ likelihood.gradient.augmented <- function( parameters, x.in,
   return( gradient )
 }
 
-##' @title Estimates the initial GEV or GPD parameters of a time series.
+##' @title Initial GEV or GP parameters
+##' @description Estimates the initial GEV or GPD parameters of a time
+##'   series required to start the fitting routine.
 ##'
 ##' @details Two main methods are used for the estimation: the L-moments
 ##' method of Hosking & Wallis  and an estimation using
@@ -1353,7 +1354,7 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
       initial.lmom <- c( sigma, xi )
     }
     ## Approximation using the method of moments
-    sc.init <- sqrt( var( x ) )
+    sc.init <- sqrt( stats::var( x ) )
     if ( use.skewness ){
       ## For positive shape parameters the skewness to the time series is
       ## positive as well. For negative it's negative. This way at least
@@ -1412,20 +1413,24 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
                                         model = model ) ) ){
         if ( model == "gev" ){
           x.initial[ 1 ] <- x.initial[ 1 ] +
-            rnorm( 1, sd = .2* x.initial[ 2 ] )
-          x.initial[ 2 ] <- max( x.initial[ 2 ] +
-                                 rnorm( 1, sd = .2* x.initial[ 2 ] ),
-                                .05 ) 
-          x.initial[ 3 ] <-
-            min( -.95, max( .95, x.initial[ 3 ] +
-                                 rnorm( 1, sd = .2* x.initial[ 2 ] ) ) )
-        } else {
-          x.initial[ 1 ] <- max( x.initial[ 1 ] +
-                                 rnorm( 1, sd = .2* x.initial[ 1 ] ),
-                                .05 ) 
+            stats::rnorm( 1, sd = .2* x.initial[ 2 ] )
           x.initial[ 2 ] <-
-            min( -.95, max( .95, x.initial[ 2 ] +
-                                 rnorm( 1, sd = .2* x.initial[ 1 ] ) )
+            max( x.initial[ 2 ] +
+                 stats::rnorm( 1, sd = .2* x.initial[ 2 ] ), .05 ) 
+          x.initial[ 3 ] <-
+            min( -.95, max( .95,
+                           x.initial[ 3 ] +
+                           stats::rnorm( 1, sd = .2*
+                                              x.initial[ 2 ] ) ) )
+        } else {
+          x.initial[ 1 ] <-
+            max( x.initial[ 1 ] +
+                 stats::rnorm( 1, sd = .2* x.initial[ 1 ] ), .05 ) 
+          x.initial[ 2 ] <-
+            min( -.95, max( .95,
+                           x.initial[ 2 ] +
+                           stats::rnorm( 1, sd = .2*
+                                              x.initial[ 1 ] ) )
                                 ) } }
     } )
     return( as.numeric( x.initial ) )

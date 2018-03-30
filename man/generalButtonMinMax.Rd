@@ -2,7 +2,7 @@
 % Please edit documentation in R/climex_preprocessing.R
 \name{generalButtonMinMax}
 \alias{generalButtonMinMax}
-\title{Whether to determine the minimal or maximal extremes.}
+\title{Minimum or maximum extremes in the Climex app}
 \usage{
 generalButtonMinMax(radioEvdStatistics, selectDataType)
 }
@@ -19,6 +19,9 @@ Determined by menuSelectDataType.}
 }
 \value{
 menuItemOutput
+}
+\description{
+Whether to determine the minimal or maximal extremes.
 }
 \details{
 Not a real shiny module, since I have to use this select

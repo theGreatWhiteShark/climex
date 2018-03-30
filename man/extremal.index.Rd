@@ -2,7 +2,7 @@
 % Please edit documentation in R/extremes.R
 \name{extremal.index}
 \alias{extremal.index}
-\title{Estimates the extremal index of a time series.}
+\title{Extremal index estimation}
 \usage{
 extremal.index(x, threshold, silent = FALSE)
 }
@@ -18,6 +18,9 @@ declustering.}
 \value{
 Numerical vector containing c( extremal index, number of
 clusters, minimal distance between clusters (minimal.distance) ).
+}
+\description{
+Estimates the extremal index of a time series.
 }
 \details{
 The extremal index can be thought of as the inverse of the

@@ -2,7 +2,7 @@
 % Please edit documentation in R/extremes.R
 \name{threshold}
 \alias{threshold}
-\title{Extracts all data above a certain threshold}
+\title{Apply a threshold to data}
 \usage{
 threshold(x, threshold, decluster = TRUE, na.rm = TRUE)
 }
@@ -21,6 +21,9 @@ left. Default = TRUE.}
 }
 \value{
 Declustered time series of the same format as the input.
+}
+\description{
+Extracts all data above a certain threshold
 }
 \details{
 Due to the UNIX principle (make each program do one thing

@@ -6,8 +6,14 @@
 \usage{
 mode(x)
 }
+\arguments{
+\item{x}{Numerical input.}
+}
 \value{
 Numerical
+}
+\description{
+Calculates the mode of a PDF
 }
 \author{
 Philipp Mueller

@@ -17,12 +17,17 @@ density of the GEV distribution.}
 Numerical vector of same length as z.
 }
 \description{
-Calculate the probability density function for the generalized extreme value (GEV) distribution at a given point or at a number of points (provided as a numerical vector).
+Calculate the probability density function for the
+  generalized extreme value (GEV) distribution at a given point or
+  at a number of points (provided as a numerical vector).
 }
 \details{
-If you want to calculate the density of the Gumbel distribution, please stick to the c( location, scale, shape ) scheme of the first argument while setting the shape parameter to zero.
+If you want to calculate the density of the Gumbel
+  distribution, please stick to the c( location, scale, shape )
+  scheme of the first argument while setting the shape parameter
+  to zero. 
 
-Port of the ismev::gev.dens function.
+Port of the \code{\link[ismev]{gev.dens}} function.
 }
 \seealso{
 Other extremes: \code{\link{block}},

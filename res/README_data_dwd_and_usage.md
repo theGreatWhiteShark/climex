@@ -1,13 +1,3 @@
----
-title: "Basic usage of the climex package"
-author: "Philipp Müller"
-date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Basic usage of the climex package}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
 # About
 This vignette provides an introduction into the basic usage of the **climex** package:
 
@@ -97,6 +87,7 @@ data( temp.potsdam )
 ## convenience function for plotting xts class time series using ggplot2
 ttplot( temp.potsdam )
 ```
+![potsdam-plot](vignette-potsdam-plot.png)
 
 ## The GEV distribution
 
@@ -115,6 +106,8 @@ temp.potsdam.complete <- remove.incomplete.years( temp.potsdam )
 ttplot( temp.potsdam.complete )
 
 ```
+
+![potsdam-plot-complete](vignette-potsdam-plot-complete.png)
 
 #### Discard short time series
 
@@ -140,6 +133,8 @@ temp.potsdam.anomalies <- anomalies( temp.potsdam.complete )
 ttplot( temp.potsdam.anomalies )
 
 ```
+![potsdam-plot-anomalies](vignette-potsdam-plot-anomalies.png)
+
 
 Though you have way more data contributing to the analysis (you can
 not expect the hottest day of the year to occur during winter) and
@@ -163,6 +158,9 @@ ttplot( temp.potsdam.blocked )
 
 ```
 
+![potsdam-plot-blocked](vignette-potsdam-plot-blocked.png)
+
+
 #### Fitting the GEV distribution
 
 After we extracted all the extreme events from our time series, it's time to fit the GEV distribution to them. In addition we will also calculate the 100 year return level of the time series.
@@ -182,6 +180,9 @@ multiplot( plotlist = list( ttplot( temp.potsdam.blocked ),
           main = "Blocked temperature anomalies and GEV fit" )
 
 ```
+
+![potsdam-plot-fit](vignette-potsdam-plot-fit.png)
+
 
 ## The GP distribution
 
@@ -207,6 +208,8 @@ temp.potsdam.declustered <- threshold( temp.potsdam, threshold = 33 )
 ttplot( temp.potsdam.declustered )
 ```
 
+![potsdam-plot-blocked](vignette-potsdam-plot-declustered.png)
+
 #### Fitting the GP distribution
 
 After we obtained our extreme events by applying a sufficiently high threshold to our time series and declustering the resulting point, we will the likelihood function of the generalized Pareto (GP) distribution to our data using the maximum likelihood approach and determine the 100 year return level.
@@ -228,3 +231,5 @@ multiplot( plotlist = list( ttplot( temp.potsdam.declustered ),
                            plot( gp.potsdam ) ), cols = 2,
           main = "Declustered daily maximum temperature and its GP fit" )
 ```
+
+![potsdam-plot-blocked](vignette-potsdam-plot-fit-gpd.png)

@@ -5,8 +5,7 @@
 \title{Robust maximum-likelihood fit of the GPD distribution}
 \usage{
 fit.gpd(x, initial = NULL, threshold = NULL,
-  likelihood.function = likelihood,
-  gradient.function = climex:::likelihood.gradient,
+  likelihood.function = likelihood, gradient.function = likelihood.gradient,
   error.estimation = c("MLE", "MC", "bootstrap", "none"),
   monte.carlo.sample.size = 100, bootstrap.sample.size = 100,
   return.period = 100, total.length = NULL, silent = TRUE, ...)
@@ -32,7 +31,7 @@ Default: \code{\link{likelihood}}}
 \item{gradient.function}{If NULL a finite difference method is
 invoked. To use the derived formula from the GPD likelihood gradient
 provide \code{\link{likelihood.gradient}}.
-Default = climex:::likelihood.gradient.}
+Default = \code{\link{likelihood.gradient}}.}
 
 \item{error.estimation}{Method for calculating the standard errors of
 the fitted results. The errors of the GPD parameters will be
@@ -141,21 +140,21 @@ first place. The penalty in the log-likelihood function is the sum of
 all squared constrain violations plus an additional term linear in
 the constraint violation to ensure well-conditioning. Using this
 penalty term the problem becomes unconstrained again and can be
-solved using \code{\link{stats::optim}}. After each of those inner
+solved using \code{\link[stats]{optim}}. After each of those inner
 routines the weighting parameter of the penalty is being increased
 until some convergence conditions are fulfilled.
 
 Since it usually takes just four to five outer iterations this
-functions needs only double the time a pure call to the stats::optim
-function would need.
+functions needs only double the time a pure call to the
+  \code{\link[stats]{optim}} function would need.
 
-The \emph{total.length} argument refers to the length of the original time
-series before the thresholding was applied. If present it will be used
-to calculate the maximum likelihood estimate of the probability of an
-observation to be a threshold exceedance (necessary to determine the
-estimation errors for the calculated return levels). Else an
-estimator based on mean number of exceedances per year will be
-used.
+  The \emph{total.length} argument refers to the length of the
+  original time series before the thresholding was applied. If
+  present it will be used to calculate the maximum likelihood
+  estimate of the probability of an observation to be a threshold
+  exceedance (necessary to determine the estimation errors for the
+  calculated return levels). Else an estimator based on mean
+  number of exceedances per year will be used.
 
 If the user instead wants to fit just the exponential distribution
 and not the entire GP distribution, the shape parameter of the

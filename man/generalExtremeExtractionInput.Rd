@@ -2,16 +2,20 @@
 % Please edit documentation in R/climex_preprocessing.R
 \name{generalExtremeExtractionInput}
 \alias{generalExtremeExtractionInput}
-\title{Extract the extreme events from a given time series.}
+\title{Extracting extreme events in the Climex app}
 \usage{
 generalExtremeExtractionInput()
 }
 \value{
 menuItemOutput
 }
+\description{
+Extract the extreme events from a given time series.
+}
 \details{
-Provides the shinydashboard::menuItemOutput for \code{\link{
-generalExtremeExtraction}}. See the later one for details.
+Provides the \code{\link[shinydashboard]{menuItemOutput}}
+  for \code{\link{generalExtremeExtraction}}. See the later one
+  for details.
 }
 \seealso{
 Other preprocessing: \code{\link{cleaning.interactive}},
