@@ -4,7 +4,8 @@
 ##' @details Well, it is not really related to extreme value fitting
 ##'   and I am aware of the fact that its quite bad style to export
 ##'   auxiliary functions. But this one is just so handy. If the
-##'   layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+##'   layout is something like
+##'   \code{matrix( c( 1, 2, 3, 3 ), nrow = 2, byrow = TRUE )},
 ##'   then plot 1 will go in the upper left, 2 will go in the upper
 ##'   right, and 3 will go all the way across the bottom. ggplot
 ##'   objects can be passed in ..., or to plotlist (as a list of
@@ -19,7 +20,7 @@
 ##'   is ignored. 
 ##'
 ##' @family plot
-##' @author Paul Teetor
+##' @author Paul Teetor (original), Philpp Mueller (minor changes)
 ##' @examples
 ##' anomalies.potsdam <- anomalies( temp.potsdam )
 ##' multiplot( anomalies.potsdam, temp.potsdam, cols = 2, main =
@@ -29,8 +30,8 @@
 ##' @export
 ##' @import ggplot2
 ##' @import grid
-multiplot <- function( tt.title = main, main = NULL, ...,
-                      plotlist = NULL, cols = 1, layout = NULL ) {
+multiplot <- function( plotlist = NULL, tt.title = main, main = NULL,
+                      ..., cols = 1, layout = NULL ) {
   ## Make a list from the ... arguments and plotlist
   plots <- c( list( ... ), plotlist )
   numPlots = length( plots )

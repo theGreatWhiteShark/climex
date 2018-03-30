@@ -1,32 +1,5 @@
 [![Travis Build](https://travis-ci.org/theGreatWhiteShark/climex.svg?branch=master)](https://travis-ci.org/theGreatWhiteShark/climex.svg?branch=master)
 
-# Features
-![leaflet map to handle a lot of station data](res/climex_map.jpeg)
-![control all the different steps involved in the extreme value analysis](res/climex_time-series.png)
-![explore the station data with your mobile device](res/climex_mobile.jpeg)
-
-## An interactive web app
-
-![map-icon](res/glyphicons-2-leaf.png)
-- You can perform extreme value analysis on a large number of
-  climatic time series from different stations
-- You can calculate arbitrary return levels for all 
-  stations and display the results comprehensively on a map
-  
-![general-icon](res/glyphicons-42-charts.png)
-- You have full control over all steps involved in the extreme value 
-  analysis of the station data via an intuitive
-  GUI in a persistent way (changes will be applied to the
-  analysis of all following time series)
-- Both the Generalized Extreme Value (GEV) and the Generalized
-  Pareto (GP) approach are supported
-- You can exclude single points or whole parts of a time series 
-  with the entire analysis updated immediately
-- The fitting is done using a nonlinear constrained maximum likelihood 
-  procedure based on the augmented Lagrangian method. Using this approach
-  none of your fits will produce numerical artifacts
-  
-[Try it!](http://climex.pks.mpg.de)
 
 ## A robust and sophisticated optimization (or why to use this package over others)
 
@@ -53,24 +26,7 @@ This solves two of the remaining problems of the extreme value analysis:
 2. The optimization itself becomes more robust and can now be used in
    massive parallel applications 
 
-## Convenient access to the station data of the DWD
-
-In order to obtain loads of data to perform the analysis on and to
-power the web application, this package contains some functions
-scrapping the web page of the German weather service (DWD). Even if
-you don't want to use the web app or the optimization routines, you
-might still appreciate either the .Rdata objects containing all these
-time series (of class *xts*) or the exported .csv versions of the
-individual station data.
-
 # Installation
-
-Since the [Shiny](https://shiny.rstudio.com/)-based web app uses
-rather new features of the R programming language, you have to have
-**at least R-3.3.0** or newer (you can check your version by running
-`R --version` in the terminal). If you don't fulfill this condition
-yet, be sure to get the binary or source of an appropriate R version
-via [CRAN](https://CRAN.R-project.org/).
 
 In order to install this package, you have to use the *install_github*
 function from the **devtools** package.
@@ -93,18 +49,50 @@ different branch, use the *ref* argument to specify it. E.g.
 devtools::install_github( "theGreatWhiteShark/climex", ref = "v1.2.0" )
 ```
 
-Even if you do not intend to use the full capabilities of the package
-but just parts like the download of the DWD data, be sure to
-nevertheless install the whole package via the commands listed
-above. It just uses 1.4 MB of space and you this way you ensure that
-all required packages will be installed and all environmental
-variables will be set.
 
-### Server-side installation of the Climex web application
+## An interactive web application
 
-You want to run your own version of the Climex web application on one
-of your servers so others can access it too? Then check out
-[this](res/shiny-server/README.md) configuration guide.
+A convenient interface to this core package can be found in the
+[climexUI](https://github.com/theGreatWhiteShark/climexUI) package. It
+comes with a full-fledged shiny application, which enables we user to
+access and investigate a lot of different station data and, at the
+same time, to tweak all the most important parameters involved in the
+preprocessing and the fitting procedure of the GEV or GP
+distribution. 
+
+![leaflet map to handle a lot of station data](res/climex_map.jpeg)
+![control all the different steps involved in the extreme value analysis](res/climex_time-series.png)
+![explore the station data with your mobile device](res/climex_mobile.jpeg)
+
+### Features
+
+![map-icon](res/glyphicons-2-leaf.png)
+- You can perform extreme value analysis on a large number of
+  climatic time series from different stations
+- You can calculate arbitrary return levels for all 
+  stations and display the results comprehensively on a map
+  
+![general-icon](res/glyphicons-42-charts.png)
+- You have full control over all steps involved in the extreme value 
+  analysis of the station data via an intuitive
+  GUI in a persistent way (changes will be applied to the
+  analysis of all following time series)
+- Both the Generalized Extreme Value (GEV) and the Generalized
+  Pareto (GP) approach are supported
+- You can exclude single points or whole parts of a time series 
+  with the entire analysis updated immediately
+- The fitting is done using a nonlinear constrained maximum likelihood 
+  procedure based on the augmented Lagrangian method. Using this approach
+  none of your fits will produce numerical artifacts
+
+## Accessing station data
+
+If you are at the very beginning of your analysis or still in search
+of a vast data base to perform your analysis on, I recommend you
+to check out the [dwd2r](https://github.com/theGreatWhiteShark/dwd2r)
+package. It is capable to format and save the data in lists of *xts*
+class objects and thus in the format most natural to work with in the
+context of the **climex** package. 
 
 # Usage
 
@@ -114,8 +102,7 @@ the [official
 introduction](https://CRAN.R-project.org/doc/manuals/R-intro.pdf).
 
 A thorough introduction is provided for the [general
-usage](res/README_data_dwd_and_usage.Rmd) of the package and the
-Shiny-based [web application](res/climex_app.Rmd).
+usage](res/README_data_dwd_and_usage.Rmd) of the package.
 
 When using this package in your own analysis, keep in mind that its
 functions expect your time series to be of class

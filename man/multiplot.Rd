@@ -4,17 +4,17 @@
 \alias{multiplot}
 \title{Plot multiple time series.}
 \usage{
-multiplot(tt.title = main, main = NULL, ..., plotlist = NULL, cols = 1,
+multiplot(plotlist = NULL, tt.title = main, main = NULL, ..., cols = 1,
   layout = NULL)
 }
 \arguments{
+\item{plotlist}{alternative way to pass ggplot objects.}
+
 \item{tt.title}{Same as 'main'.}
 
 \item{main}{Title of the overall plot.}
 
 \item{...}{objects for ggplot.}
-
-\item{plotlist}{alternative way to pass ggplot objects.}
 
 \item{cols}{Number of columns in layout. Default = 1.}
 
@@ -32,7 +32,8 @@ This function takes several plot of the ggplot2 and
 Well, it is not really related to extreme value fitting
   and I am aware of the fact that its quite bad style to export
   auxiliary functions. But this one is just so handy. If the
-  layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+  layout is something like
+  \code{matrix( c( 1, 2, 3, 3 ), nrow = 2, byrow = TRUE )},
   then plot 1 will go in the upper left, 2 will go in the upper
   right, and 3 will go all the way across the bottom. ggplot
   objects can be passed in ..., or to plotlist (as a list of
@@ -48,5 +49,5 @@ multiplot( anomalies.potsdam, temp.potsdam, cols = 2, main =
 Other plot: \code{\link{ttplot}}
 }
 \author{
-Paul Teetor
+Paul Teetor (original), Philpp Mueller (minor changes)
 }

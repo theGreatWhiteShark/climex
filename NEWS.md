@@ -1,3 +1,13 @@
+# v2.0.0
+The functionality of the 1. climex core package, 2. the shiny-based
+GUI, and 3. import of the data of the German weather service (DWD)
+will be split in three different entities. This way, it is more simple
+regarding housekeeping. And I might finally succeed in getting a reply
+from one of the CRAN fellows by just submitting the core package.
+- Rewriting the **source.data()** function to search for .RData in a
+  specified folder recursively, print all results well-formatted in
+  the command line and prompt the user for a selection. The option for
+  a default data set is now deprecated.
 # v1.2.1
 - Only perform the test of the API of the DWD on Unix-based
   systems. The *winbuilder* of CRAN just throws non-reproducible error

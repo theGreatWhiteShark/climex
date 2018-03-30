@@ -1,13 +1,13 @@
 Package: climex
 Type: Package
 Title: Estimating Extreme Events in Climatic Time Series (using Data of the DWD)
-Version: 1.2.1
-Date: 2018-01-12
+Version: 2.0.0
+Date: 2018-03-30
 LazyData: true
 Authors@R: person("Philipp Mueller", role = c("aut","cre"),
     email = "thetruephil@googlemail.com")
 Maintainer: Philipp Mueller <thetruephil@googlemail.com>
-Description: There are three main purposes of this package: 1. It provides robust and easy to use functions for the Maximum Likelihood fitting of GEV and GP distributions based on nonlinear constrained optimization, 2. It contains a Shiny app enabling the user to analyse a large amount of data interactively, and 3. It provides a web crawler automating the download the daily station data of the German weather service (DWD).
+Description: The fitting of the generalized extreme value (GEV) and generalized Pareto (GP) distribution using maximum likelihood (ML) has an inherent tendency to produce numerical artifacts. By using the well-oiled framework of constrained optimization, in this we utilize the augmented Lagrangian method, the optimization find the global optimum significantly more often then the unconstrained one. In addition the package is focused on handling climatic time series of class 'xts' and provides a couple of convenience functions to handle these objects.
 URL: https://github.com/theGreatWhiteShark/climex
 Depends:
     R(>= 3.3.0),
@@ -15,27 +15,15 @@ Depends:
 Imports:
     lubridate,
     ggplot2,
-    pander,
     grid,
     Rcpp,
-    markdown,
-    dygraphs,
-    parallel,
-    shiny,
-    htmltools,
-    shinydashboard,
-    shinytoastr,
-    RCurl,
     RColorBrewer,
     deseasonalize,
     Lmoments,
     moments,
-    leaflet,
     numDeriv,
     alabama,
     zoo
-Remotes: theGreatWhiteShark/leaflet,
-    theGreatWhiteShark/shinydashboard
 License: GPL (>= 3) | file LICENSE
 LinkingTo: Rcpp, RcppArmadillo
 VignetteBuilder: knitr
