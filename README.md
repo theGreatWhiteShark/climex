@@ -30,25 +30,52 @@
 
 ## A robust and sophisticated optimization (or why to use this package over others)
 
-The fitting of GEV and GP parameters using unconstrained optimization (done by all other R packages on extreme value statistics) tends to produce numerical artifacts. This is due to the presence of logarithms in the negative log-likelihood and a limited range of shape parameters for which the likelihood estimator is defined. While producing absurdly large parameters or causing the optimization to fail when using the **BFGS** algorithm (*extRemes*) the differences using the **Nelder-Mead** algorithm (all other packages) might be small, barely noticeable, and totally plausible. 
+The fitting of GEV and GP parameters using unconstrained optimization
+(done by all other R packages on extreme value statistics) tends to
+produce numerical artifacts. This is due to the presence of logarithms
+in the negative log-likelihood and a limited range of shape parameters
+for which the likelihood estimator is defined. While producing
+absurdly large parameters or causing the optimization to fail when
+using the **BFGS** algorithm (*extRemes*), the differences using the
+**Nelder-Mead** algorithm (all other packages) might be small, barely
+noticeable, and totally plausible.
 
-In order to avoid those numerical artifacts, the **augmented Lagrangian method** is used to incorporate both the logarithms and the limited range of shape parameters as nonlinear constraints. With this approach the optimization can be started at arbitrary initial parameter combinations and will always converge to the global optimum. 
+In order to avoid those numerical artifacts, the **augmented
+Lagrangian method** is used to incorporate both the logarithms and the
+limited range of shape parameters as nonlinear constraints. With this
+approach the optimization can be started at arbitrary initial
+parameter combinations and will almost always converge to the global
+optimum.
 
 This solves two of the remaining problems of the extreme value analysis:
-1. The user does not have to worry about the numerical optimization anymore. It will always produce the correct results
-2. The optimization itself becomes more robust and can now be used in massive parallel applications
+1. The user does not have to worry about the numerical optimization
+   anymore. It will always produce the correct results 
+2. The optimization itself becomes more robust and can now be used in
+   massive parallel applications 
 
 ## Convenient access to the station data of the DWD
 
-In order to obtain loads of data to perform the analysis on and to power the web application, this package contains some functions scrapping the web page of the German weather service (DWD). Even if you don't want to use the web app or the optimization routines, you might still appreciate either the .Rdata objects containing all these time series (of class *xts*) or the exported .csv versions of the individual station data.
+In order to obtain loads of data to perform the analysis on and to
+power the web application, this package contains some functions
+scrapping the web page of the German weather service (DWD). Even if
+you don't want to use the web app or the optimization routines, you
+might still appreciate either the .Rdata objects containing all these
+time series (of class *xts*) or the exported .csv versions of the
+individual station data.
 
 # Installation
 
-Since the [Shiny](https://shiny.rstudio.com/)-based web app uses rather new features of the R programming language, you have to have **at least R-3.3.0** or newer (you can check your version by running `R --version` in the terminal). If you don't fulfill this condition yet, be sure to get the binary or source of an appropriate R version via [CRAN](https://CRAN.R-project.org/).
+Since the [Shiny](https://shiny.rstudio.com/)-based web app uses
+rather new features of the R programming language, you have to have
+**at least R-3.3.0** or newer (you can check your version by running
+`R --version` in the terminal). If you don't fulfill this condition
+yet, be sure to get the binary or source of an appropriate R version
+via [CRAN](https://CRAN.R-project.org/).
 
-In order to install this package you have to use the *install_github* function from the **devtools** package.
+In order to install this package, you have to use the *install_github*
+function from the **devtools** package.
 
-Just open a R shell on your computer and type the following commands
+Just open a R shell on your computer and type in the following commands
 
 ``` r
 ## Installing the devtools package (in case your haven't done it yet).
@@ -58,29 +85,42 @@ install.packages( "devtools" )
 devtools::install_github( "theGreatWhiteShark/climex" )
 ```
 
-This will install the climex package residing on the **master** branch of this git repository. If you instead want to download and install a different branch, use the *ref* argument to specify it. E.g. 
+This will install the climex package residing on the **master** branch
+of this git repository. If you instead want to download and install a
+different branch, use the *ref* argument to specify it. E.g.
 
 ``` r
-devtools::install_github( "theGreatWhiteShark/climex", ref = "v1.0" )
+devtools::install_github( "theGreatWhiteShark/climex", ref = "v1.2.0" )
 ```
 
-Even if you do not intend to use the full capabilities of the package but just parts like the download of the DWD data, be sure to nevertheless install the whole package via the above commands. It just uses 1.4 MB of space and you this way you ensure that all required packages will be installed and all environmental variables will be set.
+Even if you do not intend to use the full capabilities of the package
+but just parts like the download of the DWD data, be sure to
+nevertheless install the whole package via the commands listed
+above. It just uses 1.4 MB of space and you this way you ensure that
+all required packages will be installed and all environmental
+variables will be set.
 
 ### Server-side installation of the Climex web application
 
-You want to run your own version of the Climex web application on one of your servers so others can access it too? Then check out [this](res/shiny-server/README.md) configuration guide.
+You want to run your own version of the Climex web application on one
+of your servers so others can access it too? Then check out
+[this](res/shiny-server/README.md) configuration guide.
 
 # Usage
 
-You are new to **R**? Then check out the [compiled list of resources](https://www.rstudio.com/online-learning/#R) from RStudio or the [official introduction](https://CRAN.R-project.org/doc/manuals/R-intro.pdf).
+You are new to **R**? Then check out the [compiled list of
+resources](https://www.rstudio.com/online-learning/#R) from RStudio or
+the [official
+introduction](https://CRAN.R-project.org/doc/manuals/R-intro.pdf).
 
-A thorough introduction is provided for the [general usage](res/README_data_dwd_and_usage.Rmd) of the package and the Shiny-based [web application](res/climex_app.Rmd).
+A thorough introduction is provided for the [general
+usage](res/README_data_dwd_and_usage.Rmd) of the package and the
+Shiny-based [web application](res/climex_app.Rmd).
 
-When using this package in your own analysis, keep in mind that its functions expect your time series to be of class [xts](https://CRAN.R-project.org/web/packages/xts/index.html) and not numeric!
-
-### Why is this not on [CRAN](https://CRAN.R-project.org/)?
-
-The CRAN project has some special requirements a package has to fulfill to be hosted on their web page. One of those is for the package to complete the R package check without raising a single warning. Unfortunately I don't see a way right now to rewrite the function `climex::climex` in such a way it fulfills this requirement and I most certainly don't want to drop it. CRAN is just not meant to host a variety of more complex Shiny apps yet. :wink:
+When using this package in your own analysis, keep in mind that its
+functions expect your time series to be of class
+[xts](https://CRAN.R-project.org/web/packages/xts/index.html) and not
+numeric!
 
 ---
 
