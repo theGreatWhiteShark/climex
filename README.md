@@ -1,30 +1,89 @@
 [![Travis Build](https://travis-ci.org/theGreatWhiteShark/climex.svg?branch=master)](https://travis-ci.org/theGreatWhiteShark/climex.svg?branch=master)
 
+# Features
 
-## A robust and sophisticated optimization (or why to use this package over others)
+- Improved fitting routine (almost no numerical artifacts anymore)
+- Different methods, including statistical ones, to access the error
+  estimates of the return levels
+- Better error handling allowing for massive parallel application
+- Focuses on the handling of time series (**xts** instead of
+  *data.frame* as its basic input class)
+- A set of auxiliary functions frequently used in the extreme value
+  analysis of climate time series
 
-The fitting of GEV and GP parameters using unconstrained optimization
-(done by all other R packages on extreme value statistics) tends to
+## Improved fitting routine
+
+The fitting of the parameters of the stationary **GEV** and **GP**
+distribution using unconstrained optimization 
+(done by all other R packages involving extreme value statistics) tends to
 produce numerical artifacts. This is due to the presence of logarithms
-in the negative log-likelihood and a limited range of shape parameters
-for which the likelihood estimator is defined. While producing
-absurdly large parameters or causing the optimization to fail when
-using the **BFGS** algorithm (*extRemes*), the differences using the
-**Nelder-Mead** algorithm (all other packages) might be small, barely
-noticeable, and totally plausible.
+in the negative log-likelihood functions and a limited range of shape
+values the maximum likelihood estimator is defined in. While yielding
+absurdly large parameter values or causing the optimization to fail when
+using the **BFGS** algorithm (in the *extRemes* package), the
+differences using the **Nelder-Mead** algorithm (all other packages)
+might be small, barely noticeable, and totally plausible. But they are
+still present and spoil your calculation.
 
 In order to avoid those numerical artifacts, the **augmented
 Lagrangian method** is used to incorporate both the logarithms and the
-limited range of shape parameters as nonlinear constraints. With this
-approach the optimization can be started at arbitrary initial
+limited range of shape values as nonlinear constraints. With this
+approach, the optimization can be started at arbitrary initial
 parameter combinations and will almost always converge to the global
 optimum.
 
-This solves two of the remaining problems of the extreme value analysis:
+This solves two remaining problems of the extreme value analysis:
 1. The user does not have to worry about the numerical optimization
-   anymore. It will always produce the correct results 
+   anymore. It will produce the correct results in almost all cases.
 2. The optimization itself becomes more robust and can now be used in
-   massive parallel applications 
+   an massive parallel setting.
+   
+## Error estimates of the return level
+
+An important part of the extreme value analysis is to access the
+fitting errors introduced into the calculated return levels. The
+default way of obtaining these is to 
+use the so-called delta method assuming normality of the
+log-likelihood at the fitting result. This assumption, however, is
+not fulfilled in a lot of cases.
+
+To nevertheless calculate a decent estimate of the fitting errors, the
+**climex** package introduces two statistical
+approaches, one based on bootstrap and the other one based on a Monte
+Carlo approach. In comparison to the calculation of the confidence
+intervals implemented in the *extRemes* package, the climex package
+calculates the standard fitting error of the return levels. Since
+there are a lot of different sources of errors in the extreme value
+analysis, like too small block sizes, too low thresholds or
+non-stationaries and/or correlations in the data, providing a
+confidence interval (CI) might the misleading for some users. All
+these additional errors are by no means included in the CI and 
+have to be obtained in further studies to construct some appropriate
+CI of the calculated return levels.
+
+## Better error handling
+
+Due to the use of either the **Nelder-Mead** or **BFGS** method, some
+time series will throw errors when fitted using the other R packages
+tailored for the extreme value analysis. When fitting 100 stations at
+once you can expect at least one station to break your code.
+
+In order to allow for a massive parallel application of the extreme
+value analysis, the **climex** package features a more robust error
+handling. In addition, the improved fitting routine allows the
+optimization to handle initial parameter combinations far more distant
+from the global optimum than feasible using any unconstrained
+routine.
+
+## Focused on handling time series
+
+The fundamental object class handled in the **climex** package is the
+time series class **xts** or lists of class xts objects. This allows
+the user to harness all the additional functions tailored for the
+analysis of time series, e.g. those of the **lubridate** package. It
+also includes a couple of convenience functions often used within the
+extreme value analysis, like blocking, application of a threshold,
+declustering, deseasonalization etc.
 
 # Installation
 
@@ -54,9 +113,9 @@ devtools::install_github( "theGreatWhiteShark/climex", ref = "v1.2.0" )
 
 A convenient interface to this core package can be found in the
 [climexUI](https://github.com/theGreatWhiteShark/climexUI) package. It
-comes with a full-fledged shiny application, which enables we user to
+comes with a full-fledged shiny application, which enables the user to
 access and investigate a lot of different station data and, at the
-same time, to tweak all the most important parameters involved in the
+same time, to tweak the most important parameters involved in the
 preprocessing and the fitting procedure of the GEV or GP
 distribution. 
 
@@ -90,7 +149,8 @@ distribution.
 If you are at the very beginning of your analysis or still in search
 of a vast data base to perform your analysis on, I recommend you
 to check out the [dwd2r](https://github.com/theGreatWhiteShark/dwd2r)
-package. It is capable to format and save the data in lists of *xts*
+package. It is capable of formatting and saving the station data
+provided by the German weather service (DWD) in lists of *xts*
 class objects and thus in the format most natural to work with in the
 context of the **climex** package. 
 
@@ -102,7 +162,7 @@ the [official
 introduction](https://CRAN.R-project.org/doc/manuals/R-intro.pdf).
 
 A thorough introduction is provided for the [general
-usage](res/README_data_dwd_and_usage.Rmd) of the package.
+usage](vignettes/general-usage.Rmd) of the package.
 
 When using this package in your own analysis, keep in mind that its
 functions expect your time series to be of class
