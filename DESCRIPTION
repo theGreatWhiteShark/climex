@@ -10,7 +10,7 @@ Maintainer: Philipp Mueller <thetruephil@googlemail.com>
 Description: The fitting of the generalized extreme value (GEV) and generalized Pareto (GP) distribution using maximum likelihood (ML) has an inherent tendency to produce numerical artifacts. By using the well-oiled framework of constrained optimization, in this we utilize the augmented Lagrangian method, the optimization find the global optimum significantly more often then the unconstrained one. In addition the package is focused on handling climatic time series of class 'xts' and provides a couple of convenience functions to handle these objects.
 URL: https://github.com/theGreatWhiteShark/climex
 Depends:
-    R(>= 3.3.0),
+    R(>= 3.1.0),
     xts
 Imports:
     lubridate,
