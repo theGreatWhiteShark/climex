@@ -2,53 +2,156 @@
 ##' @description Separates the input into blocks of equal size and
 ##'   returns the maximum or minimum of the block as result.
 ##'
-##' @details If 'separation.mode' is set to "years" the data is separated
-##' according to it's time stamps. If not the size of a block is
-##' determined by the 'block.length' parameter or calculated via the
-##' 'block.number' parameter. For calculating the mean of the blocks have
-##' a look at the \code{\link[stats]{ave}} function.
+##' @details If \strong{separation.mode} is set to "years" the
+##'   data is separated according to it's time stamps. If not, the size
+##'   of a block is determined by the \strong{block.length} argument
+##'   or calculated via the \strong{block.number} argument if the
+##'   previous one is set to NULL. For calculating the mean of
+##'   the blocks, please have a look at the \code{\link[stats]{ave}}
+##'   function.
 ##'
-##' @param input.bulk Provided data of class 'xts'.
+##'   This function can be applied to lists of \pkg{xts} class elements
+##'   too. 
+##'
+##' @param x Either an object of class \pkg{xts} or a list of those.
 ##' @param block.number Specifies the number of blocks the input data is
-##' going to be separated in.
+##'   going to be separated in.
 ##' @param block.length Length of the blocks. For the sake of simplicity
-##' the last block is not forced to match the length of the other plots.
+##'   the last block is not forced to match the length of the other
+##'   plots. 
 ##' @param block.mode This parameter determines if the maximum "max" or
-##' the minimum "min" of a block shall be returned. Default: "max".
+##'   the minimum "min" of a block shall be returned. Default: "max".
 ##' @param separation.mode "years" is used to split the data according to
-##' its date values instead. If 'block.length' or 'block.number' is
-##' specified this argument will not be considered and set to "none".
-##' Default = "years".
-##' @return Of class 'xts'.
+##'   its date values instead. If \strong{block.length} or
+##'   \strong{block.number} is specified this argument will not be
+##'   considered and set to "none". Default = "years".
+##' 
 ##' @family extremes
-##' @author Philipp Mueller
+##'
 ##' @export
+##'
 ##' @importFrom xts xts
 ##' @importFrom zoo index
 ##'
 ##' @family extremes
 ##' 
-##'
+##' @return Same class as the input.
+##' @author Philipp Mueller
+##' 
 ##' @examples
-##' block( temp.potsdam )
-block <- function( input.bulk,
-                  block.number = round( length( input.bulk )/ 50 ),
+##'   block( temp.potsdam )
+block <- function( x, block.number = round( length( x )/ 50 ),
                   block.length = NULL, block.mode = c( "max", "min" ),
                   separation.mode = c( "years", "none" ) ){
-  if ( !all( class( input.bulk ) == c( "xts", "zoo" ) ) )
-    stop( "The block function works to input of class 'xts' only!" )
+  UseMethod( "block" )
+}
+##' @title Blocking data
+##' @description Separates the input into blocks of equal size and
+##'   returns the maximum or minimum of the block as result.
+##'
+##' @details If \strong{separation.mode} is set to "years" the
+##'   data is separated according to it's time stamps. If not, the size
+##'   of a block is determined by the \strong{block.length} argument
+##'   or calculated via the \strong{block.number} argument if the
+##'   previous one is set to NULL. For calculating the mean of
+##'   the blocks, please have a look at the \code{\link[stats]{ave}}
+##'   function.
+##'
+##'   This function can be applied to lists of \pkg{xts} class elements
+##'   too. 
+##'
+##' @param x A list of objects of class \pkg{xts}.
+##' @param block.number Specifies the number of blocks the input data is
+##'   going to be separated in.
+##' @param block.length Length of the blocks. For the sake of simplicity
+##'   the last block is not forced to match the length of the other
+##'   plots. 
+##' @param block.mode This parameter determines if the maximum "max" or
+##'   the minimum "min" of a block shall be returned. Default: "max".
+##' @param separation.mode "years" is used to split the data according to
+##'   its date values instead. If \strong{block.length} or
+##'   \strong{block.number} is specified this argument will not be
+##'   considered and set to "none". Default = "years".
+##' 
+##' @family extremes
+##'
+##' @export
+##'
+##' @importFrom xts xts
+##' @importFrom zoo index
+##'
+##' @family extremes
+##' 
+##' @return Same class as the input.
+##' @author Philipp Mueller
+##' 
+##' @examples
+##'   block( temp.potsdam )
+block.list <- function( x, block.number = round( length( x )/ 50 ),
+                 block.length = NULL, block.mode = c( "max", "min" ),
+                 separation.mode = c( "years", "none" ) ){
+  return( lapply( x, function( xx )
+    block( xx, block.number = round( length( xx )/ 50 ),
+          block.length = block.length,
+          block.mode = block.mode,
+          separation.mode = separation.mode ) ) )
+}
+##' @title Blocking data
+##' @description Separates the input into blocks of equal size and
+##'   returns the maximum or minimum of the block as result.
+##'
+##' @details If \strong{separation.mode} is set to "years" the
+##'   data is separated according to it's time stamps. If not, the size
+##'   of a block is determined by the \strong{block.length} argument
+##'   or calculated via the \strong{block.number} argument if the
+##'   previous one is set to NULL. For calculating the mean of
+##'   the blocks, please have a look at the \code{\link[stats]{ave}}
+##'   function.
+##'
+##' @param x An object of class \pkg{xts}.
+##' @param block.number Specifies the number of blocks the input data is
+##'   going to be separated in.
+##' @param block.length Length of the blocks. For the sake of simplicity
+##'   the last block is not forced to match the length of the other
+##'   plots. 
+##' @param block.mode This parameter determines if the maximum "max" or
+##'   the minimum "min" of a block shall be returned. Default: "max".
+##' @param separation.mode "years" is used to split the data according to
+##'   its date values instead. If \strong{block.length} or
+##'   \strong{block.number} is specified this argument will not be
+##'   considered and set to "none". Default = "years".
+##' 
+##' @family extremes
+##'
+##' @export
+##'
+##' @importFrom xts xts
+##' @importFrom zoo index
+##'
+##' @family extremes
+##' 
+##' @return Same class as the input.
+##' @author Philipp Mueller
+##' 
+##' @examples
+##'   block( temp.potsdam )
+block.xts <- block.default <- function( x, block.number = round( length( x )/ 50 ),
+                                       block.length = NULL, block.mode = c( "max", "min" ),
+                                       separation.mode = c( "years", "none" ) ){
+  if ( !all( class( x ) == c( "xts", "zoo" ) ) )
+    stop( "The block.default function works to input of class 'xts' only!" )
   ## Initializing. The 'block.length' is the most important parameter
   if ( !missing( block.length ) || !missing( block.number ) ){
     separation.mode <- "none"
     if ( !is.null( block.length ) ){
-      block.number <- floor( length( input.bulk )/ block.length ) + 1
+      block.number <- floor( length( x )/ block.length ) + 1
     } else {
       ## separation according to the number of blocks is used
       if ( block.number <= 1 )
         stop( "Provide a block number greater than 1!" )
-      if ( block.number* 5 > length( input.bulk ) )
+      if ( block.number* 5 > length( x ) )
         warning( "There are less than five times data points than actual blocks. This are many of blocks." )
-      block.length <- length( input.bulk )/ ( block.number ) +
+      block.length <- length( x )/ ( block.number ) +
         1/ ( block.number )
     }
   } else
@@ -59,76 +162,204 @@ block <- function( input.bulk,
   ## according to the desired block.length the data is now separated
   ## into snippets and those are saved inside a list
   if ( separation.mode == "years" ){
-    input.index <- data.frame( value = input.bulk,
-                              index = year( input.bulk ),
-                              row.names = index( input.bulk ) )
+    x.index <- data.frame( value = x,
+                          index = year( x ),
+                          row.names = index( x ) )
   } else {
     ## All data belonging to the same block share the same index value
-    input.index <- data.frame(
-        value = input.bulk,
-        index =  floor( ( seq( 1 : length( input.bulk ) ) - 1 )/
+    x.index <- data.frame(
+        value = x,
+        index =  floor( ( seq( 1 : length( x ) ) - 1 )/
                         block.length ) + 1,
-        row.names = index( input.bulk ) )
+        row.names = index( x ) )
   }
-  input.blocked <- split( input.index,input.index$index )
+  x.blocked <- split( x.index, x.index$index )
   ## Extract the maxima or minima from the blocked data
   if ( block.mode == "max" ){
-    input.extremes <- Reduce(
-        rbind, lapply( input.blocked, function( x ){
-          data.frame( date = row.names( x )[ which.max( x[[ 1 ]] ) ],
-                     value = x[ which.max( x[[ 1 ]] ), 1 ] ) } ) )
+    x.extremes <- Reduce(
+        rbind, lapply( x.blocked, function( xx ){
+          data.frame( date = row.names( xx )[ which.max( xx[[ 1 ]] ) ],
+                     value = xx[ which.max( xx[[ 1 ]] ), 1 ] ) } ) )
   } else
-    input.extremes <- Reduce(
-        rbind, lapply( input.blocked, function( x ){
-          data.frame( date = row.names( x )[ which.min( x[[ 1 ]] ) ],
-                     value = x[ which.min( x[[ 1 ]] ), 1 ] ) } ) )
-  extremes.xts <- xts( input.extremes[[ 2 ]] ,
-                      order.by = as.Date( input.extremes[[ 1 ]] ) )
+    x.extremes <- Reduce(
+        rbind, lapply( x.blocked, function( xx ){
+          data.frame( date = row.names( xx )[ which.min( xx[[ 1 ]] ) ],
+                     value = xx[ which.min( xx[[ 1 ]] ), 1 ] ) } ) )
+  extremes.xts <- xts( x.extremes[[ 2 ]] ,
+                      order.by = as.Date( x.extremes[[ 1 ]] ) )
   return( extremes.xts )
 }
 
-##' @title Decluster data
-##' @description Decluster point over threshold data used for GP
-##'   fitting. 
+##' @title Decluster a time series.
+##' @description Decluster point over threshold data as a
+##'   preprocessing step for the fitting of the generalized Pareto
+##'   (GP) distribution.
 ##'
-##' @details This function determines clusters in a time series and
-##' extract just their maximal value in order to remove short-range
-##' correlations. All exceedances.position will be considered belonging
-##' to a cluster until at least cluster.distance consecutive points fall
-##' below the threshold. The parameter cluster.distance will be
-##' determined using the extremal index as suggested in Ferro & Segers
-##' (2003) when set to NULL. It thus provides a non-parametric way of
-##' declustering.
-##' It also features a special treatment of missing values. All of them
-##' will be kept and the returned time series will have the same length
-##' as the input. Separate missing values and small sequences will be
-##' omitted in the cluster determination. But if more than 15 missing
-##' values appear in a row, they will be replaced with the minimal value
-##' of the time series for the cluster detection. This way exceedances
-##' separated over a big temporal distance will not be considered to
-##' belong to the same cluster.
+##' @details This function determines clusters in an object of class
+##'   \pkg{xts} and extracts just their maximal values in order to
+##'   remove short-range correlations. All position of exceedances
+##'   will be considered belonging to a cluster until at least
+##'   \strong{cluster.distance} consecutive points fall below the
+##'   \strong{threshold}.
 ##'
-##' @param x Time series. The full one, not just the
-##' exceedances.position! Can be of class 'xts' or 'numeric'
-##' @param threshold Has to be set sufficient high to fulfill the
-##' asymptotic condition for the GP distribution.
-##' @param cluster.distance Specifies how many points have to be below
-##' the threshold for the next point to be considered the starting point
-##' of a new cluster. Only supply a value when you really know what you
-##' are doing! Default = NULL
+##'   The argument \strong{cluster.distance} will be determined using
+##'   the extremal index as suggested in \emph{Ferro & Segers (2003)}
+##'   when set to NULL. It, thus, provides a non-parametric way of
+##'   declustering.
+##' 
+##'   It also features a special treatment of missing values. All of
+##'   them will be kept and the returned time series will have the
+##'   same length as the input. Separate missing values and small
+##'   sequences will be omitted in the cluster determination. But if
+##'   more than 15 missing values appear in a row, they will be
+##'   replaced with the minimal value of the time series for the
+##'   cluster detection. This way exceedances separated over a big
+##'   temporal distance will not be considered to belong to the same
+##'   cluster.
+##'
+##'   This function can be applied to lists of \pkg{xts} or
+##'   \emph{numeric} class elements too. 
+##'
+##' @param x Either an object of class \pkg{xts} or \emph{numeric} or
+##'   a list of those. The full time series has to be provided. Not
+##'   just the exceedances over the \strong{threshold}!
+##' @param threshold Numerical value. Has to be set sufficient high to
+##'   fulfill the asymptotic condition for the GP distribution.
+##' @param cluster.distance Numerical value specifying how many points
+##'   have to be below the \strong{threshold} for the next point to be
+##'   considered the starting point of a new cluster. Only supply a
+##'   value when you really know what you are doing! Default = NULL
 ##' @param silent Whether or not to display warnings.
 ##'
-##' @return Returns the original time series x with all the elements
-##' within one cluster having smaller values than the clusters maximum
-##' being replaced by NA.
+##' @return Same class as the input. The time series will be similar
+##'   to their original versions with all the elements within a
+##'   cluster having smaller values than the clusters maximum being
+##'   replaced by NA.
 ##'
 ##' @family extremes
 ##' 
 ##' @export
 ##' @importFrom xts xts
 ##' @author Philipp Mueller
+##' 
 decluster <- function( x, threshold, cluster.distance = NULL,
-                      silent = FALSE ){
+                      silent = FALSE ){ 
+  UseMethod( "decluster" )
+}
+
+##' @title Decluster a time series.
+##' @description Decluster point over threshold data as a
+##'   preprocessing step for the fitting of the generalized Pareto
+##'   (GP) distribution.
+##'
+##' @details This function determines clusters in an object of class
+##'   \pkg{xts} and extracts just their maximal values in order to
+##'   remove short-range correlations. All position of exceedances
+##'   will be considered belonging to a cluster until at least
+##'   \strong{cluster.distance} consecutive points fall below the
+##'   \strong{threshold}.
+##'
+##'   The argument \strong{cluster.distance} will be determined using
+##'   the extremal index as suggested in \emph{Ferro & Segers (2003)}
+##'   when set to NULL. It, thus, provides a non-parametric way of
+##'   declustering.
+##' 
+##'   It also features a special treatment of missing values. All of
+##'   them will be kept and the returned time series will have the
+##'   same length as the input. Separate missing values and small
+##'   sequences will be omitted in the cluster determination. But if
+##'   more than 15 missing values appear in a row, they will be
+##'   replaced with the minimal value of the time series for the
+##'   cluster detection. This way exceedances separated over a big
+##'   temporal distance will not be considered to belong to the same
+##'   cluster.
+##'
+##'   This function can be applied to lists of \pkg{xts} or
+##'   \emph{numeric} class elements too. 
+##'
+##' @param x A list of object of class \pkg{xts} or class
+##'   \emph{numeric}. The full time series has to be provided. Not
+##'   just the exceedances over the \strong{threshold}!
+##' @param threshold Numerical value. Has to be set sufficient high to
+##'   fulfill the asymptotic condition for the GP distribution.
+##' @param cluster.distance Numerical value specifying how many points
+##'   have to be below the \strong{threshold} for the next point to be
+##'   considered the starting point of a new cluster. Only supply a
+##'   value when you really know what you are doing! Default = NULL
+##' @param silent Whether or not to display warnings.
+##'
+##' @return Same class as the input. The time series will be similar
+##'   to their original versions with all the elements within a
+##'   cluster having smaller values than the clusters maximum being
+##'   replaced by NA.
+##'
+##' @family extremes
+##' 
+##' @export
+##' @importFrom xts xts
+##' @author Philipp Mueller
+##' 
+decluster.list <- function( x, threshold, cluster.distance = NULL,
+                           silent = FALSE ){ 
+  return( lapply( x, decluster, threshold = threshold,
+                 cluster.distance = cluster.distance,
+                 silent = silent ) )
+}
+
+##' @title Decluster a time series.
+##' @description Decluster point over threshold data as a
+##'   preprocessing step for the fitting of the generalized Pareto
+##'   (GP) distribution.
+##'
+##' @details This function determines clusters in an object of class
+##'   \pkg{xts} and extracts just their maximal values in order to
+##'   remove short-range correlations. All position of exceedances
+##'   will be considered belonging to a cluster until at least
+##'   \strong{cluster.distance} consecutive points fall below the
+##'   \strong{threshold}.
+##'
+##'   The argument \strong{cluster.distance} will be determined using
+##'   the extremal index as suggested in \emph{Ferro & Segers (2003)}
+##'   when set to NULL. It, thus, provides a non-parametric way of
+##'   declustering.
+##' 
+##'   It also features a special treatment of missing values. All of
+##'   them will be kept and the returned time series will have the
+##'   same length as the input. Separate missing values and small
+##'   sequences will be omitted in the cluster determination. But if
+##'   more than 15 missing values appear in a row, they will be
+##'   replaced with the minimal value of the time series for the
+##'   cluster detection. This way exceedances separated over a big
+##'   temporal distance will not be considered to belong to the same
+##'   cluster.
+##'
+##'   This function can be applied to lists of \pkg{xts} class elements
+##'   too. 
+##'
+##' @param x An object of class \pkg{xts} or \emph{numeric}. The full
+##'   time series has to be provided. Not just the exceedances over
+##'   the \strong{threshold}!
+##' @param threshold Numerical value. Has to be set sufficient high to
+##'   fulfill the asymptotic condition for the GP distribution.
+##' @param cluster.distance Numerical value specifying how many points
+##'   have to be below the \strong{threshold} for the next point to be
+##'   considered the starting point of a new cluster. Only supply a
+##'   value when you really know what you are doing! Default = NULL
+##' @param silent Whether or not to display warnings.
+##'
+##' @return Same class as the input. The time series will be similar
+##'   to their original versions with all the elements within a
+##'   cluster having smaller values than the clusters maximum being
+##'   replaced by NA.
+##'
+##' @family extremes
+##' 
+##' @export
+##' @importFrom xts xts
+##' @author Philipp Mueller
+##' 
+decluster.xts <- decluster.default <- function( x, threshold,
+                  cluster.distance = NULL, silent = FALSE ){
   ## Caution: x is the full time series and not the blocked one!
   if ( any( is.na( x ) ) ){
     ## Handling of missing values.
@@ -317,33 +548,107 @@ extremal.index <- function( x, threshold, silent = FALSE ){
   return( c( theta, cluster.number, minimal.distance ) )
 }
 
-##' @title Apply a threshold to data
-##' @description Extracts all data above a certain threshold
-##' @details Due to the UNIX principle (make each program do one thing
-##' well) I decided to provide this extra function instead of
-##' incorporating it into the fitting function. After extracting all data
-##' above the threshold it is going to be subtracted from the data. In
-##' addition all exceedance can be declustered. This step is highly
-##' recommended since the extreme value theory is only valid for data
-##' without correlations and short-range correlations (which are present
-##' in most measured data) can be filtered out using this procedure. 
+##' @title Apply a threshold to a time series
+##' @description Extracts all data above a certain threshold of a
+##'   \pkg{xts} class object or a list of those.
+##' @details After extracting all data above the \strong{threshold},
+##'   the \strong{threshold} argument itself is going to be subtracted
+##'   from the data.
 ##'
-##' @param x Time series or numerical vector.
-##' @param threshold Value which has to be exceeded.
-##' @param decluster Flag indicating whether of not to decluster the
-##' obtained exceedance. Default = TRUE.
-##' @param na.rm Flag indicating whether to remove all NA values from the
-##' time series (removed points in clusters). For important steps like
-##' calculating the Lmoments of the time series there must not be any NA
-##' left. Default = TRUE.
+##'   In addition, all exceedance can be declustered. This step is
+##'   highly recommendes, since the extreme value theory is only valid
+##'   for data without correlations (which are present in most
+##'   measured data). Using this method, at least the short-range
+##'   correlations in the data can be taken care of.
+##'
+##' @param x Either an object of class \pkg{xts} or a list of those.
+##' @param threshold Numerical value, which has to be exceeded by the
+##'   data.
+##' @param decluster Logical flag indicating whether or not to
+##'   decluster the obtained exceedances over the
+##'   \strong{threshold}. Default = TRUE.
+##' @param na.rm Logical flag indicating whether to remove all NA
+##'   values from the time series (removed points in clusters). For
+##'   important steps, like calculating the \emph{Lmoments} of a time
+##'   series, there must not be any NA left. Default = TRUE.
 ##'
 ##' @family extremes
-##' 
 ##'
 ##' @export
-##' @return Declustered time series of the same format as the input.
-##' @author Philipp Mueller 
-threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
+##' @return Same class as the input
+##' @author Philipp Mueller
+threshold <- function( x, threshold, decluster = TRUE,
+                      na.rm = TRUE ){
+  UseMethod( "threshold" )
+}
+##' @title Apply a threshold to a time series
+##' @description Extracts all data above a certain threshold of a
+##'   \pkg{xts} class object or a list of those.
+##' @details After extracting all data above the \strong{threshold},
+##'   the \strong{threshold} argument itself is going to be subtracted
+##'   from the data.
+##'
+##'   In addition, all exceedance can be declustered. This step is
+##'   highly recommendes, since the extreme value theory is only valid
+##'   for data without correlations (which are present in most
+##'   measured data). Using this method, at least the short-range
+##'   correlations in the data can be taken care of.
+##'
+##' @param x A list of objects of class \pkg{xts}.
+##' @param threshold Numerical value, which has to be exceeded by the
+##'   data.
+##' @param decluster Logical flag indicating whether or not to
+##'   decluster the obtained exceedances over the
+##'   \strong{threshold}. Default = TRUE.
+##' @param na.rm Logical flag indicating whether to remove all NA
+##'   values from the time series (removed points in clusters). For
+##'   important steps, like calculating the \emph{Lmoments} of a time
+##'   series, there must not be any NA left. Default = TRUE.
+##'
+##' @family extremes
+##'
+##' @export
+##' @return Same class as the input
+##' @author Philipp Mueller
+threshold.list <- function( x, threshold, decluster = TRUE,
+                           na.rm = TRUE ){
+  return( lapply( x, threshold.xts, threshold = threshold,
+                 decluster = decluster, na.rm = na.rm ) )
+}
+##' @title Apply a threshold to a time series
+##' @description Extracts all data above a certain threshold of a
+##'   \pkg{xts} class object or a list of those.
+##' @details After extracting all data above the \strong{threshold},
+##'   the \strong{threshold} argument itself is going to be subtracted
+##'   from the data.
+##'
+##'   In addition, all exceedance can be declustered. This step is
+##'   highly recommendes, since the extreme value theory is only valid
+##'   for data without correlations (which are present in most
+##'   measured data). Using this method, at least the short-range
+##'   correlations in the data can be taken care of.
+##'
+##' @param x An object of class \pkg{xts}.
+##' @param threshold Numerical value, which has to be exceeded by the
+##'   data.
+##' @param decluster Logical flag indicating whether or not to
+##'   decluster the obtained exceedances over the
+##'   \strong{threshold}. Default = TRUE.
+##' @param na.rm Logical flag indicating whether to remove all NA
+##'   values from the time series (removed points in clusters). For
+##'   important steps, like calculating the \emph{Lmoments} of a time
+##'   series, there must not be any NA left. Default = TRUE.
+##'
+##' @family extremes
+##'
+##' @export
+##' @return Same class as the input
+##' @author Philipp Mueller
+threshold.xts <- threshold.default <- function( x, threshold,
+                                               decluster = TRUE,
+                                               na.rm = TRUE ){  
+  if ( !all( class( x ) == c( "xts", "zoo" ) ) )
+    stop( "The threshold.default works to input of class 'xts' only!" )
   if ( missing( x ) )
     stop( "Please provide a time series to apply the threshold to!" )
   if ( missing( threshold ) )
@@ -358,7 +663,6 @@ threshold <- function( x, threshold, decluster = TRUE, na.rm = TRUE ){
     x.threshold <- stats::na.omit( x.threshold )        
   return( x.threshold )
 }
-
 
 ##' @title Calculation of the return levels.
 ##' @description Calculate arbitrary return level and their error

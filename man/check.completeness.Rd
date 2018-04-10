@@ -29,8 +29,17 @@ It uses the \code{\link{remove.incomplete.years}}
   to check for the completeness of the individual years.
 }
 \seealso{
-Other ts: \code{\link{aic}}, \code{\link{anomalies}},
-  \code{\link{bic}}, \code{\link{remove.incomplete.years}},
+Other ts: \code{\link{aic.climex.fit.gev}},
+  \code{\link{aic.list}}, \code{\link{aic}},
+  \code{\link{anomalies.list}},
+  \code{\link{anomalies.xts}}, \code{\link{anomalies}},
+  \code{\link{bic.climex.fit.gev}}, \code{\link{bic.list}},
+  \code{\link{bic}},
+  \code{\link{remove.incomplete.years.list}},
+  \code{\link{remove.incomplete.years.xts}},
+  \code{\link{remove.incomplete.years}},
+  \code{\link{remove.seasonality.list}},
+  \code{\link{remove.seasonality.xts}},
   \code{\link{remove.seasonality}}
 }
 \author{

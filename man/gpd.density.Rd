@@ -31,11 +31,15 @@ If you want to calculate the density of the exponential
 Port of the \code{\link[ismev]{gpd.dens}} function.
 }
 \seealso{
-Other extremes: \code{\link{block}},
-  \code{\link{decluster}}, \code{\link{extremal.index}},
-  \code{\link{gev.density}}, \code{\link{qevd}},
-  \code{\link{return.level}}, \code{\link{revd}},
-  \code{\link{rlevd}}, \code{\link{threshold}}
+Other extremes: \code{\link{block.list}},
+  \code{\link{block.xts}}, \code{\link{block}},
+  \code{\link{decluster.list}},
+  \code{\link{decluster.xts}}, \code{\link{decluster}},
+  \code{\link{extremal.index}}, \code{\link{gev.density}},
+  \code{\link{qevd}}, \code{\link{return.level}},
+  \code{\link{revd}}, \code{\link{rlevd}},
+  \code{\link{threshold.list}},
+  \code{\link{threshold.xts}}, \code{\link{threshold}}
 }
 \author{
 Philipp Mueller

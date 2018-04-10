@@ -72,7 +72,7 @@ source.data <- function( download.path = NULL, envir = NULL ){
   } else {
     load( file = paste0( download.path,
                         data.path[ as.numeric( data.selection ) ] ),
-         ENVIR = envir )
+         envir = envir )
   } 
   invisible( )
 }

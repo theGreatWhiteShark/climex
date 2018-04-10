@@ -41,11 +41,15 @@ Port from the extRemes package to (again) get rid of the
 function outside of the fitting function.
 }
 \seealso{
-Other extremes: \code{\link{block}},
-  \code{\link{decluster}}, \code{\link{extremal.index}},
-  \code{\link{gev.density}}, \code{\link{gpd.density}},
-  \code{\link{return.level}}, \code{\link{revd}},
-  \code{\link{rlevd}}, \code{\link{threshold}}
+Other extremes: \code{\link{block.list}},
+  \code{\link{block.xts}}, \code{\link{block}},
+  \code{\link{decluster.list}},
+  \code{\link{decluster.xts}}, \code{\link{decluster}},
+  \code{\link{extremal.index}}, \code{\link{gev.density}},
+  \code{\link{gpd.density}}, \code{\link{return.level}},
+  \code{\link{revd}}, \code{\link{rlevd}},
+  \code{\link{threshold.list}},
+  \code{\link{threshold.xts}}, \code{\link{threshold}}
 }
 \author{
 Philipp Mueller
