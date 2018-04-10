@@ -38,6 +38,29 @@ test_that( "remove.incomplete.years get's rid of NA in time series",{
                44559 )
 })
 
+test_that( "check.completeness is throwing errors on wrong input", {
+  expect_error( check.completeness( temp.potsdam,
+                                   number.of.years = "30" ) )
+  expect_error( check.completeness( 30 ) )
+  expect_error( check.completeness( list( 30, temp.potsdam ) ) ) } )
+
+x.complete <- x.incomplete <- remove.incomplete.years( temp.potsdam )
+x.incomplete[ 2 ] <- NA
+test_that( "check.completeness is performing as expected", {
+  expect_true( check.completeness(
+      x.complete,
+      number.of.years = length( unique(
+          lubridate::year( x.complete ) ) ) ) )
+  expect_false( check.completeness(
+      x.incomplete,
+      number.of.years = length( unique(
+          lubridate::year( x.complete ) ) ) ) )
+  expect_equal( length( check.completeness(
+      list( x.complete, x.incomplete ),
+      number.of.years = length( unique(
+          lubridate::year( x.complete ) ) ) ) ),
+      1 ) } )
+
 test_that( "mode is working", {
   expect_equal( climex:::mode( temp.potsdam ), 19.7559 - 2.08e-06 )
 })

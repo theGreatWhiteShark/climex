@@ -33,7 +33,8 @@ Only time series of class "xts" are accepted (on purpose
 }
 \seealso{
 Other ts: \code{\link{aic}}, \code{\link{anomalies}},
-  \code{\link{bic}}, \code{\link{remove.incomplete.years}}
+  \code{\link{bic}}, \code{\link{check.completeness}},
+  \code{\link{remove.incomplete.years}}
 }
 \author{
 Philipp Mueller

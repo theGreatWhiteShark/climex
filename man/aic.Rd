@@ -22,6 +22,7 @@ The climex.fit.gev object is of identical structure as the output of the optim()
 \code{\link{bic}}
 
 Other ts: \code{\link{anomalies}}, \code{\link{bic}},
+  \code{\link{check.completeness}},
   \code{\link{remove.incomplete.years}},
   \code{\link{remove.seasonality}}
 }

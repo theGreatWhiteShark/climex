@@ -22,6 +22,7 @@ The climex.fit.gev object is of identical structure as the output of the optim()
 \code{\link{aic}}
 
 Other ts: \code{\link{aic}}, \code{\link{anomalies}},
+  \code{\link{check.completeness}},
   \code{\link{remove.incomplete.years}},
   \code{\link{remove.seasonality}}
 }

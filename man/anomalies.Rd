@@ -23,6 +23,7 @@ Construction via the subtraction of the mean
 }
 \seealso{
 Other ts: \code{\link{aic}}, \code{\link{bic}},
+  \code{\link{check.completeness}},
   \code{\link{remove.incomplete.years}},
   \code{\link{remove.seasonality}}
 }

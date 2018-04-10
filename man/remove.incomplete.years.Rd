@@ -31,7 +31,8 @@ Since incomplete years are detected via the
 \code{\link{remove.seasonality}}
 
 Other ts: \code{\link{aic}}, \code{\link{anomalies}},
-  \code{\link{bic}}, \code{\link{remove.seasonality}}
+  \code{\link{bic}}, \code{\link{check.completeness}},
+  \code{\link{remove.seasonality}}
 }
 \author{
 Philipp Mueller

@@ -131,7 +131,97 @@ remove.incomplete.years <- function( x, time.unit = 1 ){
     ## There is no data left
     return( x )
   }
-}   
+}
+
+##' @title Checking for N complete years of data
+##' 
+##' @description This function tests whether the series do has at least
+##'   \emph{number.of.years} complete years of data.
+##' 
+##' @details It uses the \code{\link{remove.incomplete.years}}
+##'   to check for the completeness of the individual years.
+##'
+##' @param x Either a time series of class \pkg{xts} or a list of
+##'   them.
+##' @param number.of.years The minimum number of complete years in the
+##'   series. Default = 30.
+##'
+##' @export
+##'
+##' @family ts
+##'
+##' @return If the input is of type \pkg{xts}, the function returns
+##'   TRUE or FALSE. If the input, on the other hand, is a list of
+##'   objects of type \pkg{xts}, it returns a trimmed list
+##'   containing only those elements, which indeed have more than N
+##'   years of complete data.
+##' @author Philipp Mueller 
+check.completeness <- function( x, number.of.years = 30 ){
+  UseMethod( "check.completeness" )
+}
+##' @title Checking for N complete years of data
+##' @description Removes all class \pkg{xts} time series from a
+##'   list, which are not of at least \emph{number.of.years}
+##'   complete years of data.
+##'
+##' @param x A list of \pkg{xts} class objects.
+##' @param number.of.years The minimum number of complete years in the
+##'   series. Default = 30.
+##'
+##' @export
+##'
+##' @return Trimmed list containing only those elements, which indeed
+##'   have more than N years of complete data.
+##' @author Philipp Mueller
+check.completeness.list <- function( x, number.of.years = 30 ){
+  ## Apply the checks to all elements of the list.
+  x.list.check <-
+    Reduce( c, lapply( x, check.completeness.xts,
+                      number.of.years = number.of.years ) )
+
+  ## Return only those element matching the conditions
+  return( x[ x.list.check ] )
+}
+##' @title Checking for N complete years of data
+##' 
+##' @description This function tests whether a \pkg{xts} class object
+##'   has at least \emph{number.of.years} complete years of data.
+##' 
+##' @details It uses the \code{\link{remove.incomplete.years}}
+##'   to check for the completeness of the individual years.
+##'
+##' @param x A time series of class \pkg{xts}.
+##' @param number.of.years The minimum number of complete years in the
+##'   series. Default = 30.
+##'
+##' @importFrom xts is.xts
+##'
+##' @export
+##' 
+##' @family data.cleaning
+##'
+##' @return Logical
+##' @author Philipp Mueller 
+check.completeness.xts <- check.completeness.default <-
+  function( x, number.of.years = 30 ){
+    ## Only accept objects of class 'xts'
+    if ( !is.xts( x ) ){
+      stop( "Only objects of class 'xts' accepted!" )
+    }
+    if ( !is.numeric( number.of.years ) ){
+      stop( "The number of years has to be a 'numerical' value!" )
+    }
+
+    ## Remove all incomplete years
+    x.complete.years <- remove.incomplete.years( x )
+
+    ## Check whether the remaining number of years are at least of the
+    ## specified number.
+    x.check <- length( unique(
+        lubridate::year( x.complete.years ) ) ) >=
+      number.of.years
+    return( x.check )
+}
 
 ##' @title Remove seasonality
 ##' @description Calculates the seasonal component of a time series
