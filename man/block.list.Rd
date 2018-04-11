@@ -11,18 +11,19 @@
 \arguments{
 \item{x}{A list of objects of class \pkg{xts}.}
 
-\item{block.number}{Specifies the number of blocks the input data is
-going to be separated in.}
+\item{block.number}{Specifies the number of blocks the input data
+is going to be separated in.}
 
-\item{block.length}{Length of the blocks. For the sake of simplicity
-the last block is not forced to match the length of the other
-plots.}
+\item{block.length}{Length of the blocks. For the sake of
+simplicity the last block is not forced to match the length of
+the other plots.}
 
-\item{block.mode}{This parameter determines if the maximum "max" or
-the minimum "min" of a block shall be returned. Default: "max".}
+\item{block.mode}{This parameter determines if the maximum "max"
+or the minimum "min" of a block shall be returned. Default:
+"max".}
 
-\item{separation.mode}{"years" is used to split the data according to
-its date values instead. If \strong{block.length} or
+\item{separation.mode}{"years" is used to split the data according
+to its date values instead. If \strong{block.length} or
 \strong{block.number} is specified this argument will not be
 considered and set to "none". Default = "years".}
 }
@@ -35,10 +36,10 @@ Separates the input into blocks of equal size and
 }
 \details{
 If \strong{separation.mode} is set to "years" the
-  data is separated according to it's time stamps. If not, the size
-  of a block is determined by the \strong{block.length} argument
-  or calculated via the \strong{block.number} argument if the
-  previous one is set to NULL. For calculating the mean of
+  data is separated according to it's time stamps. If not, the
+  size of a block is determined by the \strong{block.length}
+  argument or calculated via the \strong{block.number} argument if
+  the previous one is set to NULL. For calculating the mean of
   the blocks, please have a look at the \code{\link[stats]{ave}}
   function.
 

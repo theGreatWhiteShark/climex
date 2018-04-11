@@ -10,10 +10,10 @@
 \item{x}{A \pkg{xts} class object.}
 
 \item{time.unit}{Minimal differences found when applying the
-\code{\link{diff}} function to \emph{x}. Default = 1.}
+\code{\link[base]{diff}} function to \strong{x}. Default = 1.}
 }
 \value{
-Object of the same class as the input \emph{x}.
+Object of the same class as the input \strong{x}.
 }
 \description{
 Removes all years, which contain either a NA or are
@@ -24,7 +24,7 @@ Removes all years, which contain either a NA or are
 Since incomplete years are detected via the
   difference in the time stamps of neighbouring points, the user
   has to provide the basic time unit. (Numerical value of the
-  result of the \code{\link{diff}} function applied to two
+  result of the \code{\link[base]{diff}} function applied to two
   consecutive points.) For daily data the value is 1.
 }
 \seealso{

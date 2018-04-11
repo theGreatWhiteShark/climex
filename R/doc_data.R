@@ -1,3 +1,5 @@
+### doc_data.R - Documentation of the data sets provided along with
+##    the climex package
 ##' Data set of daily maximum temperatures of the Potsdam station
 ##' provided by the DWD. If you intend to use this data please look at
 ##' the \href{ftp://ftp-cdc.dwd.de/pub/CDC/Terms_of_use.pdf}{terms of
@@ -7,3 +9,4 @@
 ##' @source \url{http://www.dwd.de/}
 ##' @name temp.potsdam
 NULL
+## End of doc_data.R

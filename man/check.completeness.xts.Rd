@@ -17,7 +17,7 @@ Logical
 }
 \description{
 This function tests whether a \pkg{xts} class object
-  has at least \emph{number.of.years} complete years of data.
+  has at least \strong{number.of.years} complete years of data.
 }
 \details{
 It uses the \code{\link{remove.incomplete.years}}

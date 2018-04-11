@@ -18,7 +18,7 @@ Trimmed list containing only those elements, which indeed
 }
 \description{
 Removes all class \pkg{xts} time series from a
-  list, which are not of at least \emph{number.of.years}
+  list, which are not of at least \strong{number.of.years}
   complete years of data.
 }
 \author{

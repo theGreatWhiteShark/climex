@@ -5,7 +5,8 @@
 ##'   \emph{climex.fit.gev} or \emph{climex.fit.gpd} class object or a
 ##'   list of those.
 ##' @details The \emph{climex.fit.gev} object is of identical
-##'   structure as the output of the \code{\link{optim}} function.
+##'   structure as the output of the \code{\link[stats]{optim}}
+##    function.
 ##'  
 ##' @param x Either an object returned by the \code{\link{fit.gev}} or
 ##'   \code{\link{fit.gpd}} function or a list of such elements.
@@ -17,7 +18,7 @@
 ##' @export
 ##' 
 ##' @return Numeric value, if the input is a single fitting object, or
-##'   a numerical vector, if \emph{x} is a list of such objects.
+##'   a numerical vector, if \strong{x} is a list of such objects.
 ##' @author Philipp Mueller
 aic <- function( x ){
   UseMethod( "aic" )
@@ -26,8 +27,9 @@ aic <- function( x ){
 ##' @description Calculates the Akaike information criterion of a
 ##'   list of \emph{climex.fit.gev} or \emph{climex.fit.gpd} class
 ##'   objects.
-##' @details The climex.fit.gev object is of identical structure as
-##'   the output of the \code{\link{optim}} function. 
+##' @details The \emph{climex.fit.gev} object is of identical
+##'   structure as the output of the \code{\link[stats]{optim}}
+##'   function.
 ##'  
 ##' @param x Either a list of objects returned by the
 ##'   \code{\link{fit.gev}} or \code{\link{fit.gpd}} function.
@@ -57,7 +59,8 @@ aic.list <- function( x ){
 ##' @description Calculates the Akaike information criterion of a
 ##'   \emph{climex.fit.gev} or \emph{climex.fit.gpd} class object.
 ##' @details The \emph{climex.fit.gev} object is of identical
-##'   structure as the output of the \code{\link{optim}} function.
+##'   structure as the output of the \code{\link[stats]{optim}}
+##'   function.
 ##'  
 ##' @param x An object returned by the \code{\link{fit.gev}} or
 ##'   \code{\link{fit.gpd}} function.
@@ -82,7 +85,8 @@ aic.climex.fit.gev <- aic.climex.fit.gpd <- aic.default <- function( x ){
 ##'   \emph{climex.fit.gev} or \emph{climex.fit.gpd} class object or a
 ##'   list of those.
 ##' @details The \emph{climex.fit.gev} object is of identical
-##'   structure as the output of the \code{\link{optim}} function.
+##'   structure as the output of the \code{\link[stats]{optim}}
+##'   function.
 ##'  
 ##' @param x Either an object returned by the \code{\link{fit.gev}} or
 ##'   \code{\link{fit.gpd}} function or a list of such elements.
@@ -94,7 +98,7 @@ aic.climex.fit.gev <- aic.climex.fit.gpd <- aic.default <- function( x ){
 ##' @export
 ##' 
 ##' @return Numeric value, if the input is a single fitting object, or
-##'   a numerical vector, if \emph{x} is a list of such objects.
+##'   a numerical vector, if \strong{x} is a list of such objects.
 ##' @author Philipp Mueller
 bic <- function( x ){
   UseMethod( "bic" )
@@ -103,8 +107,9 @@ bic <- function( x ){
 ##' @description Calculates the Bayesian information criterion of a
 ##'   list of \emph{climex.fit.gev} or \emph{climex.fit.gpd} class
 ##'   objects.
-##' @details The climex.fit.gev object is of identical structure as
-##'   the output of the \code{\link{optim}} function. 
+##' @details The \emph{climex.fit.gev} object is of identical
+##'   structure as the output of the \code{\link[stats]{optim}}
+##'   function.
 ##'  
 ##' @param x Either a list of objects returned by the
 ##'   \code{\link{fit.gev}} or \code{\link{fit.gpd}} function.
@@ -130,17 +135,19 @@ bic.list <- function( x ){
   }
   return( x.result )
 }
-##' @title  information criterion
+##' @title Bayesian information criterion
 ##' @description Calculates the Bayesian information criterion of a
 ##'   \emph{climex.fit.gev} or \emph{climex.fit.gpd} class object.
 ##' @details The \emph{climex.fit.gev} object is of identical
-##'   structure as the output of the \code{\link{optim}} function.
+##'   structure as the output of the \code{\link[stats]{optim}}
+##'   function.
 ##'  
 ##' @param x An object returned by the \code{\link{fit.gev}} or
 ##'   \code{\link{fit.gpd}} function.
 ##'
 ##' @seealso \code{\link{aic}}, \code{\link{fit.gev}},
 ##'   \code{\link{fit.gpd}}
+##' 
 ##' @family ts
 ##'
 ##' @export
@@ -162,12 +169,12 @@ bic.climex.fit.gev <- bic.climex.fit.gpd <- bic.default <- function( x ){
 ##' @details Since incomplete years are detected via the
 ##'   difference in the time stamps of neighbouring points, the user
 ##'   has to provide the basic time unit. (Numerical value of the
-##'   result of the \code{\link{diff}} function applied to two
+##'   result of the \code{\link[base]{diff}} function applied to two
 ##'   consecutive points.) For daily data the value is 1.
 ##' 
 ##' @param x Either a \pkg{xts} class object or a list of those.
 ##' @param time.unit Minimal differences found when applying the
-##'   \code{\link{diff}} function to \emph{x}. Default = 1.
+##'   \code{\link[base]{diff}} function to \strong{x}. Default = 1.
 ##'
 ##' @seealso \code{\link{remove.seasonality}}
 ##'
@@ -176,7 +183,7 @@ bic.climex.fit.gev <- bic.climex.fit.gpd <- bic.default <- function( x ){
 ##' @importFrom xts xts
 ##' @import lubridate
 ##' 
-##' @return Object of the same class as the input \emph{x}.
+##' @return Object of the same class as the input \strong{x}.
 ##' @author Philipp Mueller
 remove.incomplete.years <- function( x, time.unit = 1 ){
   UseMethod( "remove.incomplete.years" )
@@ -189,12 +196,12 @@ remove.incomplete.years <- function( x, time.unit = 1 ){
 ##' @details Since incomplete years are detected via the
 ##'   difference in the time stamps of neighbouring points, the user
 ##'   has to provide the basic time unit. (Numerical value of the
-##'   result of the \code{\link{diff}} function applied to two
+##'   result of the \code{\link[base]{diff}} function applied to two
 ##'   consecutive points.) For daily data the value is 1.
 ##' 
 ##' @param x A list of \pkg{xts} class objects.
 ##' @param time.unit Minimal differences found when applying the
-##'   \code{\link{diff}} function to \emph{x}. Default = 1.
+##'   \code{\link[base]{diff}} function to \strong{x}. Default = 1.
 ##'
 ##' @seealso \code{\link{remove.seasonality}}
 ##'
@@ -203,7 +210,7 @@ remove.incomplete.years <- function( x, time.unit = 1 ){
 ##' @importFrom xts xts
 ##' @import lubridate
 ##' 
-##' @return Object of the same class as the input \emph{x}.
+##' @return Object of the same class as the input \strong{x}.
 ##' @author Philipp Mueller
 remove.incomplete.years.list <- function( x, time.unit = 1 ){
   return( lapply( x, remove.incomplete.years,
@@ -217,12 +224,12 @@ remove.incomplete.years.list <- function( x, time.unit = 1 ){
 ##' @details Since incomplete years are detected via the
 ##'   difference in the time stamps of neighbouring points, the user
 ##'   has to provide the basic time unit. (Numerical value of the
-##'   result of the \code{\link{diff}} function applied to two
+##'   result of the \code{\link[base]{diff}} function applied to two
 ##'   consecutive points.) For daily data the value is 1.
 ##' 
 ##' @param x A \pkg{xts} class object.
 ##' @param time.unit Minimal differences found when applying the
-##'   \code{\link{diff}} function to \emph{x}. Default = 1.
+##'   \code{\link[base]{diff}} function to \strong{x}. Default = 1.
 ##'
 ##' @seealso \code{\link{remove.seasonality}}
 ##'
@@ -231,22 +238,23 @@ remove.incomplete.years.list <- function( x, time.unit = 1 ){
 ##' @importFrom xts xts
 ##' @import lubridate
 ##' 
-##' @return Object of the same class as the input \emph{x}.
+##' @return Object of the same class as the input \strong{x}.
 ##' @author Philipp Mueller
 remove.incomplete.years.xts <- remove.incomplete.years.default <-
   function( x, time.unit = 1 ){
     if ( !any( class( x ) == "xts" ) )
       stop(
           "Provided element of the wrong class in remove.incomplete.years. Provide object of class xts instead!" )
-    ## Removes all values containing a NA, R's general type for missing
-    ## data. 
+    ## Removes all values containing a NA, R's general type for
+    ## missing data. 
     x <- x[ !is.na( x ) ]
 
     ## There is data available.
     if ( length( x ) > 0 ){
-      ## The missing points are detected by looking for differences in
-      ## the time stamps of neighbouring points. If their are more than
-      ## time.unit apart, there are some missing values in between.
+      ## The missing points are detected by looking for differences in 
+      ## the time stamps of neighbouring points. If their are more
+      ## than time.unit apart, there are some missing values in
+      ## between,
       x.index <- index( x )
       x.index.diff <- diff( x.index )
       ## If the day before the gap is the last day of a year, it's year
@@ -254,7 +262,8 @@ remove.incomplete.years.xts <- remove.incomplete.years.default <-
       ## remove, since the corresponding gap doesn't affect it. Those
       ## gaps have to be treated specially.
       x.last.day.of.year <-
-        grep( "12-31", index( x [ which( x.index.diff > time.unit ) ] ) )
+        grep( "12-31", index( x [
+                           which( x.index.diff > time.unit ) ] ) )
       if ( length( x.last.day.of.year ) > 0 ){
         ## Adding the next year plus the year of the index behind the
         ## gap. 
@@ -271,9 +280,9 @@ remove.incomplete.years.xts <- remove.incomplete.years.default <-
       incomplete.years.1 <- year( x[ ( which( x.index.diff > 1 ) ) ] )
       incomplete.years.2 <- year( x[ ( which( x.index.diff > 1 ) +
                                        1 ) ] )
-      ## Be sure to include all years, even if several years passed within
-      ## one gaps. The seq() function is used on every pair of points
-      ## before and after the gap.
+      ## Be sure to include all years, even if several years passed
+      ## within one gaps. The seq() function is used on every pair of
+      ## points before and after the gap.
       if ( length( incomplete.years.1 ) > 0 &
            length( incomplete.years.2 ) > 0 ){
         ## Since the last day of the year is removed above, it's
@@ -288,13 +297,15 @@ remove.incomplete.years.xts <- remove.incomplete.years.default <-
         ## Creating an object of length 0 as placeholder
         all.incomplete.years <- incomplete.years.1
       }
-      ## Check whether the first year starts at January 1st and the last
-      ## on Dec. 31st. Else the corresponding years aren't complete.
+      ## Check whether the first year starts at January 1st and the
+      ## last on Dec. 31st. Else the corresponding years aren't
+      ## complete.
       if ( length( grep( "-01-01", index( x[ 1 ] ) ) ) == 0 ){
         all.incomplete.years <- c( all.incomplete.years,
                                   year( x[ 1 ] ) )
       }
-      if ( length( grep( "-12-31", index( x[ length( x ) ] ) ) ) == 0 ){
+      if ( length( grep( "-12-31",
+                        index( x[ length( x ) ] ) ) ) == 0 ){
         all.incomplete.years <- c( all.incomplete.years,
                                   year( x[ length( x ) ] ) )
       }
@@ -311,8 +322,8 @@ remove.incomplete.years.xts <- remove.incomplete.years.default <-
 
 ##' @title Checking for N complete years of data
 ##' 
-##' @description This function tests whether the series do has at least
-##'   \emph{number.of.years} complete years of data.
+##' @description This function tests whether the series do has at
+##'   least \strong{number.of.years} complete years of data.
 ##' 
 ##' @details It uses the \code{\link{remove.incomplete.years}}
 ##'   to check for the completeness of the individual years.
@@ -337,7 +348,7 @@ check.completeness <- function( x, number.of.years = 30 ){
 }
 ##' @title Checking for N complete years of data
 ##' @description Removes all class \pkg{xts} time series from a
-##'   list, which are not of at least \emph{number.of.years}
+##'   list, which are not of at least \strong{number.of.years}
 ##'   complete years of data.
 ##'
 ##' @param x A list of \pkg{xts} class objects.
@@ -361,7 +372,7 @@ check.completeness.list <- function( x, number.of.years = 30 ){
 ##' @title Checking for N complete years of data
 ##' 
 ##' @description This function tests whether a \pkg{xts} class object
-##'   has at least \emph{number.of.years} complete years of data.
+##'   has at least \strong{number.of.years} complete years of data.
 ##' 
 ##' @details It uses the \code{\link{remove.incomplete.years}}
 ##'   to check for the completeness of the individual years.
@@ -540,7 +551,8 @@ remove.seasonality.xts <- remove.seasonality.default <- function( x ){
         if ( length( x.clean[
             year( x.clean ) == x.clean.years[
                                    which( closest.year.vec ==
-                                          min( closest.year.vec ) ) ] ] )
+                                          min( closest.year.vec )
+                                         ) ] ] )
             == 366 ){
           closest.year.pos <- which( closest.year.vec ==
                                      min( closest.year.vec ) )
@@ -567,8 +579,8 @@ remove.seasonality.xts <- remove.seasonality.default <- function( x ){
     if ( min( days.x ) == 1 && max( days.x ) == 366 &&
          length( days.x ) < 366 ){
       ## Somewhere at least one day is missing. This "step" has to
-      ## be detected and the all days after the step have to be reduced
-      ## by one
+      ## be detected and the all days after the step have to be
+      ## reduced by one
       step <- which( days.x - c( 1 : length( days.x ) ) > 0 )[ 1 ]
       days.x[ step : length( days.x ) ] <- days.x[
           step : length( days.x ) ] - 1
@@ -667,13 +679,13 @@ anomalies.list <- function( x ){
 anomalies.xts <- anomalies.default <- function( x ){
   if ( !any( class( x ) == "xts" ) )
     stop( "Only for the class 'xts' the anomalies can be calculated" )
-  ## base::ave seems to calculate takes a vector and a factor vector of
-  ## the same length. Then it calculates the mean for all values
+  ## base::ave seems to calculate takes a vector and a factor vector
+  ## of the same length. Then it calculates the mean for all values
   ## sharing a factor and is placing the mean value in the element
   ## corresponding to the position of the original one.
   x.anomalies <- x - stats::ave( x, as.factor( yday( x ) ),
-                               FUN = function( x )
-                                 mean( x, na.rm = TRUE ) )
+                               FUN = function( xx )
+                                 mean( xx, na.rm = TRUE ) )
   return( x.anomalies )
 }
 ## End of ts.R

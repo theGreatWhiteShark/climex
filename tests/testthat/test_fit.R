@@ -1,3 +1,4 @@
+### test_fit.R - Test checking the fitting procedure.
 library( climex )
 context( "Testing the fitting procedure" )
 x.block <- climex::block( climex::anomalies( temp.potsdam ) )
@@ -181,3 +182,4 @@ test_that( "fit.gpd's threshold argument affect the result the way it is suppose
                       )$return.level ), 38.1915142245,
       tolerance = 5E-4 )
 })
+## End of test_fit.R

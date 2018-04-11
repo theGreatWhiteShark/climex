@@ -7,14 +7,17 @@
 likelihood(parameters = NULL, x.in, model = c("gev", "gpd"))
 }
 \arguments{
-\item{parameters}{Vector containing the location, scale and shape
-parameter for the GEV or the scale and shape parameter for the GPD.
-If NULL the \code{\link{likelihood.initials}} is used. Default = NULL}
+\item{parameters}{Numerical vector containing the location, scale,
+and shape parameters for the GEV or the scale and shape
+parameters for the GPD. If NULL,
+\code{\link{likelihood.initials}} is used to determine
+them. Default = NULL}
 
-\item{x.in}{Time series.}
+\item{x.in}{Time series of class \pkg{xts}.}
 
-\item{model}{Determining whether to calculate the initial parameters
-of the GEV or GPD function. Default = "gev"}
+\item{model}{String determining whether to calculate the initial
+parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+"gev"}
 }
 \value{
 Numerical value of the negative log likelihood.
@@ -24,9 +27,10 @@ Calculated the negative log likelihood of the GEV or
   GPD function.
 }
 \details{
-This function is only meant to work with constant parameters
-and no covariats. x.in is not called "x" anymore since the call
-grad( func = likelihood, x = parameters, ... ) wouldn't be possible.
+This function is only meant to work with constant
+  parameters and no covariates. \strong{x.in} is not called "x"
+  since the call \code{grad( func = likelihood, x = parameters,
+  ... )} wouldn't be possible.
 }
 \seealso{
 Other optimization: \code{\link{fit.gev.list}},

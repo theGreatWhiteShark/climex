@@ -25,10 +25,10 @@ Calculate the probability density function for the
 \details{
 If you want to calculate the density of the exponential
   distribution, please stick to the c( scale, shape ) scheme of
-  the `parameters' argument while setting the shape parameter to
-  zero. 
+  the \strong{parameters} argument while setting the shape
+  parameter to zero. 
 
-Port of the \code{\link[ismev]{gpd.dens}} function.
+  Port of the \code{\link[ismev]{gpd.dens}} function.
 }
 \seealso{
 Other extremes: \code{\link{block.list}},

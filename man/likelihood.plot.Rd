@@ -9,8 +9,8 @@ likelihood.plot(time.series, location.lim = NULL, scale.lim = NULL,
   true.minima = NULL)
 }
 \arguments{
-\item{time.series}{Data for which the likelihood function is going
-to be calculated.}
+\item{time.series}{Data, for which the likelihood function is
+going to be calculated.}
 
 \item{location.lim}{Boundaries of the plotted likelihood
 region. Default = +/- 2.5 times the minimum value.}
@@ -30,8 +30,8 @@ fit of the time series.}
 \item{main}{Title for the multiplot. Default = NULL.}
 
 \item{true.minima}{Provide the true minima of the neg
-log-likelihood function if fit.gev does not provide it in the
-first run. Default = NULL.}
+log-likelihood function if \code{\link{fit.gev}} does not
+provide it in the first run. Default = NULL.}
 }
 \value{
 returns a multiplot of planes through the negative
@@ -46,7 +46,8 @@ Generates three 2D slices of the likelihood of a
 The likelihood will be plotted around its optimal
   value. To determine it the time series will be fitted via
   \code{\link{fit.gev}}. Its also possible to provide another
-  point the likelihood will be centered around using 'center'.
+  point the likelihood will be centered around using
+  \strong{center}.
 }
 \author{
 Philipp Mueller

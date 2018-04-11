@@ -10,9 +10,9 @@ source.data(download.path = NULL, envir = NULL)
 \item{download.path}{Specifies the folder in which the function
 will look for .RData files recursively. Per default the
 \emph{R/climex/} directory in your home folder will be used. You
-can overwrite 
-this behavior by setting \code{options( climex.path = "PATH" )}
-in your \emph{.Rprofile} path in your home.}
+can overwrite this behavior by setting \code{options(
+climex.path = "PATH" )} in your \emph{.Rprofile} path in your
+home.}
 
 \item{envir}{Environment the data will be attached to. If
 not specified, the data will be loaded to the environment the

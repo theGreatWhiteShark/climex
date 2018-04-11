@@ -18,7 +18,14 @@ from one of the CRAN fellows by just submitting the core package.
   **remove.incomplete.years**, **decluster**, and **threshold** as S3
   objects. They now accept both the basic elements they already were
   able to accept beforehand and a list of those objects. In the latter
-  case the output will be a list of the output of the individual calls.
+  case the output will be a list of the output of the individual
+  calls.
+- Streamlining the documentation and formatting
+  Updating the formatting of the code and the documentation. All
+  lambda functions now have running variables composed of two times
+  the same character. Function arguments are marked with the \strong{}
+  highlighting in the documentation and packages are referenced using
+  \pkg{}.
   
 # v1.2.1
 - Only perform the test of the API of the DWD on Unix-based

@@ -1,12 +1,14 @@
+### extremes.R - Various helper function for the extreme value
+##    analysis 
 ##' @title Blocking data
 ##' @description Separates the input into blocks of equal size and
 ##'   returns the maximum or minimum of the block as result.
 ##'
 ##' @details If \strong{separation.mode} is set to "years" the
-##'   data is separated according to it's time stamps. If not, the size
-##'   of a block is determined by the \strong{block.length} argument
-##'   or calculated via the \strong{block.number} argument if the
-##'   previous one is set to NULL. For calculating the mean of
+##'   data is separated according to it's time stamps. If not, the
+##'   size of a block is determined by the \strong{block.length}
+##'   argument or calculated via the \strong{block.number} argument if
+##'   the previous one is set to NULL. For calculating the mean of
 ##'   the blocks, please have a look at the \code{\link[stats]{ave}}
 ##'   function.
 ##'
@@ -14,15 +16,16 @@
 ##'   too. 
 ##'
 ##' @param x Either an object of class \pkg{xts} or a list of those.
-##' @param block.number Specifies the number of blocks the input data is
-##'   going to be separated in.
-##' @param block.length Length of the blocks. For the sake of simplicity
-##'   the last block is not forced to match the length of the other
-##'   plots. 
-##' @param block.mode This parameter determines if the maximum "max" or
-##'   the minimum "min" of a block shall be returned. Default: "max".
-##' @param separation.mode "years" is used to split the data according to
-##'   its date values instead. If \strong{block.length} or
+##' @param block.number Specifies the number of blocks the input data
+##'   is going to be separated in.
+##' @param block.length Length of the blocks. For the sake of
+##'   simplicity the last block is not forced to match the length of
+##'   the other plots. 
+##' @param block.mode This parameter determines if the maximum "max"
+##'   or the minimum "min" of a block shall be returned. Default:
+##'   "max". 
+##' @param separation.mode "years" is used to split the data according
+##'   to its date values instead. If \strong{block.length} or
 ##'   \strong{block.number} is specified this argument will not be
 ##'   considered and set to "none". Default = "years".
 ##' 
@@ -50,10 +53,10 @@ block <- function( x, block.number = round( length( x )/ 50 ),
 ##'   returns the maximum or minimum of the block as result.
 ##'
 ##' @details If \strong{separation.mode} is set to "years" the
-##'   data is separated according to it's time stamps. If not, the size
-##'   of a block is determined by the \strong{block.length} argument
-##'   or calculated via the \strong{block.number} argument if the
-##'   previous one is set to NULL. For calculating the mean of
+##'   data is separated according to it's time stamps. If not, the
+##'   size of a block is determined by the \strong{block.length}
+##'   argument or calculated via the \strong{block.number} argument if
+##'   the previous one is set to NULL. For calculating the mean of
 ##'   the blocks, please have a look at the \code{\link[stats]{ave}}
 ##'   function.
 ##'
@@ -61,15 +64,16 @@ block <- function( x, block.number = round( length( x )/ 50 ),
 ##'   too. 
 ##'
 ##' @param x A list of objects of class \pkg{xts}.
-##' @param block.number Specifies the number of blocks the input data is
-##'   going to be separated in.
-##' @param block.length Length of the blocks. For the sake of simplicity
-##'   the last block is not forced to match the length of the other
-##'   plots. 
-##' @param block.mode This parameter determines if the maximum "max" or
-##'   the minimum "min" of a block shall be returned. Default: "max".
-##' @param separation.mode "years" is used to split the data according to
-##'   its date values instead. If \strong{block.length} or
+##' @param block.number Specifies the number of blocks the input data
+##'   is going to be separated in.
+##' @param block.length Length of the blocks. For the sake of
+##'   simplicity the last block is not forced to match the length of
+##'   the other plots. 
+##' @param block.mode This parameter determines if the maximum "max"
+##'   or the minimum "min" of a block shall be returned. Default:
+##'   "max".
+##' @param separation.mode "years" is used to split the data according
+##'   to its date values instead. If \strong{block.length} or
 ##'   \strong{block.number} is specified this argument will not be
 ##'   considered and set to "none". Default = "years".
 ##' 
@@ -101,23 +105,24 @@ block.list <- function( x, block.number = round( length( x )/ 50 ),
 ##'   returns the maximum or minimum of the block as result.
 ##'
 ##' @details If \strong{separation.mode} is set to "years" the
-##'   data is separated according to it's time stamps. If not, the size
-##'   of a block is determined by the \strong{block.length} argument
-##'   or calculated via the \strong{block.number} argument if the
-##'   previous one is set to NULL. For calculating the mean of
+##'   data is separated according to it's time stamps. If not, the
+##'   size of a block is determined by the \strong{block.length}
+##'   argument or calculated via the \strong{block.number} argument if
+##'   the previous one is set to NULL. For calculating the mean of
 ##'   the blocks, please have a look at the \code{\link[stats]{ave}}
 ##'   function.
 ##'
 ##' @param x An object of class \pkg{xts}.
-##' @param block.number Specifies the number of blocks the input data is
-##'   going to be separated in.
-##' @param block.length Length of the blocks. For the sake of simplicity
-##'   the last block is not forced to match the length of the other
-##'   plots. 
-##' @param block.mode This parameter determines if the maximum "max" or
-##'   the minimum "min" of a block shall be returned. Default: "max".
-##' @param separation.mode "years" is used to split the data according to
-##'   its date values instead. If \strong{block.length} or
+##' @param block.number Specifies the number of blocks the input data
+##'   is going to be separated in.
+##' @param block.length Length of the blocks. For the sake of
+##'   simplicity the last block is not forced to match the length of
+##'   the other plots. 
+##' @param block.mode This parameter determines if the maximum "max"
+##'   or the minimum "min" of a block shall be returned. Default:
+##'   "max".
+##' @param separation.mode "years" is used to split the data according
+##'   to its date values instead. If \strong{block.length} or
 ##'   \strong{block.number} is specified this argument will not be
 ##'   considered and set to "none". Default = "years".
 ##' 
@@ -135,9 +140,13 @@ block.list <- function( x, block.number = round( length( x )/ 50 ),
 ##' 
 ##' @examples
 ##'   block( temp.potsdam )
-block.xts <- block.default <- function( x, block.number = round( length( x )/ 50 ),
-                                       block.length = NULL, block.mode = c( "max", "min" ),
-                                       separation.mode = c( "years", "none" ) ){
+block.xts <- block.default <- function( x,
+                                       block.number =
+                                         round( length( x )/ 50 ),
+                                       block.length = NULL,
+                                       block.mode = c( "max", "min" ),
+                                       separation.mode =
+                                         c( "years", "none" ) ){
   if ( !all( class( x ) == c( "xts", "zoo" ) ) )
     stop( "The block.default function works to input of class 'xts' only!" )
   ## Initializing. The 'block.length' is the most important parameter
@@ -178,13 +187,15 @@ block.xts <- block.default <- function( x, block.number = round( length( x )/ 50
   if ( block.mode == "max" ){
     x.extremes <- Reduce(
         rbind, lapply( x.blocked, function( xx ){
-          data.frame( date = row.names( xx )[ which.max( xx[[ 1 ]] ) ],
-                     value = xx[ which.max( xx[[ 1 ]] ), 1 ] ) } ) )
+          data.frame(
+              date = row.names( xx )[ which.max( xx[[ 1 ]] ) ],
+              value = xx[ which.max( xx[[ 1 ]] ), 1 ] ) } ) )
   } else
     x.extremes <- Reduce(
         rbind, lapply( x.blocked, function( xx ){
-          data.frame( date = row.names( xx )[ which.min( xx[[ 1 ]] ) ],
-                     value = xx[ which.min( xx[[ 1 ]] ), 1 ] ) } ) )
+          data.frame(
+              date = row.names( xx )[ which.min( xx[[ 1 ]] ) ],
+              value = xx[ which.min( xx[[ 1 ]] ), 1 ] ) } ) )
   extremes.xts <- xts( x.extremes[[ 2 ]] ,
                       order.by = as.Date( x.extremes[[ 1 ]] ) )
   return( extremes.xts )
@@ -363,34 +374,35 @@ decluster.xts <- decluster.default <- function( x, threshold,
   ## Caution: x is the full time series and not the blocked one!
   if ( any( is.na( x ) ) ){
     ## Handling of missing values.
-    ## I will introduce a heuristic here. When less minimal.na points are
-    ## missing, they are just removed. So they do not interfer with the
-    ## determination of the cluster end. But if more points are missing,
-    ## they are replaced with an arbitrary value below the threshold.
-    ## This one will be overwritten with NA later on again. But in the
-    ## meanwhile it will separate the last cluster from the next one.
-    ## The idea is the following: When whole year of data is missing, it
-    ## makes no sense to assign data points separated by such a distance
-    ## to one and the same cluster. As done in the extRemes::decluster
-    ## function.
+    ## I will introduce a heuristic here. When less minimal.na points
+    ## are missing, they are just removed. So they do not interfere
+    ## with the determination of the cluster end. But if more points
+    ## are missing, they are replaced with an arbitrary value below
+    ## the threshold. This one will be overwritten with NA later on
+    ## again. But in the meanwhile it will separate the last cluster
+    ## from the next one. The idea is the following: When whole year
+    ## of data is missing, it makes no sense to assign data points
+    ## separated by such a distance to one and the same cluster. As
+    ## done in the extRemes::decluster function.
     minimal.na <- 15 # NA in a row will be replaced with a low value
     na.index <- which( is.na( x ) )
     na.distance <- diff( na.index )
     na.cluster <- rep( 1, length( na.index ) )
-    ## Each sequence of NA will get a separate number. As soon as there
-    ## is a single point between to missing values, those two will be
-    ## considered belonging to different sequences.
+    ## Each sequence of NA will get a separate number. As soon as
+    ## there is a single point between to missing values, those two
+    ## will be considered belonging to different sequences.
     if ( length( na.index ) > 1 ){
-      na.cluster[ 2 : length( na.index ) ] <- 1 + cumsum( na.distance > 1 )
+      na.cluster[ 2 : length( na.index ) ] <-
+        1 + cumsum( na.distance > 1 )
     }
     na.list <- split( na.index, na.cluster )
     ## Logical vector whether or not to replace a NA by the minimum of
     ## the time series
-    na.replace <- Reduce( c, lapply( na.list, function( y ){
-      if ( length( y ) >= minimal.na ){
-        return( rep( TRUE, length( y ) ) )
+    na.replace <- Reduce( c, lapply( na.list, function( yy ){
+      if ( length( yy ) >= minimal.na ){
+        return( rep( TRUE, length( yy ) ) )
       } else {
-        return( rep( FALSE, length( y ) ) ) } }
+        return( rep( FALSE, length( yy ) ) ) } }
       ) )
     ## Replacing the long NA sequences by the minimal value
     x[ na.index ][ na.replace ] <- min( x, na.rm = TRUE )
@@ -414,33 +426,35 @@ decluster.xts <- decluster.default <- function( x, threshold,
   ## Amount of points above the threshold
   exceedances.number <- sum( exceedances.position )
   ## Index of those points in the ts 'x'
-  exceedances.index <- ( 1 : length( x.no.na ) )[ exceedances.position ] 
+  exceedances.index <-
+    ( 1 : length( x.no.na ) )[ exceedances.position ] 
   which.cluster <- rep( 1, exceedances.number )
   ## Number of indices the exceedances are apart from each other
   exceedances.distance <- diff( exceedances.index )
   ## Which point belongs to which cluster
   which.cluster[ 2 : exceedances.number ] <- 1 +
     cumsum( exceedances.distance > cluster.distance )
-  ## Create a list in which element is a numerical vector containing the
-  ## exceedances within a certain cluster
+  ## Create a list in which element is a numerical vector containing
+  ## the exceedances within a certain cluster.
   cluster.list <- split( exceedances, which.cluster )
-  ## Replacing all events in a cluster smaller than its maximum with NaN
+  ## Replacing all events in a cluster smaller than its maximum with
+  ## NaN.
   if ( is.xts( x.no.na ) ) {
     ## Extra care when input is of type xts
-    index.not.max <- Reduce( c, lapply( cluster.list, function( y )
-      index( y[ -which( y == max( y ) ) ] ) ) )
+    index.not.max <- Reduce( c, lapply( cluster.list, function( yy )
+      index( yy[ -which( yy == max( yy ) ) ] ) ) )
     exceedances[ index( exceedances ) %in% index.not.max ] <- NA
   } else {
-    exceedances <- Reduce( c, lapply( cluster.list, function( y ){
-      y[ -which( y == max( y ) ) ] <- NA
-      return( y ) } ) )
+    exceedances <- Reduce( c, lapply( cluster.list, function( yy ){
+      yy[ -which( yy == max( yy ) ) ] <- NA
+      return( yy ) } ) )
   }
   ## Introducing the NaN to the original time series.
   x.no.na[ x.no.na > threshold ] <- exceedances
   if ( any( is.na( x ) ) ){
-    ## Now I have to introduce the NA again or else my time series will
-    ## shrink and I have both missing values marked by NA and those
-    ## complete gone from the time series
+    ## Now I have to introduce the NA again or else my time series
+    ## will shrink and I have both missing values marked by NA and
+    ## those complete gone from the time series
     x[ x.no.na.index ] <- x.no.na
     ## Replaceing the long NA sequences with NA again
     x[ na.index ][ na.replace ] <- NA
@@ -452,28 +466,30 @@ decluster.xts <- decluster.default <- function( x, threshold,
 
 ##' @title Extremal index estimation
 ##' @description Estimates the extremal index of a time series.
-##' @details The extremal index can be thought of as the inverse of the
-##' mean cluster size. It can be calculated by the "blocks" method
-##' of Ferro and Segers, 2003. I will use the bias-free estimator
-##' provided in equation (4) in their paper. This one is supposed to be
-##' the most robust one and is relying on a moment estimation.
-##' Another way to estimate it, would be using the "runs" method as in
-##' Stuart Coles (2001). But therefore one had to know the minimal
-##' distance between the clusters first. Since the whole point of this
-##' function to estimate exactly this quantity for its use in the
-##' \code{\link{decluster}} function, I don't see the point of
-##' implementing this method too.
+##' @details The extremal index can be thought of as the inverse of
+##'   the mean cluster size. It can be calculated by the \emph{blocks}
+##'   method of Ferro and Segers, 2003. I will use the bias-free
+##'   estimator provided in equation (4) in their paper. This one is
+##'   supposed to be the most robust one and is relying on a moment
+##'   estimation.
 ##'
-##' @param x Time series of class 'xts' or numerical vector.
-##' @param threshold Only events exceeding a specific threshold will be
-##' considered extreme events and thus will be subject of the
-##' declustering.
+##'   Another way to estimate it, would be using the \emph{runs}
+##'   method as in Stuart Coles (2001). But therefore one had to know
+##'   the minimal distance between the clusters first. Since the whole
+##'   point of this function to estimate exactly this quantity for its
+##'   use in the \code{\link{decluster}} function, I don't see the
+##'   point of implementing this method too.
+##'
+##' @param x Time series of class \pkg{xts} or \emph{numerical}.
+##' @param threshold Only events exceeding a specific threshold will
+##'   be considered extreme events and thus will be subject of the
+##'   declustering.
 ##' @param silent Whether or not to display warnings.
 ##'
 ##' @family extremes
 ##'
 ##' @return Numerical vector containing c( extremal index, number of
-##' clusters, minimal distance between clusters (minimal.distance) ).
+##'   clusters, minimal distance between clusters (minimal.distance))
 ##' @author Philipp Mueller 
 extremal.index <- function( x, threshold, silent = FALSE ){
   ## Positions (logical) of all events exceeding the threshold
@@ -492,11 +508,11 @@ extremal.index <- function( x, threshold, silent = FALSE ){
     if ( !any( exceedances.distance > 1 ) ){
       warning( "The maximal distance between exceedances.position in extremal.index is 1! The provided threshold is way to low!" )
     }
-    ## If the largest interexceedance time (distance between exceedances)
-    ## is smaller than 2, the (first order) unbiased estimator in the
-    ## else counterpart is not defined. Therefore I will use a fallback
-    ## one using the true moments of the exceedance distance
-    ## distribution.
+    ## If the largest interexceedance time (distance between
+    ## exceedances) is smaller than 2, the (first order) unbiased
+    ## estimator in the else counterpart is not defined. Therefore I
+    ## will use a fallback one using the true moments of the
+    ## exceedance distance distribution.
     theta <- 2* sum( exceedances.distance )^ 2/
       ( ( exceedances.number - 1 )* sum( exceedances.distance^2 ) )
   } else {
@@ -525,18 +541,18 @@ extremal.index <- function( x, threshold, silent = FALSE ){
   distance.difference <- c( diff( exceedances.distance.ordered ), 0 )
   if ( cluster.number > 1 &&
        distance.difference[ cluster.number - 1 ] == 0 ){
-    ## We have a tie. There are several clusters having the same distance
-    ## as the one with the cluster.number - 1 largest interexceedance
-    ## distance. I don't really see the problem just now, but the paper
-    ## of Ferro & Seger asked to reduce the cluster number until there
-    ## is no tie anymore.
+    ## We have a tie. There are several clusters having the same
+    ## distance as the one with the cluster.number - 1 largest
+    ## interexceedance distance. I don't really see the problem just
+    ## now, but the paper of Ferro & Seger asked to reduce the cluster
+    ## number until there is no tie anymore.
     cluster.index <- 1 : ( exceedances.number - 1 )
     ## Clusters sharing the exceedance distance with other ones. 
     cluster.ties <- cluster.index[ distance.difference == 0 ]
     cluster.step <- cluster.index[ distance.difference != 0 ]
-    ## All indices between the last jump in the exceedance distance just
-    ## before the current cluster.number largest cluster distance and
-    ## the later one.
+    ## All indices between the last jump in the exceedance distance
+    ## just before the current cluster.number largest cluster distance
+    ## and the later one.
     cluster.before.step <- ( cluster.ties < cluster.number ) &
       ( cluster.ties > max( cluster.step[ cluster.step <
                                           cluster.number ] ) )
@@ -859,8 +875,10 @@ return.level <- function( x, return.period = 100,
 ##'     fallback.
 ##' 
 ##'   \emph{none} skips the calculation of the error. Default = "MLE".
-##' @param model Determining whether to calculate the initial
-##'   parameters of the GEV or GPD function. Default = "gev".
+
+##' @param model String determining whether to calculate the initial
+##'   parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+##'   "gev"
 ##' @param monte.carlo.sample.size Number of samples used to obtain
 ##'   the Monte Carlo estimate of the standard error of the fitting.
 ##'   Default = 1000.
@@ -1011,8 +1029,9 @@ return.level.list <- function( x, return.period = 100,
 ##'     fallback.
 ##' 
 ##'   \emph{none} skips the calculation of the error. Default = "MLE".
-##' @param model Determining whether to calculate the initial
-##'   parameters of the GEV or GPD function. Default = "gev".
+##' @param model String determining whether to calculate the initial
+##'   parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+##'   "gev"
 ##' @param monte.carlo.sample.size Number of samples used to obtain
 ##'   the Monte Carlo estimate of the standard error of the fitting.
 ##'   Default = 1000.
@@ -1065,9 +1084,10 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
              silent = FALSE ){
       if ( any( class( x ) == "climex.fit.gev" ) ){
         model <- "gev"
-        return.levels <- Reduce( c, lapply( return.period, function( y )
-          as.numeric( rlevd( y, x$par[ 1 ], x$par[ 2 ], x$par[ 3 ],
-                            model = "gev", silent = silent ) ) ) )
+        return.levels <-
+          Reduce( c, lapply( return.period, function( yy )
+            as.numeric( rlevd( yy, x$par[ 1 ], x$par[ 2 ], x$par[ 3 ],
+                              model = "gev", silent = silent ) ) ) )
       } else if ( any( class( x ) == "climex.fit.gpd" ) ){
         model <- "gpd"
         if ( !is.null( total.length ) ){
@@ -1090,14 +1110,14 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
           zeta <- length( x$x )/ x$control$total.length
           m <- return.period* 365.25* zeta
         } else {
-          ## m-observation return level = return.period* the mean number
-          ## of exceedance per year. This way the unit of the provided
-          ## return level and its error are  not 'per observation' but
-          ## 'per year'. In this step we harness the power of the 'xts'
-          ## package.
+          ## m-observation return level = return.period* the mean
+          ## number of exceedance per year. This way the unit of the
+          ## provided return level and its error are  not 'per
+          ## observation' but 'per year'. In this step we harness the
+          ## power of the 'xts' package.
           m <- return.period* mean( apply.yearly(
                                   x$x,
-                                  function( y ) length( y ) ) )
+                                  function( yy ) length( yy ) ) )
           zeta <- NULL
         }
         ## The determined 'm' always have to be bigger than one
@@ -1112,8 +1132,8 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
         ## will be overwritten
         if ( !is.null( threshold ) )
           x$threshold <- threshold
-        return.levels <- Reduce( c, lapply( m, function( y )
-          as.numeric( rlevd( y, scale = x$par[ 1 ],
+        return.levels <- Reduce( c, lapply( m, function( yy )
+          as.numeric( rlevd( yy, scale = x$par[ 1 ],
                             shape = x$par[ 2 ],
                             model = "gpd", threshold = x$threshold,
                             silent = silent ) ) ) )
@@ -1128,9 +1148,10 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
         } else
           stop( "return.level: the provided parameters and model argument do not belong to each other!" )
         if ( model == "gev" ){
-          return.levels <- Reduce( c, lapply( return.period, function( y )
-            as.numeric( rlevd( y, x[ 1 ], x[ 2 ], x[ 3 ],
-                              model = "gev" ) ) ) )
+          return.levels <-
+            Reduce( c, lapply( return.period, function( yy )
+              as.numeric( rlevd( yy, x[ 1 ], x[ 2 ], x[ 3 ],
+                                model = "gev" ) ) ) )
         } else {
           if ( !is.null( thresholded.time.series ) ){
             if ( !is.null( total.length ) ){
@@ -1140,10 +1161,11 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
               m <- return.period* 365.25* zeta
             } else {
               ## m-observation return level = return.period* the mean 
-              ## number of exceedance per year. This way the unit of the
-              ## provided return level and its error are  not 'per
+              ## number of exceedance per year. This way the unit of
+              ## the provided return level and its error are  not 'per
               ## observation' but 'per year'. 
-              ## In this step we harness the power of the 'xts' package
+              ## In this step we harness the power of the 'xts'
+              ## package.
               m <- return.period* mean( apply.yearly(
                                       thresholded.time.series,
                                       function( tt ) length( tt ) ) )
@@ -1174,8 +1196,8 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
       ##
       if ( error.estimation == "none" || class( x ) == "numeric" ){
         ## Dummy holding NaN instead of the return level errors.
-        ## (Since there was not enough information supplied to calculate
-        ## them).
+        ## (Since there was not enough information supplied to
+        ## calculate them).
         if ( model == "gev" ){
           errors <- rep( NA, length( return.period ) )
         } else {
@@ -1184,33 +1206,37 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
         return( list( return.level = return.levels, error = errors ) )
       } else if ( error.estimation == "bootstrap" ){
         ## As a simple alternative the threshold exceedances will be
-        ## sampled with replacement and the parameters and return levels
-        ## are calculated for all of the resampled series. The bootstrap
-        ## error is than calculated as the standard error of all the
-        ## GEV parameters and return levels.
+        ## sampled with replacement and the parameters and return
+        ## levels are calculated for all of the resampled series. The
+        ## bootstrap error is than calculated as the standard error of
+        ## all the GEV parameters and return levels.
         bootstrap.sample.list <-
           lapply( c( 1 : bootstrap.sample.size ), function( xx )
             sample( x$x, size = length( x$x ), replace = TRUE ) )
         ## Fitting the GEV parameters (recursively)
         if ( model == "gev" ){
-          fitted.list <- lapply( bootstrap.sample.list, function( xx ){
-            fit.gev( x = xx, initial = x$control$initial,
-                    likelihood.function = x$control$likelihood.function,
-                    gradient.function = x$control$gradient.function,
-                    error.estimation = "none",
-                    return.period = return.period,
-                    total.length = x$control$total.length,
-                    silent = TRUE ) } )
+          fitted.list <-
+            lapply( bootstrap.sample.list, function( xx ){
+              fit.gev( x = xx, initial = x$control$initial,
+                      likelihood.function =
+                        x$control$likelihood.function,
+                      gradient.function = x$control$gradient.function,
+                      error.estimation = "none",
+                      return.period = return.period,
+                      total.length = x$control$total.length,
+                      silent = TRUE ) } )
         } else {
-          fitted.list <- lapply( bootstrap.sample.list, function( xx ){
-            fit.gpd( x = xx, initial = x$control$initial,
-                    threshold = x$control$threshold,
-                    likelihood.function = x$control$likelihood.function,
-                    gradient.function = x$control$gradient.function,
-                    error.estimation = "none",
-                    return.period = return.period,
-                    total.length = x$control$total.length,
-                    silent = TRUE ) } )
+          fitted.list <-
+            lapply( bootstrap.sample.list, function( xx ){
+              fit.gpd( x = xx, initial = x$control$initial,
+                      threshold = x$control$threshold,
+                      likelihood.function =
+                        x$control$likelihood.function,
+                      gradient.function = x$control$gradient.function,
+                      error.estimation = "none",
+                      return.period = return.period,
+                      total.length = x$control$total.length,
+                      silent = TRUE ) } )
         }
         ## Calculate the standard errors of all the fitted return
         ## levels.
@@ -1231,8 +1257,8 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
         }
       } else if ( error.estimation == "MLE" ){
         if ( !any( names( x ) == "hessian" ) ){
-          ## fit again and let stats::optim calculate the hessian. It's
-          ## way more save this way
+          ## fit again and let stats::optim calculate the
+          ## hessian. It's way more save this way.
           if ( model == "gev" ){
             x$hessian <- fit.gev( x$x, initial = x$par,
                                  error.estimation = "MLE" )$hessian
@@ -1245,10 +1271,10 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
                                  total.length = total.length )$hessian
           }
         }
-        ## Sometimes the obtained hessian is not invertible. If this is
-        ## the case, recalculate it in order to access the fitting error
-        ## estimates. Caution: this one will be without the constraints!
-        ## Calculating the errors using the MLE
+        ## Sometimes the obtained hessian is not invertible. If this
+        ## is the case, recalculate it in order to access the fitting
+        ## error estimates. Caution: this one will be without the
+        ## constraints! Calculating the errors using the MLE
         ##
         ## If the shape parameter is exactly zero and the Gumbel
         ## distribution was fitted, the third row and column were just
@@ -1264,7 +1290,8 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
                 silent = silent )
             ## Augment the result again to ensure compatibility
             if ( class( error.covariance ) != "try-error" ){
-              dummy.matrix <- matrix( rep( 0, 9 ), nrow = 3, ncol = 3 )
+              dummy.matrix <- matrix( rep( 0, 9 ), nrow = 3,
+                                     ncol = 3 )
               dummy.matrix[ 1 : 2, 1 : 2 ] <- error.covariance
               error.covariance <- dummy.matrix
             }
@@ -1280,15 +1307,17 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
                 silent = silent )
             ## Augment the result again to ensure compatibility
             if ( class( error.covariance ) != "try-error" ){
-              dummy.matrix <- matrix( rep( 0, 4 ), nrow = 2, ncol = 2 )
+              dummy.matrix <- matrix( rep( 0, 4 ), nrow = 2,
+                                     ncol = 2 )
               dummy.matrix[ 1 ] <- error.covariance
               error.covariance <- dummy.matrix
             }
           }
         }
         if ( class( error.covariance ) == "try-error" ){
-          x.hessian <- numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
-                                         model = model )
+          x.hessian <-
+            numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
+                              model = model )
           error.covariance <- solve( x.hessian )
           if ( any( is.nan( x.hessian ) ) ){
             ## If there are still NaN, let it be.
@@ -1315,43 +1344,44 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
             } else {
               ## Gumbel distribution
               dz <- c( 1, -log( yp ) )
-              errors <- cbind( errors,
-                              dz %*% error.covariance[ 1 : 2, 1 : 2 ] %*%
-                              dz )
+              errors <-
+                cbind( errors,
+                      dz %*% error.covariance[ 1 : 2, 1 : 2 ] %*% dz ) 
             }
           }
         } else {
           ## Formula according to Stuart Coles p. 82
           for ( rr in 1 : length( return.period ) ){
-            ## I omit the error estimation of the zeta in here. I don't
-            ## sew how the error of exceedance probability will help the
-            ## user.
+            ## I omit the error estimation of the zeta in here. I
+            ## don't see how the error of exceedance probability will
+            ## help the user.
             scale <- parameter.estimate[ 1 ]
             shape <- parameter.estimate[ 2 ]
             if ( is.null( zeta ) ){
               ## Calculate the exceedance probability in case only the
-              ## threshold exceedances and not the original time series
-              ## was supplied.
+              ## threshold exceedances and not the original time
+              ## series was supplied.
               zeta <- m[ rr ]/ ( return.period[ rr ]* 365.25 )
             }
             if ( !is.numeric( zeta ) ){
-              ## In case zeta was set to FALSE neither the original time
-              ## series nor the threshold exceedances were
-              ## supplied. Therefor there is no way to estimate the mean
-              ## exceedance probability and the zeta term has to be
-              ## excluded from the error calculation.
+              ## In case zeta was set to FALSE neither the original
+              ## time series nor the threshold exceedances were
+              ## supplied. Therefor there is no way to estimate the
+              ## mean exceedance probability and the zeta term has to
+              ## be excluded from the error calculation.
               if ( shape != 0 ){
                 ## GP distribution
                 dz <- c( ( m[ rr ]^ shape - 1 )/ shape,
                         -scale* shape^{ -2 }*( m[ rr ]^shape - 1 ) +
                         scale/shape*m[ rr ]^shape* log( m[ rr ] ) )
-                errors <- cbind( errors, dz %*% error.covariance %*% dz )
+                errors <-
+                  cbind( errors, dz %*% error.covariance %*% dz )
               } else {
                 ## Exponential distribution
                 dz <- log( m[ rr ] )
-                errors <- cbind( errors, dz %*%
-                                         parameter.error.estimate[ 1 ] %*%
-                                         dz )
+                errors <-
+                  cbind( errors,
+                        dz %*% parameter.error.estimate[ 1 ] %*% dz )
               }
             } else {
               if ( shape != 0 ){
@@ -1362,14 +1392,17 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
                 scale/shape*m[ rr ]^shape* log( m[ rr ] ) )
                 ## Generate a dummy variance matrix to incorporate the
                 ## uncertainty of zeta.
-                error.matrix <- matrix( rep( 0, 9 ), nrow = 3, ncol = 3 )
+                error.matrix <- matrix( rep( 0, 9 ), nrow = 3,
+                                       ncol = 3 )
                 if ( !is.null( total.length ) ){
-                  ## If the total length of the underlying series BEFORE
-                  ## thresholding is provided, we are glad to use it.
-                  error.matrix[ 1, 1 ] <- zeta*( 1 - zeta )/ total.length
+                  ## If the total length of the underlying series
+                  ## BEFORE thresholding is provided, we are glad to
+                  ## use it. 
+                  error.matrix[ 1, 1 ] <- zeta*( 1 - zeta )/
+                    total.length
                 } else {
-                  ## If not we have to estimate it using the MLE of zeta
-                  ## number of exceedances/ total length.
+                  ## If not we have to estimate it using the MLE of
+                  ## zeta number of exceedances/ total length.
                   error.matrix[ 1, 1 ] <- zeta^2*( 1 - zeta )/
                     length( x$x )
                 }
@@ -1380,14 +1413,17 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
                 dz <- c( scale/ zeta, log( m[ rr ] ) )
                 ## Generate a dummy variance matrix to incorporate the
                 ## uncertainty of zeta.
-                error.matrix <- matrix( rep( 0, 4 ), nrow = 2, ncol = 2 )
+                error.matrix <- matrix( rep( 0, 4 ), nrow = 2,
+                                       ncol = 2 )
                 if ( !is.null( total.length ) ){
-                  ## If the total length of the underlying series BEFORE
-                  ## thresholding is provided, we are glad to use it.
-                  error.matrix[ 1, 1 ] <- zeta*( 1 - zeta )/ total.length
+                  ## If the total length of the underlying series
+                  ## BEFORE thresholding is provided, we are glad to
+                  ## use it. 
+                  error.matrix[ 1, 1 ] <- zeta*( 1 - zeta )/
+                    total.length
                 } else {
-                  ## If not we have to estimate it using the MLE of zeta
-                  ## number of exceedances/ total length.
+                  ## If not we have to estimate it using the MLE of
+                  ## zeta number of exceedances/ total length.
                   error.matrix[ 1, 1 ] <- zeta^2*( 1 - zeta )/
                     length( x$x )
                 }
@@ -1405,20 +1441,22 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
         ## Draw a number of samples and fit the GEV/GP parameters for
         ## all of them
         if ( model == "gev" ){
-          samples.list <- lapply( 1 : monte.carlo.sample.size, function( y )
-            revd( length( x$x ), parameter.estimate[ 1 ],
-                 parameter.estimate[ 2 ],
-                 parameter.estimate[ 3 ], model = "gev" ) )
+          samples.list <-
+            lapply( 1 : monte.carlo.sample.size, function( yy )
+              revd( length( x$x ), parameter.estimate[ 1 ],
+                   parameter.estimate[ 2 ],
+                   parameter.estimate[ 3 ], model = "gev" ) )
         } else { 
-          samples.list <- lapply( 1 : monte.carlo.sample.size, function( y )
-            revd( length( x$x ), scale = parameter.estimate[ 1 ],
-                 shape = parameter.estimate[ 2 ], silent = TRUE,
-                 threshold = threshold, model = "gpd" ) )
+          samples.list <-
+            lapply( 1 : monte.carlo.sample.size, function( yy )
+              revd( length( x$x ), scale = parameter.estimate[ 1 ],
+                   shape = parameter.estimate[ 2 ], silent = TRUE,
+                   threshold = threshold, model = "gpd" ) )
         }
-        samples.fit <- lapply( samples.list, function( y )
+        samples.fit <- lapply( samples.list, function( yy )
           suppressWarnings(
-              stats::optim( likelihood.initials( y, model = model ),
-                           likelihood, x = y, method = "Nelder-Mead",
+              stats::optim( likelihood.initials( yy, model = model ),
+                           likelihood, x = yy, method = "Nelder-Mead",
                            model = model )$par ) )
         errors <- data.frame( a = 0 )
         if ( model == "gev" ){
@@ -1432,9 +1470,9 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
               sqrt( stats::var( Reduce(
                                c, lapply(
                                       samples.fit,
-                                      function( z )
+                                      function( zz )
                                         climex::return.level(
-                                                    z,
+                                                    zz,
                                                     return.period =
                                                       r.period[ rr ],
                                                     error.estimation =
@@ -1451,29 +1489,31 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
 ##' @title Return level calculation
 ##' @description Internal function to calculate the return level of
 ##'   GEV or GP distribution.
-##' @details Port from the extRemes package to ensure compatibility and
-##' to make the threshold argument obligatory. This is just for internal
-##' usage. Please use the \code{\link{return.level}} function instead!
+##' @details Port from the \pkg{extRemes} package to ensure
+##'   compatibility and to make the threshold argument
+##'   obligatory. This is just for internal usage. Please use the
+##'   \code{\link{return.level}} function instead!
 ##'
 ##' @param period Return period in years.
 ##' @param location Of the GEV distribution. Default = NULL.
 ##' @param scale Of the GEV/GP distribution. Default = NULL.
 ##' @param shape Of the GEV/GP distribution. Default = NULL.
 ##' @param threshold Used in the GP distribution. This parameter is
-##' optional but should be provided in order to create a representation
-##' of the fitted data exceedance. Default = NULL.
-##' @param model Determines if to use the GEV or GP distribution.
-##' Default = "gev".
+##'   optional but should be provided in order to create a
+##'   representation of the fitted data exceedance. Default = NULL.
+##' @param model String determining whether to calculate the initial
+##'   parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+##'   "gev"
 ##' @param silent Whether to display warnings or not. Default = FALSE.
 ##'
 ##' @family extremes
-##'   
 ##'
 ##' @export
 ##' 
 ##' @return Numerical vector of the same length as 'period'.
 ##' @author Philipp Mueller 
-rlevd <- function ( period, location = NULL, scale = NULL, shape = NULL, threshold = NULL, 
+rlevd <- function ( period, location = NULL, scale = NULL,
+                   shape = NULL, threshold = NULL, 
                    model = c( "gev", "gpd" ), silent = FALSE ){
   if ( missing( model ) )
     model <- "gev"
@@ -1512,27 +1552,28 @@ rlevd <- function ( period, location = NULL, scale = NULL, shape = NULL, thresho
 
 ##' @title Quantile calculation
 ##' @description Calculates the quantile of either the GEV or the GPD
-##' distribution
-##' @details Port from the extRemes package to (again) get rid of the
-##' 'threshold' argument to be able to have an separate 'threshold()'
-##' function outside of the fitting function. 
+##'   distribution
+##' @details Port from the \pkg{extRemes} package to (again) get rid
+##'   of the \strong{threshold} argument to be able to have an
+##'   separate \code{\link{threshold}} function outside of the fitting
+##'   function.
 ##'
 ##' @param p (Numeric) probability vector.
 ##' @param location Of the GEV distribution. Default = NULL.
 ##' @param scale Of the GEV/GP distribution. Default = NULL.
 ##' @param shape Of the GEV/GP distribution. Default = NULL.
 ##' @param threshold Used in the GP distribution. This parameter is
-##' optional but should be provided in order to create a representation
-##' of the fitted data exceedance. Default = NULL.
-##' @param model Determines if to use the GEV or GP distribution.
-##' Default = "gev".
+##'   optional but should be provided in order to create a
+##'   representation of the fitted data exceedance. Default = NULL.
+##' @param model String determining whether to calculate the initial
+##'   parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+##'   "gev"
 ##' @param lower.tail Whether to sample the probabilities P[X <= x] or
-##' P[X > x]. Default = TRUE (first case).
+##'   P[X > x]. Default = TRUE (first case).
 ##' @param silent Whether to display warnings or not. Default = FALSE. 
 ##'
 ##' @family extremes
 ##'    
-##'
 ##' @return Numerical vector of the same length as input argument p.
 ##' @author Philipp Mueller 
 qevd <- function ( p, location = NULL, scale = NULL, shape = NULL,
@@ -1583,23 +1624,26 @@ qevd <- function ( p, location = NULL, scale = NULL, shape = NULL,
 }
 
 ##' @title Random numbers for GEV and GP
-##' @description Drawing random numbers from the GEV or GP distribution
-##' @details This function was originally part of the extRemes package.
-##' But since one had to provide the threshold I couldn't use it insight
-##' the fit.gpd function. In contrast to the original implementation this
-##' function only features constant location, scale and shape parameters.
-##' If you want to do time dependent analysis of extreme events please
-##' refer to the original package.
+##' @description Drawing random numbers from the GEV or GP
+##'   distribution
+##' @details This function was originally part of the \pkg{extRemes}
+##'   package. But since one had to provide the \strong{threshold}, I
+##'   couldn't use it insight the \code{\link{fit.gpd}} function. In
+##'   contrast to the original implementation this function only
+##'   features constant location, scale, and shape parameters. 
+##'   If you want to do time dependent analysis of extreme events,
+##'   please refer to the original package.
 ##'
 ##' @param n Number of samples to draw
 ##' @param location Of the GEV distribution. Default = NULL.
 ##' @param scale Of the GEV/GP distribution. Default = NULL.
 ##' @param shape Of the GEV/GP distribution. Default = NULL.
 ##' @param threshold Used in the GP distribution. This parameter is
-##' optional but should be provided in order to create a representation
-##' of the fitted data exceedance. Default = NULL.
-##' @param model Determines if to use the GEV or GP distribution.
-##' Default = "gev".
+##'   optional but should be provided in order to create a
+##'   representation of the fitted data exceedance. Default = NULL.
+##' @param model String determining whether to calculate the initial
+##'   parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+##'   "gev"
 ##' @param silent Whether to display warnings or not. Default = FALSE.
 ##'
 ##' @family extremes
@@ -1660,16 +1704,17 @@ revd <- function ( n, location = NULL, scale = NULL, shape = NULL,
 ##' Port of the \code{\link[ismev]{gev.dens}} function.
 ##'
 ##' @param parameters Fitted GEV parameters c( location, scale,
-##' shape ).
+##'   shape ).
 ##' @param z Numerical vector of sites where to evaluate the
-##' density of the GEV distribution.
+##'   density of the GEV distribution.
 ##'
 ##' @family extremes
 ##' 
 ##' @return Numerical vector of same length as z.
 ##' @author Philipp Mueller
 gev.density <- function ( parameters, z ){
-  if ( class( parameters ) != "numeric" || length( parameters ) != 3 ){
+  if ( class( parameters ) != "numeric" ||
+       length( parameters ) != 3 ){
     stop( "gev.density: Please provide a numerical vector of the form c( location, scale, shape )")
   }
   location <- parameters[ 1 ]
@@ -1680,8 +1725,8 @@ gev.density <- function ( parameters, z ){
   }
   shape <- parameters[ 3 ]
   if ( shape != 0 ){
-    ## There are certain ranges the PDF is defined in. If (some of the) z
-    ## happens to be outside of this range, replace it with NaN
+    ## There are certain ranges the PDF is defined in. If (some of
+    ## the) z happens to be outside of this range, replace it with NaN
     if ( shape < 0 ){
       z[ z > ( ( location ) - scale/ shape ) ] <- NaN
     } else {
@@ -1692,8 +1737,8 @@ gev.density <- function ( parameters, z ){
                  ( 1 + ( shape* ( z - location ) ) /
                    scale )^( -1/ shape - 1) )/scale
   } else {
-    ## The Gumbel distribution is only considered if the shape parameter
-    ## matches exactly zero.
+    ## The Gumbel distribution is only considered if the shape
+    ## parameter matches exactly zero.
     density <- exp( - exp( - ( z - location )/ scale ) )*
       exp( - ( z - location )/scale )/ scale
   }
@@ -1707,15 +1752,15 @@ gev.density <- function ( parameters, z ){
 ##' 
 ##' @details If you want to calculate the density of the exponential
 ##'   distribution, please stick to the c( scale, shape ) scheme of
-##'   the `parameters' argument while setting the shape parameter to
-##'   zero. 
+##'   the \strong{parameters} argument while setting the shape
+##'   parameter to zero. 
 ##'
-##' Port of the \code{\link[ismev]{gpd.dens}} function.
+##'   Port of the \code{\link[ismev]{gpd.dens}} function.
 ##'
 ##' @param parameters Fitted GP parameters c( scale, shape )
 ##' @param threshold Threshold used to fit the GP distribution.
 ##' @param z Numerical vector of sites where to evaluate the
-##' density of the GP distribution.
+##'   density of the GP distribution.
 ##' 
 ##' @family extremes
 ##' 
@@ -1732,8 +1777,9 @@ gpd.density <- function( parameters, threshold, z ) {
   }
   shape <- parameters[ 2 ]
   if ( shape != 0 ){
-    ## There are certain ranges the PDF is defined in. If (some of the) z
-    ## happens to be outside of this range, replace it with NaN.
+    ## There are certain ranges the PDF is defined in. If (some of
+    ## the) z happens to be outside of this range, replace it with
+    ## NaN. 
     if ( shape < 0 ){
       z[ z < threshold | z > ( threshold - scale/ shape ) ] <- NaN
     } else {
@@ -1745,10 +1791,12 @@ gpd.density <- function( parameters, threshold, z ) {
     ## The exponential distribution is only considered if the shape
     ## parameter is exactly equal to zero.
     
-    ## There are certain ranges the PDF is defined in. If (some of the) z
-    ## happens to be outside of this range, replace it with NaN.
+    ## There are certain ranges the PDF is defined in. If (some of
+    ## the) z happens to be outside of this range, replace it with
+    ## NaN.
     z[ z < threshold ] <- NaN
     density <- exp( -( z - threshold/ scale ) )/ scale
   }
   return( density )
 }
+## End of extremes.R

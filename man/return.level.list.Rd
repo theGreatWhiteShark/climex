@@ -69,8 +69,9 @@ Default = 100.}
 
   \emph{none} skips the calculation of the error. Default = "MLE".}
 
-\item{model}{Determining whether to calculate the initial
-parameters of the GEV or GPD function. Default = "gev".}
+\item{model}{String determining whether to calculate the initial
+parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+"gev"}
 
 \item{monte.carlo.sample.size}{Number of samples used to obtain
 the Monte Carlo estimate of the standard error of the fitting.

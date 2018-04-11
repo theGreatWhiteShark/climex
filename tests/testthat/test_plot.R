@@ -1,3 +1,4 @@
+### test_plot.R - Tests checking the plotting routines.
 library( climex )
 library( ggplot2 )
 context( "Check if the custom plotting routines work" )
@@ -26,3 +27,4 @@ test_that( "plot.climex.fit.gev works on the result of fit.gev", {
 test_that( "plot.climex.fit.gpd works on the result of fit.gpd", {
   expect_true( is.ggplot( plot( x.thresh.fit ) ) )
 })
+## End of test_plot.R

@@ -1,3 +1,5 @@
+### import.R - Functions to select the data set to perform the
+##    analysis on
 ##' @title Load a data file into R
 ##' @description Searches the \emph{~/R/climex/} directory or a
 ##'   specified folder for .RData files recursively and displays the
@@ -12,9 +14,9 @@
 ##' @param download.path Specifies the folder in which the function
 ##'   will look for .RData files recursively. Per default the
 ##'   \emph{R/climex/} directory in your home folder will be used. You
-##'   can overwrite 
-##'   this behavior by setting \code{options( climex.path = "PATH" )}
-##'   in your \emph{.Rprofile} path in your home.
+##'   can overwrite this behavior by setting \code{options(
+##'   climex.path = "PATH" )} in your \emph{.Rprofile} path in your
+##'   home.
 ##' @param envir Environment the data will be attached to. If
 ##'   not specified, the data will be loaded to the environment the
 ##'   function is called from. Default = NULL.
@@ -76,3 +78,4 @@ source.data <- function( download.path = NULL, envir = NULL ){
   } 
   invisible( )
 }
+## End of import.R

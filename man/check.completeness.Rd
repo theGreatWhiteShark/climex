@@ -21,8 +21,8 @@ If the input is of type \pkg{xts}, the function returns
   years of complete data.
 }
 \description{
-This function tests whether the series do has at least
-  \emph{number.of.years} complete years of data.
+This function tests whether the series do has at
+  least \strong{number.of.years} complete years of data.
 }
 \details{
 It uses the \code{\link{remove.incomplete.years}}

@@ -1,23 +1,25 @@
+### plot.R - Functions for plotting either the 'xts' class data or the
+##    fitting results
 ##' @title Plot multiple time series.
-##' @description This function takes several plot of the ggplot2 and
+##' @description This function takes several \pkg{ggplot2} plots and
 ##'   arranges them on one page. 
 ##' @details Well, it is not really related to extreme value fitting
 ##'   and I am aware of the fact that its quite bad style to export
 ##'   auxiliary functions. But this one is just so handy. If the
-##'   layout is something like
+##'   \strong{layout} is something like
 ##'   \code{matrix( c( 1, 2, 3, 3 ), nrow = 2, byrow = TRUE )},
 ##'   then plot 1 will go in the upper left, 2 will go in the upper
 ##'   right, and 3 will go all the way across the bottom. ggplot
-##'   objects can be passed in ..., or to plotlist (as a list of
-##'   ggplot objects). Imports the grid library. 
+##'   objects can be passed in ..., or to \strong{plotlist} (as a list
+##    of \emph{ggplot} objects).
 ##'
+##' @param plotlist Alternative way to pass \emph{ggplot} objects.
+##' @param tt.title Same as \strong{main}.
 ##' @param main Title of the overall plot.
-##' @param tt.title Same as 'main'.
-##' @param ... objects for ggplot.
-##' @param plotlist alternative way to pass ggplot objects.
+##' @param ... Additional arguments for ggplot.
 ##' @param cols Number of columns in layout. Default = 1.
-##' @param layout A matrix specifying the layout. If present, 'cols'
-##'   is ignored. 
+##' @param layout A matrix specifying the layout. If present,
+##'   \strong{cols} is ignored. 
 ##'
 ##' @family plot
 ##' @author Paul Teetor (original), Philpp Mueller (minor changes)
@@ -56,8 +58,8 @@ multiplot <- function( plotlist = NULL, tt.title = main, main = NULL,
                              c( "lines", rep( "null",
                                              nrow( layout) ) ) ) ) ) )
     } else
-      pushViewport( viewport( layout = grid.layout( nrow( layout ),
-                                                   ncol( layout ) ) ) )
+      pushViewport( viewport(
+          layout = grid.layout( nrow( layout ), ncol( layout ) ) ) )
 
     ## Make each plot, in the correct location
     if ( !is.null( tt.title ) ){
@@ -65,21 +67,22 @@ multiplot <- function( plotlist = NULL, tt.title = main, main = NULL,
                                layout.pos.row = 1,
                                layout.pos.col = c( 1, ncol( layout ) )
                            ) )
-      for (i in 1:numPlots) {
+      for ( ii in 1 : numPlots ) {
         ## Get the i,j matrix positions of the regions that contain
         ## this subplot 
-        matchidx <- as.data.frame( which( layout == i, arr.ind = TRUE) )
-        print( plots[[ i ]], vp = viewport(
+        matchidx <- as.data.frame( which( layout == ii,
+                                         arr.ind = TRUE ) )
+        print( plots[[ ii ]], vp = viewport(
                                  layout.pos.row = matchidx$row + 1,
                                  layout.pos.col = matchidx$col ) )
       }
     } else {
-      for (i in 1:numPlots) {
+      for ( ii in 1 : numPlots ) {
         ## Get the i,j matrix positions of the regions that contain
         ## this subplot 
-        matchidx <- as.data.frame( which( layout == i,
+        matchidx <- as.data.frame( which( layout == ii,
                                          arr.ind = TRUE ) )
-        print( plots[[ i ]], vp = viewport(
+        print( plots[[ ii ]], vp = viewport(
                                  layout.pos.row = matchidx$row,
                                  layout.pos.col = matchidx$col ) )
       }
@@ -89,13 +92,14 @@ multiplot <- function( plotlist = NULL, tt.title = main, main = NULL,
 }
 
 ##' @title Plot xts class data
-##' @description Plotting a xts time series with ggplot2 in a
-##'   convenient format. 
+##' @description Plotting a \pkg{xts} time series with \pkg{ggplot2}
+##'   in a convenient format. 
 ##'
-##' @details Plots all objects of class xts. With the main argument a
-##'   title can be provided. 
+##' @details Plots all objects of class \pkg{xts}. With the main
+##'   argument a title can be provided. 
 ##'
-##' @param data.input Time series which should be visualized.
+##' @param data.input Class \pkg{xts} time series, which should be
+##'   visualized.
 ##' @param main Title of the plot to generate. Default: "Time series"
 ##' @param ylab Label of the y-axis of the plot to generate. Default =
 ##'   NULL
@@ -144,10 +148,11 @@ ttplot <- function( data.input, main = "Time series", ylab = NULL ){
 ##' @details The likelihood will be plotted around its optimal
 ##'   value. To determine it the time series will be fitted via
 ##'   \code{\link{fit.gev}}. Its also possible to provide another
-##'   point the likelihood will be centered around using 'center'. 
+##'   point the likelihood will be centered around using
+##'   \strong{center}.
 ##'
-##' @param time.series Data for which the likelihood function is going
-##'   to be calculated. 
+##' @param time.series Data, for which the likelihood function is
+##'   going to be calculated. 
 ##' @param location.lim Boundaries of the plotted likelihood
 ##'   region. Default = +/- 2.5 times the minimum value. 
 ##' @param scale.lim Boundaries of the plotted likelihood
@@ -160,8 +165,8 @@ ttplot <- function( data.input, main = "Time series", ylab = NULL ){
 ##'   fit of the time series. 
 ##' @param main Title for the multiplot. Default = NULL.
 ##' @param true.minima Provide the true minima of the neg
-##'   log-likelihood function if fit.gev does not provide it in the
-##'   first run. Default = NULL. 
+##'   log-likelihood function if \code{\link{fit.gev}} does not
+##'   provide it in the first run. Default = NULL. 
 ##' 
 ##' @import ggplot2
 ##' @return returns a multiplot of planes through the negative
@@ -280,18 +285,21 @@ likelihood.plot <- function( time.series, location.lim = NULL,
 ##' @description Plots the GEV function fitted using
 ##'   \code{\link{fit.gev}} 
 ##'
-##' @details Uses ggplot2. Since I will also use it
-##' in the shiny app, where I want to adjust the number
-##' of displayed bins, there is a second argument present.
+##' @details Uses \pkg{ggplot2}.
 ##'
-##' @param x Fitted GEV object.
-##' @param bin.factor Multiplying the length of x
-##' by this factor, results in the number of bins
-##' used in this plot. Default = NULL
+##'   Since this function is also uses in the shiny app
+##'   \emph{climexUI}, the number of displayed bins has to be
+##'   adjusted.
+##'
+##' @param x Fitted GEV object of class \emph{climex.fit.gev}.
+##' @param bin.factor Multiplying the length of \strong{x} by this
+##'   factor, results in the number of bins used in this plot. Default
+##'   = NULL
 ##' @param ... Additional parameters. They won't be handled in the
 ##'   function. This argument is only present to ensure S3 generic
-##'   consistency with respect to the `plot()` function.
-##'
+##'   consistency with respect to the \code{\link[graphics]{plot}}
+##'   function.
+##' 
 ##' @export
 ##' @import ggplot2
 ##' @return ggplot2 object.
@@ -306,14 +314,13 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL, ... ){
   ## Range of the supplied data
   x.lim <- c( min( x.data, na.rm = TRUE ),
              max( x.data, na.rm = TRUE ) )
-  ## The the calculated density falls below this threshold
-  ## it won't get plotted anymore.
+  ## The the calculated density falls below this threshold it won't
+  ## get plotted anymore.
   threshold.pdf.plot <- 1E-4
-  ## In the beginning I used the coefficients of the GEV
-  ## distribution to determine the range of evaluation
-  ## of the density function. But this will fail for
-  ## distributions with bigger absolute shape value.
-  ## Instead I will use the range of the supplied data
+  ## In the beginning I used the coefficients of the GEV distribution
+  ## to determine the range of evaluation of the density function. But
+  ## this will fail for distributions with bigger absolute shape
+  ## value. Instead I will use the range of the supplied data
   plot.gev.range <- seq( x.lim[ 1 ] - x$par[ 2 ]* 10,
                         x.lim[ 2 ] + x$par[ 2 ]* 10, 0.01 )
   plot.gev.data <- data.frame(
@@ -323,8 +330,7 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL, ... ){
   ## Removing all NaN to have less points and warnings
   plot.gev.data <- plot.gev.data[
       !is.nan( plot.gev.data$y.plot ), ]
-  ## Cutting of the density at values below the threshold
-  ## in the tails
+  ## Cutting of the density at values below the threshold in the tails
   ## Lower tail
   plot.gev.data <- plot.gev.data[
       ( plot.gev.data$x.plot >
@@ -392,17 +398,20 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL, ... ){
 ##' @description Plots the GPD function fitted using
 ##'   \code{\link{fit.gpd}} 
 ##'
-##' @details Uses ggplot2. Since I will also use it
-##' in the shiny app, where I want to adjust the number
-##' of displayed bins, there is a second argument present.
+##' @details Uses \pkg{ggplot2}.
 ##'
-##' @param x Fitted GPD object.
-##' @param bin.factor Multiplying the length of x
-##' by this factor, results in the number of bins
-##' used in this plot. Default = NULL
+##'   Since this function is also uses in the shiny app
+##'   \emph{climexUI}, the number of displayed bins has to be
+##'   adjusted.
+##'
+##' @param x Fitted GPD object of class \emph{climex.fit.gpd}.
+##' @param bin.factor Multiplying the length of \strong{x} by this
+##'   factor, results in the number of bins used in this plot. Default
+##'   = NULL
 ##' @param ... Additional parameters. They won't be handled in the
 ##'   function. This argument is only present to ensure S3 generic
-##'   consistency with respect to the `plot()` function.
+##'   consistency with respect to the \code{\link[graphics]{plot}}
+##'   function.
 ##'
 ##' @export
 ##' @import ggplot2
@@ -421,14 +430,13 @@ plot.climex.fit.gpd <- function( x, bin.factor = NULL, ... ){
   ## Range of the supplied data
   x.lim <- c( min( x.data, na.rm = TRUE ),
              max( x.data, na.rm = TRUE ) )
-  ## The the calculated density falls below this threshold
-  ## it won't get plotted anymore.
+  ## The the calculated density falls below this threshold it won't
+  ## get plotted anymore.
   threshold.pdf.plot <- 1E-4
-  ## In the beginning I used the coefficients of the GEV
-  ## distribution to determine the range of evaluation
-  ## of the density function. But this will fail for
-  ## distributions with bigger absolute shape value.
-  ## Instead I will use the range of the supplied data
+  ## In the beginning I used the coefficients of the GEV distribution
+  ## to determine the range of evaluation of the density function. But
+  ## this will fail for distributions with bigger absolute shape
+  ## value. Instead I will use the range of the supplied data
   plot.range <- seq( x.lim[ 1 ] - bin.width,
                         x.lim[ 2 ] + x$par[ 1 ]* 10, 0.01 )
   plot.data <- data.frame(
@@ -438,8 +446,7 @@ plot.climex.fit.gpd <- function( x, bin.factor = NULL, ... ){
   ## Removing all NaN to have less points and warnings
   plot.data <- plot.data[
       !is.nan( plot.data$y.plot ), ]
-  ## Cutting of the density at values below the threshold
-  ## in the tails
+  ## Cutting of the density at values below the threshold in the tails
   ## Lower tail
   plot.data <- plot.data[
       ( plot.data$x.plot >
@@ -512,3 +519,4 @@ plot.climex.fit.gpd <- function( x, bin.factor = NULL, ... ){
     theme( legend.title = element_blank() )
   return( last_plot() )
 }
+## End of plot.R

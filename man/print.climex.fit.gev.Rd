@@ -7,14 +7,15 @@
 \method{print}{climex.fit.gev}(x, ...)
 }
 \arguments{
-\item{x}{Object of class \strong{climex.fit.gev}.}
+\item{x}{Object of class \emph{climex.fit.gev}.}
 
 \item{...}{Additional parameters. They won't be handled in the
 function. This argument is only present to ensure S3 generic
-consistency with respect to the `print()` function.}
+consistency with respect to the \code{\link[base]{print}}
+function.}
 }
 \value{
-`invisible()`
+\code{invisible()}
 }
 \description{
 Summary of the GEV fit results

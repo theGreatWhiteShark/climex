@@ -19,8 +19,9 @@ Calculates the Akaike information criterion of a
   objects.
 }
 \details{
-The climex.fit.gev object is of identical structure as
-  the output of the \code{\link{optim}} function.
+The \emph{climex.fit.gev} object is of identical
+  structure as the output of the \code{\link[stats]{optim}}
+  function.
 }
 \seealso{
 \code{\link{bic}}, \code{\link{fit.gev}},

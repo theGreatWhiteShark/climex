@@ -7,14 +7,15 @@
 \method{summary}{climex.fit.gpd}(object, ...)
 }
 \arguments{
-\item{object}{Object of class \strong{climex.fit.gpd}.}
+\item{object}{Object of class \emph{climex.fit.gpd}.}
 
 \item{...}{Additional parameters. They won't be handled in the
 function. This argument is only present to ensure S3 generic
-consistency with respect to the `summary()` function.}
+consistency with respect to the \code{\link[base]{summary}}
+function.}
 }
 \value{
-`invisible()`
+\code{invisible()}
 }
 \description{
 Summary of the GPD fit results

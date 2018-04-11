@@ -2,7 +2,7 @@
 % Please edit documentation in R/ts.R
 \name{bic.climex.fit.gev}
 \alias{bic.climex.fit.gev}
-\title{information criterion}
+\title{Bayesian information criterion}
 \usage{
 \method{bic}{climex.fit.gev}(x)
 }
@@ -19,7 +19,8 @@ Calculates the Bayesian information criterion of a
 }
 \details{
 The \emph{climex.fit.gev} object is of identical
-  structure as the output of the \code{\link{optim}} function.
+  structure as the output of the \code{\link[stats]{optim}}
+  function.
 }
 \seealso{
 \code{\link{aic}}, \code{\link{fit.gev}},

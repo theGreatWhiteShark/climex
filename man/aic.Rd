@@ -12,7 +12,7 @@ aic(x)
 }
 \value{
 Numeric value, if the input is a single fitting object, or
-  a numerical vector, if \emph{x} is a list of such objects.
+  a numerical vector, if \strong{x} is a list of such objects.
 }
 \description{
 Calculates the Akaike information criterion of a
@@ -21,7 +21,7 @@ Calculates the Akaike information criterion of a
 }
 \details{
 The \emph{climex.fit.gev} object is of identical
-  structure as the output of the \code{\link{optim}} function.
+  structure as the output of the \code{\link[stats]{optim}}
 }
 \seealso{
 \code{\link{bic}}, \code{\link{fit.gev}},

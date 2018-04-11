@@ -1,3 +1,4 @@
+### opti.R - Functions for fitting the GEV and GP distribution
 ##' @title Improved maximum-likelihood fit of the GEV distribution
 ##'
 ##' @description This function fits the Generalized Extreme Value
@@ -645,13 +646,13 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
       number.of.samples <- monte.carlo.sample.size
       ## Draw a number of samples and fit the GEV parameters for all
       ## of them
-      samples.list <- lapply( 1 : number.of.samples, function( y )
+      samples.list <- lapply( 1 : number.of.samples, function( yy )
         revd( length( x ), location = parameter.estimate[ 1 ],
              scale = parameter.estimate[ 2 ],
              shape = parameter.estimate[ 3 ], model = "gev" ) )
       suppressWarnings(
-          samples.fit <- try( lapply( samples.list, function ( y )
-            auglag( par = likelihood.initials( y, model = "gev" ),
+          samples.fit <- try( lapply( samples.list, function ( yy )
+            auglag( par = likelihood.initials( yy, model = "gev" ),
                    fn = likelihood.function,
                    gr = gradient.function, 
                    hin = function( parameters, x.in, ... ){
@@ -663,7 +664,7 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
                            parameters[ 3 ] + .95 ) ) ) },
                    control.outer = list( trace = FALSE,
                                         method = "Nelder-Mead" ),
-                   x.in = y, model = "gev" )$par ) ) )
+                   x.in = yy, model = "gev" )$par ) ) )
       if ( class( samples.fit ) == "try-error" ){
         errors <- c( NaN, NaN, NaN,
                     rep( NaN, length( return.period ) ) )
@@ -677,9 +678,9 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
           errors <- cbind(
               errors,
               sqrt( stats::var( Reduce( c, lapply( samples.fit, (
-                function( z )
+                function( zz )
                   climex::return.level(
-                              z,
+                              zz,
                               return.period = return.period[ rr ]
                           )$return.level ) ) ) ) ) )
       }
@@ -725,8 +726,8 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
   ## adding the return levels
   res.optim$return.level <- Reduce(
       c, lapply( return.period,
-                function( y )
-                  climex::return.level( res.optim, y
+                function( yy )
+                  climex::return.level( res.optim, yy
                                        )$return.level ) )
   names( res.optim$return.level ) <-
     paste0( return.period, ".rlevel" )
@@ -1443,14 +1444,14 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
       number.of.samples <- monte.carlo.sample.size
       ## Draw a number of samples and fit the GPD parameters for all
       ## of them.
-      samples.list <- lapply( 1 : number.of.samples, function( y )
+      samples.list <- lapply( 1 : number.of.samples, function( yy )
         revd( length( x ), scale = parameter.estimate[ 1 ],
                       shape = parameter.estimate[ 2 ], model = "gpd",
                       silent = TRUE ) )
       
       suppressWarnings(
-          samples.fit <- try( lapply( samples.list, function( y )
-            auglag( par = likelihood.initials( y, model = "gpd" ),
+          samples.fit <- try( lapply( samples.list, function( yy )
+            auglag( par = likelihood.initials( yy, model = "gpd" ),
                    fn = likelihood.function,
                    gr = gradient.function,
                    hin = function( parameters, x.in, ... ){
@@ -1461,7 +1462,7 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
                            parameters[ 2 ] + .95 ) ) ) },
                    control.outer = list( trace = FALSE,
                                         method = "Nelder-Mead" ),
-                   x.in = y, model = "gpd" )$par ) ) )
+                   x.in = yy, model = "gpd" )$par ) ) )
       
       if ( class( samples.fit ) == "try-error" ){
         errors <- c( NaN, NaN, NaN )
@@ -1589,16 +1590,20 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
 ##' @description Calculated the negative log likelihood of the GEV or
 ##'   GPD function.
 ##'
-##' @details This function is only meant to work with constant parameters
-##' and no covariats. x.in is not called "x" anymore since the call
-##' grad( func = likelihood, x = parameters, ... ) wouldn't be possible.
+##' @details This function is only meant to work with constant
+##'   parameters and no covariates. \strong{x.in} is not called "x"
+##'   since the call \code{grad( func = likelihood, x = parameters,
+##'   ... )} wouldn't be possible. 
 ##'
-##' @param parameters Vector containing the location, scale and shape
-##' parameter for the GEV or the scale and shape parameter for the GPD.
-##' If NULL the \code{\link{likelihood.initials}} is used. Default = NULL
-##' @param x.in Time series.
-##' @param model Determining whether to calculate the initial parameters
-##' of the GEV or GPD function. Default = "gev"
+##' @param parameters Numerical vector containing the location, scale,
+##'   and shape parameters for the GEV or the scale and shape
+##'   parameters for the GPD. If NULL,
+##'   \code{\link{likelihood.initials}} is used to determine
+##'   them. Default = NULL
+##' @param x.in Time series of class \pkg{xts}.
+##' @param model String determining whether to calculate the initial
+##'   parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+##'   "gev"
 ##' 
 ##' @family optimization
 ##'
@@ -1653,8 +1658,8 @@ likelihood <- function( parameters = NULL, x.in,
   suppressWarnings( {
     if ( model == "gev" ){
       if ( shape == 0 ){
-        ## Using the Gumbel distribution. But only when the shape parameter
-        ## is exactly 0
+        ## Using the Gumbel distribution. But only when the shape
+        ## parameter is exactly 0
         negloglikelihood <- length( x.in )*log( scale ) +
           sum( y )/ scale + sum( exp( -y/ scale ) )
       } else {
@@ -1677,39 +1682,42 @@ likelihood <- function( parameters = NULL, x.in,
 }
 
 ##' @title Calculated the augmented negative log likelihood of the
-##' GEV or GPD function.
+##'   GEV or GPD function.
 ##'
 ##' @description This function uses the \code{\link{likelihood}}
-##' function and adds the linear constraints used in
-##' \code{\link{fit.gev}} and \code{\link{fit.gpd}} to produce the
-##' augmented Lagrangian version of the GEV or GP negative
-##' log-likelihood function. 
+##'   function and adds the linear constraints used in
+##'   \code{\link{fit.gev}} and \code{\link{fit.gpd}} to produce the
+##'   augmented Lagrangian version of the GEV or GP negative
+##'   log-likelihood function.
 ##'
 ##' @details A convenience function not used by the fitting routines.
 ##'
-##' It is only meant to work with constant parameters
-##' and no covariates.
+##'   It is only meant to work with constant parameters and no
+##'   covariates.
 ##'
-##' 'x.in' is not called "x" anymore since the call
-##' grad( func = likelihood, x = parameters, ... ) wouldn't be possible.
+##'   \strong{x.in} is not called "x", since the call \code{grad( func
+##'   = likelihood, x = parameters, ... )} wouldn't be possible.
 ##'
-##' @param parameters Vector containing the location, scale and shape
-##' parameter for the GEV or the scale and shape parameter for the GPD.
-##' If NULL the \code{\link{likelihood.initials}} is used. Default = NULL
-##' @param x.in Time series.
-##' @param model Determining whether to calculate the initial parameters
-##' of the GEV or GPD function. Default = "gev"
+##' @param parameters Numerical vector containing the location, scale,
+##'   and shape parameters for the GEV or the scale and shape
+##'   parameters for the GPD. If NULL,
+##'   \code{\link{likelihood.initials}} is used to determine
+##'   them. Default = NULL
+##' @param x.in Time series of class \pkg{xts}.
+##' @param model String determining whether to calculate the initial
+##'   parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+##'   "gev"
 ##' @param lagrangian.multiplier Lagrangian multipliers used to weight
-##' the linear contribution of the constraints. In most cases all of them
-##' are zero, since optimization of the GEV/GP likelihood usually doesn't
-##' take place inside a region of constraint violations. When supplying
-##' this parameter it has to have the same length as present number of
-##' constraints: number of points in x.in + 2.
-##' Default = 0 for all constraints.
+##'   the linear contribution of the constraints. In most cases all of
+##'   them are zero, since optimization of the GEV/GP likelihood
+##'   usually doesn't take place inside a region of constraint
+##'   violations. When supplying this parameter it has to have the
+##'   same length as present number of constraints: number of points
+##'   in x.in + 2. Default = 0 for all constraints.
 ##' @param penalty.parameter Penalty parameter used to weight the
-##' quadratic contribution of the constraints. In the end of a typical
-##' constrained GEV or GP optimization this parameter is 1000.
-##' Default = 1000.
+##'   quadratic contribution of the constraints. In the end of a
+##'   typical constrained GEV or GP optimization this parameter is
+##'   1000. Default = 1000.
 ##' 
 ##' @family optimization
 ##'
@@ -1769,19 +1777,20 @@ likelihood.augmented <- function( parameters, x.in,
 ##' @description Calculates the gradient of the negative log
 ##'   likelihood of the GEV or GPD function.
 ##'
-##' @param parameters Vector containing the location, scale and shape
-##' parameter for the GEV model or the scale and shape parameter for the
-##' GPD one.
-##' @param x.in Time series or numerical vector containing the extreme
-##' events.
-##' @param model Determining whether to calculate the initial parameters
-##' of the GEV or GPD function. Default = "gev".
+##' @param parameters Numerical vector containing the location, scale,
+##'   and shape parameters for the GEV model or the scale and shape
+##'   parameters for the GPD one.
+##' @param x.in Time series of class \pkg{xts} or numerical vector
+##'   containing the extreme events.
+##' @param model String determining whether to calculate the initial
+##'   parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+##'   "gev".
 ##' 
 ##' @family optimization
 ##'
 ##' @return Numerical vector containing the derivative of the negative
-##' log-likelihood in (location, scale, shape for GEV) or (scale,
-##' shape for GPD) direction.
+##'   log-likelihood in (location, scale, shape for GEV) or (scale,
+##'   shape for GPD) direction.
 ##' @author Philipp Mueller
 likelihood.gradient <- function( parameters, x.in,
                                 model = c( "gev", "gpd" ) ){
@@ -1821,13 +1830,15 @@ likelihood.gradient <- function( parameters, x.in,
       ## If the shape parameter is identical to zero, use the gradient
       ## of the Gumbel distribution instead
       z <- y/ scale
-      gradient[ 1 ] <- -length( x.in )/ scale + sum( exp( -z ) )/ scale
+      gradient[ 1 ] <- -length( x.in )/ scale +
+        sum( exp( -z ) )/ scale
       gradient[ 2 ] <- length( x.in )/ scale - sum( y )/ scale^2 +
         sum( y* exp( -z )/ scale^2 )
       gradient[ 3 ] <- 0
     } else {
       z <- 1 + y* gamma
-      gradient[ 1 ] <- sum( z^{-alpha}/ scale ) - sum( alpha* gamma/ z )
+      gradient[ 1 ] <- sum( z^{-alpha}/ scale ) -
+        sum( alpha* gamma/ z )
       gradient[ 2 ] <- length( x.in )/ scale -
         sum( alpha* shape* y/ ( scale^2 * z ) ) +
         sum( z^{ - alpha }*y/ scale^2 )
@@ -1855,48 +1866,53 @@ likelihood.gradient <- function( parameters, x.in,
 }
 
 ##' @title Calculated the gradient of the augmented negative log
-##' likelihood of the GEV or GPD function.
+##'   likelihood of the GEV or GPD function.
 ##'
-##' @description This function uses the \code{\link{likelihood.gradient}}
-##' function and adds the linear constraints used in
-##' \code{\link{fit.gev}} and \code{\link{fit.gpd}} to produce the
-##' augmented Lagrangian version of the GEV or GP negative
-##' log-likelihood function. 
+##' @description This function uses the
+##'   \code{\link{likelihood.gradient}} function and adds the linear
+##'   constraints used in \code{\link{fit.gev}} and
+##'   \code{\link{fit.gpd}} to produce the augmented Lagrangian
+##'   version of the GEV or GP negative log-likelihood function. 
 ##'
 ##' @details A convenience function not used by the fitting routines.
 ##'
-##' It is only meant to work with constant parameters
-##' and no covariates.
+##'   It is only meant to work with constant parameters and no
+##'   covariates. 
 ##'
-##' @param parameters Vector containing the location, scale and shape
-##' parameter for the GEV or the scale and shape parameter for the GPD.
-##' If NULL the \code{\link{likelihood.initials}} is used. Default = NULL
-##' @param x.in Time series.
-##' @param model Determining whether to calculate the initial parameters
-##' of the GEV or GPD function. Default = "gev"
+##' @param parameters Numerical vector containing the location, scale,
+##'   and shape parameters for the GEV or the scale and shape
+##'   parameters for the GPD. If NULL,
+##'   \code{\link{likelihood.initials}} is used to determine
+##'   them. Default = NULL
+##' @param x.in Time series of class \pkg{xts}.
+##' @param model String determining whether to calculate the initial
+##'   parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+##'   "gev".
 ##' @param lagrangian.multiplier Lagrangian multipliers used to weight
-##' the linear contribution of the constraints. In most cases all of them
-##' are zero, since optimization of the GEV/GP likelihood usually doesn't
-##' take place inside a region of constraint violations. When supplying
-##' this parameter it has to have the same length as present number of
-##' constraints: number of points in x.in + 2, with the last two
-##' constraints handling the lower bound of the scale and the shape
-##' parameter. Default = 0 for all constraints.
+##'   the linear contribution of the constraints. In most cases all of
+##'   them are zero, since optimization of the GEV/GP likelihood
+##'   usually doesn't take place inside a region of constraint
+##'   violations. When supplying this parameter it has to have the
+##'   same length as present number of constraints: number of points
+##'   in x.in + 2, with the last two constraints handling the lower
+##'   bound of the scale and the shape parameter. Default = 0 for all
+##'   constraints. 
 ##' @param penalty.parameter Penalty parameter used to weight the
-##' quadratic contribution of the constraints. In the end of a typical
-##' constrained GEV or GP optimization this parameter is 1000.
-##' Default = 1000.
+##'   quadratic contribution of the constraints. In the end of a
+##'   typical constrained GEV or GP optimization this parameter is
+##'   1000. Default = 1000.
 ##' 
 ##' @family optimization
 ##'
 ##' @export
 ##' @return Numerical value of the gradient of the augmented negative
-##' log likelihood.
+##'   log likelihood.
 ##' @author Philipp Mueller
 likelihood.gradient.augmented <- function( parameters, x.in,
                                           model = c( "gev", "gpd" ),
                                           lagrangian.multiplier = 
-                                            rep( 0, length( x.in ) + 2 ),
+                                            rep( 0,
+                                                length( x.in ) + 2 ),
                                           penalty.parameter = 1000 ){
   ## The augmented gradient consists of the GEV/GP likelihood
   ## gradient and some additive term for the constraint violations.
@@ -1926,8 +1942,10 @@ likelihood.gradient.augmented <- function( parameters, x.in,
         ( x.in[ ii ] - parameters[ 1 ])/ parameters[ 2 ]
       if ( constraint <= -.95 ){
         gradient[ 1 ] <- gradient[ 1 ] -
-          lagrangian.multiplier[ ii ]* parameters[ 3 ]/ parameters[ 2 ] -
-          penalty.parameter* constraint* parameters[ 3 ]/ parameters[ 2 ]
+          lagrangian.multiplier[ ii ]* parameters[ 3 ]/
+          parameters[ 2 ] -
+          penalty.parameter* constraint* parameters[ 3 ]/
+          parameters[ 2 ]
         gradient[ 2 ] <- gradient[ 2 ] -
           lagrangian.multiplier[ ii ]* parameters[ 3 ]*
           ( x.in[ ii ] - parameters[ 1 ] )/ parameters[ 2 ]^ 2 -
@@ -1981,34 +1999,35 @@ likelihood.gradient.augmented <- function( parameters, x.in,
 ##' @description Estimates the initial GEV or GPD parameters of a time
 ##'   series required to start the fitting routine.
 ##'
-##' @details Two main methods are used for the estimation: the L-moments
-##' method of Hosking & Wallis  and an estimation using
-##' the first two moments of the Gumbel distribution. For the later one
-##' a modification was added: By looking at skewness of the time series x
-##' and with respect to some heuristic thresholds a shape parameter
-##' between -.4 and .2 is assigned for the GEV distribution. In case of
-##' the GP one, the sign of the skewness matches the sign of the series'
-##' shape parameter.
+##' @details Two main methods are used for the estimation: the
+##'   L-moments method of Hosking & Wallis  and an estimation using
+##'   the first two moments of the Gumbel distribution. For the later
+##'   one a modification was added: By looking at skewness of the time
+##'   series \strong{x} and with respect to some heuristic thresholds
+##'   a shape parameter between -.4 and .2 is assigned for the GEV
+##'   distribution. In case of the GP one, the sign of the skewness
+##'   matches the sign of the series' shape parameter.
 ##'
-##' Warning: both methods do not work for samples with diverging (or
-##' pretty big) mean or variance.
+##'   Warning: both methods do not work for samples with diverging (or
+##'   pretty big) mean or variance.
 ##'
-##' If no working initial parameter combination could be found using
-##' those methods, the function will perform a constrained random
-##' walk on the parameters until a working pair is found.
+##'   If no working initial parameter combination could be found using
+##'   those methods, the function will perform a constrained random
+##'   walk on the parameters until a working pair is found.
 ##'
-##' @param x Time series/numeric.
-##' @param model Determining whether to calculate the initial parameters
-##' of the GEV or GPD function. Default = "gev"
+##' @param x Time series of class \pkg{xts} or \emph{numeric}.
+##' @param model String determining whether to calculate the initial
+##'   parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+##'   "gev"
 ##' @param use.skewness Determines if the skewness is getting used to
-##' determine the initial shape parameter. Default = TRUE.
+##'   determine the initial shape parameter. Default = TRUE.
 ##'
 ##' @family optimization
 ##'
 ##' @export
 ##' @return Numerical vector containing the c( location, scale, shape )
-##' estimates for method = "gev" or the c( scale, shape ) estimates for
-##' method = "gpd".
+##'   estimates for method = "gev" or the c( scale, shape ) estimates
+##'   for method = "gpd".
 ##' @author Philipp Mueller
 likelihood.initials <- function( x, model = c( "gev", "gpd" ),
                                 use.skewness = TRUE ){
@@ -2025,8 +2044,8 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
       ## sequence of one unique number the calculation of the skewness
       ## returns NaN and the function throws an error
       if ( is.nan( x.skewness ) ){
-        ## If you can not calculate the skewness, set the shape parameter
-        ## to .001
+        ## If you can not calculate the skewness, set the shape
+        ## parameter to .001
         x.skewness <- .8
       }
       if ( x.skewness > 4 ){
@@ -2088,10 +2107,10 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
     ## Approximation using the method of moments
     sc.init <- sqrt( stats::var( x ) )
     if ( use.skewness ){
-      ## For positive shape parameters the skewness to the time series is
-      ## positive as well. For negative it's negative. This way at least
-      ## the sign of the shape (but unfortunately not the magnitude) can
-      ## be estimated
+      ## For positive shape parameters the skewness to the time series
+      ## is positive as well. For negative it's negative. This way at
+      ## least the sign of the shape (but unfortunately not the
+      ## magnitude) can be estimated
       x.skewness <- moments::skewness( x )
       ## For series of absurdly high values (e.g. big shape and scale
       ## parameters) the skewness function can return NaN
@@ -2168,3 +2187,4 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
     return( as.numeric( x.initial ) )
   }
 }
+## End of opti.R

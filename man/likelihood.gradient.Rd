@@ -7,20 +7,21 @@
 likelihood.gradient(parameters, x.in, model = c("gev", "gpd"))
 }
 \arguments{
-\item{parameters}{Vector containing the location, scale and shape
-parameter for the GEV model or the scale and shape parameter for the
-GPD one.}
+\item{parameters}{Numerical vector containing the location, scale,
+and shape parameters for the GEV model or the scale and shape
+parameters for the GPD one.}
 
-\item{x.in}{Time series or numerical vector containing the extreme
-events.}
+\item{x.in}{Time series of class \pkg{xts} or numerical vector
+containing the extreme events.}
 
-\item{model}{Determining whether to calculate the initial parameters
-of the GEV or GPD function. Default = "gev".}
+\item{model}{String determining whether to calculate the initial
+parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+"gev".}
 }
 \value{
 Numerical vector containing the derivative of the negative
-log-likelihood in (location, scale, shape for GEV) or (scale,
-shape for GPD) direction.
+  log-likelihood in (location, scale, shape for GEV) or (scale,
+  shape for GPD) direction.
 }
 \description{
 Calculates the gradient of the negative log
