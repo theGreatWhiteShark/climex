@@ -4,13 +4,20 @@
 \alias{check.completeness.list}
 \title{Checking for N complete years of data}
 \usage{
-\method{check.completeness}{list}(x, number.of.years = 30)
+\method{check.completeness}{list}(x, number.of.years = 30, mc.cores = NULL)
 }
 \arguments{
 \item{x}{A list of \pkg{xts} class objects.}
 
 \item{number.of.years}{The minimum number of complete years in the
 series. Default = 30.}
+
+\item{mc.cores}{A numerical input specifying the number of cores
+to use for the multi core application of the function (see
+\code{\link[parallel]{detectCores}}). This functionality is only
+available if the input is a list of different objects. If NULL,
+the function will be calculated classically with only one core.
+Default = NULL.}
 }
 \value{
 Trimmed list containing only those elements, which indeed

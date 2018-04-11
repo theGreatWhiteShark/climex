@@ -4,13 +4,20 @@
 \alias{remove.incomplete.years}
 \title{Remove incomplete years}
 \usage{
-remove.incomplete.years(x, time.unit = 1)
+remove.incomplete.years(x, time.unit = 1, mc.cores = NULL)
 }
 \arguments{
 \item{x}{Either a \pkg{xts} class object or a list of those.}
 
 \item{time.unit}{Minimal differences found when applying the
 \code{\link[base]{diff}} function to \strong{x}. Default = 1.}
+
+\item{mc.cores}{A numerical input specifying the number of cores
+to use for the multi core application of the function (see
+\code{\link[parallel]{detectCores}}). This functionality is only
+available if the input is a list of different objects. If NULL,
+the function will be calculated classically with only one core.
+Default = NULL.}
 }
 \value{
 Object of the same class as the input \strong{x}.

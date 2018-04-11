@@ -28,6 +28,12 @@
 ##'   to its date values instead. If \strong{block.length} or
 ##'   \strong{block.number} is specified this argument will not be
 ##'   considered and set to "none". Default = "years".
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##' 
 ##' @family extremes
 ##'
@@ -35,6 +41,7 @@
 ##'
 ##' @importFrom xts xts
 ##' @importFrom zoo index
+##' @importFrom parallel mclapply
 ##'
 ##' @family extremes
 ##' 
@@ -45,7 +52,8 @@
 ##'   block( temp.potsdam )
 block <- function( x, block.number = round( length( x )/ 50 ),
                   block.length = NULL, block.mode = c( "max", "min" ),
-                  separation.mode = c( "years", "none" ) ){
+                  separation.mode = c( "years", "none" ),
+                  mc.cores = NULL ){
   UseMethod( "block" )
 }
 ##' @title Blocking data
@@ -76,6 +84,12 @@ block <- function( x, block.number = round( length( x )/ 50 ),
 ##'   to its date values instead. If \strong{block.length} or
 ##'   \strong{block.number} is specified this argument will not be
 ##'   considered and set to "none". Default = "years".
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##' 
 ##' @family extremes
 ##'
@@ -83,6 +97,7 @@ block <- function( x, block.number = round( length( x )/ 50 ),
 ##'
 ##' @importFrom xts xts
 ##' @importFrom zoo index
+##' @importFrom parallel mclapply
 ##'
 ##' @family extremes
 ##' 
@@ -92,13 +107,26 @@ block <- function( x, block.number = round( length( x )/ 50 ),
 ##' @examples
 ##'   block( temp.potsdam )
 block.list <- function( x, block.number = round( length( x )/ 50 ),
-                 block.length = NULL, block.mode = c( "max", "min" ),
-                 separation.mode = c( "years", "none" ) ){
-  return( lapply( x, function( xx )
-    block( xx, block.number = round( length( xx )/ 50 ),
-          block.length = block.length,
-          block.mode = block.mode,
-          separation.mode = separation.mode ) ) )
+                       block.length = NULL,
+                       block.mode = c( "max", "min" ),
+                       separation.mode = c( "years", "none" ),
+                       mc.cores = NULL ){
+  if ( !is.null( mc.cores ) ){
+    return( mclapply( x, function( xx )
+      block( xx, block.number = round( length( xx )/ 50 ),
+            block.length = block.length,
+            block.mode = block.mode,
+            separation.mode = separation.mode,
+            mc.cores = mc.cores ),
+      mc.cores = mc.cores ) )
+  } else {
+    return( lapply( x, function( xx )
+      block( xx, block.number = round( length( xx )/ 50 ),
+            block.length = block.length,
+            block.mode = block.mode,
+            separation.mode = separation.mode,
+            mc.cores = mc.cores ) ) )
+  }
 }
 ##' @title Blocking data
 ##' @description Separates the input into blocks of equal size and
@@ -125,6 +153,12 @@ block.list <- function( x, block.number = round( length( x )/ 50 ),
 ##'   to its date values instead. If \strong{block.length} or
 ##'   \strong{block.number} is specified this argument will not be
 ##'   considered and set to "none". Default = "years".
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##' 
 ##' @family extremes
 ##'
@@ -132,6 +166,7 @@ block.list <- function( x, block.number = round( length( x )/ 50 ),
 ##'
 ##' @importFrom xts xts
 ##' @importFrom zoo index
+##' @importFrom parallel mclapply
 ##'
 ##' @family extremes
 ##' 
@@ -146,7 +181,8 @@ block.xts <- block.default <- function( x,
                                        block.length = NULL,
                                        block.mode = c( "max", "min" ),
                                        separation.mode =
-                                         c( "years", "none" ) ){
+                                         c( "years", "none" ),
+                                       mc.cores = NULL ){
   if ( !all( class( x ) == c( "xts", "zoo" ) ) )
     stop( "The block.default function works to input of class 'xts' only!" )
   ## Initializing. The 'block.length' is the most important parameter
@@ -241,6 +277,12 @@ block.xts <- block.default <- function( x,
 ##'   considered the starting point of a new cluster. Only supply a
 ##'   value when you really know what you are doing! Default = NULL
 ##' @param silent Whether or not to display warnings.
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##'
 ##' @return Same class as the input. The time series will be similar
 ##'   to their original versions with all the elements within a
@@ -251,10 +293,11 @@ block.xts <- block.default <- function( x,
 ##' 
 ##' @export
 ##' @importFrom xts xts
+##' @importFrom parallel mclapply
 ##' @author Philipp Mueller
 ##' 
 decluster <- function( x, threshold, cluster.distance = NULL,
-                      silent = FALSE ){ 
+                      silent = FALSE, mc.cores = NULL ){ 
   UseMethod( "decluster" )
 }
 
@@ -298,6 +341,12 @@ decluster <- function( x, threshold, cluster.distance = NULL,
 ##'   considered the starting point of a new cluster. Only supply a
 ##'   value when you really know what you are doing! Default = NULL
 ##' @param silent Whether or not to display warnings.
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##'
 ##' @return Same class as the input. The time series will be similar
 ##'   to their original versions with all the elements within a
@@ -311,10 +360,16 @@ decluster <- function( x, threshold, cluster.distance = NULL,
 ##' @author Philipp Mueller
 ##' 
 decluster.list <- function( x, threshold, cluster.distance = NULL,
-                           silent = FALSE ){ 
-  return( lapply( x, decluster, threshold = threshold,
-                 cluster.distance = cluster.distance,
-                 silent = silent ) )
+                           silent = FALSE, mc.cores = NULL ){
+  if ( !is.null( mc.cores ) ){
+    return( mclapply( x, decluster, threshold = threshold,
+                   cluster.distance = cluster.distance,
+                   silent = silent, mc.cores = mc.cores ) )
+  } else {
+    return( lapply( x, decluster, threshold = threshold,
+                   cluster.distance = cluster.distance,
+                   silent = silent, mc.cores = mc.cores ) )
+  }
 }
 
 ##' @title Decluster a time series.
@@ -357,6 +412,12 @@ decluster.list <- function( x, threshold, cluster.distance = NULL,
 ##'   considered the starting point of a new cluster. Only supply a
 ##'   value when you really know what you are doing! Default = NULL
 ##' @param silent Whether or not to display warnings.
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##'
 ##' @return Same class as the input. The time series will be similar
 ##'   to their original versions with all the elements within a
@@ -367,10 +428,13 @@ decluster.list <- function( x, threshold, cluster.distance = NULL,
 ##' 
 ##' @export
 ##' @importFrom xts xts
+##' @importFrom parallel mclapply
 ##' @author Philipp Mueller
 ##' 
 decluster.xts <- decluster.default <- function( x, threshold,
-                  cluster.distance = NULL, silent = FALSE ){
+                                               cluster.distance =
+                                                 NULL, silent = FALSE,
+                                               mc.cores = NULL ){
   ## Caution: x is the full time series and not the blocked one!
   if ( any( is.na( x ) ) ){
     ## Handling of missing values.
@@ -587,14 +651,22 @@ extremal.index <- function( x, threshold, silent = FALSE ){
 ##'   values from the time series (removed points in clusters). For
 ##'   important steps, like calculating the \emph{Lmoments} of a time
 ##'   series, there must not be any NA left. Default = TRUE.
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##'
 ##' @family extremes
 ##'
+##' @importFrom parallel mclapply
+##' 
 ##' @export
 ##' @return Same class as the input
 ##' @author Philipp Mueller
 threshold <- function( x, threshold, decluster = TRUE,
-                      na.rm = TRUE ){
+                      na.rm = TRUE, mc.cores = TRUE ){
   UseMethod( "threshold" )
 }
 ##' @title Apply a threshold to a time series
@@ -620,16 +692,31 @@ threshold <- function( x, threshold, decluster = TRUE,
 ##'   values from the time series (removed points in clusters). For
 ##'   important steps, like calculating the \emph{Lmoments} of a time
 ##'   series, there must not be any NA left. Default = TRUE.
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##'
 ##' @family extremes
+##' 
+##' @importFrom parallel mclapply
 ##'
 ##' @export
 ##' @return Same class as the input
 ##' @author Philipp Mueller
 threshold.list <- function( x, threshold, decluster = TRUE,
-                           na.rm = TRUE ){
-  return( lapply( x, threshold.xts, threshold = threshold,
-                 decluster = decluster, na.rm = na.rm ) )
+                           na.rm = TRUE, mc.cores = NULL ){
+  if ( !is.null( mc.cores ) ){
+    return( lapply( x, threshold.xts, threshold = threshold,
+                   decluster = decluster, na.rm = na.rm,
+                   mc.cores = mc.cores ) )
+  } else {
+    return( lapply( x, threshold.xts, threshold = threshold,
+                   decluster = decluster, na.rm = na.rm,
+                   mc.cores = mc.cores ) )
+  }
 }
 ##' @title Apply a threshold to a time series
 ##' @description Extracts all data above a certain threshold of a
@@ -654,15 +741,24 @@ threshold.list <- function( x, threshold, decluster = TRUE,
 ##'   values from the time series (removed points in clusters). For
 ##'   important steps, like calculating the \emph{Lmoments} of a time
 ##'   series, there must not be any NA left. Default = TRUE.
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##'
 ##' @family extremes
+##'
+##' @importFrom parallel mclapply
 ##'
 ##' @export
 ##' @return Same class as the input
 ##' @author Philipp Mueller
 threshold.xts <- threshold.default <- function( x, threshold,
                                                decluster = TRUE,
-                                               na.rm = TRUE ){  
+                                               na.rm = TRUE,
+                                               mc.cores = NULL ){  
   if ( !all( class( x ) == c( "xts", "zoo" ) ) )
     stop( "The threshold.default works to input of class 'xts' only!" )
   if ( missing( x ) )
@@ -777,6 +873,12 @@ threshold.xts <- threshold.default <- function( x, threshold,
 ##' @param silent Throws an warning whenever the "gpd" model is used
 ##'   and the \strong{thresholded.time.series} is not supplied. Since
 ##'   this can be annoying one can also disable it. Default = FALSE.
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##'
 ##' @return A list containing the estimates "return.level" and their
 ##'   standard errors "error" if the input was a fitting object or a
@@ -786,6 +888,7 @@ threshold.xts <- threshold.default <- function( x, threshold,
 ##'
 ##' @importFrom xts apply.yearly
 ##' @importFrom numDeriv hessian
+##' @importFrom parallel mclapply
 ##' 
 ##' @family extremes
 ##'
@@ -801,7 +904,7 @@ return.level <- function( x, return.period = 100,
                          bootstrap.sample.size = 100,
                          threshold = NULL, total.length = NULL,
                          thresholded.time.series = NULL,
-                         silent = FALSE ){
+                         silent = FALSE, mc.cores = NULL ){
   UseMethod( "return.level" )
 }
 ##' @title Calculation of the return levels.
@@ -903,6 +1006,12 @@ return.level <- function( x, return.period = 100,
 ##' @param silent Throws an warning whenever the "gpd" model is used
 ##'   and the \strong{thresholded.time.series} is not supplied. Since
 ##'   this can be annoying one can also disable it. Default = FALSE.
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##'
 ##' @return A list containing the estimates "return.level" and their
 ##'   standard errors "error" if the input was a fitting object or a
@@ -912,6 +1021,7 @@ return.level <- function( x, return.period = 100,
 ##'
 ##' @importFrom xts apply.yearly
 ##' @importFrom numDeriv hessian
+##' @importFrom parallel mclapply
 ##' 
 ##' @family extremes
 ##'
@@ -927,7 +1037,7 @@ return.level.list <- function( x, return.period = 100,
                               bootstrap.sample.size = 100,
                               threshold = NULL, total.length = NULL,
                               thresholded.time.series = NULL,
-                              silent = FALSE ){
+                              silent = FALSE, mc.cores = NULL ){
   ## Since the objects returned by the fitting functions are of class
   ## c( "list", "climex.fit.gXX" ), an exception is needed to hand
   ## them to the correct function call
@@ -939,7 +1049,7 @@ return.level.list <- function( x, return.period = 100,
         bootstrap.sample.size = bootstrap.sample.size,
         threshold = threshold, total.length = total.length,
         thresholded.time.series = thresholded.time.series,
-        silent = silent )
+        silent = silent, mc.cores = mc.cores )
   } else if ( any( class( x ) == "climex.fit.gpd" ) ){
     x.result <- return.level.climex.fit.gpd( 
         x, return.period = return.period,
@@ -948,8 +1058,17 @@ return.level.list <- function( x, return.period = 100,
         bootstrap.sample.size = bootstrap.sample.size,
         threshold = threshold, total.length = total.length,
         thresholded.time.series = thresholded.time.series,
-        silent = silent )
-  } else {
+        silent = silent, mc.cores = mc.cores )
+  } else if ( !is.null( mc.cores ) ){
+    x.result <- mclapply(
+        x, return.level, return.period = return.period,
+        error.estimation = error.estimation, model = model,
+        monte.carlo.sample.size = monte.carlo.sample.size,
+        bootstrap.sample.size = bootstrap.sample.size,
+        threshold = threshold, total.length = total.length,
+        thresholded.time.series = thresholded.time.series,
+        silent = silent, mc.cores = mc.cores )
+    } else {
     x.result <- lapply(
         x, return.level, return.period = return.period,
         error.estimation = error.estimation, model = model,
@@ -957,7 +1076,7 @@ return.level.list <- function( x, return.period = 100,
         bootstrap.sample.size = bootstrap.sample.size,
         threshold = threshold, total.length = total.length,
         thresholded.time.series = thresholded.time.series,
-        silent = silent )
+        silent = silent, mc.cores = mc.cores )
   }
   return( x.result )
 }
@@ -1056,6 +1175,12 @@ return.level.list <- function( x, return.period = 100,
 ##' @param silent Throws an warning whenever the "gpd" model is used
 ##'   and the \strong{thresholded.time.series} is not supplied. Since
 ##'   this can be annoying one can also disable it. Default = FALSE.
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##'
 ##' @return A list containing the estimates "return.level" and their
 ##'   standard errors "error" if the input was a fitting object or a
@@ -1064,6 +1189,7 @@ return.level.list <- function( x, return.period = 100,
 ##'
 ##' @importFrom xts apply.yearly
 ##' @importFrom numDeriv hessian
+##' @importFrom parallel mclapply
 ##' 
 ##' @family extremes
 ##'
@@ -1081,7 +1207,7 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
              bootstrap.sample.size = 100,
              threshold = NULL, total.length = NULL,
              thresholded.time.series = NULL,
-             silent = FALSE ){
+             silent = FALSE, mc.cores = NULL ){
       if ( any( class( x ) == "climex.fit.gev" ) ){
         model <- "gev"
         return.levels <-
@@ -1188,8 +1314,7 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
                               silent = silent ) ) ) )
         }
       } else {
-        stop(
-            "return.level is not implemented for this class of input values!" )
+        stop( "return.level is not implemented for this class of input values!" )
       }
       ##
       ## Error estimation of the return level

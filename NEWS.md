@@ -26,6 +26,18 @@ from one of the CRAN fellows by just submitting the core package.
   the same character. Function arguments are marked with the \strong{}
   highlighting in the documentation and packages are referenced using
   \pkg{}.
+- Allowing for parallel execution of S3 functions
+  The functions **anomalies**, **block**, **decluster**,
+  **threshold**, **check.completeness**, **fit.gev**, **fit.gpd**,
+  **remove.incomplete.years**, **remove.seasonality**, and
+  **return.level** can now harness the support of the *parallel*
+  package using the *mclapply* function. Per default their additional
+  input argument *mc.cores* is set to NULL. If set to a numerical
+  value instead, this value is used as the number of cores and the
+  parallel execution is triggered.
+  
+  The functions **aic** and **bic**, while being S3 generic, have been
+  excluded since they are calculated in no time.
   
 # v1.2.1
 - Only perform the test of the API of the DWD on Unix-based

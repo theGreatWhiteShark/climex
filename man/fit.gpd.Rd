@@ -8,7 +8,8 @@ fit.gpd(x, initial = NULL, threshold = NULL,
   likelihood.function = likelihood, gradient.function = likelihood.gradient,
   error.estimation = c("MLE", "MC", "bootstrap", "none"),
   monte.carlo.sample.size = 100, bootstrap.sample.size = 100,
-  return.period = 100, total.length = NULL, silent = TRUE, ...)
+  return.period = 100, total.length = NULL, silent = TRUE,
+  mc.cores = NULL, ...)
 }
 \arguments{
 \item{x}{Either an object of class \pkg{xts} or a list of
@@ -97,6 +98,13 @@ exceedances in the available years (time stamps of the class
 
 \item{silent}{Determines whether or not warning messages shall be
 displayed and results shall be reported. Default = TRUE.}
+
+\item{mc.cores}{A numerical input specifying the number of cores
+to use for the multi core application of the function (see
+\code{\link[parallel]{detectCores}}). This functionality is only
+available if the input is a list of different objects. If NULL,
+the function will be calculated classically with only one core.
+Default = NULL.}
 
 \item{...}{Additional arguments for the \code{\link[stats]{optim}}
 function.}

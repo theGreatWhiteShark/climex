@@ -5,7 +5,7 @@
 \title{Decluster a time series.}
 \usage{
 \method{decluster}{xts}(x, threshold, cluster.distance = NULL,
-  silent = FALSE)
+  silent = FALSE, mc.cores = NULL)
 }
 \arguments{
 \item{x}{An object of class \pkg{xts} or \emph{numeric}. The full
@@ -21,6 +21,13 @@ considered the starting point of a new cluster. Only supply a
 value when you really know what you are doing! Default = NULL}
 
 \item{silent}{Whether or not to display warnings.}
+
+\item{mc.cores}{A numerical input specifying the number of cores
+to use for the multi core application of the function (see
+\code{\link[parallel]{detectCores}}). This functionality is only
+available if the input is a list of different objects. If NULL,
+the function will be calculated classically with only one core.
+Default = NULL.}
 }
 \value{
 Same class as the input. The time series will be similar

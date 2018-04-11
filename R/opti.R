@@ -113,6 +113,12 @@
 ##'   to be evaluated. Class "numeric". Default = 100.
 ##' @param silent Determines whether or not warning messages shall be
 ##' displayed and results shall be reported. Default = TRUE.
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##' @param ... Additional arguments for the \code{\link[stats]{optim}}
 ##'   function.
 ##' 
@@ -145,6 +151,7 @@
 ##' @export
 ##' @importFrom xts xts
 ##' @importFrom alabama auglag
+##' @importFrom parallel mclapply
 ##' @examples
 ##'   potsdam.anomalies <- anomalies( temp.potsdam )
 ##'   potsdam.blocked <- block( potsdam.anomalies )
@@ -156,7 +163,8 @@ fit.gev <- function(  x, initial = NULL,
                                          "none" ), 
                     monte.carlo.sample.size = 100,
                     bootstrap.sample.size = 100,
-                    return.period = 100, silent = TRUE, ... ){
+                    return.period = 100, silent = TRUE,
+                    mc.cores = NULL, ... ){
   UseMethod( "fit.gev" )
 }
 ##' @title Improved maximum-likelihood fit of the GEV distribution
@@ -272,6 +280,12 @@ fit.gev <- function(  x, initial = NULL,
 ##'   to be evaluated. Class "numeric". Default = 100.
 ##' @param silent Determines whether or not warning messages shall be
 ##' displayed and results shall be reported. Default = TRUE.
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##' @param ... Additional arguments for the \code{\link[stats]{optim}}
 ##'   function.
 ##' 
@@ -300,10 +314,15 @@ fit.gev <- function(  x, initial = NULL,
 ##'   If, on the other hand, a list of \pkg{xts} class object was
 ##'   provided, a list of objects structured as describe above is
 ##'   returned.
+##' 
 ##' @author Philipp Mueller
+##' 
 ##' @export
+##' 
 ##' @importFrom xts xts
 ##' @importFrom alabama auglag
+##' @importFrom parallel mclapply
+##' 
 ##' @examples
 ##'   potsdam.anomalies <- anomalies( temp.potsdam )
 ##'   potsdam.blocked <- block( potsdam.anomalies )
@@ -315,15 +334,28 @@ fit.gev.list <- function(  x, initial = NULL,
                                               "bootstrap", "none" ), 
                          monte.carlo.sample.size = 100,
                          bootstrap.sample.size = 100,
-                         return.period = 100, silent = TRUE, ... ){
-  return( lapply( x, fit.gev, initial = initial,
-                 likelihood.function = likelihood.function,
-                 gradient.function = gradient.function,
-                 error.estimation = error.estimation,
-                 monte.carlo.sample.size = monte.carlo.sample.size,
-                 bootstrap.sample.size = bootstrap.sample.size,
-                 return.period = return.period, silent = silent, ... )
-         )
+                         return.period = 100, silent = TRUE,
+                         mc.cores = NULL, ... ){
+  if ( !is.null( mc.cores ) ){
+    return( mclapply( x, fit.gev, initial = initial,
+                     likelihood.function = likelihood.function,
+                     gradient.function = gradient.function,
+                     error.estimation = error.estimation,
+                     monte.carlo.sample.size =
+                       monte.carlo.sample.size,
+                     bootstrap.sample.size = bootstrap.sample.size,
+                     return.period = return.period, silent = silent,
+                     mc.cores = mc.cores, ... ) )
+  } else {
+    return( lapply( x, fit.gev, initial = initial,
+                   likelihood.function = likelihood.function,
+                   gradient.function = gradient.function,
+                   error.estimation = error.estimation,
+                   monte.carlo.sample.size = monte.carlo.sample.size,
+                   bootstrap.sample.size = bootstrap.sample.size,
+                   return.period = return.period, silent = silent,
+                   mc.cores = mc.cores, ... ) )
+  }
 }
 ##' @title Improved maximum-likelihood fit of the GEV distribution
 ##'
@@ -435,6 +467,12 @@ fit.gev.list <- function(  x, initial = NULL,
 ##'   to be evaluated. Class "numeric". Default = 100.
 ##' @param silent Determines whether or not warning messages shall be
 ##' displayed and results shall be reported. Default = TRUE.
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##' @param ... Additional arguments for the \code{\link[stats]{optim}}
 ##'   function.
 ##' 
@@ -463,10 +501,15 @@ fit.gev.list <- function(  x, initial = NULL,
 ##'   If, on the other hand, a list of \pkg{xts} class object was
 ##'   provided, a list of objects structured as describe above is
 ##'   returned.
+##' 
 ##' @author Philipp Mueller
+##' 
 ##' @export
+##' 
 ##' @importFrom xts xts
 ##' @importFrom alabama auglag
+##' @importFrom parallel mclapply
+##' 
 ##' @examples
 ##'   potsdam.anomalies <- anomalies( temp.potsdam )
 ##'   potsdam.blocked <- block( potsdam.anomalies )
@@ -484,7 +527,8 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
                                            bootstrap.sample.size =
                                              100,
                                            return.period = 100,
-                                           silent = TRUE, ... ){
+                                           silent = TRUE,
+                                           mc.cores = NULL, ... ){
   ## Default values if no initial parameters were supplied
   if ( is.null( initial ) )
     initial <- likelihood.initials( x, model = "gev" )
@@ -868,6 +912,12 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
 ##'   \pkg{xts} time series) will be used. Default = NULL. 
 ##' @param silent Determines whether or not warning messages shall be
 ##'   displayed and results shall be reported. Default = TRUE.
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##' @param ... Additional arguments for the \code{\link[stats]{optim}}
 ##'   function.
 ##' 
@@ -901,6 +951,7 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
 ##' @export
 ##' @importFrom xts xts
 ##' @importFrom alabama auglag
+##' @importFrom parallel mclapply
 ##' @examples
 ##'   potsdam.anomalies <- anomalies( temp.potsdam )
 ##'   potsdam.extremes <- threshold( potsdam.anomalies,
@@ -915,7 +966,8 @@ fit.gpd <- function(  x, initial = NULL, threshold = NULL,
                     monte.carlo.sample.size = 100,
                     bootstrap.sample.size = 100,
                     return.period = 100,
-                    total.length = NULL, silent = TRUE, ... ){
+                    total.length = NULL, silent = TRUE,
+                    mc.cores = NULL, ... ){
   UseMethod( "fit.gpd" )
 }
 ##' @title Improved maximum-likelihood fit of the GPD distribution
@@ -1048,6 +1100,12 @@ fit.gpd <- function(  x, initial = NULL, threshold = NULL,
 ##'   \pkg{xts} time series) will be used. Default = NULL. 
 ##' @param silent Determines whether or not warning messages shall be
 ##'   displayed and results shall be reported. Default = TRUE.
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##' @param ... Additional arguments for the \code{\link[stats]{optim}}
 ##'   function.
 ##' 
@@ -1081,6 +1139,7 @@ fit.gpd <- function(  x, initial = NULL, threshold = NULL,
 ##' @export
 ##' @importFrom xts xts
 ##' @importFrom alabama auglag
+##' @importFrom parallel mclapply
 ##' @examples
 ##'   potsdam.anomalies <- anomalies( temp.potsdam )
 ##'   potsdam.extremes <- threshold( potsdam.anomalies,
@@ -1095,16 +1154,29 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
                          monte.carlo.sample.size = 100,
                          bootstrap.sample.size = 100,
                          return.period = 100,
-                         total.length = NULL, silent = TRUE, ... ){
-  return( lapply( x, fit.gpd, initial = initial,
-                 likelihood.function = likelihood.function,
-                 gradient.function = gradient.function,
-                 error.estimation = error.estimation,
-                 monte.carlo.sample.size = monte.carlo.sample.size,
-                 bootstrap.sample.size = bootstrap.sample.size,
-                 return.period = return.period,
-                 total.length = total.length, silent = silent, ... )
-         )
+                         total.length = NULL, silent = TRUE,
+                         mc.cores = NULL, ... ){
+  if ( !is.null( mc.cores ) ){
+    return( mclapply( x, fit.gpd, initial = initial,
+                     likelihood.function = likelihood.function,
+                     gradient.function = gradient.function,
+                     error.estimation = error.estimation,
+                     monte.carlo.sample.size = monte.carlo.sample.size,
+                     bootstrap.sample.size = bootstrap.sample.size,
+                     return.period = return.period,
+                     total.length = total.length, silent = silent,
+                     mc.cores = mc.cores, ... ) )
+  } else {
+    return( lapply( x, fit.gpd, initial = initial,
+                   likelihood.function = likelihood.function,
+                   gradient.function = gradient.function,
+                   error.estimation = error.estimation,
+                   monte.carlo.sample.size = monte.carlo.sample.size,
+                   bootstrap.sample.size = bootstrap.sample.size,
+                   return.period = return.period,
+                   total.length = total.length, silent = silent,
+                   mc.cores = mc.cores, ... ) )
+  }
 }
 ##' @title Improved maximum-likelihood fit of the GPD distribution
 ##'
@@ -1233,6 +1305,12 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
 ##'   \pkg{xts} time series) will be used. Default = NULL. 
 ##' @param silent Determines whether or not warning messages shall be
 ##'   displayed and results shall be reported. Default = TRUE.
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
 ##' @param ... Additional arguments for the \code{\link[stats]{optim}}
 ##'   function.
 ##' 
@@ -1266,6 +1344,7 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
 ##' @export
 ##' @importFrom xts xts
 ##' @importFrom alabama auglag
+##' @importFrom parallel mclapply
 ##' @examples
 ##'   potsdam.anomalies <- anomalies( temp.potsdam )
 ##'   potsdam.extremes <- threshold( potsdam.anomalies,
@@ -1287,7 +1366,8 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
                                              100, 
                                            return.period = 100,
                                            total.length = NULL,
-                                           silent = TRUE, ... ){
+                                           silent = TRUE,
+                                           mc.cores = NULL, ... ){
   ## Default values if no initial parameters are supplied
   if ( is.null( initial ) )
     initial <- likelihood.initials( x, model = "gpd" )

@@ -4,10 +4,17 @@
 \alias{anomalies.xts}
 \title{Anomalies of a time series}
 \usage{
-\method{anomalies}{xts}(x)
+\method{anomalies}{xts}(x, mc.cores = NULL)
 }
 \arguments{
 \item{x}{A time series of class \pkg{xts}}
+
+\item{mc.cores}{A numerical input specifying the number of cores
+to use for the multi core application of the function (see
+\code{\link[parallel]{detectCores}}). This functionality is only
+available if the input is a list of different objects. If NULL,
+the function will be calculated classically with only one core.
+Default = NULL.}
 }
 \value{
 Same class as the input

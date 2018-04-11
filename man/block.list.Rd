@@ -6,7 +6,7 @@
 \usage{
 \method{block}{list}(x, block.number = round(length(x)/50),
   block.length = NULL, block.mode = c("max", "min"),
-  separation.mode = c("years", "none"))
+  separation.mode = c("years", "none"), mc.cores = NULL)
 }
 \arguments{
 \item{x}{A list of objects of class \pkg{xts}.}
@@ -26,6 +26,13 @@ or the minimum "min" of a block shall be returned. Default:
 to its date values instead. If \strong{block.length} or
 \strong{block.number} is specified this argument will not be
 considered and set to "none". Default = "years".}
+
+\item{mc.cores}{A numerical input specifying the number of cores
+to use for the multi core application of the function (see
+\code{\link[parallel]{detectCores}}). This functionality is only
+available if the input is a list of different objects. If NULL,
+the function will be calculated classically with only one core.
+Default = NULL.}
 }
 \value{
 Same class as the input.

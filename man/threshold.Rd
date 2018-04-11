@@ -4,7 +4,7 @@
 \alias{threshold}
 \title{Apply a threshold to a time series}
 \usage{
-threshold(x, threshold, decluster = TRUE, na.rm = TRUE)
+threshold(x, threshold, decluster = TRUE, na.rm = TRUE, mc.cores = TRUE)
 }
 \arguments{
 \item{x}{Either an object of class \pkg{xts} or a list of those.}
@@ -20,6 +20,13 @@ decluster the obtained exceedances over the
 values from the time series (removed points in clusters). For
 important steps, like calculating the \emph{Lmoments} of a time
 series, there must not be any NA left. Default = TRUE.}
+
+\item{mc.cores}{A numerical input specifying the number of cores
+to use for the multi core application of the function (see
+\code{\link[parallel]{detectCores}}). This functionality is only
+available if the input is a list of different objects. If NULL,
+the function will be calculated classically with only one core.
+Default = NULL.}
 }
 \value{
 Same class as the input

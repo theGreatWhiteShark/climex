@@ -8,7 +8,7 @@ return.level(x, return.period = 100, error.estimation = c("none", "MC",
   "MLE", "bootstrap"), model = c("gev", "gpd"),
   monte.carlo.sample.size = 1000, bootstrap.sample.size = 100,
   threshold = NULL, total.length = NULL, thresholded.time.series = NULL,
-  silent = FALSE)
+  silent = FALSE, mc.cores = NULL)
 }
 \arguments{
 \item{x}{Either of class \emph{numeric}, \emph{climex.fit.gev},
@@ -101,6 +101,13 @@ return level will be per observation. Default = NULL.}
 \item{silent}{Throws an warning whenever the "gpd" model is used
 and the \strong{thresholded.time.series} is not supplied. Since
 this can be annoying one can also disable it. Default = FALSE.}
+
+\item{mc.cores}{A numerical input specifying the number of cores
+to use for the multi core application of the function (see
+\code{\link[parallel]{detectCores}}). This functionality is only
+available if the input is a list of different objects. If NULL,
+the function will be calculated classically with only one core.
+Default = NULL.}
 }
 \value{
 A list containing the estimates "return.level" and their

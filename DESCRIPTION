@@ -23,6 +23,7 @@ Imports:
     moments,
     numDeriv,
     alabama,
+    parallel,
     zoo
 License: GPL (>= 3) | file LICENSE
 LinkingTo: Rcpp, RcppArmadillo

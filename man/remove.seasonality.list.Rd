@@ -4,10 +4,17 @@
 \alias{remove.seasonality.list}
 \title{Remove seasonality}
 \usage{
-\method{remove.seasonality}{list}(x)
+\method{remove.seasonality}{list}(x, mc.cores = NULL)
 }
 \arguments{
 \item{x}{A list of objects of class \pkg{xts}.}
+
+\item{mc.cores}{A numerical input specifying the number of cores
+to use for the multi core application of the function (see
+\code{\link[parallel]{detectCores}}). This functionality is only
+available if the input is a list of different objects. If NULL,
+the function will be calculated classically with only one core.
+Default = NULL.}
 }
 \value{
 Some class as input.
