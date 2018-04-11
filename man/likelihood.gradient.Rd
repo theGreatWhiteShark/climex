@@ -27,7 +27,9 @@ Calculates the gradient of the negative log
   likelihood of the GEV or GPD function.
 }
 \seealso{
-Other optimization: \code{\link{fit.gev}},
+Other optimization: \code{\link{fit.gev.list}},
+  \code{\link{fit.gev.xts}}, \code{\link{fit.gev}},
+  \code{\link{fit.gpd.list}}, \code{\link{fit.gpd.xts}},
   \code{\link{fit.gpd}},
   \code{\link{likelihood.augmented}},
   \code{\link{likelihood.gradient.augmented}},

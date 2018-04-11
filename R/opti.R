@@ -1,150 +1,489 @@
-##' @title Robust maximum-likelihood fit of the GEV distribution
+##' @title Improved maximum-likelihood fit of the GEV distribution
 ##'
-##' @description This function fits the Generalized Extreme Value (GEV)
-##' distribution to the supplied data, which has to be composed of
-##' block maxima (preferably without trend and correlations). The
-##' determination of the starting point for the optimization and the
-##' calculation of the return level and the all the corresponding
-##' estimates of the fitting errors will be done internally.
+##' @description This function fits the Generalized Extreme Value
+##'   (GEV) distribution to the supplied data, which has to be
+##'   composed of block maxima (preferably without trend and
+##'   correlations). The determination of the starting point of the
+##'   optimization and the calculation of the return level and the all
+##'   the corresponding estimates of the fitting errors will be done
+##'   internally.
 ##'
-##' @details The optimization is performed by the augmented Lagrangian
-##' method using the \code{\link{auglag}} function of the
+##' @details The optimization is performed by the augmented Lagrangian 
+##'   method using the \code{\link{auglag}} function of the
 ##'   \pkg{alabama} package. Within this framework the log-likelihood
-##'   function of the GEV 
-##' distribution gets augmented with N+2 constraints, where N is the
-##' number of points in the time series. N+1 of those constraints ensure
-##' the log-likelihood (containing two logarithms) to be always defined.
-##' The remaining constraints ensures for the shape parameter to be
-##' always bigger than -1 for the maximum likelihood to be defined in the
-##' first place. The penalty in the log-likelihood function is the sum of
-##' all squared constrain violations plus an additional term linear in
-##' the constraint violation to ensure well-conditioning. Using this
-##' penalty term the problem becomes unconstrained again and can be
-##' solved using \code{\link[stats]{optim}}. After each of those inner
-##' routines the weighting parameter of the penalty is being increased
-##' until some convergence conditions are fulfilled.
+##'   function of the GEV distribution gets augmented with N+2
+##'   constraints, where N is the number of points in the time
+##'   series. N+1 of those constraints ensure the log-likelihood
+##'   (containing two logarithms) to be always defined. The remaining
+##'   constraints ensures for the shape parameter to be always bigger
+##'   than -1 for the maximum likelihood to be defined in the first
+##'   place. The penalty in the log-likelihood function is the sum of
+##'   all squared constrain violations plus an additional term linear
+##'   in the constraint violation to ensure well-conditioning. Using
+##'   this penalty term the problem becomes unconstrained again and
+##'   can be solved using \code{\link[stats]{optim}}. After each of
+##'   those inner routines the weighting parameter of the penalty is
+##'   being increased until some convergence conditions are fulfilled.
 ##'
-##' Since it usually takes just four to five outer iterations this
-##' functions needs only double the time a pure call to the
+##'   Since it usually takes just four to five outer iterations this
+##'   functions needs only double the time a pure call to the
 ##'   \code{\link[stats]{optim}} function would need.
 ##'
-##' The negative log-likelihood of the Gumbel distribution is just fitted
-##' if the shape parameter is exactly equal to zero.
+##'   The negative log-likelihood of the Gumbel distribution is just
+##'   fitted if the shape parameter is exactly equal to zero.
 ##'
-##' If the user instead wants to fit just the Gumbel distribution and
-##' not the entire GEV distribution, the shape parameter of the
-##' \emph{initial} has to be set to 0. But in practice this is strongly
-##' discouraged since it will yield inferior results.
+##'   If the user instead wants to fit just the Gumbel distribution
+##'   and not the entire GEV distribution, the shape parameter of the
+##'   \strong{initial} has to be set to 0. But in practice this is
+##'   strongly discouraged since it will yield inferior results.
 ##'
-##' I found the Nelder-Mead method to be more robust to starting
-##' points more far away from the global optimum. This also holds
-##' for the inner routine of the augmented Lagrangian method. Since
-##' other routines, like CG and BFGS only cause problems in the
-##' extreme value analysis, there won't be an option to choose them
-##' in this package.
+##'   I found the Nelder-Mead method to be more robust to starting
+##'   points more far away from the global optimum. This also holds 
+##'   for the inner routine of the augmented Lagrangian method. Since
+##'   other routines, like CG and BFGS only cause problems in the
+##'   extreme value analysis, there won't be an option to choose them
+##'   in this package.
 ##'
-##' @param x Blocked time series to which the GEV distribution should
-##' be fitted.
+##'   This function can also be applied to a list of \pkg{xts} class
+##'   objects.
+##'
+##' @param x Either an object of class \pkg{xts} or a list of
+##'   those. Blocked time series to which the GEV distribution should
+##'   be fitted.
 ##' @param initial Initial values for the GEV parameters. Has to be
 ##'   provided as 3x1 vector. If NULL the parameters are estimated
 ##'   using \code{\link{likelihood.initials}}. If the shape parameter
 ##'   is set to 0 the exponential distribution instead of the GP one
 ##'   is fitted. But this its strongly discouraged to do so! Default =
 ##'   NULL.
-##' @param likelihood.function Function, which is going to be optimized.
-##' Default: \code{\link{likelihood}}
+##' @param likelihood.function Function, which is going to be
+##'   optimized. Default: \code{\link{likelihood}}
 ##' @param gradient.function If NULL a finite difference method is
-##' invoked. Default: \code{\link{likelihood.gradient}}
-##' @param error.estimation Method for calculating the standard errors of
-##' the fitted results. The errors of the GEV parameters will be
-##' calculated as the square roots of the diagonal elements of the
-##' inverse of the hessian matrix. The latter will be evaluated at the
-##' maximum likelihood estimates (MLE) of the GEV parameters.
+##'   invoked. Default: \code{\link{likelihood.gradient}}
+##' @param error.estimation Method for calculating the standard errors
+##'   of the fitted results. The errors of the GEV parameters will be
+##'   calculated as the square roots of the diagonal elements of the
+##'   inverse of the hessian matrix. The latter will be evaluated at
+##'   the maximum likelihood estimates (MLE) of the GEV parameters.
 ##'
-##' \strong{MLE}: The standard error of the return level is
-##' calculated using the Delta method and the maximum likelihood
-##' estimates of the GPD parameters. Note: For positive shape
-##'   parameters bigger than 0.3 this approach tends to highly
-##'   overestimates the errors of the return levels.
+##'   \emph{MLE}: The standard error of the return level is calculated
+##'     using the Delta method and the maximum likelihood estimates of
+##'     the GPD parameters. Note: For positive shape parameters bigger
+##'     than 0.3 this approach tends to highly overestimates the
+##'     errors of the return levels. 
 ##' 
-##' \strong{MC}: Alternative one can use a Monte Carlo method for which
-##' \emph{monte.carlo.sample.size} samples of the same size as \emph{x} will be drawn
-##' from a GEV distribution constituted by the obtained MLE of the GEV
-##' parameters of \emph{x}. The standard error is then calculated via the square
-##' of the variance of all fitted GEV parameters and calculated return
-##' levels. Note: In its essence this approach is not an estimation of
-##'   the error involved in fitting the time series to a GEV
-##'   distribution. It is rather the mean error of fitting a
-##'   GPD-distribution with the same length and parameters as
-##'   estimated ones.
+##'   \emph{MC}: Alternative one can use a Monte Carlo method for
+##'     which \strong{monte.carlo.sample.size} samples of the same
+##'     size as \strong{x} will be drawn from a GEV distribution
+##'     constituted by the obtained MLE of the GEV parameters of
+##'     \strong{x}. The standard error is then calculated via the
+##'     square of the variance of all fitted GEV parameters and
+##'     calculated return levels. Note: In its essence this approach
+##'     is not an estimation of the error involved in fitting the time
+##'     series to a GEV distribution. It is rather the mean error of
+##'     fitting a GPD-distribution with the same length and parameters
+##'     as estimated ones.
 ##'
-##' \strong{bootstrap}: Using this option the provided time series
-##'   \emph{x} will be sampled with replacement
-##'   \emph{bootstrap.sample.size} times and with the same length as
-##'   the original time series. The standard errors of the GEV
-##'   parameters and return levels of all those sampled series is
-##'   calculated and returned as an estimate of the fitting error.
-##'   Note: Since the data is (hopefully) GEV-distributed, such a
-##'   sampling has to be treated with a lot of care.
+##'   \emph{bootstrap}: Using this option the provided time series
+##'     \strong{x} will be sampled with replacement
+##'     \strong{bootstrap.sample.size} times and with the same length
+##'     as the original time series. The standard errors of the GEV
+##'     parameters and return levels of all those sampled series is
+##'     calculated and returned as an estimate of the fitting error.
+##'     Note: Since the data is (hopefully) GEV-distributed, such a
+##'     sampling has to be treated with a lot of care.
 ##'
-##' Sometimes the inversion of the hessian fails (since the are some NaN
-##' in the hessian) when calculating the error estimates using the
-##'   maximum likelihood approach (MLE) (which is also the reason why
-##'   the ismev package occasionally does not work). In such cases the
-##'   Monte Carlo (MC) method is used as a fallback. Option
+##'     Sometimes the inversion of the hessian fails (since the are
+##'     some NaN in the hessian) when calculating the error estimates
+##'     using the maximum likelihood approach (MLE) (which is also the
+##'     reason why the \pkg{ismev} package occasionally does not
+##'     work). In such cases the Monte Carlo (MC) method is used as a
+##'     fallback.
 ##'
-##' \strong{none} skips the calculation of the error. 
-##' Default = "MLE".
-##' @param monte.carlo.sample.size Number of samples used to obtain the
-##' Monte Carlo estimate of the standard error of the fitting.
-##' Default = 100.
+##'   \emph{none} skips the calculation of the error. Default = "MLE".
+##' @param monte.carlo.sample.size Number of samples used to obtain
+##'   the Monte Carlo estimate of the standard error of the fitting.
+##'   Default = 100.
 ##' @param bootstrap.sample.size Number of samples with replacements
-##'   to drawn from the original series \emph{x} in order to determine
-##'   the standard errors for the GPD parameters and return
+##'   to drawn from the original series \strong{x} in order to
+##'   determine the standard errors for the GPD parameters and return
 ##'   levels. Default = 100.
-##' @param return.period Quantiles at which the return level is going to
-##' be evaluated. Class "numeric". Default = 100.
+##' @param return.period Quantiles at which the return level is going
+##'   to be evaluated. Class "numeric". Default = 100.
 ##' @param silent Determines whether or not warning messages shall be
 ##' displayed and results shall be reported. Default = TRUE.
-##' @param ... Additional arguments for the optim() function.
+##' @param ... Additional arguments for the \code{\link[stats]{optim}}
+##'   function.
 ##' 
 ##' @family optimization
 ##' 
-##' @return Output of the optim function with class == c( "list",
-##' "climex.fit.gev" )
-##' \itemize{
-##'  \item{ par = MLE of the GEV parameters }
-##'  \item{ value = Value of the negative log-likelihood evaluated
-##' at the MLE }
-##'  \item{ counts = Number of evaluations of the likelihood
-##' function and its gradient during optimization (inner routine) }
-##'  \item{ outer.iteration = Number of updates of the penalty and
-##' the Lagrangian parameter to fine-tune the impact of the
-##' constraints on the optimization (outer routine) }
-##'  \item{ return.level = Estimate of the return levels at the
-##' provided return periods }
-##'  \item{ se = Standard error of the GEV parameters and the return
-##' levels }
-##'  \item{ x = Original time series }
-##'  \item{ control = Parameter and options used during optimization }
-##' }
+##' @return Output of the optim function with class \code{c( "list",
+##'   "climex.fit.gev" )} 
+##'   \itemize{
+##'     \item{ par = MLE of the GEV parameters }
+##'     \item{ value = Value of the negative log-likelihood evaluated
+##'              at the MLE }
+##'     \item{ counts = Number of evaluations of the likelihood
+##'              function and its gradient during optimization (inner
+##'              routine) }  
+##'     \item{ outer.iteration = Number of updates of the penalty and
+##'              the Lagrangian parameter to fine-tune the impact of
+##'              the constraints on the optimization (outer routine) }
+##'     \item{ return.level = Estimate of the return levels at the
+##'              provided return periods }
+##'     \item{ se = Standard error of the GEV parameters and the
+##'              return levels }
+##'     \item{ x = Original time series }
+##'     \item{ control = Parameter and options used during
+##'              optimization } 
+##'   }
+##'   If, on the other hand, a list of \pkg{xts} class object was
+##'   provided, a list of objects structured as describe above is
+##'   returned.
 ##' @author Philipp Mueller
 ##' @export
 ##' @importFrom xts xts
 ##' @importFrom alabama auglag
 ##' @examples
-##' potsdam.anomalies <- anomalies( temp.potsdam )
-##' potsdam.blocked <- block( potsdam.anomalies )
-##' fit.gev( potsdam.blocked )
-fit.gev <- function( x, initial = NULL,
+##'   potsdam.anomalies <- anomalies( temp.potsdam )
+##'   potsdam.blocked <- block( potsdam.anomalies )
+##'   fit.gev( potsdam.blocked )
+fit.gev <- function(  x, initial = NULL,
                     likelihood.function = likelihood,
                     gradient.function = likelihood.gradient,
                     error.estimation = c( "MLE", "MC", "bootstrap",
-                                         "none" ),
+                                         "none" ), 
                     monte.carlo.sample.size = 100,
                     bootstrap.sample.size = 100,
-                    return.period = 100,
-                    silent = TRUE, ... ){
+                    return.period = 100, silent = TRUE, ... ){
+  UseMethod( "fit.gev" )
+}
+##' @title Improved maximum-likelihood fit of the GEV distribution
+##'
+##' @description This function fits the Generalized Extreme Value
+##'   (GEV) distribution to the supplied data, which has to be
+##'   composed of block maxima (preferably without trend and
+##'   correlations). The determination of the starting point of the
+##'   optimization and the calculation of the return level and the all
+##'   the corresponding estimates of the fitting errors will be done
+##'   internally.
+##'
+##' @details The optimization is performed by the augmented Lagrangian 
+##'   method using the \code{\link{auglag}} function of the
+##'   \pkg{alabama} package. Within this framework the log-likelihood
+##'   function of the GEV distribution gets augmented with N+2
+##'   constraints, where N is the number of points in the time
+##'   series. N+1 of those constraints ensure the log-likelihood
+##'   (containing two logarithms) to be always defined. The remaining
+##'   constraints ensures for the shape parameter to be always bigger
+##'   than -1 for the maximum likelihood to be defined in the first
+##'   place. The penalty in the log-likelihood function is the sum of
+##'   all squared constrain violations plus an additional term linear
+##'   in the constraint violation to ensure well-conditioning. Using
+##'   this penalty term the problem becomes unconstrained again and
+##'   can be solved using \code{\link[stats]{optim}}. After each of
+##'   those inner routines the weighting parameter of the penalty is
+##'   being increased until some convergence conditions are fulfilled.
+##'
+##'   Since it usually takes just four to five outer iterations this
+##'   functions needs only double the time a pure call to the
+##'   \code{\link[stats]{optim}} function would need.
+##'
+##'   The negative log-likelihood of the Gumbel distribution is just
+##'   fitted if the shape parameter is exactly equal to zero.
+##'
+##'   If the user instead wants to fit just the Gumbel distribution
+##'   and not the entire GEV distribution, the shape parameter of the
+##'   \strong{initial} has to be set to 0. But in practice this is
+##'   strongly discouraged since it will yield inferior results.
+##'
+##'   I found the Nelder-Mead method to be more robust to starting
+##'   points more far away from the global optimum. This also holds 
+##'   for the inner routine of the augmented Lagrangian method. Since
+##'   other routines, like CG and BFGS only cause problems in the
+##'   extreme value analysis, there won't be an option to choose them
+##'   in this package.
+##'
+##'   This function can also be applied to a list of \pkg{xts} class
+##'   objects.
+##'
+##' @param x A list of objects of class \pkg{xts}. Blocked time series
+##'   to which the GEV distribution should be fitted.
+##' @param initial Initial values for the GEV parameters. Has to be
+##'   provided as 3x1 vector. If NULL the parameters are estimated
+##'   using \code{\link{likelihood.initials}}. If the shape parameter
+##'   is set to 0 the exponential distribution instead of the GP one
+##'   is fitted. But this its strongly discouraged to do so! Default =
+##'   NULL.
+##' @param likelihood.function Function, which is going to be
+##'   optimized. Default: \code{\link{likelihood}}
+##' @param gradient.function If NULL a finite difference method is
+##'   invoked. Default: \code{\link{likelihood.gradient}}
+##' @param error.estimation Method for calculating the standard errors
+##'   of the fitted results. The errors of the GEV parameters will be
+##'   calculated as the square roots of the diagonal elements of the
+##'   inverse of the hessian matrix. The latter will be evaluated at
+##'   the maximum likelihood estimates (MLE) of the GEV parameters.
+##'
+##'   \emph{MLE}: The standard error of the return level is calculated
+##'     using the Delta method and the maximum likelihood estimates of
+##'     the GPD parameters. Note: For positive shape parameters bigger
+##'     than 0.3 this approach tends to highly overestimates the
+##'     errors of the return levels. 
+##' 
+##'   \emph{MC}: Alternative one can use a Monte Carlo method for
+##'     which \strong{monte.carlo.sample.size} samples of the same
+##'     size as \strong{x} will be drawn from a GEV distribution
+##'     constituted by the obtained MLE of the GEV parameters of
+##'     \strong{x}. The standard error is then calculated via the
+##'     square of the variance of all fitted GEV parameters and
+##'     calculated return levels. Note: In its essence this approach
+##'     is not an estimation of the error involved in fitting the time
+##'     series to a GEV distribution. It is rather the mean error of
+##'     fitting a GPD-distribution with the same length and parameters
+##'     as estimated ones.
+##'
+##'   \emph{bootstrap}: Using this option the provided time series
+##'     \strong{x} will be sampled with replacement
+##'     \strong{bootstrap.sample.size} times and with the same length
+##'     as the original time series. The standard errors of the GEV
+##'     parameters and return levels of all those sampled series is
+##'     calculated and returned as an estimate of the fitting error.
+##'     Note: Since the data is (hopefully) GEV-distributed, such a
+##'     sampling has to be treated with a lot of care.
+##'
+##'     Sometimes the inversion of the hessian fails (since the are
+##'     some NaN in the hessian) when calculating the error estimates
+##'     using the maximum likelihood approach (MLE) (which is also the
+##'     reason why the \pkg{ismev} package occasionally does not
+##'     work). In such cases the Monte Carlo (MC) method is used as a
+##'     fallback.
+##'
+##'   \emph{none} skips the calculation of the error. Default = "MLE".
+##' @param monte.carlo.sample.size Number of samples used to obtain
+##'   the Monte Carlo estimate of the standard error of the fitting.
+##'   Default = 100.
+##' @param bootstrap.sample.size Number of samples with replacements
+##'   to drawn from the original series \strong{x} in order to
+##'   determine the standard errors for the GPD parameters and return
+##'   levels. Default = 100.
+##' @param return.period Quantiles at which the return level is going
+##'   to be evaluated. Class "numeric". Default = 100.
+##' @param silent Determines whether or not warning messages shall be
+##' displayed and results shall be reported. Default = TRUE.
+##' @param ... Additional arguments for the \code{\link[stats]{optim}}
+##'   function.
+##' 
+##' @family optimization
+##' 
+##' @return Output of the optim function with class \code{c( "list",
+##'   "climex.fit.gev" )} 
+##'   \itemize{
+##'     \item{ par = MLE of the GEV parameters }
+##'     \item{ value = Value of the negative log-likelihood evaluated
+##'              at the MLE }
+##'     \item{ counts = Number of evaluations of the likelihood
+##'              function and its gradient during optimization (inner
+##'              routine) }  
+##'     \item{ outer.iteration = Number of updates of the penalty and
+##'              the Lagrangian parameter to fine-tune the impact of
+##'              the constraints on the optimization (outer routine) }
+##'     \item{ return.level = Estimate of the return levels at the
+##'              provided return periods }
+##'     \item{ se = Standard error of the GEV parameters and the
+##'              return levels }
+##'     \item{ x = Original time series }
+##'     \item{ control = Parameter and options used during
+##'              optimization } 
+##'   }
+##'   If, on the other hand, a list of \pkg{xts} class object was
+##'   provided, a list of objects structured as describe above is
+##'   returned.
+##' @author Philipp Mueller
+##' @export
+##' @importFrom xts xts
+##' @importFrom alabama auglag
+##' @examples
+##'   potsdam.anomalies <- anomalies( temp.potsdam )
+##'   potsdam.blocked <- block( potsdam.anomalies )
+##'   fit.gev( potsdam.blocked )
+fit.gev.list <- function(  x, initial = NULL,
+                         likelihood.function = likelihood,
+                         gradient.function = likelihood.gradient,
+                         error.estimation = c( "MLE", "MC",
+                                              "bootstrap", "none" ), 
+                         monte.carlo.sample.size = 100,
+                         bootstrap.sample.size = 100,
+                         return.period = 100, silent = TRUE, ... ){
+  return( lapply( x, fit.gev, initial = initial,
+                 likelihood.function = likelihood.function,
+                 gradient.function = gradient.function,
+                 error.estimation = error.estimation,
+                 monte.carlo.sample.size = monte.carlo.sample.size,
+                 bootstrap.sample.size = bootstrap.sample.size,
+                 return.period = return.period, silent = silent, ... )
+         )
+}
+##' @title Improved maximum-likelihood fit of the GEV distribution
+##'
+##' @description This function fits the Generalized Extreme Value
+##'   (GEV) distribution to the supplied data, which has to be
+##'   composed of block maxima (preferably without trend and
+##'   correlations). The determination of the starting point of the
+##'   optimization and the calculation of the return level and the all
+##'   the corresponding estimates of the fitting errors will be done
+##'   internally.
+##'
+##' @details The optimization is performed by the augmented Lagrangian 
+##'   method using the \code{\link{auglag}} function of the
+##'   \pkg{alabama} package. Within this framework the log-likelihood
+##'   function of the GEV distribution gets augmented with N+2
+##'   constraints, where N is the number of points in the time
+##'   series. N+1 of those constraints ensure the log-likelihood
+##'   (containing two logarithms) to be always defined. The remaining
+##'   constraints ensures for the shape parameter to be always bigger
+##'   than -1 for the maximum likelihood to be defined in the first
+##'   place. The penalty in the log-likelihood function is the sum of
+##'   all squared constrain violations plus an additional term linear
+##'   in the constraint violation to ensure well-conditioning. Using
+##'   this penalty term the problem becomes unconstrained again and
+##'   can be solved using \code{\link[stats]{optim}}. After each of
+##'   those inner routines the weighting parameter of the penalty is
+##'   being increased until some convergence conditions are fulfilled.
+##'
+##'   Since it usually takes just four to five outer iterations this
+##'   functions needs only double the time a pure call to the
+##'   \code{\link[stats]{optim}} function would need.
+##'
+##'   The negative log-likelihood of the Gumbel distribution is just
+##'   fitted if the shape parameter is exactly equal to zero.
+##'
+##'   If the user instead wants to fit just the Gumbel distribution
+##'   and not the entire GEV distribution, the shape parameter of the
+##'   \strong{initial} has to be set to 0. But in practice this is
+##'   strongly discouraged since it will yield inferior results.
+##'
+##'   I found the Nelder-Mead method to be more robust to starting
+##'   points more far away from the global optimum. This also holds 
+##'   for the inner routine of the augmented Lagrangian method. Since
+##'   other routines, like CG and BFGS only cause problems in the
+##'   extreme value analysis, there won't be an option to choose them
+##'   in this package.
+##'
+##' @param x Either an object of class \pkg{xts}. Blocked time series
+##'   to which the GEV distribution should be fitted.
+##' @param initial Initial values for the GEV parameters. Has to be
+##'   provided as 3x1 vector. If NULL the parameters are estimated
+##'   using \code{\link{likelihood.initials}}. If the shape parameter
+##'   is set to 0 the exponential distribution instead of the GP one
+##'   is fitted. But this its strongly discouraged to do so! Default =
+##'   NULL.
+##' @param likelihood.function Function, which is going to be
+##'   optimized. Default: \code{\link{likelihood}}
+##' @param gradient.function If NULL a finite difference method is
+##'   invoked. Default: \code{\link{likelihood.gradient}}
+##' @param error.estimation Method for calculating the standard errors
+##'   of the fitted results. The errors of the GEV parameters will be
+##'   calculated as the square roots of the diagonal elements of the
+##'   inverse of the hessian matrix. The latter will be evaluated at
+##'   the maximum likelihood estimates (MLE) of the GEV parameters.
+##'
+##'   \emph{MLE}: The standard error of the return level is calculated
+##'     using the Delta method and the maximum likelihood estimates of
+##'     the GPD parameters. Note: For positive shape parameters bigger
+##'     than 0.3 this approach tends to highly overestimates the
+##'     errors of the return levels. 
+##' 
+##'   \emph{MC}: Alternative one can use a Monte Carlo method for
+##'     which \strong{monte.carlo.sample.size} samples of the same
+##'     size as \strong{x} will be drawn from a GEV distribution
+##'     constituted by the obtained MLE of the GEV parameters of
+##'     \strong{x}. The standard error is then calculated via the
+##'     square of the variance of all fitted GEV parameters and
+##'     calculated return levels. Note: In its essence this approach
+##'     is not an estimation of the error involved in fitting the time
+##'     series to a GEV distribution. It is rather the mean error of
+##'     fitting a GPD-distribution with the same length and parameters
+##'     as estimated ones.
+##'
+##'   \emph{bootstrap}: Using this option the provided time series
+##'     \strong{x} will be sampled with replacement
+##'     \strong{bootstrap.sample.size} times and with the same length
+##'     as the original time series. The standard errors of the GEV
+##'     parameters and return levels of all those sampled series is
+##'     calculated and returned as an estimate of the fitting error.
+##'     Note: Since the data is (hopefully) GEV-distributed, such a
+##'     sampling has to be treated with a lot of care.
+##'
+##'     Sometimes the inversion of the hessian fails (since the are
+##'     some NaN in the hessian) when calculating the error estimates
+##'     using the maximum likelihood approach (MLE) (which is also the
+##'     reason why the \pkg{ismev} package occasionally does not
+##'     work). In such cases the Monte Carlo (MC) method is used as a
+##'     fallback.
+##'
+##'   \emph{none} skips the calculation of the error. Default = "MLE".
+##' @param monte.carlo.sample.size Number of samples used to obtain
+##'   the Monte Carlo estimate of the standard error of the fitting.
+##'   Default = 100.
+##' @param bootstrap.sample.size Number of samples with replacements
+##'   to drawn from the original series \strong{x} in order to
+##'   determine the standard errors for the GPD parameters and return
+##'   levels. Default = 100.
+##' @param return.period Quantiles at which the return level is going
+##'   to be evaluated. Class "numeric". Default = 100.
+##' @param silent Determines whether or not warning messages shall be
+##' displayed and results shall be reported. Default = TRUE.
+##' @param ... Additional arguments for the \code{\link[stats]{optim}}
+##'   function.
+##' 
+##' @family optimization
+##' 
+##' @return Output of the optim function with class \code{c( "list",
+##'   "climex.fit.gev" )} 
+##'   \itemize{
+##'     \item{ par = MLE of the GEV parameters }
+##'     \item{ value = Value of the negative log-likelihood evaluated
+##'              at the MLE }
+##'     \item{ counts = Number of evaluations of the likelihood
+##'              function and its gradient during optimization (inner
+##'              routine) }  
+##'     \item{ outer.iteration = Number of updates of the penalty and
+##'              the Lagrangian parameter to fine-tune the impact of
+##'              the constraints on the optimization (outer routine) }
+##'     \item{ return.level = Estimate of the return levels at the
+##'              provided return periods }
+##'     \item{ se = Standard error of the GEV parameters and the
+##'              return levels }
+##'     \item{ x = Original time series }
+##'     \item{ control = Parameter and options used during
+##'              optimization } 
+##'   }
+##'   If, on the other hand, a list of \pkg{xts} class object was
+##'   provided, a list of objects structured as describe above is
+##'   returned.
+##' @author Philipp Mueller
+##' @export
+##' @importFrom xts xts
+##' @importFrom alabama auglag
+##' @examples
+##'   potsdam.anomalies <- anomalies( temp.potsdam )
+##'   potsdam.blocked <- block( potsdam.anomalies )
+##'   fit.gev( potsdam.blocked )
+fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
+                                           likelihood.function =
+                                             likelihood,
+                                           gradient.function =
+                                             likelihood.gradient,
+                                           error.estimation =
+                                             c( "MLE", "MC",
+                                               "bootstrap", "none" ),
+                                           monte.carlo.sample.size =
+                                             100,
+                                           bootstrap.sample.size =
+                                             100,
+                                           return.period = 100,
+                                           silent = TRUE, ... ){
   ## Default values if no initial parameters were supplied
   if ( is.null( initial ) )
     initial <- likelihood.initials( x, model = "gev" )
@@ -162,11 +501,11 @@ fit.gev <- function( x, initial = NULL,
   if ( as.numeric( initial[ 3 ] ) != 0 ){
     ## Fitting the negative log-likelihood of the GEV distribution.
     ## The augmented Lagrangian method allowing non-linear constraints
-    ## will be used in here. The code depends of the 'alabama' package.
-    ## In principle I could also integrate the routine in here, but let's
-    ## stick to the Linux principle.
-    ## The Rsolnp package did not performed as well as the alabama one.
-    ## It takes two orders of magnitude longer and gets stuck for
+    ## will be used in here. The code depends of the 'alabama'
+    ## package. In principle I could also integrate the routine in
+    ## here, but let's stick to the Linux principle.
+    ## The Rsolnp package did not performed as well as the alabama
+    ## one. It takes two orders of magnitude longer and gets stuck for
     ## certain initial parameter combinations.
     ## If the shape parameter is exactly equal to zero and the
     ## likelihood function switches to the Gumbel distribution, the
@@ -177,8 +516,8 @@ fit.gev <- function( x, initial = NULL,
     ## reliable only up to the 5E-4 and I can't see why this is
     ## happening. Adding various additional options and tolerances to
     ## both auglag and optim doesn't change the matter. Since these
-    ## deviations are minor ones and the actual MLE estimates of the GEV
-    ## and GP parameters are way bigger, I will just leave it this
+    ## deviations are minor ones and the actual MLE estimates of the
+    ## GEV and GP parameters are way bigger, I will just leave it this
     ## way. 
     suppressWarnings(
         res.alabama <- auglag(
@@ -308,8 +647,8 @@ fit.gev <- function( x, initial = NULL,
       ## of them
       samples.list <- lapply( 1 : number.of.samples, function( y )
         revd( length( x ), location = parameter.estimate[ 1 ],
-                      scale = parameter.estimate[ 2 ],
-                      shape = parameter.estimate[ 3 ], model = "gev" ) )
+             scale = parameter.estimate[ 2 ],
+             shape = parameter.estimate[ 3 ], model = "gev" ) )
       suppressWarnings(
           samples.fit <- try( lapply( samples.list, function ( y )
             auglag( par = likelihood.initials( y, model = "gev" ),
@@ -326,12 +665,14 @@ fit.gev <- function( x, initial = NULL,
                                         method = "Nelder-Mead" ),
                    x.in = y, model = "gev" )$par ) ) )
       if ( class( samples.fit ) == "try-error" ){
-        errors <- c( NaN, NaN, NaN, rep( NaN, length( return.period ) ) )
+        errors <- c( NaN, NaN, NaN,
+                    rep( NaN, length( return.period ) ) )
       } else {
         errors <- data.frame(
             sqrt( stats::var( Reduce( rbind, samples.fit )[ , 1 ] ) ),
             sqrt( stats::var( Reduce( rbind, samples.fit )[ , 2 ] ) ),
-            sqrt( stats::var( Reduce( rbind, samples.fit )[ , 3 ] ) ) )
+            sqrt( stats::var( Reduce(
+                             rbind, samples.fit )[ , 3 ] ) ) )
         for ( rr in 1 : length( return.period ) )
           errors <- cbind(
               errors,
@@ -387,44 +728,46 @@ fit.gev <- function( x, initial = NULL,
                 function( y )
                   climex::return.level( res.optim, y
                                        )$return.level ) )
-  names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
+  names( res.optim$return.level ) <-
+    paste0( return.period, ".rlevel" )
   res.optim$x <- x
   if ( !silent )
     summary( res.optim )
   return( res.optim )
 }
 
-##' @title Robust maximum-likelihood fit of the GPD distribution
+##' @title Improved maximum-likelihood fit of the GPD distribution
 ##'
-##' @description This function fits the Generalized Pareto distribution
-##' (GPD) to the supplied data, which have to be threshold exceedances
-##' with the corresponding threshold already subtracted. The
-##' determination of the starting point for the optimization and the
-##' calculation of the return level and the all the corresponding
-##' estimates of the fitting errors will be done internally.
+##' @description This function fits the Generalized Pareto
+##'   distribution (GPD) to the supplied data, which have to be
+##'   threshold exceedances with the corresponding threshold already
+##'   subtracted. The determination of the starting point for the
+##'   optimization and the calculation of the return level and the all
+##'   the corresponding estimates of the fitting errors will be done
+##'   internally. 
 ##'
 ##' @details The optimization is performed by the augmented Lagrangian
-##' method using the \code{\link{auglag}} function of the
+##'   method using the \code{\link{auglag}} function of the
 ##'   \pkg{alabama} package. Within this framework the log-likelihood
-##'   function of the GPD 
-##' gets augmented with N+2 constraints, where N is the
-##' number of points in the time series. N+1 of those constraints ensure
-##' the log-likelihood (containing two logarithms) to be always defined.
-##' The remaining constraints ensures for the shape parameter to be
-##' always bigger than -1 for the maximum likelihood to be defined in the
-##' first place. The penalty in the log-likelihood function is the sum of
-##' all squared constrain violations plus an additional term linear in
-##' the constraint violation to ensure well-conditioning. Using this
-##' penalty term the problem becomes unconstrained again and can be
-##' solved using \code{\link[stats]{optim}}. After each of those inner
-##' routines the weighting parameter of the penalty is being increased
-##' until some convergence conditions are fulfilled.
+##'   function of the GPD gets augmented with N+2 constraints, where N
+##'   is the number of points in the time series. N+1 of those
+##'   constraints ensure the log-likelihood (containing two
+##'   logarithms) to be always defined. The remaining constraints
+##'   ensures for the shape parameter to be always bigger than -1 for
+##'   the maximum likelihood to be defined in the first place. The
+##'   penalty in the log-likelihood function is the sum of all squared
+##'   constrain violations plus an additional term linear in the
+##'   constraint violation to ensure well-conditioning. Using this
+##'   penalty term the problem becomes unconstrained again and can be
+##'   solved using \code{\link[stats]{optim}}. After each of those
+##'   inner routines the weighting parameter of the penalty is being
+##'   increased until some convergence conditions are fulfilled.
 ##'
-##' Since it usually takes just four to five outer iterations this
-##' functions needs only double the time a pure call to the
+##'   Since it usually takes just four to five outer iterations this
+##'   functions needs only double the time a pure call to the
 ##'   \code{\link[stats]{optim}} function would need.
 ##'
-##'   The \emph{total.length} argument refers to the length of the
+##'   The \strong{total.length} argument refers to the length of the
 ##'   original time series before the thresholding was applied. If
 ##'   present it will be used to calculate the maximum likelihood
 ##'   estimate of the probability of an observation to be a threshold
@@ -432,132 +775,518 @@ fit.gev <- function( x, initial = NULL,
 ##'   calculated return levels). Else an estimator based on mean
 ##'   number of exceedances per year will be used.
 ##'
-##' If the user instead wants to fit just the exponential distribution
-##' and not the entire GP distribution, the shape parameter of the
-##' \emph{initial} has to be set to 0. But in practice this is strongly
-##' discouraged since it will yield inferior results.
+##'   If the user instead wants to fit just the exponential
+##'   distribution and not the entire GP distribution, the shape
+##'   parameter of the \strong{initial} has to be set to 0. But in
+##'   practice this is strongly discouraged since it will yield
+##'   inferior results.
 ##' 
-##' I found the Nelder-Mead method to be more robust to starting
-##' points more far away from the global optimum. This also holds
-##' for the inner routine of the augmented Lagrangian method. Since
-##' other routines, like CG and BFGS only cause problems in the
-##' extreme value analysis, there won't be an option to choose them
-##' in this package.
+##'   I found the Nelder-Mead method to be more robust to starting
+##'   points more far away from the global optimum. This also holds
+##'   for the inner routine of the augmented Lagrangian method. Since
+##'   other routines, like CG and BFGS only cause problems in the
+##'   extreme value analysis, there won't be an option to choose them
+##'   in this package.
+##'
+##'   This function can also be applied to a list of \pkg{xts} class
+##'   objects.
 ##' 
-##' @param x Threshold exceedances with the threshold already subtracted.
+##' @param x Either an object of class \pkg{xts} or a list of
+##'   those. Threshold exceedances with the threshold already
+##'   subtracted.
 ##' @param initial Initial values for the GPD parameters. Has to be
 ##'   provided as 2x1 vector. If NULL the parameters are estimated
 ##'   with the function \code{\link{likelihood.initials}}. If the
 ##'   shape parameter is set to 0 the exponential distribution instead
 ##'   of the GP one is fitted. But this its strongly discouraged to do
 ##'   so! Default = NULL
-##' @param threshold Optional threshold used to extract the exceedances
-##' from the provided series \emph{x}. If present it will be added to the
-##' return level to produce a value which fits to underlying time series.
-##' Default = NULL.
-##' @param likelihood.function Function which is going to be optimized.
-##' Default: \code{\link{likelihood}}
+##' @param threshold Optional threshold used to extract the
+##'   exceedances from the provided series \strong{x}. If present it
+##'   will be added to the return level to produce a value which fits
+##'   to underlying time series. Default = NULL.
+##' @param likelihood.function Function which is going to be
+##'   optimized. Default: \code{\link{likelihood}}
 ##' @param gradient.function If NULL a finite difference method is
-##' invoked. To use the derived formula from the GPD likelihood gradient
-##' provide \code{\link{likelihood.gradient}}.
-##' Default = \code{\link{likelihood.gradient}}.
-##' @param error.estimation Method for calculating the standard errors of
-##' the fitted results. The errors of the GPD parameters will be
-##' calculated as the square roots of the diagonal elements of the
-##' inverse of the hessian matrix. The latter will be evaluated at the
-##' maximum likelihood estimates (MLE) of the GPD parameters.
+##'   invoked. To use the derived formula from the GPD likelihood
+##'   gradient provide \code{\link{likelihood.gradient}}.
+##'   Default = \code{\link{likelihood.gradient}}.
+##' @param error.estimation Method for calculating the standard errors
+##'   of the fitted results. The errors of the GPD parameters will be
+##'   calculated as the square roots of the diagonal elements of the
+##'   inverse of the hessian matrix. The latter will be evaluated at
+##'   the maximum likelihood estimates (MLE) of the GPD parameters.
 ##'
-##' \strong{MLE}: The standard error of the return level is
-##' calculated using the Delta method and the maximum likelihood
-##' estimates of the GPD parameters. Note: For positive shape
-##'   parameters bigger than 0.3 this approach tends to highly
-##'   overestimates the errors of the return levels.
+##'   \emph{MLE}: The standard error of the return level is
+##'     calculated using the Delta method and the maximum likelihood
+##'     estimates of the GPD parameters. Note: For positive shape
+##'     parameters bigger than 0.3 this approach tends to highly
+##'     overestimates the errors of the return levels.
 ##' 
-##' \strong{MC}: Alternative one can use a Monte Carlo method for which
-##' \emph{monte.carlo.sample.size} samples of the same size as \emph{x} will be drawn
-##' from a GPD distribution constituted by the obtained MLE of the GPD
-##' parameters of \emph{x}. The standard error is then calculated via the square
-##' of the variance of all fitted GPD parameters and calculated return
-##' levels. Note: In its essence this approach is not an estimation of
-##'   the error involved in fitting the time series to a GPD
-##'   distribution. It is rather the mean error of fitting a
-##'   GPD-distribution with the same length and parameters as
-##'   estimated ones.
+##'   \emph{MC}: Alternative one can use a Monte Carlo method for
+##'     which \strong{monte.carlo.sample.size} samples of the same
+##'     size as \emph{x} will be drawn from a GPD distribution
+##'     constituted by the obtained MLE of the GPD parameters of
+##'     \strong{x}. The standard error is then calculated via the
+##'     square of the variance of all fitted GPD parameters and
+##'     calculated return levels. Note: In its essence this approach
+##'     is not an estimation of the error involved in fitting the time
+##'     series to a GPD distribution. It is rather the mean error of
+##'     fitting a GPD-distribution with the same length and parameters
+##'     as estimated ones.
 ##'
-##' \strong{bootstrap}: Using this option the provided time series
-##'   \emph{x} will be sampled with replacement
-##'   \emph{bootstrap.sample.size} times and with the same length as
-##'   the original time series. The standard errors of the GPD
-##'   parameters and return levels of all those sampled series is
-##'   calculated and returned as an estimate of the fitting error.
-##'   Note: Since the data is (hopefully) GPD-distributed, such a
-##'   sampling has to be treated with a lot of care.
+##'   \emph{bootstrap}: Using this option the provided time series
+##'     \strong{x} will be sampled with replacement
+##'     \strong{bootstrap.sample.size} times and with the same length
+##'     as the original time series. The standard errors of the GPD
+##'     parameters and return levels of all those sampled series is
+##'     calculated and returned as an estimate of the fitting error.
+##'     Note: Since the data is (hopefully) GPD-distributed, such a
+##'     sampling has to be treated with a lot of care.
 ##'
-##' Sometimes the inversion of the hessian fails (since the are some NaN
-##' in the hessian) when calculating the error estimates using the
-##'   maximum likelihood approach (MLE) (which is also the reason why
-##'   the ismev package occasionally does not work). In such cases the
-##'   Monte Carlo (MC) method is used as a fallback. Option
+##'     Sometimes the inversion of the hessian fails (since the are
+##'     some NaN in the hessian) when calculating the error estimates
+##'     using the maximum likelihood approach (MLE) (which is also the
+##'     reason why the \pkg{ismev} package occasionally does not
+##'     work). In such cases the Monte Carlo (MC) method is used as a
+##'     fallback. 
 ##'
-##' \strong{none} skips the calculation of the error. 
-##' Default = "MLE".
-##' @param monte.carlo.sample.size Number of samples used to obtain the
-##' Monte Carlo estimate of the standard error of the fitting.
-##' Default = 100.
+##'   \emph{none} skips the calculation of the error. Default = "MLE".
+##' @param monte.carlo.sample.size Number of samples used to obtain
+##'   the Monte Carlo estimate of the standard error of the fitting.
+##'   Default = 100.
 ##' @param bootstrap.sample.size Number of samples with replacements
 ##'   to drawn from the original series \emph{x} in order to determine
 ##'   the standard errors for the GPD parameters and return
 ##'   levels. Default = 100.
-##' @param return.period Quantiles at which the return level is going to
-##' be evaluated. Class "numeric". Default = 100.
+##' @param return.period Quantiles at which the return level is going
+##'   to be evaluated. Class \emph{numeric}. Default = 100.
 ##' @param total.length Uses the maximum likelihood estimator to
 ##'   calculate the probability of a measurement to be an
 ##'   exceedance. Else an estimate based on the mean number of
 ##'   exceedances in the available years (time stamps of the class
-##'   "xts" time series) will be used. Default = NULL. 
+##'   \pkg{xts} time series) will be used. Default = NULL. 
 ##' @param silent Determines whether or not warning messages shall be
-##' displayed and results shall be reported. Default = TRUE.
-##' @param ... Additional arguments for the optim() function.
+##'   displayed and results shall be reported. Default = TRUE.
+##' @param ... Additional arguments for the \code{\link[stats]{optim}}
+##'   function.
 ##' 
 ##' @family optimization
 ##' 
-##' @return Output of the optim function with class ==
-##' c( "list", "climex.fit.gpd" )
-##' \itemize{
-##'  \item{ par = MLE of the GPD parameters }
-##'  \item{ value = Value of the negative log-likelihood
-##' evaluated at the MLE }
-##'  \item{ counts = Number of evaluations of the likelihood
-##' function and its gradient during optimization (inner routine) }
-##'  \item{ outer.iteration = Number of updates of the penalty and
-##' the Lagrangian parameter to fine-tune the impact of the
-##' constraints on the optimization (outer routine) }
-##'  \item{ return.level = Estimate of the return levels at the provided
-##' return periods }
-##'  \item{ se = Standard error of the GPD parameters and the return
-##' levels }
-##'  \item{ x = Threshold exceedances }
-##'  \item{ threshold = Value which had to be exceeded }
-##'  \item{ control = Parameter and options used during optimization }
-##' }
+##' @return Output of the optim function with class \code{c( "list",
+##'   "climex.fit.gpd" )}
+##'   \itemize{
+##'     \item{ par = MLE of the GPD parameters }
+##'     \item{ value = Value of the negative log-likelihood
+##'              evaluated at the MLE }
+##'     \item{ counts = Number of evaluations of the likelihood
+##'              function and its gradient during optimization (inner
+##'              routine) } 
+##'     \item{ outer.iteration = Number of updates of the penalty and
+##'              the Lagrangian parameter to fine-tune the impact of
+##'              the constraints on the optimization (outer routine) }
+##'      \item{ return.level = Estimate of the return levels at the
+##'              provided return periods }
+##'      \item{ se = Standard error of the GPD parameters and the
+##'              return levels }
+##'      \item{ x = Threshold exceedances }
+##'      \item{ threshold = Value which had to be exceeded }
+##'      \item{ control = Parameter and options used during
+##'              optimization } 
+##'    }
+##'   If, on the other hand, a list of \pkg{xts} class object was
+##'   provided, a list of objects structured as describe above is
+##'   returned.
 ##' @author Philipp Mueller
 ##' @export
 ##' @importFrom xts xts
 ##' @importFrom alabama auglag
 ##' @examples
-##' potsdam.anomalies <- anomalies( temp.potsdam )
-##' potsdam.extremes <- threshold( potsdam.anomalies, threshold = 10,
-##'                                decluster = TRUE )
-##' fit.gpd( potsdam.extremes )
-fit.gpd <- function( x, initial = NULL, threshold = NULL,
+##'   potsdam.anomalies <- anomalies( temp.potsdam )
+##'   potsdam.extremes <- threshold( potsdam.anomalies,
+##'                                 threshold = 10,
+##'                                 decluster = TRUE )
+##'   fit.gpd( potsdam.extremes )
+fit.gpd <- function(  x, initial = NULL, threshold = NULL,
                     likelihood.function = likelihood,
-                    gradient.function = likelihood.gradient,                    
-                    error.estimation = c( "MLE", "MC",
-                                         "bootstrap", "none" ),
+                    gradient.function = likelihood.gradient,
+                    error.estimation = c( "MLE", "MC", "bootstrap",
+                                         "none" ), 
                     monte.carlo.sample.size = 100,
                     bootstrap.sample.size = 100,
                     return.period = 100,
                     total.length = NULL, silent = TRUE, ... ){
+  UseMethod( "fit.gpd" )
+}
+##' @title Improved maximum-likelihood fit of the GPD distribution
+##'
+##' @description This function fits the Generalized Pareto
+##'   distribution (GPD) to the supplied data, which have to be
+##'   threshold exceedances with the corresponding threshold already
+##'   subtracted. The determination of the starting point for the
+##'   optimization and the calculation of the return level and the all
+##'   the corresponding estimates of the fitting errors will be done
+##'   internally. 
+##'
+##' @details The optimization is performed by the augmented Lagrangian
+##'   method using the \code{\link{auglag}} function of the
+##'   \pkg{alabama} package. Within this framework the log-likelihood
+##'   function of the GPD gets augmented with N+2 constraints, where N
+##'   is the number of points in the time series. N+1 of those
+##'   constraints ensure the log-likelihood (containing two
+##'   logarithms) to be always defined. The remaining constraints
+##'   ensures for the shape parameter to be always bigger than -1 for
+##'   the maximum likelihood to be defined in the first place. The
+##'   penalty in the log-likelihood function is the sum of all squared
+##'   constrain violations plus an additional term linear in the
+##'   constraint violation to ensure well-conditioning. Using this
+##'   penalty term the problem becomes unconstrained again and can be
+##'   solved using \code{\link[stats]{optim}}. After each of those
+##'   inner routines the weighting parameter of the penalty is being
+##'   increased until some convergence conditions are fulfilled.
+##'
+##'   Since it usually takes just four to five outer iterations this
+##'   functions needs only double the time a pure call to the
+##'   \code{\link[stats]{optim}} function would need.
+##'
+##'   The \strong{total.length} argument refers to the length of the
+##'   original time series before the thresholding was applied. If
+##'   present it will be used to calculate the maximum likelihood
+##'   estimate of the probability of an observation to be a threshold
+##'   exceedance (necessary to determine the estimation errors for the
+##'   calculated return levels). Else an estimator based on mean
+##'   number of exceedances per year will be used.
+##'
+##'   If the user instead wants to fit just the exponential
+##'   distribution and not the entire GP distribution, the shape
+##'   parameter of the \strong{initial} has to be set to 0. But in
+##'   practice this is strongly discouraged since it will yield
+##'   inferior results.
+##' 
+##'   I found the Nelder-Mead method to be more robust to starting
+##'   points more far away from the global optimum. This also holds
+##'   for the inner routine of the augmented Lagrangian method. Since
+##'   other routines, like CG and BFGS only cause problems in the
+##'   extreme value analysis, there won't be an option to choose them
+##'   in this package.
+##'
+##'   This function can also be applied to a list of \pkg{xts} class
+##'   objects.
+##' 
+##' @param x A list of objects of class \pkg{xts}. Threshold
+##'   exceedances with the threshold already subtracted.
+##' @param initial Initial values for the GPD parameters. Has to be
+##'   provided as 2x1 vector. If NULL the parameters are estimated
+##'   with the function \code{\link{likelihood.initials}}. If the
+##'   shape parameter is set to 0 the exponential distribution instead
+##'   of the GP one is fitted. But this its strongly discouraged to do
+##'   so! Default = NULL
+##' @param threshold Optional threshold used to extract the
+##'   exceedances from the provided series \strong{x}. If present it
+##'   will be added to the return level to produce a value which fits
+##'   to underlying time series. Default = NULL.
+##' @param likelihood.function Function which is going to be
+##'   optimized. Default: \code{\link{likelihood}}
+##' @param gradient.function If NULL a finite difference method is
+##'   invoked. To use the derived formula from the GPD likelihood
+##'   gradient provide \code{\link{likelihood.gradient}}.
+##'   Default = \code{\link{likelihood.gradient}}.
+##' @param error.estimation Method for calculating the standard errors
+##'   of the fitted results. The errors of the GPD parameters will be
+##'   calculated as the square roots of the diagonal elements of the
+##'   inverse of the hessian matrix. The latter will be evaluated at
+##'   the maximum likelihood estimates (MLE) of the GPD parameters.
+##'
+##'   \emph{MLE}: The standard error of the return level is
+##'     calculated using the Delta method and the maximum likelihood
+##'     estimates of the GPD parameters. Note: For positive shape
+##'     parameters bigger than 0.3 this approach tends to highly
+##'     overestimates the errors of the return levels.
+##' 
+##'   \emph{MC}: Alternative one can use a Monte Carlo method for
+##'     which \strong{monte.carlo.sample.size} samples of the same
+##'     size as \emph{x} will be drawn from a GPD distribution
+##'     constituted by the obtained MLE of the GPD parameters of
+##'     \strong{x}. The standard error is then calculated via the
+##'     square of the variance of all fitted GPD parameters and
+##'     calculated return levels. Note: In its essence this approach
+##'     is not an estimation of the error involved in fitting the time
+##'     series to a GPD distribution. It is rather the mean error of
+##'     fitting a GPD-distribution with the same length and parameters
+##'     as estimated ones.
+##'
+##'   \emph{bootstrap}: Using this option the provided time series
+##'     \strong{x} will be sampled with replacement
+##'     \strong{bootstrap.sample.size} times and with the same length
+##'     as the original time series. The standard errors of the GPD
+##'     parameters and return levels of all those sampled series is
+##'     calculated and returned as an estimate of the fitting error.
+##'     Note: Since the data is (hopefully) GPD-distributed, such a
+##'     sampling has to be treated with a lot of care.
+##'
+##'     Sometimes the inversion of the hessian fails (since the are
+##'     some NaN in the hessian) when calculating the error estimates
+##'     using the maximum likelihood approach (MLE) (which is also the
+##'     reason why the \pkg{ismev} package occasionally does not
+##'     work). In such cases the Monte Carlo (MC) method is used as a
+##'     fallback. 
+##'
+##'   \emph{none} skips the calculation of the error. Default = "MLE".
+##' @param monte.carlo.sample.size Number of samples used to obtain
+##'   the Monte Carlo estimate of the standard error of the fitting.
+##'   Default = 100.
+##' @param bootstrap.sample.size Number of samples with replacements
+##'   to drawn from the original series \emph{x} in order to determine
+##'   the standard errors for the GPD parameters and return
+##'   levels. Default = 100.
+##' @param return.period Quantiles at which the return level is going
+##'   to be evaluated. Class \emph{numeric}. Default = 100.
+##' @param total.length Uses the maximum likelihood estimator to
+##'   calculate the probability of a measurement to be an
+##'   exceedance. Else an estimate based on the mean number of
+##'   exceedances in the available years (time stamps of the class
+##'   \pkg{xts} time series) will be used. Default = NULL. 
+##' @param silent Determines whether or not warning messages shall be
+##'   displayed and results shall be reported. Default = TRUE.
+##' @param ... Additional arguments for the \code{\link[stats]{optim}}
+##'   function.
+##' 
+##' @family optimization
+##' 
+##' @return Output of the optim function with class \code{c( "list",
+##'   "climex.fit.gpd" )}
+##'   \itemize{
+##'     \item{ par = MLE of the GPD parameters }
+##'     \item{ value = Value of the negative log-likelihood
+##'              evaluated at the MLE }
+##'     \item{ counts = Number of evaluations of the likelihood
+##'              function and its gradient during optimization (inner
+##'              routine) } 
+##'     \item{ outer.iteration = Number of updates of the penalty and
+##'              the Lagrangian parameter to fine-tune the impact of
+##'              the constraints on the optimization (outer routine) }
+##'      \item{ return.level = Estimate of the return levels at the
+##'              provided return periods }
+##'      \item{ se = Standard error of the GPD parameters and the
+##'              return levels }
+##'      \item{ x = Threshold exceedances }
+##'      \item{ threshold = Value which had to be exceeded }
+##'      \item{ control = Parameter and options used during
+##'              optimization } 
+##'    }
+##'   If, on the other hand, a list of \pkg{xts} class object was
+##'   provided, a list of objects structured as describe above is
+##'   returned.
+##' @author Philipp Mueller
+##' @export
+##' @importFrom xts xts
+##' @importFrom alabama auglag
+##' @examples
+##'   potsdam.anomalies <- anomalies( temp.potsdam )
+##'   potsdam.extremes <- threshold( potsdam.anomalies,
+##'                                 threshold = 10,
+##'                                 decluster = TRUE )
+##'   fit.gpd( potsdam.extremes )
+fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
+                         likelihood.function = likelihood,
+                         gradient.function = likelihood.gradient,
+                         error.estimation = c( "MLE", "MC",
+                                              "bootstrap", "none" ), 
+                         monte.carlo.sample.size = 100,
+                         bootstrap.sample.size = 100,
+                         return.period = 100,
+                         total.length = NULL, silent = TRUE, ... ){
+  return( lapply( x, fit.gpd, initial = initial,
+                 likelihood.function = likelihood.function,
+                 gradient.function = gradient.function,
+                 error.estimation = error.estimation,
+                 monte.carlo.sample.size = monte.carlo.sample.size,
+                 bootstrap.sample.size = bootstrap.sample.size,
+                 return.period = return.period,
+                 total.length = total.length, silent = silent, ... )
+         )
+}
+##' @title Improved maximum-likelihood fit of the GPD distribution
+##'
+##' @description This function fits the Generalized Pareto
+##'   distribution (GPD) to the supplied data, which have to be
+##'   threshold exceedances with the corresponding threshold already
+##'   subtracted. The determination of the starting point for the
+##'   optimization and the calculation of the return level and the all
+##'   the corresponding estimates of the fitting errors will be done
+##'   internally. 
+##'
+##' @details The optimization is performed by the augmented Lagrangian
+##'   method using the \code{\link{auglag}} function of the
+##'   \pkg{alabama} package. Within this framework the log-likelihood
+##'   function of the GPD gets augmented with N+2 constraints, where N
+##'   is the number of points in the time series. N+1 of those
+##'   constraints ensure the log-likelihood (containing two
+##'   logarithms) to be always defined. The remaining constraints
+##'   ensures for the shape parameter to be always bigger than -1 for
+##'   the maximum likelihood to be defined in the first place. The
+##'   penalty in the log-likelihood function is the sum of all squared
+##'   constrain violations plus an additional term linear in the
+##'   constraint violation to ensure well-conditioning. Using this
+##'   penalty term the problem becomes unconstrained again and can be
+##'   solved using \code{\link[stats]{optim}}. After each of those
+##'   inner routines the weighting parameter of the penalty is being
+##'   increased until some convergence conditions are fulfilled.
+##'
+##'   Since it usually takes just four to five outer iterations this
+##'   functions needs only double the time a pure call to the
+##'   \code{\link[stats]{optim}} function would need.
+##'
+##'   The \strong{total.length} argument refers to the length of the
+##'   original time series before the thresholding was applied. If
+##'   present it will be used to calculate the maximum likelihood
+##'   estimate of the probability of an observation to be a threshold
+##'   exceedance (necessary to determine the estimation errors for the
+##'   calculated return levels). Else an estimator based on mean
+##'   number of exceedances per year will be used.
+##'
+##'   If the user instead wants to fit just the exponential
+##'   distribution and not the entire GP distribution, the shape
+##'   parameter of the \strong{initial} has to be set to 0. But in
+##'   practice this is strongly discouraged since it will yield
+##'   inferior results.
+##' 
+##'   I found the Nelder-Mead method to be more robust to starting
+##'   points more far away from the global optimum. This also holds
+##'   for the inner routine of the augmented Lagrangian method. Since
+##'   other routines, like CG and BFGS only cause problems in the
+##'   extreme value analysis, there won't be an option to choose them
+##'   in this package.
+##' 
+##' @param x An object of class \pkg{xts}. Threshold exceedances with
+##'   the threshold already subtracted.
+##' @param initial Initial values for the GPD parameters. Has to be
+##'   provided as 2x1 vector. If NULL the parameters are estimated
+##'   with the function \code{\link{likelihood.initials}}. If the
+##'   shape parameter is set to 0 the exponential distribution instead
+##'   of the GP one is fitted. But this its strongly discouraged to do
+##'   so! Default = NULL
+##' @param threshold Optional threshold used to extract the
+##'   exceedances from the provided series \strong{x}. If present it
+##'   will be added to the return level to produce a value which fits
+##'   to underlying time series. Default = NULL.
+##' @param likelihood.function Function which is going to be
+##'   optimized. Default: \code{\link{likelihood}}
+##' @param gradient.function If NULL a finite difference method is
+##'   invoked. To use the derived formula from the GPD likelihood
+##'   gradient provide \code{\link{likelihood.gradient}}.
+##'   Default = \code{\link{likelihood.gradient}}.
+##' @param error.estimation Method for calculating the standard errors
+##'   of the fitted results. The errors of the GPD parameters will be
+##'   calculated as the square roots of the diagonal elements of the
+##'   inverse of the hessian matrix. The latter will be evaluated at
+##'   the maximum likelihood estimates (MLE) of the GPD parameters.
+##'
+##'   \emph{MLE}: The standard error of the return level is
+##'     calculated using the Delta method and the maximum likelihood
+##'     estimates of the GPD parameters. Note: For positive shape
+##'     parameters bigger than 0.3 this approach tends to highly
+##'     overestimates the errors of the return levels.
+##' 
+##'   \emph{MC}: Alternative one can use a Monte Carlo method for
+##'     which \strong{monte.carlo.sample.size} samples of the same
+##'     size as \emph{x} will be drawn from a GPD distribution
+##'     constituted by the obtained MLE of the GPD parameters of
+##'     \strong{x}. The standard error is then calculated via the
+##'     square of the variance of all fitted GPD parameters and
+##'     calculated return levels. Note: In its essence this approach
+##'     is not an estimation of the error involved in fitting the time
+##'     series to a GPD distribution. It is rather the mean error of
+##'     fitting a GPD-distribution with the same length and parameters
+##'     as estimated ones.
+##'
+##'   \emph{bootstrap}: Using this option the provided time series
+##'     \strong{x} will be sampled with replacement
+##'     \strong{bootstrap.sample.size} times and with the same length
+##'     as the original time series. The standard errors of the GPD
+##'     parameters and return levels of all those sampled series is
+##'     calculated and returned as an estimate of the fitting error.
+##'     Note: Since the data is (hopefully) GPD-distributed, such a
+##'     sampling has to be treated with a lot of care.
+##'
+##'     Sometimes the inversion of the hessian fails (since the are
+##'     some NaN in the hessian) when calculating the error estimates
+##'     using the maximum likelihood approach (MLE) (which is also the
+##'     reason why the \pkg{ismev} package occasionally does not
+##'     work). In such cases the Monte Carlo (MC) method is used as a
+##'     fallback. 
+##'
+##'   \emph{none} skips the calculation of the error. Default = "MLE".
+##' @param monte.carlo.sample.size Number of samples used to obtain
+##'   the Monte Carlo estimate of the standard error of the fitting.
+##'   Default = 100.
+##' @param bootstrap.sample.size Number of samples with replacements
+##'   to drawn from the original series \emph{x} in order to determine
+##'   the standard errors for the GPD parameters and return
+##'   levels. Default = 100.
+##' @param return.period Quantiles at which the return level is going
+##'   to be evaluated. Class \emph{numeric}. Default = 100.
+##' @param total.length Uses the maximum likelihood estimator to
+##'   calculate the probability of a measurement to be an
+##'   exceedance. Else an estimate based on the mean number of
+##'   exceedances in the available years (time stamps of the class
+##'   \pkg{xts} time series) will be used. Default = NULL. 
+##' @param silent Determines whether or not warning messages shall be
+##'   displayed and results shall be reported. Default = TRUE.
+##' @param ... Additional arguments for the \code{\link[stats]{optim}}
+##'   function.
+##' 
+##' @family optimization
+##' 
+##' @return Output of the optim function with class \code{c( "list",
+##'   "climex.fit.gpd" )}
+##'   \itemize{
+##'     \item{ par = MLE of the GPD parameters }
+##'     \item{ value = Value of the negative log-likelihood
+##'              evaluated at the MLE }
+##'     \item{ counts = Number of evaluations of the likelihood
+##'              function and its gradient during optimization (inner
+##'              routine) } 
+##'     \item{ outer.iteration = Number of updates of the penalty and
+##'              the Lagrangian parameter to fine-tune the impact of
+##'              the constraints on the optimization (outer routine) }
+##'      \item{ return.level = Estimate of the return levels at the
+##'              provided return periods }
+##'      \item{ se = Standard error of the GPD parameters and the
+##'              return levels }
+##'      \item{ x = Threshold exceedances }
+##'      \item{ threshold = Value which had to be exceeded }
+##'      \item{ control = Parameter and options used during
+##'              optimization } 
+##'    }
+##'   If, on the other hand, a list of \pkg{xts} class object was
+##'   provided, a list of objects structured as describe above is
+##'   returned.
+##' @author Philipp Mueller
+##' @export
+##' @importFrom xts xts
+##' @importFrom alabama auglag
+##' @examples
+##'   potsdam.anomalies <- anomalies( temp.potsdam )
+##'   potsdam.extremes <- threshold( potsdam.anomalies,
+##'                                 threshold = 10,
+##'                                 decluster = TRUE )
+##'   fit.gpd( potsdam.extremes )
+fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
+                                           threshold = NULL,
+                                           likelihood.function =
+                                             likelihood,
+                                           gradient.function =
+                                             likelihood.gradient,
+                                           error.estimation =
+                                             c( "MLE", "MC",
+                                               "bootstrap", "none" ),
+                                           monte.carlo.sample.size =
+                                             100,
+                                           bootstrap.sample.size =
+                                             100, 
+                                           return.period = 100,
+                                           total.length = NULL,
+                                           silent = TRUE, ... ){
   ## Default values if no initial parameters are supplied
   if ( is.null( initial ) )
     initial <- likelihood.initials( x, model = "gpd" )
@@ -577,11 +1306,11 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
     ## Maximization of the negative log-likelihood of the GP
     ## distribution.
     ## The augmented Lagrangian method allowing non-linear constraints
-    ## will be used in here. The code depends of the 'alabama' package.
-    ## In principle I could also integrate the routine in here, but let's
-    ## stick to the Linux principle.
-    ## The Rsolnp package did not performed as well as the alabama one.
-    ## It takes two orders of magnitude longer and gets stuck for
+    ## will be used in here. The code depends of the 'alabama'
+    ## package. In principle I could also integrate the routine in
+    ## here, but let's stick to the Linux principle.
+    ## The Rsolnp package did not performed as well as the alabama
+    ## one. It takes two orders of magnitude longer and gets stuck for
     ## certain initial parameter combinations.
     ## For shape parameter equal to zero only the first constraint is
     ## relevant and the other ones can not be violated anymore. So no
@@ -591,8 +1320,8 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
     ## reliable only up to the 5E-4 and I can't see why this is
     ## happening. Adding various additional options and tolerances to
     ## both auglag and optim doesn't change the matter. Since these
-    ## deviations are minor ones and the actual MLE estimates of the GEV
-    ## and GP parameters are way bigger, I will just leave it this
+    ## deviations are minor ones and the actual MLE estimates of the
+    ## GEV and GP parameters are way bigger, I will just leave it this
     ## way. 
     suppressWarnings(
         res.alabama <- auglag(
@@ -739,16 +1468,17 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
       } else {
         errors <- data.frame(
             sqrt( stats::var( Reduce( rbind, samples.fit )[ , 1 ] ) ),
-            sqrt( stats::var( Reduce( rbind, samples.fit )[ , 2 ] ) ) )
+            sqrt( stats::var( Reduce(
+                             rbind, samples.fit )[ , 2 ] ) ) )
         for ( rr in 1 : length( return.period ) )
           errors <- cbind(
               errors,
               sqrt( stats::var( Reduce(
                                c,
                                lapply( samples.fit,
-                                      function( z )
+                                      function( zz )
                                         return.level(
-                                            z,
+                                            zz,
                                             return.period =
                                               return.period[ rr ],
                                             error.estimation = "none",
@@ -774,12 +1504,13 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
         zeta <- length( x )/ total.length
         m <- return.period* 365.25* zeta
       } else {
-        ## m-observation return level = return.period* the mean number of
-        ## exceedance per year. This way the unit of the provided return
-        ## level and its error are  not 'per observation' but 'per year'.
-        ## In this step we harness the power of the 'xts' package
+        ## m-observation return level = return.period* the mean number
+        ## of exceedance per year. This way the unit of the provided
+        ## return level and its error are  not 'per observation' but
+        ## 'per year'. In this step we harness the power of the 'xts'
+        ## package 
         m <- return.period*
-          mean( apply.yearly( x, function( y ) length( y ) ) )
+          mean( apply.yearly( x, function( yy ) length( yy ) ) )
         zeta <- NULL
       }
       errors.aux <- sqrt( diag( error.covariance ) ) # GPD parameters
@@ -844,8 +1575,9 @@ fit.gpd <- function( x, initial = NULL, threshold = NULL,
 
   ## adding the return levels
   res.optim$return.level <- Reduce(
-      c, lapply( return.period, function( y )
-        climex::return.level( res.optim, y, error.estimation = "none",
+      c, lapply( return.period, function( yy )
+        climex::return.level( res.optim, yy,
+                             error.estimation = "none",
                              model = "gpd", threshold = threshold,
                              total.length = total.length,
                              silent = silent )$return.level ) )

@@ -29,7 +29,9 @@ and no covariats. x.in is not called "x" anymore since the call
 grad( func = likelihood, x = parameters, ... ) wouldn't be possible.
 }
 \seealso{
-Other optimization: \code{\link{fit.gev}},
+Other optimization: \code{\link{fit.gev.list}},
+  \code{\link{fit.gev.xts}}, \code{\link{fit.gev}},
+  \code{\link{fit.gpd.list}}, \code{\link{fit.gpd.xts}},
   \code{\link{fit.gpd}},
   \code{\link{likelihood.augmented}},
   \code{\link{likelihood.gradient.augmented}},

@@ -665,104 +665,113 @@ threshold.xts <- threshold.default <- function( x, threshold,
 }
 
 ##' @title Calculation of the return levels.
-##' @description Calculate arbitrary return level and their error
+##' @description Calculate arbitrary return levels and their error
 ##'   estimates for GEV and GP distributions.
 ##'
 ##' @details Uses the \code{\link{rlevd}} function at its core (a port
 ##'   from the \pkg{extRemes} package) but also can handle the outputs
-##'   of the \code{\link{fit.gev}} and \code{\link{fit.gpd}} function,
-##'   is capable of calculating numerous return levels at once and
+##'   of the \code{\link{fit.gev}} and \code{\link{fit.gpd}} functions,
+##'   is capable of calculating numerous return levels at once, and
 ##'   also calculates the errors of the return levels. For the errors
-##'   the ML fit is using the option hessian=TRUE (if not done
+##'   the ML fit is using the option \code{hessian=TRUE} (if not done
 ##'   already) or uses a Monte Carlo based approach. If no fitting
-##'   object is provided, no errors will be calculated. 
+##'   object is provided, no errors will be calculated.
 ##'
-##' @param x Parameter input. Class numeric, climex.fit.gev or
-##' climex.fit.gpd.
+##'   This function is also capable of working with lists of fit
+##'   or numerical objects.
+##'
+##' @param x Either of class \emph{numeric}, \emph{climex.fit.gev},
+##'   \emph{climex.fit.gpd} or a list of those objects.
 ##' @param return.period Numeric vector of the return periods in years.
-##' Default = 100.
-##' @param error.estimation Method for calculating the standard errors of
-##' the fitted results. The errors of the GEV/GPD parameters will be
-##' calculated as the square roots of the diagonal elements of the
-##' inverse of the hessian matrix. The latter will be evaluated at the
-##' maximum likelihood estimates (MLE) of the GEV/GPD parameters.
-##' For all three methods of estimating the fitting errors of the
-##'   return levels underlying series of threshold exceedances or
-##'   block maxima is required. In case the user supplies numerical
-##'   values to specify GEV/GPD parameters and not the output of
-##'   either the  \code{\link{fit.gev}} or \code{\link{fit.gpd}}
-##'   function no error estimation for the return level can be
-##'   performed. 
+##'   Default = 100.
+##' @param error.estimation Method for calculating the standard errors
+##'   of the fitted results. The errors of the GEV/GPD parameters will
+##'   be calculated as the square roots of the diagonal elements of
+##'   the inverse of the hessian matrix. The latter will be evaluated
+##'   at the maximum likelihood estimates (MLE) of the GEV/GPD
+##'   parameters.
 ##'
-##' \strong{MLE}: The standard error of the return level is
-##' calculated using the Delta method and the maximum likelihood
-##' estimates of the GPD parameters. Note: For positive shape
-##'   parameters bigger than 0.3 this approach tends to highly
-##'   overestimates the errors of the return levels.
+##'   For all three methods of estimating the fitting
+##'   errors of the return levels underlying series of threshold
+##'   exceedances or block maxima is required. In case the user
+##'   supplies numerical values to specify GEV/GPD parameters and not
+##'   the output of either the \code{\link{fit.gev}} or
+##'   \code{\link{fit.gpd}} function no error estimation for the
+##'   return level can be performed. 
+##'
+##'   \emph{MLE}: The standard error of the return level is
+##'     calculated using the Delta method and the maximum likelihood
+##'     estimates of the GPD parameters. Note: For positive shape
+##'     parameters bigger than 0.3 this approach tends to highly
+##'     overestimates the errors of the return levels.
 ##' 
-##' \strong{MC}: Alternative one can use a Monte Carlo method for which
-##' \emph{monte.carlo.sample.size} samples of the same size as \emph{x} will be drawn
-##' from a GEV/GPD distribution constituted by the obtained MLE of the GEV/GPD
-##' parameters of \emph{x}. The standard error is then calculated via the square
-##' of the variance of all fitted GEV/GPD parameters and calculated return
-##' levels. Note: In its essence this approach is not an estimation of
-##'   the error involved in fitting the time series to a GEV/GPD
-##'   distribution. It is rather the mean error of fitting a
-##'   GPD-distribution with the same length and parameters as
-##'   estimated ones.
+##'   \emph{MC}: Alternative one can use a Monte Carlo method for
+##'     which \strong{monte.carlo.sample.size} samples of the same
+##'     size as \strong{x} will be drawn from a GEV/GPD distribution
+##'     constituted by the obtained MLE of the GEV/GPD parameters of
+##'     \strong{x}. The standard error is then calculated via the
+##'     square of the variance of all fitted GEV/GPD parameters and
+##'     calculated return levels. Note: In its essence this approach
+##'     is not an estimation of the error involved in fitting the time
+##'     series to a GEV/GPD distribution. It is rather the mean error
+##'     of fitting a GPD-distribution with the same length and
+##'     parameters as estimated ones.
 ##'
-##' \strong{bootstrap}: Using this option the provided time series
-##'   \emph{x} will be sampled with replacement
-##'   \emph{bootstrap.sample.size} times and with the same length as
-##'   the original time series. The standard errors of the GEV/GPD
-##'   parameters and return levels of all those sampled series is
-##'   calculated and returned as an estimate of the fitting error.
-##'   Note: Since the data is (hopefully) GEV/GPD-distributed, such a
-##'   sampling has to be treated with a lot of care.
+##'   \emph{bootstrap}: Using this option the provided time series
+##'     \strong{x} will be sampled with replacement
+##'     \strong{bootstrap.sample.size} times and with the same length
+##'     as the original time series. The standard errors of the
+##'     GEV/GPD parameters and return levels of all those sampled
+##'     series is calculated and returned as an estimate of the
+##'     fitting error. 
+##'     Note: Since the data is (hopefully) GEV/GPD-distributed, such
+##'     a sampling has to be treated with a lot of care.
 ##'
-##' Sometimes the inversion of the hessian fails (since the are some NaN
-##' in the hessian) when calculating the error estimates using the
-##'   maximum likelihood approach (MLE) (which is also the reason why
-##'   the ismev package occasionally does not work). In such cases the
-##'   Monte Carlo (MC) method is used as a fallback. Option
-##'
-##' \strong{none} skips the calculation of the error. 
-##' Default = "MLE".
-##' @param model Determining whether to calculate the initial parameters
-##' of the GEV or GPD function. Default = "gev".
-##' @param monte.carlo.sample.size Number of samples used to obtain the
-##' Monte Carlo estimate of the standard error of the fitting.
-##' Default = 1000.
+##'     Sometimes the inversion of the hessian fails (since the are
+##'     some NaN in the hessian) when calculating the error estimates
+##'     using the maximum likelihood approach (MLE) (which is also the
+##'     reason why the \pkg{ismev} package occasionally does not
+##'     work). In such cases the Monte Carlo (MC) method is used as a
+##'     fallback.
+##' 
+##'   \emph{none} skips the calculation of the error. Default = "MLE".
+##' @param model Determining whether to calculate the initial
+##'   parameters of the GEV or GPD function. Default = "gev".
+##' @param monte.carlo.sample.size Number of samples used to obtain
+##'   the Monte Carlo estimate of the standard error of the fitting.
+##'   Default = 1000.
 ##' @param bootstrap.sample.size Number of samples with replacements
-##'   to drawn from the original series \emph{x} in order to determine
-##'   the standard errors for the GPD parameters and return
+##'   to drawn from the original series \strong{x} in order to
+##'   determine the standard errors for the GPD parameters and return
 ##'   levels. Default = 100.
-##' @param threshold Optional threshold for the GPD model. If present it
-##' will be added to the return level to produce a value which fits to
-##' underlying time series. Default = NULL.
-##' @param total.length Total number of observations in the time series
-##' the exceedance were obtained from (before! applying the threshold).
-##' This argument is needed to calculate the standard error of the
-##' return level via the delta method of the MLE in the GPD model.
-##' Default = NULL.
-##' @param thresholded.time.series Time series used with \code{\link{fit.gpd}}
-##' on which already a threshold (the one supplied here as well) was
-##' applied. Necessary to transform the return level for numerical input
-##' and the GPD model from m-th observation return level to annual return
-##' level. If omitted the return level will be per observation.
-##' Default = NULL.
-##' @param silent Throws an warning whenever the "gpd" model is used and
-##' the \emph{thresholded.time.series} is not supplied. Since this can be annoying
-##' one can also disable it. Default = FALSE.
+##' @param threshold Optional threshold for the GPD model. If present
+##'   it will be added to the return level to produce a value which
+##'   fits to underlying time series. Default = NULL.
+##' @param total.length Total number of observations in the time
+##'   series the exceedance were obtained from (before! applying the
+##'   threshold). This argument is needed to calculate the standard
+##'   error of the return level via the delta method of the MLE in the
+##'   GPD model. Default = NULL.
+##' @param thresholded.time.series Time series used with
+##'   \code{\link{fit.gpd}} on which already a threshold (the one
+##'   supplied here as well) was applied. Necessary to transform the
+##'   return level for numerical input and the GPD model from m-th
+##'   observation return level to annual return level. If omitted the
+##'   return level will be per observation. Default = NULL.
+##' @param silent Throws an warning whenever the "gpd" model is used
+##'   and the \strong{thresholded.time.series} is not supplied. Since
+##'   this can be annoying one can also disable it. Default = FALSE.
 ##'
 ##' @return A list containing the estimates "return.level" and their
-##'   standard errors "error".
+##'   standard errors "error" if the input was a fitting object or a
+##'   numerical input. If, on the other hand, the input was a list of
+##'   such objects, the output is a list of the aforementioned list.
 ##' @export
 ##'
 ##' @importFrom xts apply.yearly
 ##' @importFrom numDeriv hessian
-##' @family extremes
 ##' 
+##' @family extremes
 ##'
 ##' @examples
 ##' fit.results <- fit.gev( block( anomalies( temp.potsdam ) ) )
@@ -777,388 +786,667 @@ return.level <- function( x, return.period = 100,
                          threshold = NULL, total.length = NULL,
                          thresholded.time.series = NULL,
                          silent = FALSE ){
+  UseMethod( "return.level" )
+}
+##' @title Calculation of the return levels.
+##' @description Calculate arbitrary return levels and their error
+##'   estimates for GEV and GP distributions.
+##'
+##' @details Uses the \code{\link{rlevd}} function at its core (a port
+##'   from the \pkg{extRemes} package) but also can handle the outputs
+##'   of the \code{\link{fit.gev}} and \code{\link{fit.gpd}} functions,
+##'   is capable of calculating numerous return levels at once, and
+##'   also calculates the errors of the return levels. For the errors
+##'   the ML fit is using the option \code{hessian=TRUE} (if not done
+##'   already) or uses a Monte Carlo based approach. If no fitting
+##'   object is provided, no errors will be calculated.
+##'
+##'   This function is also capable of working with lists of fit
+##'   or numerical objects.
+##'
+##' @param x A list of class \emph{numeric}, \emph{climex.fit.gev},
+##'   or \emph{climex.fit.gpd} objects.
+##' @param return.period Numeric vector of the return periods in years.
+##'   Default = 100.
+##' @param error.estimation Method for calculating the standard errors
+##'   of the fitted results. The errors of the GEV/GPD parameters will
+##'   be calculated as the square roots of the diagonal elements of
+##'   the inverse of the hessian matrix. The latter will be evaluated
+##'   at the maximum likelihood estimates (MLE) of the GEV/GPD
+##'   parameters.
+##'
+##'   For all three methods of estimating the fitting
+##'   errors of the return levels underlying series of threshold
+##'   exceedances or block maxima is required. In case the user
+##'   supplies numerical values to specify GEV/GPD parameters and not
+##'   the output of either the \code{\link{fit.gev}} or
+##'   \code{\link{fit.gpd}} function no error estimation for the
+##'   return level can be performed. 
+##'
+##'   \emph{MLE}: The standard error of the return level is
+##'     calculated using the Delta method and the maximum likelihood
+##'     estimates of the GPD parameters. Note: For positive shape
+##'     parameters bigger than 0.3 this approach tends to highly
+##'     overestimates the errors of the return levels.
+##' 
+##'   \emph{MC}: Alternative one can use a Monte Carlo method for
+##'     which \strong{monte.carlo.sample.size} samples of the same
+##'     size as \strong{x} will be drawn from a GEV/GPD distribution
+##'     constituted by the obtained MLE of the GEV/GPD parameters of
+##'     \strong{x}. The standard error is then calculated via the
+##'     square of the variance of all fitted GEV/GPD parameters and
+##'     calculated return levels. Note: In its essence this approach
+##'     is not an estimation of the error involved in fitting the time
+##'     series to a GEV/GPD distribution. It is rather the mean error
+##'     of fitting a GPD-distribution with the same length and
+##'     parameters as estimated ones.
+##'
+##'   \emph{bootstrap}: Using this option the provided time series
+##'     \strong{x} will be sampled with replacement
+##'     \strong{bootstrap.sample.size} times and with the same length
+##'     as the original time series. The standard errors of the
+##'     GEV/GPD parameters and return levels of all those sampled
+##'     series is calculated and returned as an estimate of the
+##'     fitting error. 
+##'     Note: Since the data is (hopefully) GEV/GPD-distributed, such
+##'     a sampling has to be treated with a lot of care.
+##'
+##'     Sometimes the inversion of the hessian fails (since the are
+##'     some NaN in the hessian) when calculating the error estimates
+##'     using the maximum likelihood approach (MLE) (which is also the
+##'     reason why the \pkg{ismev} package occasionally does not
+##'     work). In such cases the Monte Carlo (MC) method is used as a
+##'     fallback.
+##' 
+##'   \emph{none} skips the calculation of the error. Default = "MLE".
+##' @param model Determining whether to calculate the initial
+##'   parameters of the GEV or GPD function. Default = "gev".
+##' @param monte.carlo.sample.size Number of samples used to obtain
+##'   the Monte Carlo estimate of the standard error of the fitting.
+##'   Default = 1000.
+##' @param bootstrap.sample.size Number of samples with replacements
+##'   to drawn from the original series \strong{x} in order to
+##'   determine the standard errors for the GPD parameters and return
+##'   levels. Default = 100.
+##' @param threshold Optional threshold for the GPD model. If present
+##'   it will be added to the return level to produce a value which
+##'   fits to underlying time series. Default = NULL.
+##' @param total.length Total number of observations in the time
+##'   series the exceedance were obtained from (before! applying the
+##'   threshold). This argument is needed to calculate the standard
+##'   error of the return level via the delta method of the MLE in the
+##'   GPD model. Default = NULL.
+##' @param thresholded.time.series Time series used with
+##'   \code{\link{fit.gpd}} on which already a threshold (the one
+##'   supplied here as well) was applied. Necessary to transform the
+##'   return level for numerical input and the GPD model from m-th
+##'   observation return level to annual return level. If omitted the
+##'   return level will be per observation. Default = NULL.
+##' @param silent Throws an warning whenever the "gpd" model is used
+##'   and the \strong{thresholded.time.series} is not supplied. Since
+##'   this can be annoying one can also disable it. Default = FALSE.
+##'
+##' @return A list containing the estimates "return.level" and their
+##'   standard errors "error" if the input was a fitting object or a
+##'   numerical input. If, on the other hand, the input was a list of
+##'   such objects, the output is a list of the aforementioned list.
+##' @export
+##'
+##' @importFrom xts apply.yearly
+##' @importFrom numDeriv hessian
+##' 
+##' @family extremes
+##'
+##' @examples
+##' fit.results <- fit.gev( block( anomalies( temp.potsdam ) ) )
+##' return.level( fit.results, return.period = c( 10, 50, 100 ),
+##'               error.estimation = "MLE" )          
+return.level.list <- function( x, return.period = 100,
+                              error.estimation =
+                                c( "none", "MC", "MLE", "bootstrap" ),
+                              model = c( "gev", "gpd" ),
+                              monte.carlo.sample.size = 1000,
+                              bootstrap.sample.size = 100,
+                              threshold = NULL, total.length = NULL,
+                              thresholded.time.series = NULL,
+                              silent = FALSE ){
+  ## Since the objects returned by the fitting functions are of class
+  ## c( "list", "climex.fit.gXX" ), an exception is needed to hand
+  ## them to the correct function call
   if ( any( class( x ) == "climex.fit.gev" ) ){
-    model <- "gev"
-    return.levels <- Reduce( c, lapply( return.period, function( y )
-      as.numeric( rlevd( y, x$par[ 1 ], x$par[ 2 ], x$par[ 3 ],
-                                 model = "gev", silent = silent ) ) ) )
+    x.result <- return.level.climex.fit.gev(
+        x, return.period = return.period,
+        error.estimation = error.estimation, model = model,
+        monte.carlo.sample.size = monte.carlo.sample.size,
+        bootstrap.sample.size = bootstrap.sample.size,
+        threshold = threshold, total.length = total.length,
+        thresholded.time.series = thresholded.time.series,
+        silent = silent )
   } else if ( any( class( x ) == "climex.fit.gpd" ) ){
-    model <- "gpd"
-    if ( !is.null( total.length ) ){
-      if ( !silent && !is.null( x$control$total.length ) ){
-        warning( "return.level: The total.length argument is already present in the supplied fitting object and will be overwritten." )
-      }
-      x$control$total.length <- total.length
-    }
-    if ( !is.xts( x$x ) ){
-      if ( !silent )
-        warning( "return.level: Since the original time series was not supplied the return level will be not per once every x year but once every x observation" )
-      m <- return.period
-      ## Since the exceedances aren't provided there is not way to
-      ## estimate the exceedance probability. Therefore the errors
-      ## will be m-th observation-based instead of m-th year-based.
-      zeta <- FALSE
-    } else if ( !is.null( x$control$total.length ) ){
-      ## The maximum likelihood estimate of the probability of an
-      ## exceedance to occur per year will be used.
-      zeta <- length( x$x )/ x$control$total.length
-      m <- return.period* 365.25* zeta
-    } else {
-      ## m-observation return level = return.period* the mean number of
-      ## exceedance per year. This way the unit of the provided return
-      ## level and its error are  not 'per observation' but 'per year'.
-      ## In this step we harness the power of the 'xts' package
-      m <- return.period* mean( apply.yearly(
-                              x$x,
-                              function( y ) length( y ) ) )
-      zeta <- NULL
-    }
-    ## The determined 'm' always have to be bigger than one
-    if ( any( m < 1 ) ){
-      if ( !silent ){
-        warning( "return.level: at least one of the m-observation return levels is smaller than one. Those will be omitted." )
-      }
-      return.period <- return.period[ -which( m < 1 ) ]
-      m <- m[ -which( m < 1 ) ]
-    }
-    ## When a threshold is supplied, the one in the fitted object will
-    ## be overwritten
-    if ( !is.null( threshold ) )
-      x$threshold <- threshold
-    return.levels <- Reduce( c, lapply( m, function( y )
-      as.numeric( rlevd( y, scale = x$par[ 1 ],
-                                 shape = x$par[ 2 ],
-                                 model = "gpd", threshold = x$threshold,
-                                 silent = silent ) ) ) )
-  } else if ( any( class( x ) == "numeric" ) ){
-    ## Neither a object from fit.gev nor from fit.gpd but a numerical
-    ## vector containing the GEV/GPD parameters was supplied
-    ## Which of those two distribution should ti be?
-    if ( length( x ) == 3 ){
-      model <- "gev"
-    } else if ( length( x ) == 2 ){
-      model <- "gpd"
-    } else
-      stop( "return.level: the provided parameters and model argument do not belong to each other!" )
-    if ( model == "gev" ){
-      return.levels <- Reduce( c, lapply( return.period, function( y )
-        as.numeric( rlevd( y, x[ 1 ], x[ 2 ], x[ 3 ],
-                                   model = "gev" ) ) ) )
-    } else {
-      if ( !is.null( thresholded.time.series ) ){
+    x.result <- return.level.climex.fit.gpd( 
+        x, return.period = return.period,
+        error.estimation = error.estimation, model = model,
+        monte.carlo.sample.size = monte.carlo.sample.size,
+        bootstrap.sample.size = bootstrap.sample.size,
+        threshold = threshold, total.length = total.length,
+        thresholded.time.series = thresholded.time.series,
+        silent = silent )
+  } else {
+    x.result <- lapply(
+        x, return.level, return.period = return.period,
+        error.estimation = error.estimation, model = model,
+        monte.carlo.sample.size = monte.carlo.sample.size,
+        bootstrap.sample.size = bootstrap.sample.size,
+        threshold = threshold, total.length = total.length,
+        thresholded.time.series = thresholded.time.series,
+        silent = silent )
+  }
+  return( x.result )
+}
+##' @title Calculation of the return levels.
+##' @description Calculate arbitrary return levels and their error
+##'   estimates for GEV and GP distributions.
+##'
+##' @details Uses the \code{\link{rlevd}} function at its core (a port
+##'   from the \pkg{extRemes} package) but also can handle the outputs
+##'   of the \code{\link{fit.gev}} and \code{\link{fit.gpd}} functions,
+##'   is capable of calculating numerous return levels at once, and
+##'   also calculates the errors of the return levels. For the errors
+##'   the ML fit is using the option \code{hessian=TRUE} (if not done
+##'   already) or uses a Monte Carlo based approach. If no fitting
+##'   object is provided, no errors will be calculated.
+##'
+##' @param x Either of class \emph{numeric}, \emph{climex.fit.gev},
+##'   or \emph{climex.fit.gpd}.
+##' @param return.period Numeric vector of the return periods in years.
+##'   Default = 100.
+##' @param error.estimation Method for calculating the standard errors
+##'   of the fitted results. The errors of the GEV/GPD parameters will
+##'   be calculated as the square roots of the diagonal elements of
+##'   the inverse of the hessian matrix. The latter will be evaluated
+##'   at the maximum likelihood estimates (MLE) of the GEV/GPD
+##'   parameters.
+##'
+##'   For all three methods of estimating the fitting
+##'   errors of the return levels underlying series of threshold
+##'   exceedances or block maxima is required. In case the user
+##'   supplies numerical values to specify GEV/GPD parameters and not
+##'   the output of either the \code{\link{fit.gev}} or
+##'   \code{\link{fit.gpd}} function no error estimation for the
+##'   return level can be performed. 
+##'
+##'   \emph{MLE}: The standard error of the return level is
+##'     calculated using the Delta method and the maximum likelihood
+##'     estimates of the GPD parameters. Note: For positive shape
+##'     parameters bigger than 0.3 this approach tends to highly
+##'     overestimates the errors of the return levels.
+##' 
+##'   \emph{MC}: Alternative one can use a Monte Carlo method for
+##'     which \strong{monte.carlo.sample.size} samples of the same
+##'     size as \strong{x} will be drawn from a GEV/GPD distribution
+##'     constituted by the obtained MLE of the GEV/GPD parameters of
+##'     \strong{x}. The standard error is then calculated via the
+##'     square of the variance of all fitted GEV/GPD parameters and
+##'     calculated return levels. Note: In its essence this approach
+##'     is not an estimation of the error involved in fitting the time
+##'     series to a GEV/GPD distribution. It is rather the mean error
+##'     of fitting a GPD-distribution with the same length and
+##'     parameters as estimated ones.
+##'
+##'   \emph{bootstrap}: Using this option the provided time series
+##'     \strong{x} will be sampled with replacement
+##'     \strong{bootstrap.sample.size} times and with the same length
+##'     as the original time series. The standard errors of the
+##'     GEV/GPD parameters and return levels of all those sampled
+##'     series is calculated and returned as an estimate of the
+##'     fitting error. 
+##'     Note: Since the data is (hopefully) GEV/GPD-distributed, such
+##'     a sampling has to be treated with a lot of care.
+##'
+##'     Sometimes the inversion of the hessian fails (since the are
+##'     some NaN in the hessian) when calculating the error estimates
+##'     using the maximum likelihood approach (MLE) (which is also the
+##'     reason why the \pkg{ismev} package occasionally does not
+##'     work). In such cases the Monte Carlo (MC) method is used as a
+##'     fallback.
+##' 
+##'   \emph{none} skips the calculation of the error. Default = "MLE".
+##' @param model Determining whether to calculate the initial
+##'   parameters of the GEV or GPD function. Default = "gev".
+##' @param monte.carlo.sample.size Number of samples used to obtain
+##'   the Monte Carlo estimate of the standard error of the fitting.
+##'   Default = 1000.
+##' @param bootstrap.sample.size Number of samples with replacements
+##'   to drawn from the original series \strong{x} in order to
+##'   determine the standard errors for the GPD parameters and return
+##'   levels. Default = 100.
+##' @param threshold Optional threshold for the GPD model. If present
+##'   it will be added to the return level to produce a value which
+##'   fits to underlying time series. Default = NULL.
+##' @param total.length Total number of observations in the time
+##'   series the exceedance were obtained from (before! applying the
+##'   threshold). This argument is needed to calculate the standard
+##'   error of the return level via the delta method of the MLE in the
+##'   GPD model. Default = NULL.
+##' @param thresholded.time.series Time series used with
+##'   \code{\link{fit.gpd}} on which already a threshold (the one
+##'   supplied here as well) was applied. Necessary to transform the
+##'   return level for numerical input and the GPD model from m-th
+##'   observation return level to annual return level. If omitted the
+##'   return level will be per observation. Default = NULL.
+##' @param silent Throws an warning whenever the "gpd" model is used
+##'   and the \strong{thresholded.time.series} is not supplied. Since
+##'   this can be annoying one can also disable it. Default = FALSE.
+##'
+##' @return A list containing the estimates "return.level" and their
+##'   standard errors "error" if the input was a fitting object or a
+##'   numerical input.
+##' @export
+##'
+##' @importFrom xts apply.yearly
+##' @importFrom numDeriv hessian
+##' 
+##' @family extremes
+##'
+##' @examples
+##' fit.results <- fit.gev( block( anomalies( temp.potsdam ) ) )
+##' return.level( fit.results, return.period = c( 10, 50, 100 ),
+##'               error.estimation = "MLE" )
+return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
+  return.level.numeric <- return.level.default <-
+    function( x, return.period = 100,
+             error.estimation = c( "none", "MC", "MLE",
+                                  "bootstrap" ),
+             model = c( "gev", "gpd" ),
+             monte.carlo.sample.size = 1000,
+             bootstrap.sample.size = 100,
+             threshold = NULL, total.length = NULL,
+             thresholded.time.series = NULL,
+             silent = FALSE ){
+      if ( any( class( x ) == "climex.fit.gev" ) ){
+        model <- "gev"
+        return.levels <- Reduce( c, lapply( return.period, function( y )
+          as.numeric( rlevd( y, x$par[ 1 ], x$par[ 2 ], x$par[ 3 ],
+                            model = "gev", silent = silent ) ) ) )
+      } else if ( any( class( x ) == "climex.fit.gpd" ) ){
+        model <- "gpd"
         if ( !is.null( total.length ) ){
+          if ( !silent && !is.null( x$control$total.length ) ){
+            warning( "return.level: The total.length argument is already present in the supplied fitting object and will be overwritten." )
+          }
+          x$control$total.length <- total.length
+        }
+        if ( !is.xts( x$x ) ){
+          if ( !silent )
+            warning( "return.level: Since the original time series was not supplied the return level will be not per once every x year but once every x observation" )
+          m <- return.period
+          ## Since the exceedances aren't provided there is not way to
+          ## estimate the exceedance probability. Therefore the errors
+          ## will be m-th observation-based instead of m-th year-based.
+          zeta <- FALSE
+        } else if ( !is.null( x$control$total.length ) ){
           ## The maximum likelihood estimate of the probability of an
           ## exceedance to occur per year will be used.
-          zeta <- length( thresholded.time.series )/ total.length
+          zeta <- length( x$x )/ x$control$total.length
           m <- return.period* 365.25* zeta
         } else {
-          ## m-observation return level = return.period* the mean
-          ## number of exceedance per year. This way the unit of the
-          ## provided return level and its error are  not 'per
-          ## observation' but 'per year'. 
-          ## In this step we harness the power of the 'xts' package
+          ## m-observation return level = return.period* the mean number
+          ## of exceedance per year. This way the unit of the provided
+          ## return level and its error are  not 'per observation' but
+          ## 'per year'. In this step we harness the power of the 'xts'
+          ## package.
           m <- return.period* mean( apply.yearly(
-                                  thresholded.time.series,
-                                  function( tt ) length( tt ) ) )
+                                  x$x,
+                                  function( y ) length( y ) ) )
           zeta <- NULL
         }
-      } else {
-        if ( !silent )
-          warning(
-              "return.level: Since the original time series was not supplied the return level will be not per once every m year but once every m observation" )
-        ## Neither the amount of threshold exceedances nor the length of
-        ## the original series is supplied. Now there is no other
-        ## chance than to calculate the observation-based return level.
-        m <- return.period
-        zeta <- FALSE
-      }
-      return.levels <- Reduce( c, lapply( m, function( mm )
-        as.numeric( rlevd( mm, scale = x[ 1 ], shape = x[ 2 ],
-                                   model = "gpd", threshold = threshold,
-                                   silent = silent ) ) ) )
-    }
-  } else {
-    stop(
-        "return.level is not implemented for this class of input values!" )
-  }
-  ##
-  ## Error estimation of the return level
-  ##
-  if ( error.estimation == "none" || class( x ) == "numeric" ){
-    ## Dummy holding NaN instead of the return level errors.
-    ## (Since there was not enough information supplied to calculate
-    ## them).
-    if ( model == "gev" ){
-      errors <- rep( NA, length( return.period ) )
-    } else {
-      errors <- rep( NA, length( return.period ) )
-    }
-    return( list( return.level = return.levels, error = errors ) )
-  } else if ( error.estimation == "bootstrap" ){
-    ## As a simple alternative the threshold exceedances will be
-    ## sampled with replacement and the parameters and return levels
-    ## are calculated for all of the resampled series. The bootstrap
-    ## error is than calculated as the standard error of all the
-    ## GEV parameters and return levels.
-    bootstrap.sample.list <-
-      lapply( c( 1 : bootstrap.sample.size ), function( xx )
-        sample( x$x, size = length( x$x ), replace = TRUE ) )
-    ## Fitting the GEV parameters (recursively)
-    if ( model == "gev" ){
-      fitted.list <- lapply( bootstrap.sample.list, function( xx ){
-        fit.gev( x = xx, initial = x$control$initial,
-                likelihood.function = x$control$likelihood.function,
-                gradient.function = x$control$gradient.function,
-                error.estimation = "none",
-                return.period = return.period,
-                total.length = x$control$total.length,
-                silent = TRUE ) } )
-    } else {
-      fitted.list <- lapply( bootstrap.sample.list, function( xx ){
-        fit.gpd( x = xx, initial = x$control$initial,
-                threshold = x$control$threshold,
-                likelihood.function = x$control$likelihood.function,
-                gradient.function = x$control$gradient.function,
-                error.estimation = "none",
-                return.period = return.period,
-                total.length = x$control$total.length,
-                silent = TRUE ) } )
-    }
-    ## Calculate the standard errors of all the fitted return
-    ## levels.
-    fitted.parameters <-
-      Reduce( rbind, lapply( fitted.list, function( xx )
-        xx$par ) )
-    fitted.return.levels <-
-      Reduce( rbind, lapply( fitted.list, function( xx )
-        xx$return.level ) )
-    ## Calculate the standard errors
-    errors <- apply( cbind( fitted.parameters,
-                           fitted.return.levels ), 2, stats::sd )
-    ## Extracting the errors of the return levels.
-    if ( model == "gev" ){
-      errors <- errors[ 4 : ( 3 + length( return.period ) ) ]
-    } else {
-      errors <- errors[ 3 : ( 2 + length( return.period ) ) ]
-    }
-  } else if ( error.estimation == "MLE" ){
-    if ( !any( names( x ) == "hessian" ) ){
-      ## fit again and let stats::optim calculate the hessian. It's way
-      ## more save this way
-      if ( model == "gev" ){
-        x$hessian <- fit.gev( x$x, initial = x$par,
-                             error.estimation = "MLE" )$hessian
-      } else {
-        if ( is.null( threshold ) )
-          threshold <- x$threshold
-        x$hessian <- fit.gpd( x$x, initial = x$par,
-                             threshold = threshold,
-                             error.estimation = "MLE",
-                             total.length = total.length )$hessian
-      }
-    }
-    ## Sometimes the obtained hessian is not invertible. If this is the
-    ## case, recalculate it in order to access the fitting error
-    ## estimates. Caution: this one will be without the constraints!
-    ## Calculating the errors using the MLE
-    ##
-    ## If the shape parameter is exactly zero and the Gumbel
-    ## distribution was fitted, the third row and column were just
-    ## augmented by 0.
-    if ( model == "gev" ){
-      if ( x$par[ 3 ] != 0 ){
-        error.covariance <- try( solve( x$control$hessian ),
-                                silent = silent )
-      } else {
-        ## Omit the augmentation
-        error.covariance <- try( solve(
-            x$control$hessian[ 1 : 2, 1 : 2 ] ),
-            silent = silent )
-        ## Augment the result again to ensure compatibility
-        if ( class( error.covariance ) != "try-error" ){
-          dummy.matrix <- matrix( rep( 0, 9 ), nrow = 3, ncol = 3 )
-          dummy.matrix[ 1 : 2, 1 : 2 ] <- error.covariance
-          error.covariance <- dummy.matrix
-        }
-      }
-    } else {
-      if ( x$par[ 2 ] != 0 ){
-        error.covariance <- try( solve( x$control$hessian ),
-                                silent = silent )
-      } else {
-        ## Omit the augmentation
-        error.covariance <- try( solve(
-            x$control$hessian[ 1 ] ),
-            silent = silent )
-        ## Augment the result again to ensure compatibility
-        if ( class( error.covariance ) != "try-error" ){
-          dummy.matrix <- matrix( rep( 0, 4 ), nrow = 2, ncol = 2 )
-          dummy.matrix[ 1 ] <- error.covariance
-          error.covariance <- dummy.matrix
-        }
-      }
-    }
-    if ( class( error.covariance ) == "try-error" ){
-      x.hessian <- numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
-                                     model = model )
-      error.covariance <- solve( x.hessian )
-      if ( any( is.nan( x.hessian ) ) ){
-        ## If there are still NaN, let it be.
-        warning( "return level: NaN in the hessian. Error estimates can not be calculated via the maximum likelihood estimates" )
-        return( rep( NA, length( return.period ) ) )
-      }
-    }
-    ## Delta method for the return level
-    parameter.estimate <- x$par
-    parameter.error.estimate <- as.numeric( x$se )
-    errors <- data.frame( a = 0 )
-    if ( model == "gev" ){
-      ## Formula according to Stuart Coles p. 56
-      for ( rr in 1 : length( return.period ) ){
-        yp <- -log( 1 - 1/return.period[ rr ] )
-        scale <- parameter.estimate[ 2 ]
-        shape <- parameter.estimate[ 3 ]
-        if ( shape != 0 ){
-          ## GEV distribution
-          dz <- c( 1, -shape^{ -1 }* ( 1 - yp^{ -shape } ),
-                  scale* shape^{ -2 }* ( 1 - yp^{ -shape } ) -
-                  scale* shape^{ -1 }* yp^{ -shape }* log( yp ) )
-          errors <- cbind( errors, dz %*% error.covariance %*% dz )
-        } else {
-          ## Gumbel distribution
-          dz <- c( 1, -log( yp ) )
-          errors <- cbind( errors,
-                          dz %*% error.covariance[ 1 : 2, 1 : 2 ] %*%
-                          dz )
-        }
-      }
-    } else {
-      ## Formula according to Stuart Coles p. 82
-      for ( rr in 1 : length( return.period ) ){
-        ## I omit the error estimation of the zeta in here. I don't
-        ## sew how the error of exceedance probability will help the
-        ## user.
-        scale <- parameter.estimate[ 1 ]
-        shape <- parameter.estimate[ 2 ]
-        if ( is.null( zeta ) ){
-          ## Calculate the exceedance probability in case only the
-          ## threshold exceedances and not the original time series
-          ## was supplied.
-          zeta <- m[ rr ]/ ( return.period[ rr ]* 365.25 )
-        }
-        if ( !is.numeric( zeta ) ){
-          ## In case zeta was set to FALSE neither the original time
-          ## series nor the threshold exceedances were
-          ## supplied. Therefor there is no way to estimate the mean
-          ## exceedance probability and the zeta term has to be
-          ## excluded from the error calculation.
-          if ( shape != 0 ){
-            ## GP distribution
-            dz <- c( ( m[ rr ]^ shape - 1 )/ shape,
-                    -scale* shape^{ -2 }*( m[ rr ]^shape - 1 ) +
-                    scale/shape*m[ rr ]^shape* log( m[ rr ] ) )
-            errors <- cbind( errors, dz %*% error.covariance %*% dz )
-          } else {
-            ## Exponential distribution
-            dz <- log( m[ rr ] )
-            errors <- cbind( errors, dz %*%
-                                     parameter.error.estimate[ 1 ] %*%
-                                     dz )
+        ## The determined 'm' always have to be bigger than one
+        if ( any( m < 1 ) ){
+          if ( !silent ){
+            warning( "return.level: at least one of the m-observation return levels is smaller than one. Those will be omitted." )
           }
+          return.period <- return.period[ -which( m < 1 ) ]
+          m <- m[ -which( m < 1 ) ]
+        }
+        ## When a threshold is supplied, the one in the fitted object
+        ## will be overwritten
+        if ( !is.null( threshold ) )
+          x$threshold <- threshold
+        return.levels <- Reduce( c, lapply( m, function( y )
+          as.numeric( rlevd( y, scale = x$par[ 1 ],
+                            shape = x$par[ 2 ],
+                            model = "gpd", threshold = x$threshold,
+                            silent = silent ) ) ) )
+      } else if ( any( class( x ) == "numeric" ) ){
+        ## Neither a object from fit.gev nor from fit.gpd but a
+        ## numerical vector containing the GEV/GPD parameters was
+        ## supplied. Which of those two distribution should ti be?
+        if ( length( x ) == 3 ){
+          model <- "gev"
+        } else if ( length( x ) == 2 ){
+          model <- "gpd"
+        } else
+          stop( "return.level: the provided parameters and model argument do not belong to each other!" )
+        if ( model == "gev" ){
+          return.levels <- Reduce( c, lapply( return.period, function( y )
+            as.numeric( rlevd( y, x[ 1 ], x[ 2 ], x[ 3 ],
+                              model = "gev" ) ) ) )
         } else {
-          if ( shape != 0 ){
-            ## GP distribution
-            dz <- c( scale* m[ rr ]^shape* zeta^{ shape - 1 },
-            ( m[ rr ]^ shape - 1 )/ shape,
-            -scale* shape^{ -2 }*( m[ rr ]^shape - 1 ) +
-            scale/shape*m[ rr ]^shape* log( m[ rr ] ) )
-            ## Generate a dummy variance matrix to incorporate the
-            ## uncertainty of zeta.
-            error.matrix <- matrix( rep( 0, 9 ), nrow = 3, ncol = 3 )
+          if ( !is.null( thresholded.time.series ) ){
             if ( !is.null( total.length ) ){
-              ## If the total length of the underlying series BEFORE
-              ## thresholding is provided, we are glad to use it.
-              error.matrix[ 1, 1 ] <- zeta*( 1 - zeta )/ total.length
+              ## The maximum likelihood estimate of the probability of
+              ## an exceedance to occur per year will be used.
+              zeta <- length( thresholded.time.series )/ total.length
+              m <- return.period* 365.25* zeta
             } else {
-              ## If not we have to estimate it using the MLE of zeta
-              ## number of exceedances/ total length.
-              error.matrix[ 1, 1 ] <- zeta^2*( 1 - zeta )/
-                length( x$x )
+              ## m-observation return level = return.period* the mean 
+              ## number of exceedance per year. This way the unit of the
+              ## provided return level and its error are  not 'per
+              ## observation' but 'per year'. 
+              ## In this step we harness the power of the 'xts' package
+              m <- return.period* mean( apply.yearly(
+                                      thresholded.time.series,
+                                      function( tt ) length( tt ) ) )
+              zeta <- NULL
             }
-            error.matrix[ 2 : 3, 2 : 3 ] <- error.covariance 
-            errors <- cbind( errors, dz %*% error.matrix %*% dz )
           } else {
-            ## Exponential distribution
-            dz <- c( scale/ zeta, log( m[ rr ] ) )
-            ## Generate a dummy variance matrix to incorporate the
-            ## uncertainty of zeta.
-            error.matrix <- matrix( rep( 0, 4 ), nrow = 2, ncol = 2 )
-            if ( !is.null( total.length ) ){
-              ## If the total length of the underlying series BEFORE
-              ## thresholding is provided, we are glad to use it.
-              error.matrix[ 1, 1 ] <- zeta*( 1 - zeta )/ total.length
-            } else {
-              ## If not we have to estimate it using the MLE of zeta
-              ## number of exceedances/ total length.
-              error.matrix[ 1, 1 ] <- zeta^2*( 1 - zeta )/
-                length( x$x )
-            }
-            error.matrix[ 2, 2 ] <- parameter.error.estimate[ 1 ]
-            errors <- cbind( errors, dz %*% error.matrix %*% dz )
+            if ( !silent )
+              warning(
+                  "return.level: Since the original time series was not supplied the return level will be not per once every m year but once every m observation" )
+            ## Neither the amount of threshold exceedances nor the
+            ## length of the original series is supplied. Now there is
+            ## no other chance than to calculate the observation-based
+            ## return level.
+            m <- return.period
+            zeta <- FALSE
+          }
+          return.levels <- Reduce( c, lapply( m, function( mm )
+            as.numeric( rlevd( mm, scale = x[ 1 ], shape = x[ 2 ],
+                              model = "gpd", threshold = threshold,
+                              silent = silent ) ) ) )
+        }
+      } else {
+        stop(
+            "return.level is not implemented for this class of input values!" )
+      }
+      ##
+      ## Error estimation of the return level
+      ##
+      if ( error.estimation == "none" || class( x ) == "numeric" ){
+        ## Dummy holding NaN instead of the return level errors.
+        ## (Since there was not enough information supplied to calculate
+        ## them).
+        if ( model == "gev" ){
+          errors <- rep( NA, length( return.period ) )
+        } else {
+          errors <- rep( NA, length( return.period ) )
+        }
+        return( list( return.level = return.levels, error = errors ) )
+      } else if ( error.estimation == "bootstrap" ){
+        ## As a simple alternative the threshold exceedances will be
+        ## sampled with replacement and the parameters and return levels
+        ## are calculated for all of the resampled series. The bootstrap
+        ## error is than calculated as the standard error of all the
+        ## GEV parameters and return levels.
+        bootstrap.sample.list <-
+          lapply( c( 1 : bootstrap.sample.size ), function( xx )
+            sample( x$x, size = length( x$x ), replace = TRUE ) )
+        ## Fitting the GEV parameters (recursively)
+        if ( model == "gev" ){
+          fitted.list <- lapply( bootstrap.sample.list, function( xx ){
+            fit.gev( x = xx, initial = x$control$initial,
+                    likelihood.function = x$control$likelihood.function,
+                    gradient.function = x$control$gradient.function,
+                    error.estimation = "none",
+                    return.period = return.period,
+                    total.length = x$control$total.length,
+                    silent = TRUE ) } )
+        } else {
+          fitted.list <- lapply( bootstrap.sample.list, function( xx ){
+            fit.gpd( x = xx, initial = x$control$initial,
+                    threshold = x$control$threshold,
+                    likelihood.function = x$control$likelihood.function,
+                    gradient.function = x$control$gradient.function,
+                    error.estimation = "none",
+                    return.period = return.period,
+                    total.length = x$control$total.length,
+                    silent = TRUE ) } )
+        }
+        ## Calculate the standard errors of all the fitted return
+        ## levels.
+        fitted.parameters <-
+          Reduce( rbind, lapply( fitted.list, function( xx )
+            xx$par ) )
+        fitted.return.levels <-
+          Reduce( rbind, lapply( fitted.list, function( xx )
+            xx$return.level ) )
+        ## Calculate the standard errors
+        errors <- apply( cbind( fitted.parameters,
+                               fitted.return.levels ), 2, stats::sd )
+        ## Extracting the errors of the return levels.
+        if ( model == "gev" ){
+          errors <- errors[ 4 : ( 3 + length( return.period ) ) ]
+        } else {
+          errors <- errors[ 3 : ( 2 + length( return.period ) ) ]
+        }
+      } else if ( error.estimation == "MLE" ){
+        if ( !any( names( x ) == "hessian" ) ){
+          ## fit again and let stats::optim calculate the hessian. It's
+          ## way more save this way
+          if ( model == "gev" ){
+            x$hessian <- fit.gev( x$x, initial = x$par,
+                                 error.estimation = "MLE" )$hessian
+          } else {
+            if ( is.null( threshold ) )
+              threshold <- x$threshold
+            x$hessian <- fit.gpd( x$x, initial = x$par,
+                                 threshold = threshold,
+                                 error.estimation = "MLE",
+                                 total.length = total.length )$hessian
           }
         }
+        ## Sometimes the obtained hessian is not invertible. If this is
+        ## the case, recalculate it in order to access the fitting error
+        ## estimates. Caution: this one will be without the constraints!
+        ## Calculating the errors using the MLE
+        ##
+        ## If the shape parameter is exactly zero and the Gumbel
+        ## distribution was fitted, the third row and column were just
+        ## augmented by 0.
+        if ( model == "gev" ){
+          if ( x$par[ 3 ] != 0 ){
+            error.covariance <- try( solve( x$control$hessian ),
+                                    silent = silent )
+          } else {
+            ## Omit the augmentation
+            error.covariance <- try( solve(
+                x$control$hessian[ 1 : 2, 1 : 2 ] ),
+                silent = silent )
+            ## Augment the result again to ensure compatibility
+            if ( class( error.covariance ) != "try-error" ){
+              dummy.matrix <- matrix( rep( 0, 9 ), nrow = 3, ncol = 3 )
+              dummy.matrix[ 1 : 2, 1 : 2 ] <- error.covariance
+              error.covariance <- dummy.matrix
+            }
+          }
+        } else {
+          if ( x$par[ 2 ] != 0 ){
+            error.covariance <- try( solve( x$control$hessian ),
+                                    silent = silent )
+          } else {
+            ## Omit the augmentation
+            error.covariance <- try( solve(
+                x$control$hessian[ 1 ] ),
+                silent = silent )
+            ## Augment the result again to ensure compatibility
+            if ( class( error.covariance ) != "try-error" ){
+              dummy.matrix <- matrix( rep( 0, 4 ), nrow = 2, ncol = 2 )
+              dummy.matrix[ 1 ] <- error.covariance
+              error.covariance <- dummy.matrix
+            }
+          }
+        }
+        if ( class( error.covariance ) == "try-error" ){
+          x.hessian <- numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
+                                         model = model )
+          error.covariance <- solve( x.hessian )
+          if ( any( is.nan( x.hessian ) ) ){
+            ## If there are still NaN, let it be.
+            warning( "return level: NaN in the hessian. Error estimates can not be calculated via the maximum likelihood estimates" )
+            return( rep( NA, length( return.period ) ) )
+          }
+        }
+        ## Delta method for the return level
+        parameter.estimate <- x$par
+        parameter.error.estimate <- as.numeric( x$se )
+        errors <- data.frame( a = 0 )
+        if ( model == "gev" ){
+          ## Formula according to Stuart Coles p. 56
+          for ( rr in 1 : length( return.period ) ){
+            yp <- -log( 1 - 1/return.period[ rr ] )
+            scale <- parameter.estimate[ 2 ]
+            shape <- parameter.estimate[ 3 ]
+            if ( shape != 0 ){
+              ## GEV distribution
+              dz <- c( 1, -shape^{ -1 }* ( 1 - yp^{ -shape } ),
+                      scale* shape^{ -2 }* ( 1 - yp^{ -shape } ) -
+                      scale* shape^{ -1 }* yp^{ -shape }* log( yp ) )
+              errors <- cbind( errors, dz %*% error.covariance %*% dz )
+            } else {
+              ## Gumbel distribution
+              dz <- c( 1, -log( yp ) )
+              errors <- cbind( errors,
+                              dz %*% error.covariance[ 1 : 2, 1 : 2 ] %*%
+                              dz )
+            }
+          }
+        } else {
+          ## Formula according to Stuart Coles p. 82
+          for ( rr in 1 : length( return.period ) ){
+            ## I omit the error estimation of the zeta in here. I don't
+            ## sew how the error of exceedance probability will help the
+            ## user.
+            scale <- parameter.estimate[ 1 ]
+            shape <- parameter.estimate[ 2 ]
+            if ( is.null( zeta ) ){
+              ## Calculate the exceedance probability in case only the
+              ## threshold exceedances and not the original time series
+              ## was supplied.
+              zeta <- m[ rr ]/ ( return.period[ rr ]* 365.25 )
+            }
+            if ( !is.numeric( zeta ) ){
+              ## In case zeta was set to FALSE neither the original time
+              ## series nor the threshold exceedances were
+              ## supplied. Therefor there is no way to estimate the mean
+              ## exceedance probability and the zeta term has to be
+              ## excluded from the error calculation.
+              if ( shape != 0 ){
+                ## GP distribution
+                dz <- c( ( m[ rr ]^ shape - 1 )/ shape,
+                        -scale* shape^{ -2 }*( m[ rr ]^shape - 1 ) +
+                        scale/shape*m[ rr ]^shape* log( m[ rr ] ) )
+                errors <- cbind( errors, dz %*% error.covariance %*% dz )
+              } else {
+                ## Exponential distribution
+                dz <- log( m[ rr ] )
+                errors <- cbind( errors, dz %*%
+                                         parameter.error.estimate[ 1 ] %*%
+                                         dz )
+              }
+            } else {
+              if ( shape != 0 ){
+                ## GP distribution
+                dz <- c( scale* m[ rr ]^shape* zeta^{ shape - 1 },
+                ( m[ rr ]^ shape - 1 )/ shape,
+                -scale* shape^{ -2 }*( m[ rr ]^shape - 1 ) +
+                scale/shape*m[ rr ]^shape* log( m[ rr ] ) )
+                ## Generate a dummy variance matrix to incorporate the
+                ## uncertainty of zeta.
+                error.matrix <- matrix( rep( 0, 9 ), nrow = 3, ncol = 3 )
+                if ( !is.null( total.length ) ){
+                  ## If the total length of the underlying series BEFORE
+                  ## thresholding is provided, we are glad to use it.
+                  error.matrix[ 1, 1 ] <- zeta*( 1 - zeta )/ total.length
+                } else {
+                  ## If not we have to estimate it using the MLE of zeta
+                  ## number of exceedances/ total length.
+                  error.matrix[ 1, 1 ] <- zeta^2*( 1 - zeta )/
+                    length( x$x )
+                }
+                error.matrix[ 2 : 3, 2 : 3 ] <- error.covariance 
+                errors <- cbind( errors, dz %*% error.matrix %*% dz )
+              } else {
+                ## Exponential distribution
+                dz <- c( scale/ zeta, log( m[ rr ] ) )
+                ## Generate a dummy variance matrix to incorporate the
+                ## uncertainty of zeta.
+                error.matrix <- matrix( rep( 0, 4 ), nrow = 2, ncol = 2 )
+                if ( !is.null( total.length ) ){
+                  ## If the total length of the underlying series BEFORE
+                  ## thresholding is provided, we are glad to use it.
+                  error.matrix[ 1, 1 ] <- zeta*( 1 - zeta )/ total.length
+                } else {
+                  ## If not we have to estimate it using the MLE of zeta
+                  ## number of exceedances/ total length.
+                  error.matrix[ 1, 1 ] <- zeta^2*( 1 - zeta )/
+                    length( x$x )
+                }
+                error.matrix[ 2, 2 ] <- parameter.error.estimate[ 1 ]
+                errors <- cbind( errors, dz %*% error.matrix %*% dz )
+              }
+            }
+          }
+        }
+        errors <- errors[ , -1 ]
+        names( errors ) <- paste0( return.period, ".rlevel" )
+      } else {
+        ## Use the Monte Carlo method to determine the standard errors.
+        parameter.estimate <- x$par
+        ## Draw a number of samples and fit the GEV/GP parameters for
+        ## all of them
+        if ( model == "gev" ){
+          samples.list <- lapply( 1 : monte.carlo.sample.size, function( y )
+            revd( length( x$x ), parameter.estimate[ 1 ],
+                 parameter.estimate[ 2 ],
+                 parameter.estimate[ 3 ], model = "gev" ) )
+        } else { 
+          samples.list <- lapply( 1 : monte.carlo.sample.size, function( y )
+            revd( length( x$x ), scale = parameter.estimate[ 1 ],
+                 shape = parameter.estimate[ 2 ], silent = TRUE,
+                 threshold = threshold, model = "gpd" ) )
+        }
+        samples.fit <- lapply( samples.list, function( y )
+          suppressWarnings(
+              stats::optim( likelihood.initials( y, model = model ),
+                           likelihood, x = y, method = "Nelder-Mead",
+                           model = model )$par ) )
+        errors <- data.frame( a = 0 )
+        if ( model == "gev" ){
+          r.period <- return.period
+        } else {
+          r.period <- m
+        }
+        for ( rr in 1 : length( return.period ) )
+          errors <- cbind(
+              errors, 
+              sqrt( stats::var( Reduce(
+                               c, lapply(
+                                      samples.fit,
+                                      function( z )
+                                        climex::return.level(
+                                                    z,
+                                                    return.period =
+                                                      r.period[ rr ],
+                                                    error.estimation =
+                                                      "none",
+                                                    silent = TRUE
+                                                )$return.level
+                                  ) ) ) ) )
+        errors <- errors[ , -1 ]   
+        names( errors ) <- paste0( return.period, ".rlevel" )
       }
+      return( list( return.level = return.levels, error = errors ) )
     }
-    errors <- errors[ , -1 ]
-    names( errors ) <- paste0( return.period, ".rlevel" )
-  } else {
-    ## Use the Monte Carlo method to determine the standard errors.
-    parameter.estimate <- x$par
-    ## Draw a number of samples and fit the GEV/GP parameters for all
-    ## of them
-    if ( model == "gev" ){
-      samples.list <- lapply( 1 : monte.carlo.sample.size, function( y )
-        revd( length( x$x ), parameter.estimate[ 1 ],
-                      parameter.estimate[ 2 ],
-                      parameter.estimate[ 3 ], model = "gev" ) )
-    } else { 
-      samples.list <- lapply( 1 : monte.carlo.sample.size, function( y )
-        revd( length( x$x ), scale = parameter.estimate[ 1 ],
-                      shape = parameter.estimate[ 2 ], silent = TRUE,
-                      threshold = threshold, model = "gpd" ) )
-    }
-    samples.fit <- lapply( samples.list, function( y )
-      suppressWarnings(
-          stats::optim( likelihood.initials( y, model = model ),
-                       likelihood, x = y, method = "Nelder-Mead",
-                       model = model )$par ) )
-    errors <- data.frame( a = 0 )
-    if ( model == "gev" ){
-      r.period <- return.period
-    } else {
-      r.period <- m
-    }
-    for ( rr in 1 : length( return.period ) )
-      errors <- cbind(
-          errors, 
-          sqrt( stats::var( Reduce(
-                           c, lapply(
-                                  samples.fit,
-                                  function( z )
-                                    climex::return.level(
-                                                z,
-                                                return.period =
-                                                  r.period[ rr ],
-                                                error.estimation =
-                                                  "none",
-                                                silent = TRUE
-                                            )$return.level
-                              ) ) ) ) )
-    errors <- errors[ , -1 ]   
-    names( errors ) <- paste0( return.period, ".rlevel" )
-  }
-  return( list( return.level = return.levels, error = errors ) )
-}
 
 ##' @title Return level calculation
 ##' @description Internal function to calculate the return level of

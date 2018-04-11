@@ -8,6 +8,18 @@ from one of the CRAN fellows by just submitting the core package.
   specified folder recursively, print all results well-formatted in
   the command line and prompt the user for a selection. The option for
   a default data set is now deprecated.
+- Adding S3 function **checking.completeness**. For input of class
+  *xts* it returns TRUE or FALSE whether or not the time series has at
+  least the supplied number of complete years. If the input is of
+  class *list*, the function trims the list to only those objects
+  fulfilling the requirement.
+- Rewriting the functions **fit.gev**, **fit.gpd**, **return.level**,
+  **aic**, **bic**, **remove.seasonality**, **anomalies**, **block**,
+  **remove.incomplete.years**, **decluster**, and **threshold** as S3
+  objects. They now accept both the basic elements they already were
+  able to accept beforehand and a list of those objects. In the latter
+  case the output will be a list of the output of the individual calls.
+  
 # v1.2.1
 - Only perform the test of the API of the DWD on Unix-based
   systems. The *winbuilder* of CRAN just throws non-reproducible error

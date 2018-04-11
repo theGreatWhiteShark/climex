@@ -42,7 +42,9 @@ those methods, the function will perform a constrained random
 walk on the parameters until a working pair is found.
 }
 \seealso{
-Other optimization: \code{\link{fit.gev}},
+Other optimization: \code{\link{fit.gev.list}},
+  \code{\link{fit.gev.xts}}, \code{\link{fit.gev}},
+  \code{\link{fit.gpd.list}}, \code{\link{fit.gpd.xts}},
   \code{\link{fit.gpd}},
   \code{\link{likelihood.augmented}},
   \code{\link{likelihood.gradient.augmented}},

@@ -161,6 +161,18 @@ test_that( "return.level has the right output", {
   expect_equal( names( return.level( x.block.fit,
                                     error.estimation = "MLE" )
                       ), c( "return.level", "error" ) )
+  expect_true( is.list(
+      return.level( list( x.block.fit, x.block.fit ) ) ) )
+  expect_true( is.list(
+      return.level( list( x.block.fit, x.block.fit ) )[[ 1 ]] ) )
+  expect_equal(
+      unique( Reduce( c,
+                     lapply(
+                         return.level( list( x.block.fit,
+                                            x.block.fit ),
+                                      error.estimation = "MLE" ),
+                         function( rr ) names( rr ) ) ) ),
+    c( "return.level", "error" ) )
 })
 test_that( "return.level get GEV error estimation right for MLE", {
   expect_equal( as.numeric(
