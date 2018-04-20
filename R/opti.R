@@ -49,8 +49,12 @@
 ##'   objects.
 ##'
 ##' @param x Either an object of class \pkg{xts} or a list of
-##'   those. Blocked time series to which the GEV distribution should
-##'   be fitted.
+##'   those. The time series can be provided in two different formats:
+##'   as a series of block maxima (possibly calculated using the
+##'   \code{\link{block}} function) and the \strong{blocking} argument
+##'   set to FALSE or as the raw time series with \strong{blocking}
+##'   set to TRUE. In the later case the blocking will be performed
+##'   inside the fit.gev function.
 ##' @param initial Initial values for the GEV parameters. Has to be
 ##'   provided as 3x1 vector. If NULL the parameters are estimated
 ##'   using \code{\link{likelihood.initials}}. If the shape parameter
@@ -111,6 +115,26 @@
 ##'   levels. Default = 100.
 ##' @param return.period Quantiles at which the return level is going
 ##'   to be evaluated. Class "numeric". Default = 100.
+##' @param blocking Logical value indicating whether or not the input
+##'   data \strong{x} should be split into blocks of equal size using
+##'   the \code{\link{block}} function and only the maxima or minima
+##'   should be extracted. If any of the arguments
+##'   \strong{block.number}, \strong{block.length}, or
+##'   \strong{block.mode} is provided
+##'   with a non NULL value, the blocking will be performed regardless
+##'   of the value of the \strong{blocking} argument. If, on the other
+##'   hand, \strong{blocking} is TRUE but neither
+##'   \strong{block.number} nor \strong{block.length} was provided,
+##'   the time series will be split into annual blocks. Default =
+##'   FALSE. 
+##' @param block.number Specifies the number of blocks the input data
+##'   is going to be separated in. Default = NULL.
+##' @param block.length Length of the blocks. For the sake of
+##'   simplicity the last block is not forced to match the length of
+##'   the other plots. Default = NULL.
+##' @param block.mode This parameter determines if the maximum "max"
+##'   or the minimum "min" of a block shall be returned. Default:
+##'   "max". 
 ##' @param silent Determines whether or not warning messages shall be
 ##' displayed and results shall be reported. Default = TRUE.
 ##' @param mc.cores A numerical input specifying the number of cores
@@ -163,8 +187,10 @@ fit.gev <- function(  x, initial = NULL,
                                          "none" ), 
                     monte.carlo.sample.size = 100,
                     bootstrap.sample.size = 100,
-                    return.period = 100, silent = TRUE,
-                    mc.cores = NULL, ... ){
+                    return.period = 100, blocking = FALSE,
+                    block.number = NULL, block.length = NULL,
+                    block.mode = NULL, 
+                    silent = TRUE, mc.cores = NULL, ... ){
   UseMethod( "fit.gev" )
 }
 ##' @title Improved maximum-likelihood fit of the GEV distribution
@@ -216,8 +242,13 @@ fit.gev <- function(  x, initial = NULL,
 ##'   This function can also be applied to a list of \pkg{xts} class
 ##'   objects.
 ##'
-##' @param x A list of objects of class \pkg{xts}. Blocked time series
-##'   to which the GEV distribution should be fitted.
+##' @param x A list of objects of class \pkg{xts}.
+##'   The time series can be provided in two different formats:
+##'   as a series of block maxima (possibly calculated using the
+##'   \code{\link{block}} function) and the \strong{blocking} argument
+##'   set to FALSE or as the raw time series with \strong{blocking}
+##'   set to TRUE. In the later case the blocking will be performed
+##'   inside the fit.gev function.
 ##' @param initial Initial values for the GEV parameters. Has to be
 ##'   provided as 3x1 vector. If NULL the parameters are estimated
 ##'   using \code{\link{likelihood.initials}}. If the shape parameter
@@ -278,6 +309,26 @@ fit.gev <- function(  x, initial = NULL,
 ##'   levels. Default = 100.
 ##' @param return.period Quantiles at which the return level is going
 ##'   to be evaluated. Class "numeric". Default = 100.
+##' @param blocking Logical value indicating whether or not the input
+##'   data \strong{x} should be split into blocks of equal size using
+##'   the \code{\link{block}} function and only the maxima or minima
+##'   should be extracted. If any of the arguments
+##'   \strong{block.number}, \strong{block.length}, or
+##'   \strong{block.mode} is provided
+##'   with a non NULL value, the blocking will be performed regardless
+##'   of the value of the \strong{blocking} argument. If, on the other
+##'   hand, \strong{blocking} is TRUE but neither
+##'   \strong{block.number} nor \strong{block.length} was provided,
+##'   the time series will be split into annual blocks. Default =
+##'   FALSE.
+##' @param block.number Specifies the number of blocks the input data
+##'   is going to be separated in. Default = NULL.
+##' @param block.length Length of the blocks. For the sake of
+##'   simplicity the last block is not forced to match the length of
+##'   the other plots. Default = NULL.
+##' @param block.mode This parameter determines if the maximum "max"
+##'   or the minimum "min" of a block shall be returned. Default:
+##'   "max". 
 ##' @param silent Determines whether or not warning messages shall be
 ##' displayed and results shall be reported. Default = TRUE.
 ##' @param mc.cores A numerical input specifying the number of cores
@@ -334,8 +385,10 @@ fit.gev.list <- function(  x, initial = NULL,
                                               "bootstrap", "none" ), 
                          monte.carlo.sample.size = 100,
                          bootstrap.sample.size = 100,
-                         return.period = 100, silent = TRUE,
-                         mc.cores = NULL, ... ){
+                         return.period = 100, blocking = FALSE,
+                         block.number = NULL, block.length = NULL,
+                         block.mode = NULL, 
+                         silent = TRUE, mc.cores = NULL, ... ){
   if ( !is.null( mc.cores ) ){
     return( mclapply( x, fit.gev, initial = initial,
                      likelihood.function = likelihood.function,
@@ -344,7 +397,12 @@ fit.gev.list <- function(  x, initial = NULL,
                      monte.carlo.sample.size =
                        monte.carlo.sample.size,
                      bootstrap.sample.size = bootstrap.sample.size,
-                     return.period = return.period, silent = silent,
+                     return.period = return.period,
+                     blocking = blocking,
+                     block.number = block.number,
+                     block.length = block.length,
+                     block.mode = block.mode,
+                     silent = silent,
                      mc.cores = mc.cores, ... ) )
   } else {
     return( lapply( x, fit.gev, initial = initial,
@@ -353,7 +411,12 @@ fit.gev.list <- function(  x, initial = NULL,
                    error.estimation = error.estimation,
                    monte.carlo.sample.size = monte.carlo.sample.size,
                    bootstrap.sample.size = bootstrap.sample.size,
-                   return.period = return.period, silent = silent,
+                   return.period = return.period, 
+                   blocking = blocking,
+                   block.number = block.number,
+                   block.length = block.length,
+                   block.mode = block.mode,
+                   silent = silent,
                    mc.cores = mc.cores, ... ) )
   }
 }
@@ -403,8 +466,13 @@ fit.gev.list <- function(  x, initial = NULL,
 ##'   extreme value analysis, there won't be an option to choose them
 ##'   in this package.
 ##'
-##' @param x Either an object of class \pkg{xts}. Blocked time series
-##'   to which the GEV distribution should be fitted.
+##' @param x Either an object of class \pkg{xts}.
+##'   The time series can be provided in two different formats:
+##'   as a series of block maxima (possibly calculated using the
+##'   \code{\link{block}} function) and the \strong{blocking} argument
+##'   set to FALSE or as the raw time series with \strong{blocking}
+##'   set to TRUE. In the later case the blocking will be performed
+##'   inside the fit.gev function.
 ##' @param initial Initial values for the GEV parameters. Has to be
 ##'   provided as 3x1 vector. If NULL the parameters are estimated
 ##'   using \code{\link{likelihood.initials}}. If the shape parameter
@@ -465,6 +533,26 @@ fit.gev.list <- function(  x, initial = NULL,
 ##'   levels. Default = 100.
 ##' @param return.period Quantiles at which the return level is going
 ##'   to be evaluated. Class "numeric". Default = 100.
+##' @param blocking Logical value indicating whether or not the input
+##'   data \strong{x} should be split into blocks of equal size using
+##'   the \code{\link{block}} function and only the maxima or minima
+##'   should be extracted. If any of the arguments
+##'   \strong{block.number}, \strong{block.length}, or
+##'   \strong{block.mode} is provided
+##'   with a non NULL value, the blocking will be performed regardless
+##'   of the value of the \strong{blocking} argument. If, on the other
+##'   hand, \strong{blocking} is TRUE but neither
+##'   \strong{block.number} nor \strong{block.length} was provided,
+##'   the time series will be split into annual blocks. Default =
+##'   FALSE. 
+##' @param block.number Specifies the number of blocks the input data
+##'   is going to be separated in. Default = NULL.
+##' @param block.length Length of the blocks. For the sake of
+##'   simplicity the last block is not forced to match the length of
+##'   the other plots. Default = NULL.
+##' @param block.mode This parameter determines if the maximum "max"
+##'   or the minimum "min" of a block shall be returned. Default:
+##'   "max". 
 ##' @param silent Determines whether or not warning messages shall be
 ##' displayed and results shall be reported. Default = TRUE.
 ##' @param mc.cores A numerical input specifying the number of cores
@@ -527,8 +615,24 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
                                            bootstrap.sample.size =
                                              100,
                                            return.period = 100,
+                                           blocking = FALSE,
+                                           block.number = NULL,
+                                           block.length = NULL,
+                                           block.mode = NULL,
                                            silent = TRUE,
                                            mc.cores = NULL, ... ){
+  ## Blocking the data provided by the user
+  if ( blocking || !is.null( block.number ) ||
+       !is.null( block.length ) || !is.null( block.mode ) ){
+    ## Initialize the parameters with the defaults of the blocking
+    ## function
+    if ( is.null( block.mode ) ){
+      block.mode <- "max"
+    }
+    x <- block( x = x, block.number = block.number,
+               block.length = block.length, block.mode = block.mode,
+               mc.cores = NULL )
+  }
   ## Default values if no initial parameters were supplied
   if ( is.null( initial ) )
     initial <- likelihood.initials( x, model = "gev" )
@@ -837,8 +941,12 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
 ##'   objects.
 ##' 
 ##' @param x Either an object of class \pkg{xts} or a list of
-##'   those. Threshold exceedances with the threshold already
-##'   subtracted.
+##'   those. The time series can be provided in two different formats:
+##'   as a series of threshold exceedances (possibly calculated using
+##'   the \code{\link{threshold}} function) and the
+##'   \strong{thresholding} argument set to FALSE or as the raw time
+##'   series with \strong{thresholding} set to TRUE. In the later case
+##'   the exceedances will be extracted inside the fit.gpd function.
 ##' @param initial Initial values for the GPD parameters. Has to be
 ##'   provided as 2x1 vector. If NULL the parameters are estimated
 ##'   with the function \code{\link{likelihood.initials}}. If the
@@ -848,7 +956,9 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
 ##' @param threshold Optional threshold used to extract the
 ##'   exceedances from the provided series \strong{x}. If present it
 ##'   will be added to the return level to produce a value which fits
-##'   to underlying time series. Default = NULL.
+##'   to underlying time series. If the user wants the exceedances to
+##'   be calculated within this function, this argument is a mandatory
+##'   one. Default = NULL.
 ##' @param likelihood.function Function which is going to be
 ##'   optimized. Default: \code{\link{likelihood}}
 ##' @param gradient.function If NULL a finite difference method is
@@ -910,6 +1020,23 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
 ##'   exceedance. Else an estimate based on the mean number of
 ##'   exceedances in the available years (time stamps of the class
 ##'   \pkg{xts} time series) will be used. Default = NULL. 
+##' @param thresholding Logical value. If TRUE, the numerical value
+##'   provided with \strong{threshold} will be used in the
+##'   \code{\link{threshold}} function to extract only the exceedances
+##'   of the input time series \strong{x}. If FALSE, the function
+##'   assumes the input series \strong{x} to consist only of
+##'   exceedances over the provided \strong{threshold}. If the
+##'   \strong{cluster.distance} or \strong{decluster} is provided with
+##'   a non NULL value, the value of \strong{thresholding} is ignored
+##'   and the \code{\link{threshold}} function is applied
+##'   anyway. Default = FALSE.
+##' @param decluster Logical flag indicating whether or not to
+##'   decluster the obtained exceedances over the
+##'   \strong{threshold}. Default = TRUE.
+##' @param cluster.distance Numerical value specifying how many points
+##'   have to be below the \strong{threshold} for the next point to be
+##'   considered the starting point of a new cluster. Only supply a
+##'   value when you really know what you are doing! Default = NULL.
 ##' @param silent Determines whether or not warning messages shall be
 ##'   displayed and results shall be reported. Default = TRUE.
 ##' @param mc.cores A numerical input specifying the number of cores
@@ -966,8 +1093,10 @@ fit.gpd <- function(  x, initial = NULL, threshold = NULL,
                     monte.carlo.sample.size = 100,
                     bootstrap.sample.size = 100,
                     return.period = 100,
-                    total.length = NULL, silent = TRUE,
-                    mc.cores = NULL, ... ){
+                    total.length = NULL,
+                    thresholding = FALSE,
+                    decluster = NULL, cluster.distance = NULL,
+                    silent = TRUE, mc.cores = NULL, ... ){
   UseMethod( "fit.gpd" )
 }
 ##' @title Improved maximum-likelihood fit of the GPD distribution
@@ -1025,8 +1154,13 @@ fit.gpd <- function(  x, initial = NULL, threshold = NULL,
 ##'   This function can also be applied to a list of \pkg{xts} class
 ##'   objects.
 ##' 
-##' @param x A list of objects of class \pkg{xts}. Threshold
-##'   exceedances with the threshold already subtracted.
+##' @param x A list of objects of class \pkg{xts}.
+##'   The time series can be provided in two different formats:
+##'   as a series of threshold exceedances (possibly calculated using
+##'   the \code{\link{threshold}} function) and the
+##'   \strong{thresholding} argument set to FALSE or as the raw time
+##'   series with \strong{thresholding} set to TRUE. In the later case
+##'   the exceedances will be extracted inside the fit.gpd function.
 ##' @param initial Initial values for the GPD parameters. Has to be
 ##'   provided as 2x1 vector. If NULL the parameters are estimated
 ##'   with the function \code{\link{likelihood.initials}}. If the
@@ -1035,8 +1169,10 @@ fit.gpd <- function(  x, initial = NULL, threshold = NULL,
 ##'   so! Default = NULL
 ##' @param threshold Optional threshold used to extract the
 ##'   exceedances from the provided series \strong{x}. If present it
-##'   will be added to the return level to produce a value which fits
-##'   to underlying time series. Default = NULL.
+##'   will be added to the return level to produce a value, which fits
+##'   to underlying time series. If the user wants the exceedances to
+##'   be calculated within this function, this argument is a mandatory
+##'   one. Default = NULL.
 ##' @param likelihood.function Function which is going to be
 ##'   optimized. Default: \code{\link{likelihood}}
 ##' @param gradient.function If NULL a finite difference method is
@@ -1098,6 +1234,23 @@ fit.gpd <- function(  x, initial = NULL, threshold = NULL,
 ##'   exceedance. Else an estimate based on the mean number of
 ##'   exceedances in the available years (time stamps of the class
 ##'   \pkg{xts} time series) will be used. Default = NULL. 
+##' @param thresholding Logical value. If TRUE, the numerical value
+##'   provided with \strong{threshold} will be used in the
+##'   \code{\link{threshold}} function to extract only the exceedances
+##'   of the input time series \strong{x}. If FALSE, the function
+##'   assumes the input series \strong{x} to consist only of
+##'   exceedances over the provided \strong{threshold}. If the
+##'   \strong{cluster.distance} or \strong{decluster} is provided with
+##'   a non NULL value, the value of \strong{thresholding} is ignored
+##'   and the \code{\link{threshold}} function is applied
+##'   anyway. Default = FALSE.
+##' @param decluster Logical flag indicating whether or not to
+##'   decluster the obtained exceedances over the
+##'   \strong{threshold}. Default = TRUE.
+##' @param cluster.distance Numerical value specifying how many points
+##'   have to be below the \strong{threshold} for the next point to be
+##'   considered the starting point of a new cluster. Only supply a
+##'   value when you really know what you are doing! Default = NULL.
 ##' @param silent Determines whether or not warning messages shall be
 ##'   displayed and results shall be reported. Default = TRUE.
 ##' @param mc.cores A numerical input specifying the number of cores
@@ -1154,8 +1307,9 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
                          monte.carlo.sample.size = 100,
                          bootstrap.sample.size = 100,
                          return.period = 100,
-                         total.length = NULL, silent = TRUE,
-                         mc.cores = NULL, ... ){
+                         total.length = NULL, thresholding = FALSE,
+                         decluster = NULL, cluster.distance = NULL,
+                         silent = TRUE, mc.cores = NULL, ... ){
   if ( !is.null( mc.cores ) ){
     return( mclapply( x, fit.gpd, initial = initial,
                      likelihood.function = likelihood.function,
@@ -1164,7 +1318,11 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
                      monte.carlo.sample.size = monte.carlo.sample.size,
                      bootstrap.sample.size = bootstrap.sample.size,
                      return.period = return.period,
-                     total.length = total.length, silent = silent,
+                     total.length = total.length,
+                     thresholding = thresholding,
+                     decluster = decluster,
+                     cluster.distance = cluster.distance,
+                     silent = silent,
                      mc.cores = mc.cores, ... ) )
   } else {
     return( lapply( x, fit.gpd, initial = initial,
@@ -1174,7 +1332,11 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
                    monte.carlo.sample.size = monte.carlo.sample.size,
                    bootstrap.sample.size = bootstrap.sample.size,
                    return.period = return.period,
-                   total.length = total.length, silent = silent,
+                   total.length = total.length,
+                   thresholding = thresholding,
+                   decluster = decluster,
+                   cluster.distance = cluster.distance,
+                   silent = silent,
                    mc.cores = mc.cores, ... ) )
   }
 }
@@ -1230,8 +1392,13 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
 ##'   extreme value analysis, there won't be an option to choose them
 ##'   in this package.
 ##' 
-##' @param x An object of class \pkg{xts}. Threshold exceedances with
-##'   the threshold already subtracted.
+##' @param x An object of class \pkg{xts}.
+##'   The time series can be provided in two different formats:
+##'   as a series of threshold exceedances (possibly calculated using
+##'   the \code{\link{threshold}} function) and the
+##'   \strong{thresholding} argument set to FALSE or as the raw time
+##'   series with \strong{thresholding} set to TRUE. In the later case
+##'   the exceedances will be extracted inside the fit.gpd function.
 ##' @param initial Initial values for the GPD parameters. Has to be
 ##'   provided as 2x1 vector. If NULL the parameters are estimated
 ##'   with the function \code{\link{likelihood.initials}}. If the
@@ -1241,7 +1408,9 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
 ##' @param threshold Optional threshold used to extract the
 ##'   exceedances from the provided series \strong{x}. If present it
 ##'   will be added to the return level to produce a value which fits
-##'   to underlying time series. Default = NULL.
+##'   to underlying time series. If the user wants the exceedances to
+##'   be calculated within this function, this argument is a mandatory
+##'   one.  Default = NULL.
 ##' @param likelihood.function Function which is going to be
 ##'   optimized. Default: \code{\link{likelihood}}
 ##' @param gradient.function If NULL a finite difference method is
@@ -1303,6 +1472,23 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
 ##'   exceedance. Else an estimate based on the mean number of
 ##'   exceedances in the available years (time stamps of the class
 ##'   \pkg{xts} time series) will be used. Default = NULL. 
+##' @param thresholding Logical value. If TRUE, the numerical value
+##'   provided with \strong{threshold} will be used in the
+##'   \code{\link{threshold}} function to extract only the exceedances
+##'   of the input time series \strong{x}. If FALSE, the function
+##'   assumes the input series \strong{x} to consist only of
+##'   exceedances over the provided \strong{threshold}. If the
+##'   \strong{cluster.distance} or \strong{decluster} is provided with
+##'   a non NULL value, the value of \strong{thresholding} is ignored
+##'   and the \code{\link{threshold}} function is applied
+##'   anyway. Default = FALSE.
+##' @param decluster Logical flag indicating whether or not to
+##'   decluster the obtained exceedances over the
+##'   \strong{threshold}. Default = TRUE.
+##' @param cluster.distance Numerical value specifying how many points
+##'   have to be below the \strong{threshold} for the next point to be
+##'   considered the starting point of a new cluster. Only supply a
+##'   value when you really know what you are doing! Default = NULL.
 ##' @param silent Determines whether or not warning messages shall be
 ##'   displayed and results shall be reported. Default = TRUE.
 ##' @param mc.cores A numerical input specifying the number of cores
@@ -1366,8 +1552,25 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
                                              100, 
                                            return.period = 100,
                                            total.length = NULL,
+                                           thresholding = FALSE,
+                                           decluster = NULL,
+                                           cluster.distance = NULL,
                                            silent = TRUE,
                                            mc.cores = NULL, ... ){
+  ## Applying a threshold to the data and extract just the exceedances
+  if ( thresholding || !is.null( cluster.distance ) ||
+       !is.null( decluster ) ){
+    if ( is.null( threshold ) ){
+      stop( "Please provide a 'threshold' if you which the fit.gpd to extract all data above it." )
+    }
+    if ( is.null( decluster ) ){
+      decluster <- TRUE
+    }
+    x <- threshold( x = x, threshold = threshold,
+                   decluster = decluster,
+                   cluster.distance = cluster.distance,
+                   mc.cores = NULL )
+  }
   ## Default values if no initial parameters are supplied
   if ( is.null( initial ) )
     initial <- likelihood.initials( x, model = "gpd" )

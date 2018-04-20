@@ -7,13 +7,18 @@
 fit.gev(x, initial = NULL, likelihood.function = likelihood,
   gradient.function = likelihood.gradient, error.estimation = c("MLE", "MC",
   "bootstrap", "none"), monte.carlo.sample.size = 100,
-  bootstrap.sample.size = 100, return.period = 100, silent = TRUE,
-  mc.cores = NULL, ...)
+  bootstrap.sample.size = 100, return.period = 100, blocking = FALSE,
+  block.number = NULL, block.length = NULL, block.mode = NULL,
+  silent = TRUE, mc.cores = NULL, ...)
 }
 \arguments{
 \item{x}{Either an object of class \pkg{xts} or a list of
-those. Blocked time series to which the GEV distribution should
-be fitted.}
+those. The time series can be provided in two different formats:
+as a series of block maxima (possibly calculated using the
+\code{\link{block}} function) and the \strong{blocking} argument
+set to FALSE or as the raw time series with \strong{blocking}
+set to TRUE. In the later case the blocking will be performed
+inside the fit.gev function.}
 
 \item{initial}{Initial values for the GEV parameters. Has to be
 provided as 3x1 vector. If NULL the parameters are estimated
@@ -81,6 +86,30 @@ levels. Default = 100.}
 
 \item{return.period}{Quantiles at which the return level is going
 to be evaluated. Class "numeric". Default = 100.}
+
+\item{blocking}{Logical value indicating whether or not the input
+data \strong{x} should be split into blocks of equal size using
+the \code{\link{block}} function and only the maxima or minima
+should be extracted. If any of the arguments
+\strong{block.number}, \strong{block.length}, or
+\strong{block.mode} is provided
+with a non NULL value, the blocking will be performed regardless
+of the value of the \strong{blocking} argument. If, on the other
+hand, \strong{blocking} is TRUE but neither
+\strong{block.number} nor \strong{block.length} was provided,
+the time series will be split into annual blocks. Default =
+FALSE.}
+
+\item{block.number}{Specifies the number of blocks the input data
+is going to be separated in. Default = NULL.}
+
+\item{block.length}{Length of the blocks. For the sake of
+simplicity the last block is not forced to match the length of
+the other plots. Default = NULL.}
+
+\item{block.mode}{This parameter determines if the maximum "max"
+or the minimum "min" of a block shall be returned. Default:
+"max".}
 
 \item{silent}{Determines whether or not warning messages shall be
 displayed and results shall be reported. Default = TRUE.}

@@ -38,6 +38,19 @@ from one of the CRAN fellows by just submitting the core package.
   
   The functions **aic** and **bic**, while being S3 generic, have been
   excluded since they are calculated in no time.
+- The *separation.mode* argument of the **block** function was
+  removed, since it was overwritten internally anyway.
+- The default *block.number* argument of the **block** function was
+  set to NULL. This way its internal handling using the **missing**
+  function was changed to a check using **is.null** to ensure it will
+  work when called by another function (the **fit.gev** one).
+- The **threshold** function now hands the *cluster.distance* argument
+  to the **decluster** function.
+- **fit.gev** and **fit.gpd** are now capable for preprocessing the
+  time series on their own. Using the arguments *blocking* and
+  *thresholding* the functions can call **block** or **threshold**
+  internally and hand over all the required arguments. This makes the
+  use of those functions more convenient to the user.
   
 # v1.2.1
 - Only perform the test of the API of the DWD on Unix-based

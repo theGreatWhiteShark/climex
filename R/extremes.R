@@ -4,8 +4,9 @@
 ##' @description Separates the input into blocks of equal size and
 ##'   returns the maximum or minimum of the block as result.
 ##'
-##' @details If \strong{separation.mode} is set to "years" the
-##'   data is separated according to it's time stamps. If not, the
+##' @details  If both the \strong{block.number} and
+##'   \strong{block.length} arguments are NULL, the data will be
+##'   split into annual blocks. If not, the
 ##'   size of a block is determined by the \strong{block.length}
 ##'   argument or calculated via the \strong{block.number} argument if
 ##'   the previous one is set to NULL. For calculating the mean of
@@ -17,17 +18,13 @@
 ##'
 ##' @param x Either an object of class \pkg{xts} or a list of those.
 ##' @param block.number Specifies the number of blocks the input data
-##'   is going to be separated in.
+##'   is going to be separated in. Default = NULL.
 ##' @param block.length Length of the blocks. For the sake of
 ##'   simplicity the last block is not forced to match the length of
-##'   the other plots. 
+##'   the other plots. Default = NULL.
 ##' @param block.mode This parameter determines if the maximum "max"
 ##'   or the minimum "min" of a block shall be returned. Default:
 ##'   "max". 
-##' @param separation.mode "years" is used to split the data according
-##'   to its date values instead. If \strong{block.length} or
-##'   \strong{block.number} is specified this argument will not be
-##'   considered and set to "none". Default = "years".
 ##' @param mc.cores A numerical input specifying the number of cores
 ##'   to use for the multi core application of the function (see
 ##'   \code{\link[parallel]{detectCores}}). This functionality is only
@@ -50,9 +47,8 @@
 ##' 
 ##' @examples
 ##'   block( temp.potsdam )
-block <- function( x, block.number = round( length( x )/ 50 ),
-                  block.length = NULL, block.mode = c( "max", "min" ),
-                  separation.mode = c( "years", "none" ),
+block <- function( x, block.number = NULL, block.length = NULL,
+                  block.mode = c( "max", "min" ),
                   mc.cores = NULL ){
   UseMethod( "block" )
 }
@@ -60,8 +56,9 @@ block <- function( x, block.number = round( length( x )/ 50 ),
 ##' @description Separates the input into blocks of equal size and
 ##'   returns the maximum or minimum of the block as result.
 ##'
-##' @details If \strong{separation.mode} is set to "years" the
-##'   data is separated according to it's time stamps. If not, the
+##' @details  If both the \strong{block.number} and
+##'   \strong{block.length} arguments are NULL, the data will be
+##'   split into annual blocks. If not, the
 ##'   size of a block is determined by the \strong{block.length}
 ##'   argument or calculated via the \strong{block.number} argument if
 ##'   the previous one is set to NULL. For calculating the mean of
@@ -73,17 +70,13 @@ block <- function( x, block.number = round( length( x )/ 50 ),
 ##'
 ##' @param x A list of objects of class \pkg{xts}.
 ##' @param block.number Specifies the number of blocks the input data
-##'   is going to be separated in.
+##'   is going to be separated in. Default = NULL.
 ##' @param block.length Length of the blocks. For the sake of
 ##'   simplicity the last block is not forced to match the length of
-##'   the other plots. 
+##'   the other plots. Default = NULL.
 ##' @param block.mode This parameter determines if the maximum "max"
 ##'   or the minimum "min" of a block shall be returned. Default:
 ##'   "max".
-##' @param separation.mode "years" is used to split the data according
-##'   to its date values instead. If \strong{block.length} or
-##'   \strong{block.number} is specified this argument will not be
-##'   considered and set to "none". Default = "years".
 ##' @param mc.cores A numerical input specifying the number of cores
 ##'   to use for the multi core application of the function (see
 ##'   \code{\link[parallel]{detectCores}}). This functionality is only
@@ -106,17 +99,14 @@ block <- function( x, block.number = round( length( x )/ 50 ),
 ##' 
 ##' @examples
 ##'   block( temp.potsdam )
-block.list <- function( x, block.number = round( length( x )/ 50 ),
-                       block.length = NULL,
+block.list <- function( x, block.number = NULL, block.length = NULL,
                        block.mode = c( "max", "min" ),
-                       separation.mode = c( "years", "none" ),
                        mc.cores = NULL ){
   if ( !is.null( mc.cores ) ){
     return( mclapply( x, function( xx )
       block( xx, block.number = round( length( xx )/ 50 ),
             block.length = block.length,
             block.mode = block.mode,
-            separation.mode = separation.mode,
             mc.cores = mc.cores ),
       mc.cores = mc.cores ) )
   } else {
@@ -124,7 +114,6 @@ block.list <- function( x, block.number = round( length( x )/ 50 ),
       block( xx, block.number = round( length( xx )/ 50 ),
             block.length = block.length,
             block.mode = block.mode,
-            separation.mode = separation.mode,
             mc.cores = mc.cores ) ) )
   }
 }
@@ -132,8 +121,9 @@ block.list <- function( x, block.number = round( length( x )/ 50 ),
 ##' @description Separates the input into blocks of equal size and
 ##'   returns the maximum or minimum of the block as result.
 ##'
-##' @details If \strong{separation.mode} is set to "years" the
-##'   data is separated according to it's time stamps. If not, the
+##' @details If both the \strong{block.number} and
+##'   \strong{block.length} arguments are NULL, the data will be
+##'   split into annual blocks. If not, the
 ##'   size of a block is determined by the \strong{block.length}
 ##'   argument or calculated via the \strong{block.number} argument if
 ##'   the previous one is set to NULL. For calculating the mean of
@@ -142,17 +132,13 @@ block.list <- function( x, block.number = round( length( x )/ 50 ),
 ##'
 ##' @param x An object of class \pkg{xts}.
 ##' @param block.number Specifies the number of blocks the input data
-##'   is going to be separated in.
+##'   is going to be separated in. Default = NULL.
 ##' @param block.length Length of the blocks. For the sake of
 ##'   simplicity the last block is not forced to match the length of
-##'   the other plots. 
+##'   the other plots. Default = NULL.
 ##' @param block.mode This parameter determines if the maximum "max"
 ##'   or the minimum "min" of a block shall be returned. Default:
 ##'   "max".
-##' @param separation.mode "years" is used to split the data according
-##'   to its date values instead. If \strong{block.length} or
-##'   \strong{block.number} is specified this argument will not be
-##'   considered and set to "none". Default = "years".
 ##' @param mc.cores A numerical input specifying the number of cores
 ##'   to use for the multi core application of the function (see
 ##'   \code{\link[parallel]{detectCores}}). This functionality is only
@@ -176,17 +162,14 @@ block.list <- function( x, block.number = round( length( x )/ 50 ),
 ##' @examples
 ##'   block( temp.potsdam )
 block.xts <- block.default <- function( x,
-                                       block.number =
-                                         round( length( x )/ 50 ),
+                                       block.number = NULL,
                                        block.length = NULL,
                                        block.mode = c( "max", "min" ),
-                                       separation.mode =
-                                         c( "years", "none" ),
                                        mc.cores = NULL ){
   if ( !all( class( x ) == c( "xts", "zoo" ) ) )
     stop( "The block.default function works to input of class 'xts' only!" )
   ## Initializing. The 'block.length' is the most important parameter
-  if ( !missing( block.length ) || !missing( block.number ) ){
+  if ( !is.null( block.length ) || !is.null( block.number ) ){
     separation.mode <- "none"
     if ( !is.null( block.length ) ){
       block.number <- floor( length( x )/ block.length ) + 1
@@ -199,8 +182,9 @@ block.xts <- block.default <- function( x,
       block.length <- length( x )/ ( block.number ) +
         1/ ( block.number )
     }
-  } else
+  } else {
     separation.mode <- "years"
+  }
   if ( missing( block.mode ) )
     block.mode <- "max"
   block.mode <- match.arg( block.mode )
@@ -647,6 +631,10 @@ extremal.index <- function( x, threshold, silent = FALSE ){
 ##' @param decluster Logical flag indicating whether or not to
 ##'   decluster the obtained exceedances over the
 ##'   \strong{threshold}. Default = TRUE.
+##' @param cluster.distance Numerical value specifying how many points
+##'   have to be below the \strong{threshold} for the next point to be
+##'   considered the starting point of a new cluster. Only supply a
+##'   value when you really know what you are doing! Default = NULL.
 ##' @param na.rm Logical flag indicating whether to remove all NA
 ##'   values from the time series (removed points in clusters). For
 ##'   important steps, like calculating the \emph{Lmoments} of a time
@@ -666,7 +654,8 @@ extremal.index <- function( x, threshold, silent = FALSE ){
 ##' @return Same class as the input
 ##' @author Philipp Mueller
 threshold <- function( x, threshold, decluster = TRUE,
-                      na.rm = TRUE, mc.cores = TRUE ){
+                      cluster.distance = NULL, na.rm = TRUE,
+                      mc.cores = TRUE ){
   UseMethod( "threshold" )
 }
 ##' @title Apply a threshold to a time series
@@ -688,6 +677,10 @@ threshold <- function( x, threshold, decluster = TRUE,
 ##' @param decluster Logical flag indicating whether or not to
 ##'   decluster the obtained exceedances over the
 ##'   \strong{threshold}. Default = TRUE.
+##' @param cluster.distance Numerical value specifying how many points
+##'   have to be below the \strong{threshold} for the next point to be
+##'   considered the starting point of a new cluster. Only supply a
+##'   value when you really know what you are doing! Default = NULL.
 ##' @param na.rm Logical flag indicating whether to remove all NA
 ##'   values from the time series (removed points in clusters). For
 ##'   important steps, like calculating the \emph{Lmoments} of a time
@@ -707,15 +700,18 @@ threshold <- function( x, threshold, decluster = TRUE,
 ##' @return Same class as the input
 ##' @author Philipp Mueller
 threshold.list <- function( x, threshold, decluster = TRUE,
+                           cluster.distance = NULL,
                            na.rm = TRUE, mc.cores = NULL ){
   if ( !is.null( mc.cores ) ){
     return( lapply( x, threshold.xts, threshold = threshold,
-                   decluster = decluster, na.rm = na.rm,
-                   mc.cores = mc.cores ) )
+                   decluster = decluster,
+                   cluster.distance = cluster.distance,
+                   na.rm = na.rm, mc.cores = mc.cores ) )
   } else {
     return( lapply( x, threshold.xts, threshold = threshold,
-                   decluster = decluster, na.rm = na.rm,
-                   mc.cores = mc.cores ) )
+                   decluster = decluster,
+                   cluster.distance = cluster.distance,
+                   na.rm = na.rm, mc.cores = mc.cores ) )
   }
 }
 ##' @title Apply a threshold to a time series
@@ -737,6 +733,10 @@ threshold.list <- function( x, threshold, decluster = TRUE,
 ##' @param decluster Logical flag indicating whether or not to
 ##'   decluster the obtained exceedances over the
 ##'   \strong{threshold}. Default = TRUE.
+##' @param cluster.distance Numerical value specifying how many points
+##'   have to be below the \strong{threshold} for the next point to be
+##'   considered the starting point of a new cluster. Only supply a
+##'   value when you really know what you are doing! Default = NULL.
 ##' @param na.rm Logical flag indicating whether to remove all NA
 ##'   values from the time series (removed points in clusters). For
 ##'   important steps, like calculating the \emph{Lmoments} of a time
@@ -757,6 +757,7 @@ threshold.list <- function( x, threshold, decluster = TRUE,
 ##' @author Philipp Mueller
 threshold.xts <- threshold.default <- function( x, threshold,
                                                decluster = TRUE,
+                                               cluster.distance = NULL,
                                                na.rm = TRUE,
                                                mc.cores = NULL ){  
   if ( !all( class( x ) == c( "xts", "zoo" ) ) )

@@ -4,28 +4,22 @@
 \alias{block}
 \title{Blocking data}
 \usage{
-block(x, block.number = round(length(x)/50), block.length = NULL,
-  block.mode = c("max", "min"), separation.mode = c("years", "none"),
-  mc.cores = NULL)
+block(x, block.number = NULL, block.length = NULL, block.mode = c("max",
+  "min"), mc.cores = NULL)
 }
 \arguments{
 \item{x}{Either an object of class \pkg{xts} or a list of those.}
 
 \item{block.number}{Specifies the number of blocks the input data
-is going to be separated in.}
+is going to be separated in. Default = NULL.}
 
 \item{block.length}{Length of the blocks. For the sake of
 simplicity the last block is not forced to match the length of
-the other plots.}
+the other plots. Default = NULL.}
 
 \item{block.mode}{This parameter determines if the maximum "max"
 or the minimum "min" of a block shall be returned. Default:
 "max".}
-
-\item{separation.mode}{"years" is used to split the data according
-to its date values instead. If \strong{block.length} or
-\strong{block.number} is specified this argument will not be
-considered and set to "none". Default = "years".}
 
 \item{mc.cores}{A numerical input specifying the number of cores
 to use for the multi core application of the function (see
@@ -42,8 +36,9 @@ Separates the input into blocks of equal size and
   returns the maximum or minimum of the block as result.
 }
 \details{
-If \strong{separation.mode} is set to "years" the
-  data is separated according to it's time stamps. If not, the
+If both the \strong{block.number} and
+  \strong{block.length} arguments are NULL, the data will be
+  split into annual blocks. If not, the
   size of a block is determined by the \strong{block.length}
   argument or calculated via the \strong{block.number} argument if
   the previous one is set to NULL. For calculating the mean of

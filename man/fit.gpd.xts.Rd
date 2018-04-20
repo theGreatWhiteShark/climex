@@ -8,12 +8,18 @@
   likelihood.function = likelihood, gradient.function = likelihood.gradient,
   error.estimation = c("MLE", "MC", "bootstrap", "none"),
   monte.carlo.sample.size = 100, bootstrap.sample.size = 100,
-  return.period = 100, total.length = NULL, silent = TRUE,
+  return.period = 100, total.length = NULL, thresholding = FALSE,
+  decluster = NULL, cluster.distance = NULL, silent = TRUE,
   mc.cores = NULL, ...)
 }
 \arguments{
-\item{x}{An object of class \pkg{xts}. Threshold exceedances with
-the threshold already subtracted.}
+\item{x}{An object of class \pkg{xts}.
+The time series can be provided in two different formats:
+as a series of threshold exceedances (possibly calculated using
+the \code{\link{threshold}} function) and the
+\strong{thresholding} argument set to FALSE or as the raw time
+series with \strong{thresholding} set to TRUE. In the later case
+the exceedances will be extracted inside the fit.gpd function.}
 
 \item{initial}{Initial values for the GPD parameters. Has to be
 provided as 2x1 vector. If NULL the parameters are estimated
@@ -25,7 +31,9 @@ so! Default = NULL}
 \item{threshold}{Optional threshold used to extract the
 exceedances from the provided series \strong{x}. If present it
 will be added to the return level to produce a value which fits
-to underlying time series. Default = NULL.}
+to underlying time series. If the user wants the exceedances to
+be calculated within this function, this argument is a mandatory
+one.  Default = NULL.}
 
 \item{likelihood.function}{Function which is going to be
 optimized. Default: \code{\link{likelihood}}}
@@ -94,6 +102,26 @@ calculate the probability of a measurement to be an
 exceedance. Else an estimate based on the mean number of
 exceedances in the available years (time stamps of the class
 \pkg{xts} time series) will be used. Default = NULL.}
+
+\item{thresholding}{Logical value. If TRUE, the numerical value
+provided with \strong{threshold} will be used in the
+\code{\link{threshold}} function to extract only the exceedances
+of the input time series \strong{x}. If FALSE, the function
+assumes the input series \strong{x} to consist only of
+exceedances over the provided \strong{threshold}. If the
+\strong{cluster.distance} or \strong{decluster} is provided with
+a non NULL value, the value of \strong{thresholding} is ignored
+and the \code{\link{threshold}} function is applied
+anyway. Default = FALSE.}
+
+\item{decluster}{Logical flag indicating whether or not to
+decluster the obtained exceedances over the
+\strong{threshold}. Default = TRUE.}
+
+\item{cluster.distance}{Numerical value specifying how many points
+have to be below the \strong{threshold} for the next point to be
+considered the starting point of a new cluster. Only supply a
+value when you really know what you are doing! Default = NULL.}
 
 \item{silent}{Determines whether or not warning messages shall be
 displayed and results shall be reported. Default = TRUE.}

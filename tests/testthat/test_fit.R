@@ -54,6 +54,12 @@ test_that( "fit.gev's actual fitting works", {
   expect_equal( as.numeric(  x.gumbel.fit$par ),
                c( 11.53103449, 1.40410971, 0.00000000 ) )
 })
+test_that( "fit.gev can handle the blocking", {
+  expect_equal( as.numeric(
+      fit.gev( climex::anomalies( temp.potsdam ),
+              blocking = TRUE )$par ),
+      c( 11.727058700107, 1.429260028751, -0.260793037231 ) )
+})
 test_that( "the handing over of initial parameters works", {
   expect_equal( as.numeric(
       climex::fit.gev( x.block,
@@ -134,6 +140,14 @@ test_that( "fit.gpd's actual fitting works", {
                tolerance = 5E-4 )
   expect_equal( as.numeric( x.exp.fit$par ),
                c( 3.04073223, 0.00000000 ),
+               tolerance = 5E-4 )
+})
+test_that( "fit.gpd can apply the threshold", {
+  expect_equal(
+      as.numeric( fit.gpd( temp.potsdam,
+                          threshold = 29, decluster = TRUE,
+                          thresholding = TRUE )$par ),
+               c( 4.282747985860, -0.423731344794 ),
                tolerance = 5E-4 )
 })
 test_that( "the handing over of initial parameters works", {

@@ -4,8 +4,8 @@
 \alias{threshold.list}
 \title{Apply a threshold to a time series}
 \usage{
-\method{threshold}{list}(x, threshold, decluster = TRUE, na.rm = TRUE,
-  mc.cores = NULL)
+\method{threshold}{list}(x, threshold, decluster = TRUE,
+  cluster.distance = NULL, na.rm = TRUE, mc.cores = NULL)
 }
 \arguments{
 \item{x}{A list of objects of class \pkg{xts}.}
@@ -16,6 +16,11 @@ data.}
 \item{decluster}{Logical flag indicating whether or not to
 decluster the obtained exceedances over the
 \strong{threshold}. Default = TRUE.}
+
+\item{cluster.distance}{Numerical value specifying how many points
+have to be below the \strong{threshold} for the next point to be
+considered the starting point of a new cluster. Only supply a
+value when you really know what you are doing! Default = NULL.}
 
 \item{na.rm}{Logical flag indicating whether to remove all NA
 values from the time series (removed points in clusters). For
