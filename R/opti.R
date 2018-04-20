@@ -115,12 +115,22 @@
 ##'   levels. Default = 100.
 ##' @param return.period Quantiles at which the return level is going
 ##'   to be evaluated. Class "numeric". Default = 100.
+##' @param extreme.type String specifying whether the maxima ("max")
+##'   or minima ("min") of each block should be fitted. If the minima
+##'   are chosen, the input \strong{x} has to be either a time series
+##'   of block minima with the 
+##'   \strong{blocking} argument set to zero or the raw series and
+##'   fit.gev function will handle the extraction of the minima
+##'   internally. For the minima the resulting extremes are multiplied
+##'   by -1 and fitted using a default GEV distribution. The resulting
+##'   scale and shape parameter are handed back without any additional
+##'   changes and the location parameter and return levels are
+##'   multiplied by -1. Default = "max".
 ##' @param blocking Logical value indicating whether or not the input
 ##'   data \strong{x} should be split into blocks of equal size using
 ##'   the \code{\link{block}} function and only the maxima or minima
 ##'   should be extracted. If any of the arguments
-##'   \strong{block.number}, \strong{block.length}, or
-##'   \strong{block.mode} is provided
+##'   \strong{block.number} or \strong{block.length} is provided
 ##'   with a non NULL value, the blocking will be performed regardless
 ##'   of the value of the \strong{blocking} argument. If, on the other
 ##'   hand, \strong{blocking} is TRUE but neither
@@ -132,9 +142,6 @@
 ##' @param block.length Length of the blocks. For the sake of
 ##'   simplicity the last block is not forced to match the length of
 ##'   the other plots. Default = NULL.
-##' @param block.mode This parameter determines if the maximum "max"
-##'   or the minimum "min" of a block shall be returned. Default:
-##'   "max". 
 ##' @param silent Determines whether or not warning messages shall be
 ##' displayed and results shall be reported. Default = TRUE.
 ##' @param mc.cores A numerical input specifying the number of cores
@@ -187,9 +194,10 @@ fit.gev <- function(  x, initial = NULL,
                                          "none" ), 
                     monte.carlo.sample.size = 100,
                     bootstrap.sample.size = 100,
-                    return.period = 100, blocking = FALSE,
+                    return.period = 100,
+                    extreme.type = c( "max", "min" ),
+                    blocking = FALSE,
                     block.number = NULL, block.length = NULL,
-                    block.mode = NULL, 
                     silent = TRUE, mc.cores = NULL, ... ){
   UseMethod( "fit.gev" )
 }
@@ -309,12 +317,22 @@ fit.gev <- function(  x, initial = NULL,
 ##'   levels. Default = 100.
 ##' @param return.period Quantiles at which the return level is going
 ##'   to be evaluated. Class "numeric". Default = 100.
+##' @param extreme.type String specifying whether the maxima ("max")
+##'   or minima ("min") of each block should be fitted. If the minima
+##'   are chosen, the input \strong{x} has to be either a time series
+##'   of block minima with the 
+##'   \strong{blocking} argument set to zero or the raw series and
+##'   fit.gev function will handle the extraction of the minima
+##'   internally. For the minima the resulting extremes are multiplied
+##'   by -1 and fitted using a default GEV distribution. The resulting
+##'   scale and shape parameter are handed back without any additional
+##'   changes and the location parameter and return levels are
+##'   multiplied by -1. Default = "max".
 ##' @param blocking Logical value indicating whether or not the input
 ##'   data \strong{x} should be split into blocks of equal size using
 ##'   the \code{\link{block}} function and only the maxima or minima
 ##'   should be extracted. If any of the arguments
-##'   \strong{block.number}, \strong{block.length}, or
-##'   \strong{block.mode} is provided
+##'   \strong{block.number} or \strong{block.length} is provided
 ##'   with a non NULL value, the blocking will be performed regardless
 ##'   of the value of the \strong{blocking} argument. If, on the other
 ##'   hand, \strong{blocking} is TRUE but neither
@@ -326,9 +344,6 @@ fit.gev <- function(  x, initial = NULL,
 ##' @param block.length Length of the blocks. For the sake of
 ##'   simplicity the last block is not forced to match the length of
 ##'   the other plots. Default = NULL.
-##' @param block.mode This parameter determines if the maximum "max"
-##'   or the minimum "min" of a block shall be returned. Default:
-##'   "max". 
 ##' @param silent Determines whether or not warning messages shall be
 ##' displayed and results shall be reported. Default = TRUE.
 ##' @param mc.cores A numerical input specifying the number of cores
@@ -385,9 +400,10 @@ fit.gev.list <- function(  x, initial = NULL,
                                               "bootstrap", "none" ), 
                          monte.carlo.sample.size = 100,
                          bootstrap.sample.size = 100,
-                         return.period = 100, blocking = FALSE,
+                         return.period = 100,
+                         extreme.type = c( "max", "min" ),
+                         blocking = FALSE,
                          block.number = NULL, block.length = NULL,
-                         block.mode = NULL, 
                          silent = TRUE, mc.cores = NULL, ... ){
   if ( !is.null( mc.cores ) ){
     return( mclapply( x, fit.gev, initial = initial,
@@ -398,10 +414,10 @@ fit.gev.list <- function(  x, initial = NULL,
                        monte.carlo.sample.size,
                      bootstrap.sample.size = bootstrap.sample.size,
                      return.period = return.period,
+                     extreme.type = extreme.type,
                      blocking = blocking,
                      block.number = block.number,
                      block.length = block.length,
-                     block.mode = block.mode,
                      silent = silent,
                      mc.cores = mc.cores, ... ) )
   } else {
@@ -411,11 +427,11 @@ fit.gev.list <- function(  x, initial = NULL,
                    error.estimation = error.estimation,
                    monte.carlo.sample.size = monte.carlo.sample.size,
                    bootstrap.sample.size = bootstrap.sample.size,
-                   return.period = return.period, 
+                   return.period = return.period,
+                   extreme.type = extreme.type,
                    blocking = blocking,
                    block.number = block.number,
                    block.length = block.length,
-                   block.mode = block.mode,
                    silent = silent,
                    mc.cores = mc.cores, ... ) )
   }
@@ -533,12 +549,22 @@ fit.gev.list <- function(  x, initial = NULL,
 ##'   levels. Default = 100.
 ##' @param return.period Quantiles at which the return level is going
 ##'   to be evaluated. Class "numeric". Default = 100.
+##' @param extreme.type String specifying whether the maxima ("max")
+##'   or minima ("min") of each block should be fitted. If the minima
+##'   are chosen, the input \strong{x} has to be either a time series
+##'   of block minima with the 
+##'   \strong{blocking} argument set to zero or the raw series and
+##'   fit.gev function will handle the extraction of the minima
+##'   internally. For the minima the resulting extremes are multiplied
+##'   by -1 and fitted using a default GEV distribution. The resulting
+##'   scale and shape parameter are handed back without any additional
+##'   changes and the location parameter and return levels are
+##'   multiplied by -1. Default = "max".
 ##' @param blocking Logical value indicating whether or not the input
 ##'   data \strong{x} should be split into blocks of equal size using
 ##'   the \code{\link{block}} function and only the maxima or minima
 ##'   should be extracted. If any of the arguments
-##'   \strong{block.number}, \strong{block.length}, or
-##'   \strong{block.mode} is provided
+##'   \strong{block.number} or \strong{block.length} is provided
 ##'   with a non NULL value, the blocking will be performed regardless
 ##'   of the value of the \strong{blocking} argument. If, on the other
 ##'   hand, \strong{blocking} is TRUE but neither
@@ -550,9 +576,6 @@ fit.gev.list <- function(  x, initial = NULL,
 ##' @param block.length Length of the blocks. For the sake of
 ##'   simplicity the last block is not forced to match the length of
 ##'   the other plots. Default = NULL.
-##' @param block.mode This parameter determines if the maximum "max"
-##'   or the minimum "min" of a block shall be returned. Default:
-##'   "max". 
 ##' @param silent Determines whether or not warning messages shall be
 ##' displayed and results shall be reported. Default = TRUE.
 ##' @param mc.cores A numerical input specifying the number of cores
@@ -615,23 +638,31 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
                                            bootstrap.sample.size =
                                              100,
                                            return.period = 100,
+                                           extreme.type =
+                                             c( "max", "min" ),
                                            blocking = FALSE,
                                            block.number = NULL,
                                            block.length = NULL,
-                                           block.mode = NULL,
                                            silent = TRUE,
                                            mc.cores = NULL, ... ){
+  ## Whether to handle the block maxima or minima.
+  if ( missing( extreme.type ) ){
+    extreme.type <- "max"
+  } else {
+    extreme.type <- match.arg( extreme.type )
+  }
   ## Blocking the data provided by the user
   if ( blocking || !is.null( block.number ) ||
-       !is.null( block.length ) || !is.null( block.mode ) ){
-    ## Initialize the parameters with the defaults of the blocking
-    ## function
-    if ( is.null( block.mode ) ){
-      block.mode <- "max"
-    }
+       !is.null( block.length ) ){
     x <- block( x = x, block.number = block.number,
-               block.length = block.length, block.mode = block.mode,
+               block.length = block.length,
+               extreme.type = extreme.type,
                mc.cores = NULL )
+  }
+  ## If the block minima should be fitted by the algorithm, the time
+  ## series of the extreme events has to be multiplied by -1
+  if ( extreme.type == "min" ){
+    x <- x* ( -1 )
   }
   ## Default values if no initial parameters were supplied
   if ( is.null( initial ) )
@@ -690,7 +721,7 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
     ## beginning of the optimization.
     suppressWarnings(
         res.alabama <- auglag(
-            par = initial[1:2], fn =  function( parameters, ... ){
+            par = initial[ 1 : 2 ], fn =  function( parameters, ... ){
               likelihood( c( as.numeric( parameters ), 0 ), ... ) },
             gr = function( parameters, ... ){
               likelihood.gradient(
@@ -725,7 +756,11 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
                           monte.carlo.sample.size,
                         bootstrap.sample.size =
                           bootstrap.sample.size,
-                        error.estimation = error.estimation ) )
+                        error.estimation = error.estimation,
+                        extreme.type = extreme.type,
+                        blocking = blocking,
+                        block.number = block.number,
+                        block.length = block.length ) )
   ## Calculate the estimate of the fitting error of the GEV parameters
   ## and the return levels.
   if ( error.estimation == "none" ){
@@ -746,6 +781,8 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
               gradient.function = gradient.function,
               error.estimation = "none",
               return.period = return.period,
+              extreme.type = "max",
+              blocking = FALSE,
               silent = silent ) } )
     ## Calculate the standard errors of all the fitted return
     ## levels.
@@ -829,7 +866,8 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
                 function( zz )
                   climex::return.level(
                               zz,
-                              return.period = return.period[ rr ]
+                              return.period = return.period[ rr ],
+                              extreme.type = "max"
                           )$return.level ) ) ) ) ) )
       }
       errors <- as.numeric( errors )
@@ -875,11 +913,18 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
   res.optim$return.level <- Reduce(
       c, lapply( return.period,
                 function( yy )
-                  climex::return.level( res.optim, yy
+                  climex::return.level( res.optim, yy,
+                                       extreme.type = "max"
                                        )$return.level ) )
   names( res.optim$return.level ) <-
     paste0( return.period, ".rlevel" )
   res.optim$x <- x
+  ## Converting the results to represent those of the block minima
+  if ( extreme.type == "min" ){
+    res.optim$x <- -1* res.optim$x
+    res.optim$par[ 1 ] <- res.optim$par[ 1 ]* -1
+    res.optim$return.level <- res.optim$return.level* -1
+  }
   if ( !silent )
     summary( res.optim )
   return( res.optim )
@@ -1020,6 +1065,17 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
 ##'   exceedance. Else an estimate based on the mean number of
 ##'   exceedances in the available years (time stamps of the class
 ##'   \pkg{xts} time series) will be used. Default = NULL. 
+##' @param extreme.type String specifying whether the exceedances over
+##'   a very high ("max") or low ("min") threshold should be
+##'   fitted. If the low one is chosen, the input \strong{x} has to be
+##'   either a time series of all points below the \strong{threshold}
+##'   with the \strong{threshold} subtracted or the raw series and
+##'   fit.gpd function will handle the extraction of the minima
+##'   internally. For the minima the resulting extremes are multiplied
+##'   by -1 and fitted using a default GP distribution. The resulting
+##'   scale and shape parameter are handed back without any additional
+##'   changes and the return levels are multiplied by -1. Default =
+##'   "max".
 ##' @param thresholding Logical value. If TRUE, the numerical value
 ##'   provided with \strong{threshold} will be used in the
 ##'   \code{\link{threshold}} function to extract only the exceedances
@@ -1094,6 +1150,7 @@ fit.gpd <- function(  x, initial = NULL, threshold = NULL,
                     bootstrap.sample.size = 100,
                     return.period = 100,
                     total.length = NULL,
+                    extreme.type = c( "min", "max" ),
                     thresholding = FALSE,
                     decluster = NULL, cluster.distance = NULL,
                     silent = TRUE, mc.cores = NULL, ... ){
@@ -1234,6 +1291,17 @@ fit.gpd <- function(  x, initial = NULL, threshold = NULL,
 ##'   exceedance. Else an estimate based on the mean number of
 ##'   exceedances in the available years (time stamps of the class
 ##'   \pkg{xts} time series) will be used. Default = NULL. 
+##' @param extreme.type String specifying whether the exceedances over
+##'   a very high ("max") or low ("min") threshold should be
+##'   fitted. If the low one is chosen, the input \strong{x} has to be
+##'   either a time series of all points below the \strong{threshold}
+##'   with the \strong{threshold} subtracted or the raw series and
+##'   fit.gpd function will handle the extraction of the minima
+##'   internally. For the minima the resulting extremes are multiplied
+##'   by -1 and fitted using a default GP distribution. The resulting
+##'   scale and shape parameter are handed back without any additional
+##'   changes and the return levels are multiplied by -1. Default =
+##'   "max".
 ##' @param thresholding Logical value. If TRUE, the numerical value
 ##'   provided with \strong{threshold} will be used in the
 ##'   \code{\link{threshold}} function to extract only the exceedances
@@ -1306,8 +1374,9 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
                                               "bootstrap", "none" ), 
                          monte.carlo.sample.size = 100,
                          bootstrap.sample.size = 100,
-                         return.period = 100,
-                         total.length = NULL, thresholding = FALSE,
+                         return.period = 100, total.length = NULL,
+                         extreme.type = c( "max", "min" ),
+                         thresholding = FALSE,
                          decluster = NULL, cluster.distance = NULL,
                          silent = TRUE, mc.cores = NULL, ... ){
   if ( !is.null( mc.cores ) ){
@@ -1319,6 +1388,7 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
                      bootstrap.sample.size = bootstrap.sample.size,
                      return.period = return.period,
                      total.length = total.length,
+                     extreme.type = extreme.type,
                      thresholding = thresholding,
                      decluster = decluster,
                      cluster.distance = cluster.distance,
@@ -1333,6 +1403,7 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
                    bootstrap.sample.size = bootstrap.sample.size,
                    return.period = return.period,
                    total.length = total.length,
+                   extreme.type = extreme.type,
                    thresholding = thresholding,
                    decluster = decluster,
                    cluster.distance = cluster.distance,
@@ -1472,6 +1543,17 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
 ##'   exceedance. Else an estimate based on the mean number of
 ##'   exceedances in the available years (time stamps of the class
 ##'   \pkg{xts} time series) will be used. Default = NULL. 
+##' @param extreme.type String specifying whether the exceedances over
+##'   a very high ("max") or low ("min") threshold should be
+##'   fitted. If the low one is chosen, the input \strong{x} has to be
+##'   either a time series of all points below the \strong{threshold}
+##'   with the \strong{threshold} subtracted or the raw series and
+##'   fit.gpd function will handle the extraction of the minima
+##'   internally. For the minima the resulting extremes are multiplied
+##'   by -1 and fitted using a default GP distribution. The resulting
+##'   scale and shape parameter are handed back without any additional
+##'   changes and the return levels are multiplied by -1. Default =
+##'   "max".
 ##' @param thresholding Logical value. If TRUE, the numerical value
 ##'   provided with \strong{threshold} will be used in the
 ##'   \code{\link{threshold}} function to extract only the exceedances
@@ -1552,11 +1634,20 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
                                              100, 
                                            return.period = 100,
                                            total.length = NULL,
+                                           extreme.type =
+                                             c( "max", "min" ),
                                            thresholding = FALSE,
                                            decluster = NULL,
                                            cluster.distance = NULL,
                                            silent = TRUE,
                                            mc.cores = NULL, ... ){
+  ## Whether to handle the exceedances above a very high threshold or
+  ## those events below a very low one.
+  if ( missing( extreme.type ) ){
+    extreme.type <- "max"
+  } else {
+    extreme.type <- match.arg( extreme.type )
+  }
   ## Applying a threshold to the data and extract just the exceedances
   if ( thresholding || !is.null( cluster.distance ) ||
        !is.null( decluster ) ){
@@ -1569,7 +1660,13 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
     x <- threshold( x = x, threshold = threshold,
                    decluster = decluster,
                    cluster.distance = cluster.distance,
+                   extreme.type = extreme.type,
                    mc.cores = NULL )
+  }
+  ## Flipping the series in order to fit all values below a very low
+  ## threshold. Flipped they are handled like an ordinary GPD fit.
+  if ( extreme.type == "min" ){
+    x <- x* -1
   }
   ## Default values if no initial parameters are supplied
   if ( is.null( initial ) )
@@ -1664,6 +1761,10 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
                           monte.carlo.sample.size,
                         error.estimation = error.estimation,
                         total.length = total.length,
+                        extreme.type = extreme.type,
+                        thresholding = thresholding,
+                        decluster = decluster,
+                        cluster.distance = cluster.distance,
                         return.period = return.period ) )
   ## For an adequate calculation of the return level
   ## Error estimation
@@ -1686,6 +1787,8 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
               error.estimation = "none",
               return.period = return.period,
               total.length = total.length,
+              extreme.type = "max",
+              thresholding = FALSE,
               silent = silent ) } )
     ## Calculate the standard errors of all the fitted return
     ## levels.
@@ -1771,7 +1874,8 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
                                             total.length =
                                               total.length,
                                             thresholded.time.series =
-                                              x, 
+                                              x,
+                                            extreme.type = "max",
                                             silent = silent
                                         )$return.level ) ) ) ) )
       }
@@ -1864,7 +1968,14 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
                              error.estimation = "none",
                              model = "gpd", threshold = threshold,
                              total.length = total.length,
+                             extreme.type = "max",
                              silent = silent )$return.level ) )
+  ## Converting the results to represent the extremes below a very
+  ## low threshold.
+  if ( extreme.type == "min" ){
+    res.optim$x <- res$optim$x * -1
+    res.optim$return.level <- res.optim$return.level * -1
+  }
   names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
   return( res.optim )
 }

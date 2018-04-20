@@ -22,8 +22,8 @@
 ##' @param block.length Length of the blocks. For the sake of
 ##'   simplicity the last block is not forced to match the length of
 ##'   the other plots. Default = NULL.
-##' @param block.mode This parameter determines if the maximum "max"
-##'   or the minimum "min" of a block shall be returned. Default:
+##' @param extreme.type String specifying whether the maxima ("max")
+##'   or minima ("min") of each block should be extracted. Default:
 ##'   "max". 
 ##' @param mc.cores A numerical input specifying the number of cores
 ##'   to use for the multi core application of the function (see
@@ -48,7 +48,7 @@
 ##' @examples
 ##'   block( temp.potsdam )
 block <- function( x, block.number = NULL, block.length = NULL,
-                  block.mode = c( "max", "min" ),
+                  extreme.type = c( "max", "min" ),
                   mc.cores = NULL ){
   UseMethod( "block" )
 }
@@ -74,9 +74,9 @@ block <- function( x, block.number = NULL, block.length = NULL,
 ##' @param block.length Length of the blocks. For the sake of
 ##'   simplicity the last block is not forced to match the length of
 ##'   the other plots. Default = NULL.
-##' @param block.mode This parameter determines if the maximum "max"
-##'   or the minimum "min" of a block shall be returned. Default:
-##'   "max".
+##' @param extreme.type String specifying whether the maxima ("max")
+##'   or minima ("min") of each block should be extracted. Default:
+##'   "max". 
 ##' @param mc.cores A numerical input specifying the number of cores
 ##'   to use for the multi core application of the function (see
 ##'   \code{\link[parallel]{detectCores}}). This functionality is only
@@ -100,20 +100,20 @@ block <- function( x, block.number = NULL, block.length = NULL,
 ##' @examples
 ##'   block( temp.potsdam )
 block.list <- function( x, block.number = NULL, block.length = NULL,
-                       block.mode = c( "max", "min" ),
+                       extreme.type = c( "max", "min" ),
                        mc.cores = NULL ){
   if ( !is.null( mc.cores ) ){
     return( mclapply( x, function( xx )
       block( xx, block.number = round( length( xx )/ 50 ),
             block.length = block.length,
-            block.mode = block.mode,
+            extreme.type = extreme.type,
             mc.cores = mc.cores ),
       mc.cores = mc.cores ) )
   } else {
     return( lapply( x, function( xx )
       block( xx, block.number = round( length( xx )/ 50 ),
             block.length = block.length,
-            block.mode = block.mode,
+            extreme.type = extreme.type,
             mc.cores = mc.cores ) ) )
   }
 }
@@ -136,9 +136,9 @@ block.list <- function( x, block.number = NULL, block.length = NULL,
 ##' @param block.length Length of the blocks. For the sake of
 ##'   simplicity the last block is not forced to match the length of
 ##'   the other plots. Default = NULL.
-##' @param block.mode This parameter determines if the maximum "max"
-##'   or the minimum "min" of a block shall be returned. Default:
-##'   "max".
+##' @param extreme.type String specifying whether the maxima ("max")
+##'   or minima ("min") of each block should be extracted. Default:
+##'   "max". 
 ##' @param mc.cores A numerical input specifying the number of cores
 ##'   to use for the multi core application of the function (see
 ##'   \code{\link[parallel]{detectCores}}). This functionality is only
@@ -164,7 +164,7 @@ block.list <- function( x, block.number = NULL, block.length = NULL,
 block.xts <- block.default <- function( x,
                                        block.number = NULL,
                                        block.length = NULL,
-                                       block.mode = c( "max", "min" ),
+                                       extreme.type = c( "max", "min" ),
                                        mc.cores = NULL ){
   if ( !all( class( x ) == c( "xts", "zoo" ) ) )
     stop( "The block.default function works to input of class 'xts' only!" )
@@ -185,9 +185,9 @@ block.xts <- block.default <- function( x,
   } else {
     separation.mode <- "years"
   }
-  if ( missing( block.mode ) )
-    block.mode <- "max"
-  block.mode <- match.arg( block.mode )
+  if ( missing( extreme.type ) )
+    extreme.type <- "max"
+  extreme.type <- match.arg( extreme.type )
   ## according to the desired block.length the data is now separated
   ## into snippets and those are saved inside a list
   if ( separation.mode == "years" ){
@@ -204,7 +204,7 @@ block.xts <- block.default <- function( x,
   }
   x.blocked <- split( x.index, x.index$index )
   ## Extract the maxima or minima from the blocked data
-  if ( block.mode == "max" ){
+  if ( extreme.type == "max" ){
     x.extremes <- Reduce(
         rbind, lapply( x.blocked, function( xx ){
           data.frame(
@@ -635,6 +635,10 @@ extremal.index <- function( x, threshold, silent = FALSE ){
 ##'   have to be below the \strong{threshold} for the next point to be
 ##'   considered the starting point of a new cluster. Only supply a
 ##'   value when you really know what you are doing! Default = NULL.
+##' @param extreme.type String specifying whether the events below a
+##'   very low ("min") or above a very high ("max") \strong{threshold}
+##'   should be extracted. The \strong{threshold} will be subtracted
+##'   from the data in both cases. Default: "max". 
 ##' @param na.rm Logical flag indicating whether to remove all NA
 ##'   values from the time series (removed points in clusters). For
 ##'   important steps, like calculating the \emph{Lmoments} of a time
@@ -654,7 +658,8 @@ extremal.index <- function( x, threshold, silent = FALSE ){
 ##' @return Same class as the input
 ##' @author Philipp Mueller
 threshold <- function( x, threshold, decluster = TRUE,
-                      cluster.distance = NULL, na.rm = TRUE,
+                      cluster.distance = NULL,
+                      extreme.type = c( "max", "min" ), na.rm = TRUE,
                       mc.cores = TRUE ){
   UseMethod( "threshold" )
 }
@@ -681,6 +686,10 @@ threshold <- function( x, threshold, decluster = TRUE,
 ##'   have to be below the \strong{threshold} for the next point to be
 ##'   considered the starting point of a new cluster. Only supply a
 ##'   value when you really know what you are doing! Default = NULL.
+##' @param extreme.type String specifying whether the events below a
+##'   very low ("min") or above a very high ("max") \strong{threshold}
+##'   should be extracted. The \strong{threshold} will be subtracted
+##'   from the data in both cases. Default: "max". 
 ##' @param na.rm Logical flag indicating whether to remove all NA
 ##'   values from the time series (removed points in clusters). For
 ##'   important steps, like calculating the \emph{Lmoments} of a time
@@ -701,16 +710,19 @@ threshold <- function( x, threshold, decluster = TRUE,
 ##' @author Philipp Mueller
 threshold.list <- function( x, threshold, decluster = TRUE,
                            cluster.distance = NULL,
+                           extreme.type = c( "max", "min" ),
                            na.rm = TRUE, mc.cores = NULL ){
   if ( !is.null( mc.cores ) ){
     return( lapply( x, threshold.xts, threshold = threshold,
                    decluster = decluster,
                    cluster.distance = cluster.distance,
+                   extreme.type = extreme.type,
                    na.rm = na.rm, mc.cores = mc.cores ) )
   } else {
     return( lapply( x, threshold.xts, threshold = threshold,
                    decluster = decluster,
                    cluster.distance = cluster.distance,
+                   extreme.type = extreme.type,
                    na.rm = na.rm, mc.cores = mc.cores ) )
   }
 }
@@ -737,6 +749,10 @@ threshold.list <- function( x, threshold, decluster = TRUE,
 ##'   have to be below the \strong{threshold} for the next point to be
 ##'   considered the starting point of a new cluster. Only supply a
 ##'   value when you really know what you are doing! Default = NULL.
+##' @param extreme.type String specifying whether the events below a
+##'   very low ("min") or above a very high ("max") \strong{threshold}
+##'   should be extracted. The \strong{threshold} will be subtracted
+##'   from the data in both cases. Default: "max". 
 ##' @param na.rm Logical flag indicating whether to remove all NA
 ##'   values from the time series (removed points in clusters). For
 ##'   important steps, like calculating the \emph{Lmoments} of a time
@@ -757,7 +773,10 @@ threshold.list <- function( x, threshold, decluster = TRUE,
 ##' @author Philipp Mueller
 threshold.xts <- threshold.default <- function( x, threshold,
                                                decluster = TRUE,
-                                               cluster.distance = NULL,
+                                               cluster.distance =
+                                                 NULL,
+                                               extreme.type =
+                                                 c( "max", "min" ),
                                                na.rm = TRUE,
                                                mc.cores = NULL ){  
   if ( !all( class( x ) == c( "xts", "zoo" ) ) )
@@ -766,11 +785,28 @@ threshold.xts <- threshold.default <- function( x, threshold,
     stop( "Please provide a time series to apply the threshold to!" )
   if ( missing( threshold ) )
     stop( "Please provide a threshold to be applied to the time series!" )
+  ## Whether to handle the exceedances above a very high threshold or
+  ## those events below a very low one.
+  if ( missing( extreme.type ) ){
+    extreme.type <- "max"
+  } else {
+    extreme.type <- match.arg( extreme.type )
+  }
+  ## If one deals with the events below a low threshold, the series
+  ## will be inverted.
+  if ( extreme.type == "min" ){
+    x <- x * -1
+    threshold <- threshold * -1
+  }
   ## declustering of the data
   if ( decluster ){
     x <- climex::decluster( x, threshold )
   }
   x.threshold <- x[ x > threshold ] - threshold
+  ## Flipping back the time series
+  if ( extreme.type == "min" ){
+    x.threshold <- x.threshold * -1
+  }
   ## removing the NA
   if ( na.rm )
     x.threshold <- stats::na.omit( x.threshold )        
@@ -871,6 +907,9 @@ threshold.xts <- threshold.default <- function( x, threshold,
 ##'   return level for numerical input and the GPD model from m-th
 ##'   observation return level to annual return level. If omitted the
 ##'   return level will be per observation. Default = NULL.
+##' @param extreme.type String indicating whether to calculate the
+##'   quantiles at the right ("max") or left ("min") side of the PDF
+##'   of the series. Default = "max".
 ##' @param silent Throws an warning whenever the "gpd" model is used
 ##'   and the \strong{thresholded.time.series} is not supplied. Since
 ##'   this can be annoying one can also disable it. Default = FALSE.
@@ -905,6 +944,7 @@ return.level <- function( x, return.period = 100,
                          bootstrap.sample.size = 100,
                          threshold = NULL, total.length = NULL,
                          thresholded.time.series = NULL,
+                         extreme.type = c( "max", "min" ),
                          silent = FALSE, mc.cores = NULL ){
   UseMethod( "return.level" )
 }
@@ -1004,6 +1044,9 @@ return.level <- function( x, return.period = 100,
 ##'   return level for numerical input and the GPD model from m-th
 ##'   observation return level to annual return level. If omitted the
 ##'   return level will be per observation. Default = NULL.
+##' @param extreme.type String indicating whether to calculate the
+##'   quantiles at the right ("max") or left ("min") side of the PDF
+##'   of the series. Default = "max".
 ##' @param silent Throws an warning whenever the "gpd" model is used
 ##'   and the \strong{thresholded.time.series} is not supplied. Since
 ##'   this can be annoying one can also disable it. Default = FALSE.
@@ -1038,6 +1081,7 @@ return.level.list <- function( x, return.period = 100,
                               bootstrap.sample.size = 100,
                               threshold = NULL, total.length = NULL,
                               thresholded.time.series = NULL,
+                              extreme.type = c( "max", "min" ),
                               silent = FALSE, mc.cores = NULL ){
   ## Since the objects returned by the fitting functions are of class
   ## c( "list", "climex.fit.gXX" ), an exception is needed to hand
@@ -1050,6 +1094,7 @@ return.level.list <- function( x, return.period = 100,
         bootstrap.sample.size = bootstrap.sample.size,
         threshold = threshold, total.length = total.length,
         thresholded.time.series = thresholded.time.series,
+        extreme.type = extreme.type,
         silent = silent, mc.cores = mc.cores )
   } else if ( any( class( x ) == "climex.fit.gpd" ) ){
     x.result <- return.level.climex.fit.gpd( 
@@ -1059,6 +1104,7 @@ return.level.list <- function( x, return.period = 100,
         bootstrap.sample.size = bootstrap.sample.size,
         threshold = threshold, total.length = total.length,
         thresholded.time.series = thresholded.time.series,
+        extreme.type = extreme.type,
         silent = silent, mc.cores = mc.cores )
   } else if ( !is.null( mc.cores ) ){
     x.result <- mclapply(
@@ -1068,6 +1114,7 @@ return.level.list <- function( x, return.period = 100,
         bootstrap.sample.size = bootstrap.sample.size,
         threshold = threshold, total.length = total.length,
         thresholded.time.series = thresholded.time.series,
+        extreme.type = extreme.type,
         silent = silent, mc.cores = mc.cores )
     } else {
     x.result <- lapply(
@@ -1077,6 +1124,7 @@ return.level.list <- function( x, return.period = 100,
         bootstrap.sample.size = bootstrap.sample.size,
         threshold = threshold, total.length = total.length,
         thresholded.time.series = thresholded.time.series,
+        extreme.type = extreme.type,
         silent = silent, mc.cores = mc.cores )
   }
   return( x.result )
@@ -1173,6 +1221,9 @@ return.level.list <- function( x, return.period = 100,
 ##'   return level for numerical input and the GPD model from m-th
 ##'   observation return level to annual return level. If omitted the
 ##'   return level will be per observation. Default = NULL.
+##' @param extreme.type String indicating whether to calculate the
+##'   quantiles at the right ("max") or left ("min") side of the PDF
+##'   of the series. Default = "max".
 ##' @param silent Throws an warning whenever the "gpd" model is used
 ##'   and the \strong{thresholded.time.series} is not supplied. Since
 ##'   this can be annoying one can also disable it. Default = FALSE.
@@ -1208,13 +1259,32 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
              bootstrap.sample.size = 100,
              threshold = NULL, total.length = NULL,
              thresholded.time.series = NULL,
+             extreme.type = c( "max", "min" ),
              silent = FALSE, mc.cores = NULL ){
+      ## Whether to handle the extreme events at the right or left
+      ## side of the PDF of the GEV or GP distribution.
+      if ( missing( extreme.type ) ){
+        extreme.type <- "max"
+      } else {
+        extreme.type <- match.arg( extreme.type )
+      }
       if ( any( class( x ) == "climex.fit.gev" ) ){
         model <- "gev"
-        return.levels <-
-          Reduce( c, lapply( return.period, function( yy )
-            as.numeric( rlevd( yy, x$par[ 1 ], x$par[ 2 ], x$par[ 3 ],
-                              model = "gev", silent = silent ) ) ) )
+        ## The location parameter and the time series itself have to
+        ## be inverted when dealing with the block minima
+        if ( extreme.type == "min" ){
+          return.levels <-
+            Reduce( c, lapply( return.period, function( yy )
+              as.numeric( rlevd( yy* -1, x$par[ 1 ]* -1, x$par[ 2 ],
+                                x$par[ 3 ], model = "gev",
+                                silent = silent ) ) ) )* -1
+        } else {
+          return.levels <-
+            Reduce( c, lapply( return.period, function( yy )
+              as.numeric( rlevd( yy, x$par[ 1 ], x$par[ 2 ],
+                                x$par[ 3 ], model = "gev",
+                                silent = silent ) ) ) )
+        }
       } else if ( any( class( x ) == "climex.fit.gpd" ) ){
         model <- "gpd"
         if ( !is.null( total.length ) ){
@@ -1259,11 +1329,22 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
         ## will be overwritten
         if ( !is.null( threshold ) )
           x$threshold <- threshold
-        return.levels <- Reduce( c, lapply( m, function( yy )
-          as.numeric( rlevd( yy, scale = x$par[ 1 ],
-                            shape = x$par[ 2 ],
-                            model = "gpd", threshold = x$threshold,
-                            silent = silent ) ) ) )
+        ## The time series and threshold itself have to be inverted
+        ## when dealing with all events below a certain threshold.
+        if ( extreme.type == "min" ){
+          return.levels <- Reduce( c, lapply( m, function( yy )
+            as.numeric( rlevd( yy* -1, scale = x$par[ 1 ],
+                              shape = x$par[ 2 ],
+                              model = "gpd",
+                              threshold = x$threshold* -1,
+                              silent = silent ) ) ) )* -1
+        } else {
+          return.levels <- Reduce( c, lapply( m, function( yy )
+            as.numeric( rlevd( yy, scale = x$par[ 1 ],
+                              shape = x$par[ 2 ],
+                              model = "gpd", threshold = x$threshold,
+                              silent = silent ) ) ) )
+        }
       } else if ( any( class( x ) == "numeric" ) ){
         ## Neither a object from fit.gev nor from fit.gpd but a
         ## numerical vector containing the GEV/GPD parameters was
@@ -1275,10 +1356,21 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
         } else
           stop( "return.level: the provided parameters and model argument do not belong to each other!" )
         if ( model == "gev" ){
-          return.levels <-
-            Reduce( c, lapply( return.period, function( yy )
-              as.numeric( rlevd( yy, x[ 1 ], x[ 2 ], x[ 3 ],
-                                model = "gev" ) ) ) )
+          ## The location parameter and the time series itself have to
+          ## be inverted when dealing with the block minima
+          if ( extreme.type == "min" ){
+            return.levels <-
+              Reduce( c, lapply( return.period, function( yy )
+                as.numeric( rlevd( yy* -1, x[ 1 ]* -1, x[ 2 ],
+                                  x[ 3 ], model = "gev",
+                                  silent = silent ) ) ) )* -1
+          } else {
+            return.levels <-
+              Reduce( c, lapply( return.period, function( yy )
+                as.numeric( rlevd( yy, x[ 1 ], x[ 2 ],
+                                  x[ 3 ], model = "gev",
+                                  silent = silent ) ) ) )
+          }
         } else {
           if ( !is.null( thresholded.time.series ) ){
             if ( !is.null( total.length ) ){
@@ -1309,10 +1401,19 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
             m <- return.period
             zeta <- FALSE
           }
-          return.levels <- Reduce( c, lapply( m, function( mm )
-            as.numeric( rlevd( mm, scale = x[ 1 ], shape = x[ 2 ],
-                              model = "gpd", threshold = threshold,
-                              silent = silent ) ) ) )
+          if ( extreme.type == "min" ){
+            return.levels <- Reduce( c, lapply( m, function( yy )
+              as.numeric( rlevd( yy* -1, scale = x$par[ 1 ],
+                                shape = x$par[ 2 ],
+                                model = "gpd",
+                                threshold = x$threshold* -1,
+                                silent = silent ) ) ) )* -1
+          } else {
+            return.levels <- Reduce( c, lapply( m, function( yy )
+              as.numeric( rlevd( yy, scale = x[ 1 ], shape = x[ 2 ],
+                                model = "gpd", threshold = threshold,
+                                silent = silent ) ) ) )
+          }
         }
       } else {
         stop( "return.level is not implemented for this class of input values!" )
@@ -1350,6 +1451,7 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
                       error.estimation = "none",
                       return.period = return.period,
                       total.length = x$control$total.length,
+                      extreme.type = extreme.type,
                       silent = TRUE ) } )
         } else {
           fitted.list <-
@@ -1362,6 +1464,7 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
                       error.estimation = "none",
                       return.period = return.period,
                       total.length = x$control$total.length,
+                      extreme.type = extreme.type,
                       silent = TRUE ) } )
         }
         ## Calculate the standard errors of all the fitted return
@@ -1387,13 +1490,16 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
           ## hessian. It's way more save this way.
           if ( model == "gev" ){
             x$hessian <- fit.gev( x$x, initial = x$par,
+                                 extreme.type = extreme.type,
                                  error.estimation = "MLE" )$hessian
           } else {
-            if ( is.null( threshold ) )
+            if ( is.null( threshold ) ){
               threshold <- x$threshold
+            }
             x$hessian <- fit.gpd( x$x, initial = x$par,
                                  threshold = threshold,
                                  error.estimation = "MLE",
+                                 extreme.type = extreme.type,
                                  total.length = total.length )$hessian
           }
         }
@@ -1579,11 +1685,24 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
                    shape = parameter.estimate[ 2 ], silent = TRUE,
                    threshold = threshold, model = "gpd" ) )
         }
-        samples.fit <- lapply( samples.list, function( yy )
-          suppressWarnings(
-              stats::optim( likelihood.initials( yy, model = model ),
-                           likelihood, x = yy, method = "Nelder-Mead",
-                           model = model )$par ) )
+        if ( extreme.type == "min" ){
+          samples.fit <- lapply( samples.list, function( yy ){
+            yy <- yy* -1
+            aux <- suppressWarnings(
+                stats::optim( likelihood.initials( yy, model = model ),
+                             likelihood, x = yy, method = "Nelder-Mead",
+                             model = model )$par )
+            if ( length( aux ) == 3 ){
+              aux[ 1 ] <- aux* -1
+            }
+            return( aux ) } )
+        } else {
+          samples.fit <- lapply( samples.list, function( yy )
+            suppressWarnings(
+                stats::optim( likelihood.initials( yy, model = model ),
+                             likelihood, x = yy, method = "Nelder-Mead",
+                             model = model )$par ) )
+        }
         errors <- data.frame( a = 0 )
         if ( model == "gev" ){
           r.period <- return.period
@@ -1603,6 +1722,8 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
                                                       r.period[ rr ],
                                                     error.estimation =
                                                       "none",
+                                                    extreme.type =
+                                                      extreme.type,
                                                     silent = TRUE
                                                 )$return.level
                                   ) ) ) ) )

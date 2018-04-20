@@ -35,9 +35,9 @@ test_that( "block's block mode argument works", {
   expect_equal( max( block( temp.potsdam ) ), 38.6 )
   expect_equal( min( block( temp.potsdam ) ), 29.5 )
   expect_equal( max( block( temp.potsdam,
-                           block.mode = "min" ) ), 0 )
+                           extreme.type = "min" ) ), 0 )
   expect_equal( min( block( temp.potsdam,
-                           block.mode = "min" ) ), -16 )
+                           extreme.type = "min" ) ), -16 )
   
 })
 test_that( "block's block number argument works", {
