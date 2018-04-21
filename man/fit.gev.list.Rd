@@ -7,9 +7,9 @@
 \method{fit.gev}{list}(x, initial = NULL, likelihood.function = likelihood,
   gradient.function = likelihood.gradient, error.estimation = c("MLE", "MC",
   "bootstrap", "none"), monte.carlo.sample.size = 100,
-  bootstrap.sample.size = 100, return.period = 100, blocking = FALSE,
-  block.number = NULL, block.length = NULL, block.mode = NULL,
-  silent = TRUE, mc.cores = NULL, ...)
+  bootstrap.sample.size = 100, return.period = 100,
+  extreme.type = c("max", "min"), blocking = FALSE, block.number = NULL,
+  block.length = NULL, silent = TRUE, mc.cores = NULL, ...)
 }
 \arguments{
 \item{x}{A list of objects of class \pkg{xts}.
@@ -87,12 +87,23 @@ levels. Default = 100.}
 \item{return.period}{Quantiles at which the return level is going
 to be evaluated. Class "numeric". Default = 100.}
 
+\item{extreme.type}{String specifying whether the maxima ("max")
+or minima ("min") of each block should be fitted. If the minima
+are chosen, the input \strong{x} has to be either a time series
+of block minima with the 
+\strong{blocking} argument set to zero or the raw series and
+fit.gev function will handle the extraction of the minima
+internally. For the minima the resulting extremes are multiplied
+by -1 and fitted using a default GEV distribution. The resulting
+scale and shape parameter are handed back without any additional
+changes and the location parameter and return levels are
+multiplied by -1. Default = "max".}
+
 \item{blocking}{Logical value indicating whether or not the input
 data \strong{x} should be split into blocks of equal size using
 the \code{\link{block}} function and only the maxima or minima
 should be extracted. If any of the arguments
-\strong{block.number}, \strong{block.length}, or
-\strong{block.mode} is provided
+\strong{block.number} or \strong{block.length} is provided
 with a non NULL value, the blocking will be performed regardless
 of the value of the \strong{blocking} argument. If, on the other
 hand, \strong{blocking} is TRUE but neither
@@ -106,10 +117,6 @@ is going to be separated in. Default = NULL.}
 \item{block.length}{Length of the blocks. For the sake of
 simplicity the last block is not forced to match the length of
 the other plots. Default = NULL.}
-
-\item{block.mode}{This parameter determines if the maximum "max"
-or the minimum "min" of a block shall be returned. Default:
-"max".}
 
 \item{silent}{Determines whether or not warning messages shall be
 displayed and results shall be reported. Default = TRUE.}

@@ -5,7 +5,7 @@
 \title{Apply a threshold to a time series}
 \usage{
 threshold(x, threshold, decluster = TRUE, cluster.distance = NULL,
-  na.rm = TRUE, mc.cores = TRUE)
+  extreme.type = c("max", "min"), na.rm = TRUE, mc.cores = TRUE)
 }
 \arguments{
 \item{x}{Either an object of class \pkg{xts} or a list of those.}
@@ -21,6 +21,11 @@ decluster the obtained exceedances over the
 have to be below the \strong{threshold} for the next point to be
 considered the starting point of a new cluster. Only supply a
 value when you really know what you are doing! Default = NULL.}
+
+\item{extreme.type}{String specifying whether the events below a
+very low ("min") or above a very high ("max") \strong{threshold}
+should be extracted. The \strong{threshold} will be subtracted
+from the data in both cases. Default: "max".}
 
 \item{na.rm}{Logical flag indicating whether to remove all NA
 values from the time series (removed points in clusters). For

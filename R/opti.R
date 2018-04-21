@@ -665,6 +665,7 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
     x <- x* ( -1 )
   }
   ## Default values if no initial parameters were supplied
+  
   if ( is.null( initial ) )
     initial <- likelihood.initials( x, model = "gev" )
   if ( is.null( error.estimation ) )
@@ -698,7 +699,7 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
     ## both auglag and optim doesn't change the matter. Since these
     ## deviations are minor ones and the actual MLE estimates of the
     ## GEV and GP parameters are way bigger, I will just leave it this
-    ## way. 
+    ## way.
     suppressWarnings(
         res.alabama <- auglag(
             par = initial, fn = likelihood.function,
@@ -740,7 +741,7 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
     res.alabama$hessian <- dummy.hessian
   }
   ## There is no need for the user to deal with all the outputs of the
-  ## auglag function. So let's reduce them. 
+  ## auglag function. So let's reduce them.
   res.optim <- list( par = res.alabama$par,
                     value = res.alabama$value,
                     gradient = res.alabama$gradient,
@@ -765,7 +766,7 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
   ## and the return levels.
   if ( error.estimation == "none" ){
     res.optim$se <- rep( NaN, ( 3 + length( return.period ) ) )
-  } else  if ( error.estimation == "bootstrap" ){
+  } else if ( error.estimation == "bootstrap" ){
     ## As a simple alternative the threshold exceedances will be
     ## sampled with replacement and the parameters and return levels
     ## are calculated for all of the resampled series. The bootstrap
@@ -796,7 +797,7 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
     errors <- apply( cbind( fitted.parameters,
                            fitted.return.levels ), 2, stats::sd )
     res.optim$se <- errors
-  } else { 
+  } else {
     ## MLE and MC error estimation
     ##
     ## The error of the fitted parameters are the roots of the
@@ -828,28 +829,69 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
          error.estimation == "MC" ||
          any( is.nan( res.optim$control$hessian ) ) ){
       parameter.estimate <- res.optim$par
-      number.of.samples <- monte.carlo.sample.size
       ## Draw a number of samples and fit the GEV parameters for all
       ## of them
-      samples.list <- lapply( 1 : number.of.samples, function( yy )
-        revd( length( x ), location = parameter.estimate[ 1 ],
-             scale = parameter.estimate[ 2 ],
-             shape = parameter.estimate[ 3 ], model = "gev" ) )
-      suppressWarnings(
-          samples.fit <- try( lapply( samples.list, function ( yy )
-            auglag( par = likelihood.initials( yy, model = "gev" ),
-                   fn = likelihood.function,
-                   gr = gradient.function, 
-                   hin = function( parameters, x.in, ... ){
-                     return( as.numeric(
-                         c( parameters[ 2 ] - .03,
-                           .95 + parameters[ 3 ]*
-                           ( x.in - parameters[ 1 ])/
-                           parameters[ 2 ],
-                           parameters[ 3 ] + .95 ) ) ) },
-                   control.outer = list( trace = FALSE,
-                                        method = "Nelder-Mead" ),
-                   x.in = yy, model = "gev" )$par ) ) )
+      if ( extreme.type == "min" ){
+        ## To fit a series of block minima we have to multiply the
+        ## series by -1, perform an ordinary GEV fit, and multiply
+        ## the location parameter and the return levels by minus
+        ## run transform the intermediate results back to fit the
+        ## original time series.
+        ## Now, to generate data, we have to multiply the
+        ## resulting location parameter and transform the sampled
+        ## series back by multiplying it by -1. This way it
+        ## represents the original data set.
+        samples.list <-
+          lapply( 1 : monte.carlo.sample.size, function( yy )
+            revd( length( x ), parameter.estimate[ 1 ]* -1,
+                 parameter.estimate[ 2 ],
+                 parameter.estimate[ 3 ], model = "gev" )* -1 )
+      } else { 
+        samples.list <-
+          lapply( 1 : monte.carlo.sample.size, function( yy )
+            revd( length( x ), location = parameter.estimate[ 1 ],
+                 scale = parameter.estimate[ 2 ],
+                 shape = parameter.estimate[ 3 ], model = "gev" ) )
+      }
+      if ( extreme.type == "min" ){
+        suppressWarnings(
+            samples.fit <- try( lapply( samples.list, function ( yy )
+              auglag( par = likelihood.initials( yy* -1,
+                                                model = "gev" ),
+                     fn = likelihood.function,
+                     gr = gradient.function, 
+                     hin = function( parameters, x.in, ... ){
+                       return( as.numeric(
+                           c( parameters[ 2 ] - .03,
+                             .95 + parameters[ 3 ]*
+                             ( x.in - parameters[ 1 ])/
+                             parameters[ 2 ],
+                             parameters[ 3 ] + .95 ) ) ) },
+                     control.outer = list( trace = FALSE,
+                                          method = "Nelder-Mead" ),
+                     x.in = yy* -1, model = "gev" )$par ) ) )
+        samples.fit <- lapply( samples.fit, function( ss ){
+          if ( class( ss ) != "try=error" ){
+            ss[ 1 ] <- ss[ 1 ] * -1
+          }
+          return( ss ) } )
+      } else {
+        suppressWarnings(
+            samples.fit <- try( lapply( samples.list, function ( yy )
+              auglag( par = likelihood.initials( yy, model = "gev" ),
+                     fn = likelihood.function,
+                     gr = gradient.function, 
+                     hin = function( parameters, x.in, ... ){
+                       return( as.numeric(
+                           c( parameters[ 2 ] - .03,
+                             .95 + parameters[ 3 ]*
+                             ( x.in - parameters[ 1 ])/
+                             parameters[ 2 ],
+                             parameters[ 3 ] + .95 ) ) ) },
+                     control.outer = list( trace = FALSE,
+                                          method = "Nelder-Mead" ),
+                     x.in = yy, model = "gev" )$par ) ) )
+      }
       if ( class( samples.fit ) == "try-error" ){
         errors <- c( NaN, NaN, NaN,
                     rep( NaN, length( return.period ) ) )
@@ -923,7 +965,6 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
   if ( extreme.type == "min" ){
     res.optim$x <- -1* res.optim$x
     res.optim$par[ 1 ] <- res.optim$par[ 1 ]* -1
-    res.optim$return.level <- res.optim$return.level* -1
   }
   if ( !silent )
     summary( res.optim )
@@ -1667,6 +1708,7 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
   ## threshold. Flipped they are handled like an ordinary GPD fit.
   if ( extreme.type == "min" ){
     x <- x* -1
+    threshold <- threshold* -1
   }
   ## Default values if no initial parameters are supplied
   if ( is.null( initial ) )
@@ -1827,13 +1869,13 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
          error.estimation == "MC" ||
          any( is.nan( res.optim$control$hessian ) ) ){
       parameter.estimate <- res.optim$par
-      number.of.samples <- monte.carlo.sample.size
       ## Draw a number of samples and fit the GPD parameters for all
       ## of them.
-      samples.list <- lapply( 1 : number.of.samples, function( yy )
-        revd( length( x ), scale = parameter.estimate[ 1 ],
-                      shape = parameter.estimate[ 2 ], model = "gpd",
-                      silent = TRUE ) )
+      samples.list <-
+        lapply( 1 : monte.carlo.sample.size, function( yy )
+          revd( length( x ), scale = parameter.estimate[ 1 ],
+               shape = parameter.estimate[ 2 ], model = "gpd",
+               silent = TRUE ) )
       
       suppressWarnings(
           samples.fit <- try( lapply( samples.list, function( yy )
@@ -1849,7 +1891,6 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
                    control.outer = list( trace = FALSE,
                                         method = "Nelder-Mead" ),
                    x.in = yy, model = "gpd" )$par ) ) )
-      
       if ( class( samples.fit ) == "try-error" ){
         errors <- c( NaN, NaN, NaN )
       } else {
@@ -1915,7 +1956,7 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
         }
         if ( shape != 0 ){
           ## GP distribution
-          dz <- c( scale* m^shape* zeta^{ shape - 1 },
+          dz <- c( scale* m[ rr ]^shape* zeta^{ shape - 1 },
           ( m[ rr ]^ shape - 1 )/ shape,
           -scale* shape^{ -2 }*( m[ rr ]^shape - 1 ) +
           scale/shape*m[ rr ]^shape* log( m[ rr ] ) )
@@ -1962,19 +2003,34 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
   class( res.optim ) <- c( "list", "climex.fit.gpd" )
 
   ## adding the return levels
-  res.optim$return.level <- Reduce(
-      c, lapply( return.period, function( yy )
-        climex::return.level( res.optim, yy,
-                             error.estimation = "none",
-                             model = "gpd", threshold = threshold,
-                             total.length = total.length,
-                             extreme.type = "max",
-                             silent = silent )$return.level ) )
+  if ( is.null( threshold ) || extreme.type == "max" ){
+    res.optim$return.level <- Reduce(
+        c, lapply( return.period, function( yy )
+          climex::return.level(
+                      res.optim, yy,
+                      error.estimation = "none",
+                      model = "gpd",
+                      threshold = threshold,
+                      total.length = total.length,
+                      extreme.type = extreme.type,
+                      silent = silent )$return.level ) )
+  } else {
+    res.optim$return.level <- Reduce(
+        c, lapply( return.period, function( yy )
+          climex::return.level(
+                      res.optim, yy,
+                      error.estimation = "none",
+                      model = "gpd",
+                      threshold = threshold * -1,
+                      total.length = total.length,
+                      extreme.type = extreme.type,
+                      silent = silent )$return.level ) )
+  }
   ## Converting the results to represent the extremes below a very
   ## low threshold.
   if ( extreme.type == "min" ){
-    res.optim$x <- res$optim$x * -1
-    res.optim$return.level <- res.optim$return.level * -1
+    res.optim$x <- res.optim$x * -1
+    res.optim$threshold <- res.optim$threshold * -1
   }
   names( res.optim$return.level ) <- paste0( return.period, ".rlevel" )
   return( res.optim )

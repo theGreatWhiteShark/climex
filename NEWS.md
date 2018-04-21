@@ -51,6 +51,16 @@ from one of the CRAN fellows by just submitting the core package.
   *thresholding* the functions can call **block** or **threshold**
   internally and hand over all the required arguments. This makes the
   use of those functions more convenient to the user.
+- The *extreme.type* argument was introduced to the **fit.gev**,
+  **fit.gpd**, **block**, **threshold**, and **return.level** function
+  to be also able to fit the block minima or all extreme points below
+  a certain low threshold. This argument replaced the *block.mode* one
+  of the block function.
+- Reducing the default value of the *monte.carlo.sample.size* argument
+  of the **return.level** function form 1000 to 100.
+- Bug fixes and additional test functions for the error estimation in
+  the **return.level**, **fit.gev**, and **fit.gpd** function.
+- Using seeds instead of tolerances in the test functions.
   
 # v1.2.1
 - Only perform the test of the API of the DWD on Unix-based

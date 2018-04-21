@@ -888,7 +888,7 @@ threshold.xts <- threshold.default <- function( x, threshold,
 ##'   parameters of the GEV or GPD function. Default = "gev".
 ##' @param monte.carlo.sample.size Number of samples used to obtain
 ##'   the Monte Carlo estimate of the standard error of the fitting.
-##'   Default = 1000.
+##'   Default = 100.
 ##' @param bootstrap.sample.size Number of samples with replacements
 ##'   to drawn from the original series \strong{x} in order to
 ##'   determine the standard errors for the GPD parameters and return
@@ -940,7 +940,7 @@ return.level <- function( x, return.period = 100,
                          error.estimation = c( "none", "MC", "MLE",
                                               "bootstrap" ),
                          model = c( "gev", "gpd" ),
-                         monte.carlo.sample.size = 1000,
+                         monte.carlo.sample.size = 100,
                          bootstrap.sample.size = 100,
                          threshold = NULL, total.length = NULL,
                          thresholded.time.series = NULL,
@@ -1025,7 +1025,7 @@ return.level <- function( x, return.period = 100,
 ##'   "gev"
 ##' @param monte.carlo.sample.size Number of samples used to obtain
 ##'   the Monte Carlo estimate of the standard error of the fitting.
-##'   Default = 1000.
+##'   Default = 100.
 ##' @param bootstrap.sample.size Number of samples with replacements
 ##'   to drawn from the original series \strong{x} in order to
 ##'   determine the standard errors for the GPD parameters and return
@@ -1077,7 +1077,7 @@ return.level.list <- function( x, return.period = 100,
                               error.estimation =
                                 c( "none", "MC", "MLE", "bootstrap" ),
                               model = c( "gev", "gpd" ),
-                              monte.carlo.sample.size = 1000,
+                              monte.carlo.sample.size = 100,
                               bootstrap.sample.size = 100,
                               threshold = NULL, total.length = NULL,
                               thresholded.time.series = NULL,
@@ -1202,7 +1202,7 @@ return.level.list <- function( x, return.period = 100,
 ##'   "gev"
 ##' @param monte.carlo.sample.size Number of samples used to obtain
 ##'   the Monte Carlo estimate of the standard error of the fitting.
-##'   Default = 1000.
+##'   Default = 100.
 ##' @param bootstrap.sample.size Number of samples with replacements
 ##'   to drawn from the original series \strong{x} in order to
 ##'   determine the standard errors for the GPD parameters and return
@@ -1255,7 +1255,7 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
              error.estimation = c( "none", "MC", "MLE",
                                   "bootstrap" ),
              model = c( "gev", "gpd" ),
-             monte.carlo.sample.size = 1000,
+             monte.carlo.sample.size = 100,
              bootstrap.sample.size = 100,
              threshold = NULL, total.length = NULL,
              thresholded.time.series = NULL,
@@ -1265,9 +1265,12 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
       ## side of the PDF of the GEV or GP distribution.
       if ( missing( extreme.type ) ){
         extreme.type <- "max"
-      } else {
-        extreme.type <- match.arg( extreme.type )
       }
+      if ( any( class( x ) == "climex.fit.gev" ) ||
+           any( class( x ) == "climex.fit.gpd" ) ){
+        extreme.type <- x$control$extreme.type
+      }
+      extreme.type <- match.arg( extreme.type )
       if ( any( class( x ) == "climex.fit.gev" ) ){
         model <- "gev"
         ## The location parameter and the time series itself have to
@@ -1275,7 +1278,7 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
         if ( extreme.type == "min" ){
           return.levels <-
             Reduce( c, lapply( return.period, function( yy )
-              as.numeric( rlevd( yy* -1, x$par[ 1 ]* -1, x$par[ 2 ],
+              as.numeric( rlevd( yy, x$par[ 1 ], x$par[ 2 ],
                                 x$par[ 3 ], model = "gev",
                                 silent = silent ) ) ) )* -1
         } else {
@@ -1327,13 +1330,14 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
         }
         ## When a threshold is supplied, the one in the fitted object
         ## will be overwritten
-        if ( !is.null( threshold ) )
+        if ( !is.null( threshold ) ){
           x$threshold <- threshold
+        }
         ## The time series and threshold itself have to be inverted
         ## when dealing with all events below a certain threshold.
         if ( extreme.type == "min" ){
           return.levels <- Reduce( c, lapply( m, function( yy )
-            as.numeric( rlevd( yy* -1, scale = x$par[ 1 ],
+            as.numeric( rlevd( yy, scale = x$par[ 1 ],
                               shape = x$par[ 2 ],
                               model = "gpd",
                               threshold = x$threshold* -1,
@@ -1361,7 +1365,7 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
           if ( extreme.type == "min" ){
             return.levels <-
               Reduce( c, lapply( return.period, function( yy )
-                as.numeric( rlevd( yy* -1, x[ 1 ]* -1, x[ 2 ],
+                as.numeric( rlevd( yy, x[ 1 ]* -1, x[ 2 ],
                                   x[ 3 ], model = "gev",
                                   silent = silent ) ) ) )* -1
           } else {
@@ -1403,10 +1407,9 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
           }
           if ( extreme.type == "min" ){
             return.levels <- Reduce( c, lapply( m, function( yy )
-              as.numeric( rlevd( yy* -1, scale = x$par[ 1 ],
-                                shape = x$par[ 2 ],
+              as.numeric( rlevd( yy, scale = x[ 1 ], shape = x[ 2 ],
                                 model = "gpd",
-                                threshold = x$threshold* -1,
+                                threshold = threshold* -1,
                                 silent = silent ) ) ) )* -1
           } else {
             return.levels <- Reduce( c, lapply( m, function( yy )
@@ -1457,7 +1460,7 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
           fitted.list <-
             lapply( bootstrap.sample.list, function( xx ){
               fit.gpd( x = xx, initial = x$control$initial,
-                      threshold = x$control$threshold,
+                      threshold = x$threshold,
                       likelihood.function =
                         x$control$likelihood.function,
                       gradient.function = x$control$gradient.function,
@@ -1485,22 +1488,34 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
           errors <- errors[ 3 : ( 2 + length( return.period ) ) ]
         }
       } else if ( error.estimation == "MLE" ){
-        if ( !any( names( x ) == "hessian" ) ){
+        if ( !any( names( x$control ) == "hessian" ) ){
           ## fit again and let stats::optim calculate the
           ## hessian. It's way more save this way.
           if ( model == "gev" ){
-            x$hessian <- fit.gev( x$x, initial = x$par,
-                                 extreme.type = extreme.type,
-                                 error.estimation = "MLE" )$hessian
+            if ( extreme.type == "min" ){
+              x$control$hessian <-
+                fit.gev( x$x, initial = c( x$par[ 1 ]* -1,
+                                          x$par[ 2 ],
+                                          x$par[ 3 ] ),
+                        extreme.type = extreme.type,
+                        error.estimation = "MLE"
+                        )$control$hessian
+            } else {
+              x$control$hessian <-
+                fit.gev( x$x, initial = x$par,
+                        extreme.type = extreme.type,
+                        error.estimation = "MLE"
+                        )$control$hessian
+            }
           } else {
             if ( is.null( threshold ) ){
               threshold <- x$threshold
             }
-            x$hessian <- fit.gpd( x$x, initial = x$par,
-                                 threshold = threshold,
-                                 error.estimation = "MLE",
-                                 extreme.type = extreme.type,
-                                 total.length = total.length )$hessian
+            x$control$hessian <-
+              fit.gpd( x$x, initial = x$par, threshold = threshold,
+                      error.estimation = "MLE",
+                      extreme.type = extreme.type,
+                      total.length = total.length )$control$hessian
           }
         }
         ## Sometimes the obtained hessian is not invertible. If this
@@ -1582,7 +1597,7 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
             }
           }
         } else {
-          ## Formula according to Stuart Coles p. 82
+          ## Generalized Pareto
           for ( rr in 1 : length( return.period ) ){
             ## I omit the error estimation of the zeta in here. I
             ## don't see how the error of exceedance probability will
@@ -1673,35 +1688,48 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
         ## Draw a number of samples and fit the GEV/GP parameters for
         ## all of them
         if ( model == "gev" ){
-          samples.list <-
-            lapply( 1 : monte.carlo.sample.size, function( yy )
-              revd( length( x$x ), parameter.estimate[ 1 ],
-                   parameter.estimate[ 2 ],
-                   parameter.estimate[ 3 ], model = "gev" ) )
-        } else { 
-          samples.list <-
-            lapply( 1 : monte.carlo.sample.size, function( yy )
-              revd( length( x$x ), scale = parameter.estimate[ 1 ],
-                   shape = parameter.estimate[ 2 ], silent = TRUE,
-                   threshold = threshold, model = "gpd" ) )
+          if ( extreme.type == "min" ){
+            ## To fit a series of block minima we have to multiply the
+            ## series by -1, perform an ordinary GEV fit, and multiply
+            ## the location parameter and the return levels by minus
+            ## run transform the intermediate results back to fit the
+            ## original time series.
+            ## Now, to generate data, we have to multiply the
+            ## resulting location parameter and transform the sampled
+            ## series back by multiplying it by -1. This way it
+            ## represents the original data set.
+            samples.list <-
+              lapply( 1 : monte.carlo.sample.size, function( yy )
+                revd( length( x$x ), parameter.estimate[ 1 ]* -1,
+                     parameter.estimate[ 2 ],
+                     parameter.estimate[ 3 ], model = "gev" )* -1 )
+          } else { 
+            samples.list <-
+              lapply( 1 : monte.carlo.sample.size, function( yy )
+                revd( length( x$x ), parameter.estimate[ 1 ],
+                     parameter.estimate[ 2 ],
+                     parameter.estimate[ 3 ], model = "gev" ) )
+          }
+        } else {
+          ## Since the fit.gpd function is expect to handle data with
+          ## the threshold already removed, the threshold must not be
+          ## handed to the revd function.
+            samples.list <-
+              lapply( 1 : monte.carlo.sample.size, function( yy )
+                revd( length( x$x ), scale = parameter.estimate[ 1 ],
+                     shape = parameter.estimate[ 2 ], silent = TRUE,
+                     threshold = 0, model = "gpd" ) )
         }
-        if ( extreme.type == "min" ){
-          samples.fit <- lapply( samples.list, function( yy ){
-            yy <- yy* -1
-            aux <- suppressWarnings(
-                stats::optim( likelihood.initials( yy, model = model ),
-                             likelihood, x = yy, method = "Nelder-Mead",
-                             model = model )$par )
-            if ( length( aux ) == 3 ){
-              aux[ 1 ] <- aux* -1
-            }
-            return( aux ) } )
+        if ( model == "gev" ){
+          samples.fit <- lapply( samples.list, function( yy )
+            fit.gev( yy, error.estimation = "none",
+                    blocking = FALSE, extreme.type = extreme.type
+                    )$par )
         } else {
           samples.fit <- lapply( samples.list, function( yy )
-            suppressWarnings(
-                stats::optim( likelihood.initials( yy, model = model ),
-                             likelihood, x = yy, method = "Nelder-Mead",
-                             model = model )$par ) )
+            fit.gpd( yy, error.estimation = "none",
+                    thresholding = FALSE, threshold = x$threshold,
+                    extreme.type = "max" )$par )
         }
         errors <- data.frame( a = 0 )
         if ( model == "gev" ){
@@ -1713,19 +1741,23 @@ return.level.climex.fit.gev <- return.level.climex.fit.gpd <-
           errors <- cbind(
               errors, 
               sqrt( stats::var( Reduce(
-                               c, lapply(
-                                      samples.fit,
-                                      function( zz )
-                                        climex::return.level(
-                                                    zz,
-                                                    return.period =
-                                                      r.period[ rr ],
-                                                    error.estimation =
-                                                      "none",
-                                                    extreme.type =
-                                                      extreme.type,
-                                                    silent = TRUE
-                                                )$return.level
+                               c, lapply( samples.fit, function( zz )
+                                 climex::return.level(
+                                             zz,
+                                             return.period =
+                                               r.period[ rr ],
+                                             error.estimation =
+                                               "none",
+                                             extreme.type =
+                                               extreme.type,
+                                             model = "gpd",
+                                             threshold = x$threshold,
+                                             total.length =
+                                               total.length,
+                                             thresholded.time.series =
+                                               x$x,
+                                             silent = TRUE
+                                         )$return.level
                                   ) ) ) ) )
         errors <- errors[ , -1 ]   
         names( errors ) <- paste0( return.period, ".rlevel" )

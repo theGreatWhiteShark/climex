@@ -8,9 +8,9 @@ fit.gpd(x, initial = NULL, threshold = NULL,
   likelihood.function = likelihood, gradient.function = likelihood.gradient,
   error.estimation = c("MLE", "MC", "bootstrap", "none"),
   monte.carlo.sample.size = 100, bootstrap.sample.size = 100,
-  return.period = 100, total.length = NULL, thresholding = FALSE,
-  decluster = NULL, cluster.distance = NULL, silent = TRUE,
-  mc.cores = NULL, ...)
+  return.period = 100, total.length = NULL, extreme.type = c("min",
+  "max"), thresholding = FALSE, decluster = NULL, cluster.distance = NULL,
+  silent = TRUE, mc.cores = NULL, ...)
 }
 \arguments{
 \item{x}{Either an object of class \pkg{xts} or a list of
@@ -102,6 +102,18 @@ calculate the probability of a measurement to be an
 exceedance. Else an estimate based on the mean number of
 exceedances in the available years (time stamps of the class
 \pkg{xts} time series) will be used. Default = NULL.}
+
+\item{extreme.type}{String specifying whether the exceedances over
+a very high ("max") or low ("min") threshold should be
+fitted. If the low one is chosen, the input \strong{x} has to be
+either a time series of all points below the \strong{threshold}
+with the \strong{threshold} subtracted or the raw series and
+fit.gpd function will handle the extraction of the minima
+internally. For the minima the resulting extremes are multiplied
+by -1 and fitted using a default GP distribution. The resulting
+scale and shape parameter are handed back without any additional
+changes and the return levels are multiplied by -1. Default =
+"max".}
 
 \item{thresholding}{Logical value. If TRUE, the numerical value
 provided with \strong{threshold} will be used in the

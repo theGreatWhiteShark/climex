@@ -5,7 +5,7 @@
 \title{Blocking data}
 \usage{
 \method{block}{list}(x, block.number = NULL, block.length = NULL,
-  block.mode = c("max", "min"), mc.cores = NULL)
+  extreme.type = c("max", "min"), mc.cores = NULL)
 }
 \arguments{
 \item{x}{A list of objects of class \pkg{xts}.}
@@ -17,8 +17,8 @@ is going to be separated in. Default = NULL.}
 simplicity the last block is not forced to match the length of
 the other plots. Default = NULL.}
 
-\item{block.mode}{This parameter determines if the maximum "max"
-or the minimum "min" of a block shall be returned. Default:
+\item{extreme.type}{String specifying whether the maxima ("max")
+or minima ("min") of each block should be extracted. Default:
 "max".}
 
 \item{mc.cores}{A numerical input specifying the number of cores

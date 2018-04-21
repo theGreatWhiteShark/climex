@@ -6,9 +6,9 @@
 \usage{
 return.level(x, return.period = 100, error.estimation = c("none", "MC",
   "MLE", "bootstrap"), model = c("gev", "gpd"),
-  monte.carlo.sample.size = 1000, bootstrap.sample.size = 100,
+  monte.carlo.sample.size = 100, bootstrap.sample.size = 100,
   threshold = NULL, total.length = NULL, thresholded.time.series = NULL,
-  silent = FALSE, mc.cores = NULL)
+  extreme.type = c("max", "min"), silent = FALSE, mc.cores = NULL)
 }
 \arguments{
 \item{x}{Either of class \emph{numeric}, \emph{climex.fit.gev},
@@ -74,7 +74,7 @@ parameters of the GEV or GPD function. Default = "gev".}
 
 \item{monte.carlo.sample.size}{Number of samples used to obtain
 the Monte Carlo estimate of the standard error of the fitting.
-Default = 1000.}
+Default = 100.}
 
 \item{bootstrap.sample.size}{Number of samples with replacements
 to drawn from the original series \strong{x} in order to
@@ -97,6 +97,10 @@ supplied here as well) was applied. Necessary to transform the
 return level for numerical input and the GPD model from m-th
 observation return level to annual return level. If omitted the
 return level will be per observation. Default = NULL.}
+
+\item{extreme.type}{String indicating whether to calculate the
+quantiles at the right ("max") or left ("min") side of the PDF
+of the series. Default = "max".}
 
 \item{silent}{Throws an warning whenever the "gpd" model is used
 and the \strong{thresholded.time.series} is not supplied. Since
