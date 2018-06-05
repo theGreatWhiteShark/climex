@@ -3,9 +3,14 @@
 library( climex )
 context( "Tools used in the extreme value analysis" )
 x.block <- block( anomalies( temp.potsdam ) )
+x.block.list <- block( list( anomalies( temp.potsdam ),
+                            anomalies( temp.potsdam ) ) )
 x.thresh <- threshold( temp.potsdam, threshold = 29 )
+x.thresh.list <- threshold( list( temp.potsdam, temp.potsdam ),
+                           threshold = 29 )
 set.seed( 123 )
 x.block.fit <- fit.gev( x.block )
+x.block.fit.list <- fit.gev( x.block.list )
 set.seed( 123 )
 x.thresh.fit <- fit.gpd( x.thresh, threshold = 29,
                         total.length = length( temp.potsdam ) )
@@ -21,6 +26,16 @@ x.exp.fit <- fit.gpd( x.thresh, initial = initial.exp,
                      threshold = 29,
                      total.length = length( temp.potsdam ) )
 
+test_that( "block works with lists as with single objects", {
+  expect_equal( unique( Reduce( c, lapply( x.block.list, length ) ) ),
+               124 )
+  expect_equal( unique(
+      Reduce( c, lapply( block( list( temp.potsdam, temp.potsdam ),
+                               block.length = 700 ), length ) ) ), 65 )
+  expect_equal( min(
+      Reduce( c, block( list( temp.potsdam, temp.potsdam ),
+                       extreme.type = "min" ) ) ), -16 )
+})
 test_that( "block's block length argument works", {
   expect_equal( length( block( temp.potsdam ) ), 124 )
   expect_equal( length( block( temp.potsdam,
@@ -62,6 +77,18 @@ test_that( "block just accepts class 'xts' objects", {
       list( as.numeric( temp.potsdam ), temp.potsdam ) ) )
 })
 
+test_that( "threshold works with lists as with single objects", {
+  expect_equal( unique(
+      Reduce( c, lapply(
+                     threshold( list( temp.potsdam, temp.potsdam ),
+                               threshold = 26, extreme.type = "max"
+                               ), length ) ) ), 426 )
+  expect_equal( unique(
+      Reduce( c, lapply(
+                     threshold( list( temp.potsdam, temp.potsdam ),
+                               threshold = -5.5, extreme.type = "min"
+                               ), length ) ) ), 144 )
+})
 test_that( "threshold's results regarding their length", {
   expect_equal( length( threshold( temp.potsdam,
                                   threshold = 26 ) ), 426 )
@@ -122,6 +149,8 @@ test_that( "decluster works as expected", {
   expect_warning( decluster( temp.potsdam, 29,
                             cluster.distance = 3 ) )
   expect_true( is.numeric( decluster( temp.potsdam, 29 ) ) )
+})
+test_that( "decluster works with both lists and single objects", {
   expect_true( is.list( decluster(
       list( temp.potsdam, temp.potsdam ), 29 ) ) )
 })
@@ -191,6 +220,13 @@ test_that( "return.level has the right output", {
   expect_equal( names( return.level( x.block.fit,
                                     error.estimation = "MLE" )
                       ), c( "return.level", "error" ) )
+})
+test_that( "return.level works with both lists and single objects", {
+  expect_equal( unique(
+      Reduce( c, lapply( return.level( x.block.fit.list,
+                                      return.period = 100 ),
+                        function( rr ) rr$return.level ) ) ),
+      15.556303455 )
   expect_true( is.list(
       return.level( list( x.block.fit, x.block.fit ) ) ) )
   expect_true( is.list(
@@ -202,8 +238,9 @@ test_that( "return.level has the right output", {
                                             x.block.fit ),
                                       error.estimation = "MLE" ),
                          function( rr ) names( rr ) ) ) ),
-    c( "return.level", "error" ) )
+      c( "return.level", "error" ) )
 })
+  
 test_that( "return.level get GEV error estimation right for MLE", {
   expect_equal( as.numeric(
       return.level( x.block.fit,
