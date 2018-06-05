@@ -104,14 +104,14 @@ block.list <- function( x, block.number = NULL, block.length = NULL,
                        mc.cores = NULL ){
   if ( !is.null( mc.cores ) ){
     return( mclapply( x, function( xx )
-      block( xx, block.number = round( length( xx )/ 50 ),
+      block( xx, block.number = block.number,
             block.length = block.length,
             extreme.type = extreme.type,
             mc.cores = mc.cores ),
       mc.cores = mc.cores ) )
   } else {
     return( lapply( x, function( xx )
-      block( xx, block.number = round( length( xx )/ 50 ),
+      block( xx, block.number = block.number,
             block.length = block.length,
             extreme.type = extreme.type,
             mc.cores = mc.cores ) ) )
