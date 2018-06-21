@@ -1,6 +1,7 @@
 ### test_ts.R - Tests for the helper functions of the time series
 ###   analysis 
 library( climex )
+library( lubridate )
 context( "Check function is R/ts.R" )
 
 x.block <- block( anomalies( temp.potsdam ) )
@@ -30,9 +31,34 @@ test_that( "bic accepts the right input and produces the right output", {
 })
 
 x.removed <- remove.incomplete.years( temp.potsdam )
+## Removing an entry at the beginning/end of the year
+x.removed.year.beginning <-
+  x.removed[ -which( yday( x.removed ) == 1 )[ 2 ] ]
+x.removed.year.end <-
+  x.removed[ -( which( yday( x.removed ) == 1 )[ 4 ] - 1 ) ]
+x.removed.multiple <- x.removed.year.end[
+    -c( 3402, 10292, 12000, 32410 ) ]
 test_that( "remove.incomplete.years works as expected", {
   expect_equal( length( temp.potsdam ), 45145 )
+  expect_equal( unique( year( temp.potsdam ) ),
+               seq( 1893, 2016, 1 ) )
   expect_equal( length( x.removed ), 44924 )
+  expect_equal( unique( year( x.removed ) ),
+               seq( 1893, 2015, 1 ) )
+  expect_equal(
+      unique( year( remove.incomplete.years(
+          x.removed.year.beginning ) ) ),
+      c( 1893, seq( 1895, 2015, 1 ) ) )
+  expect_equal(
+      unique( year( remove.incomplete.years(
+          x.removed.year.end ) ) ),
+      c( 1893, 1894, seq( 1896, 2015, 1 ) ) )
+  expect_equal( length( remove.incomplete.years(
+      x.removed.multiple ) ), 43099 )
+  expect_equal( length(
+      remove.incomplete.years(
+          remove.incomplete.years( 
+              x.removed.multiple ) ) ), 43099 )
   expect_equal( length(
       remove.incomplete.years( x.removed[ -1 ] ) ), 44559 )
   expect_equal(

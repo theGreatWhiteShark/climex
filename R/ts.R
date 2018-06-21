@@ -173,8 +173,7 @@ bic.climex.fit.gev <- bic.climex.fit.gpd <- bic.default <- function( x ){
 ##'   consecutive points.) For daily data the value is 1.
 ##' 
 ##' @param x Either a \pkg{xts} class object or a list of those.
-##' @param time.unit Minimal differences found when applying the
-##'   \code{\link[base]{diff}} function to \strong{x}. Default = 1.
+##' @param time.unit Basic time unit in days. Default = 1.
 ##' @param mc.cores A numerical input specifying the number of cores
 ##'   to use for the multi core application of the function (see
 ##'   \code{\link[parallel]{detectCores}}). This functionality is only
@@ -208,8 +207,7 @@ remove.incomplete.years <- function( x, time.unit = 1,
 ##'   consecutive points.) For daily data the value is 1.
 ##' 
 ##' @param x A list of \pkg{xts} class objects.
-##' @param time.unit Minimal differences found when applying the
-##'   \code{\link[base]{diff}} function to \strong{x}. Default = 1.
+##' @param time.unit Basic time unit in days. Default = 1.
 ##' @param mc.cores A numerical input specifying the number of cores
 ##'   to use for the multi core application of the function (see
 ##'   \code{\link[parallel]{detectCores}}). This functionality is only
@@ -249,8 +247,7 @@ remove.incomplete.years.list <- function( x, time.unit = 1,
 ##'   consecutive points.) For daily data the value is 1.
 ##' 
 ##' @param x A \pkg{xts} class object.
-##' @param time.unit Minimal differences found when applying the
-##'   \code{\link[base]{diff}} function to \strong{x}. Default = 1.
+##' @param time.unit Basic time unit in days. Default = 1.
 ##' @param mc.cores A numerical input specifying the number of cores
 ##'   to use for the multi core application of the function (see
 ##'   \code{\link[parallel]{detectCores}}). This functionality is only
@@ -285,63 +282,59 @@ remove.incomplete.years.xts <- remove.incomplete.years.default <-
       ## between,
       x.index <- index( x )
       x.index.diff <- diff( x.index )
-      ## If the day before the gap is the last day of a year, it's year
-      ## value shouldn't be included in the list of years ready to
-      ## remove, since the corresponding gap doesn't affect it. Those
-      ## gaps have to be treated specially.
-      x.last.day.of.year <-
-        grep( "12-31", index( x [
-                           which( x.index.diff > time.unit ) ] ) )
-      if ( length( x.last.day.of.year ) > 0 ){
-        ## Adding the next year plus the year of the index behind the
-        ## gap. 
-        additional.years <- c( year( x[ which( x.index.diff > 1 )[
-            x.last.day.of.year ] ] ) + 1,
-            year( x[ which( x.index.diff > 1 )[
-                x.last.day.of.year ] + 1 ] ) )
-        x.index.diff <- x.index.diff[ -(
-          which( x.index.diff > 1 )[ x.last.day.of.year ] ) ]
-      } else {
-        additional.years <- NULL
+
+      ## This numerical vector will hold all years, which will be
+      ## removed in the end
+      all.incomplete.years <- numeric()
+      ## There might be as well several gaps in the data. Therefore we
+      ## will perform a loop over all gaps detected via the `diff`
+      ## function. 
+      for ( ii in seq( 1, ( length( x.index ) - 1 ) )[
+                              x.index.diff > time.unit ] ){
+
+        ## Since the gap itself won't tell us which years are missing
+        ## in the data, we have to derive them from the entry right
+        ## before (ii) and after (ii+1) the gap.
+        ## But it can happen that the entry
+        ## before the gap is the last value within one year or the one
+        ## after the gap the first one within one year. These cases
+        ## have to be treated with a little bit more care. For all
+        ## others a sequences of years from the one before and after
+        ## the gap will be removed.
+        if ( year( x[ ii ] ) !=
+             year( index( x[ ii ] ) + ddays( time.unit ) ) ){
+          ## The entry before the gap is at the end of the year.
+          year.start <- year( index( x[ ii ] ) + ddays( time.unit ) )
+        } else {
+          year.start <- year( x[ ii ] )
+        }
+        if ( year( x[ ii + 1 ] ) !=
+             year( index( x[ ii + 1 ] ) - ddays( time.unit ) ) ){
+          ## Entry after the gap is at the very beginning of a year.
+          year.end <- year( index( x[ ii + 1 ] ) - ddays( time.unit ) )
+        } else {
+          year.end <- year( x[ ii + 1 ] )
+        }
+
+        all.incomplete.years <- c( all.incomplete.years,
+                                  seq( year.start, year.end, 1 ) )
       }
-      ## Determining the year before and after the gap
-      incomplete.years.1 <- year( x[ ( which( x.index.diff > 1 ) ) ] )
-      incomplete.years.2 <- year( x[ ( which( x.index.diff > 1 ) +
-                                       1 ) ] )
-      ## Be sure to include all years, even if several years passed
-      ## within one gaps. The seq() function is used on every pair of
-      ## points before and after the gap.
-      if ( length( incomplete.years.1 ) > 0 &
-           length( incomplete.years.2 ) > 0 ){
-        ## Since the last day of the year is removed above, it's
-        ## possible to have no years left detectable via the
-        ## differences. 
-        all.incomplete.years <-
-          Reduce( unique, apply( cbind( incomplete.years.1,
-                                       incomplete.years.2 ), 1,
-                                function( yy )
-                                  seq( yy[ 1 ], yy[ 2 ], 1 ) ) )
-      } else {
-        ## Creating an object of length 0 as placeholder
-        all.incomplete.years <- incomplete.years.1
-      }
-      ## Check whether the first year starts at January 1st and the
-      ## last on Dec. 31st. Else the corresponding years aren't
-      ## complete.
-      if ( length( grep( "-01-01", index( x[ 1 ] ) ) ) == 0 ){
+      ## Check whether the first entry is at the beginning of the year
+      ## and the last one is at the end of the year. If not, those
+      ## years will be considered incomplete and removed too.
+      if ( year( x[ 1 ] ) ==
+           year( index( x[ 1 ] ) - ddays( time.unit ) ) ){
+        ## The first entry is not at the beginning of a year.
         all.incomplete.years <- c( all.incomplete.years,
                                   year( x[ 1 ] ) )
       }
-      if ( length( grep( "-12-31",
-                        index( x[ length( x ) ] ) ) ) == 0 ){
+      if ( year( x[ length( x ) ] ) ==
+           year( index( x[ length( x ) ] ) + ddays( time.unit ) ) ){
+        ## The last entry is not at the end of a year.
         all.incomplete.years <- c( all.incomplete.years,
                                   year( x[ length( x ) ] ) )
       }
-      if ( !is.null( additional.years ) ){
-        all.incomplete.years <- unique( c( all.incomplete.years,
-                                          additional.years ) )
-      }
-      return( x[ !(year(x) %in% all.incomplete.years ) ] )
+      return( x[ !( year( x ) %in% all.incomplete.years ) ] )
     } else {
       ## There is no data left
       return( x )
