@@ -1,4 +1,4 @@
-# v2.0.0
+# v2.0.0.9000
 The functionality of the 1. climex core package, 2. the shiny-based
 GUI, and 3. import of the data of the German weather service (DWD)
 will be split in three different entities. This way, it is more simple
@@ -35,7 +35,6 @@ from one of the CRAN fellows by just submitting the core package.
   input argument *mc.cores* is set to NULL. If set to a numerical
   value instead, this value is used as the number of cores and the
   parallel execution is triggered.
-  
   The functions **aic** and **bic**, while being S3 generic, have been
   excluded since they are calculated in no time.
 - The *separation.mode* argument of the **block** function was
@@ -61,6 +60,8 @@ from one of the CRAN fellows by just submitting the core package.
 - Bug fixes and additional test functions for the error estimation in
   the **return.level**, **fit.gev**, and **fit.gpd** function.
 - Using seeds instead of tolerances in the test functions.
+- Bug in **ttplot** prevented correct x axis for all base time units
+  instead of days.
   
 # v1.2.1
 - Only perform the test of the API of the DWD on Unix-based

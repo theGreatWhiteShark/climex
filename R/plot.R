@@ -124,13 +124,8 @@ ttplot <- function( data.input, main = "Time series", ylab = NULL ){
   ## them. 
   x.time.unit <- index( data.input )[[ 2 ]] -
     index( data.input )[[ 1 ]]
-  if ( class( x.time.unit ) != "difftime" ||
-       attributes( x.time.unit )$units != "days" ) {
-    x.df <- data.frame( date = as.numeric( index( data.input ) ),
-                       value = as.numeric( data.input ) ) }
-  else
-    x.df <- data.frame( date = index( data.input ),
-                       value = as.numeric( data.input ) )
+  x.df <- data.frame( date = as.numeric( index( data.input ) ),
+                     value = as.numeric( data.input ) )
   ggplot( data = x.df, aes( x = date, y = value ) ) +
     geom_point( colour = "darkorange" ) +
     geom_line( colour = "navy" ) +
