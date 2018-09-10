@@ -58,7 +58,7 @@
 ##' @param initial Initial values for the GEV parameters. Has to be
 ##'   provided as 3x1 vector. If NULL the parameters are estimated
 ##'   using \code{\link{likelihood.initials}}. If the shape parameter
-##'   is set to 0 the exponential distribution instead of the GP one
+##'   is set to 0 the exponential distribution instead of the GEV one
 ##'   is fitted. But this its strongly discouraged to do so! Default =
 ##'   NULL.
 ##' @param likelihood.function Function, which is going to be
@@ -73,7 +73,7 @@
 ##'
 ##'   \emph{MLE}: The standard error of the return level is calculated
 ##'     using the Delta method and the maximum likelihood estimates of
-##'     the GPD parameters. Note: For positive shape parameters bigger
+##'     the GEV parameters. Note: For positive shape parameters bigger
 ##'     than 0.3 this approach tends to highly overestimates the
 ##'     errors of the return levels. 
 ##' 
@@ -86,7 +86,7 @@
 ##'     calculated return levels. Note: In its essence this approach
 ##'     is not an estimation of the error involved in fitting the time
 ##'     series to a GEV distribution. It is rather the mean error of
-##'     fitting a GPD-distribution with the same length and parameters
+##'     fitting a GEV distribution with the same length and parameters
 ##'     as estimated ones.
 ##'
 ##'   \emph{bootstrap}: Using this option the provided time series
@@ -111,7 +111,7 @@
 ##'   Default = 100.
 ##' @param bootstrap.sample.size Number of samples with replacements
 ##'   to drawn from the original series \strong{x} in order to
-##'   determine the standard errors for the GPD parameters and return
+##'   determine the standard errors for the GEV parameters and return
 ##'   levels. Default = 100.
 ##' @param return.period Quantiles at which the return level is going
 ##'   to be evaluated. Class "numeric". Default = 100.
@@ -260,7 +260,7 @@ fit.gev <- function(  x, initial = NULL,
 ##' @param initial Initial values for the GEV parameters. Has to be
 ##'   provided as 3x1 vector. If NULL the parameters are estimated
 ##'   using \code{\link{likelihood.initials}}. If the shape parameter
-##'   is set to 0 the exponential distribution instead of the GP one
+##'   is set to 0 the exponential distribution instead of the GEV one
 ##'   is fitted. But this its strongly discouraged to do so! Default =
 ##'   NULL.
 ##' @param likelihood.function Function, which is going to be
@@ -275,7 +275,7 @@ fit.gev <- function(  x, initial = NULL,
 ##'
 ##'   \emph{MLE}: The standard error of the return level is calculated
 ##'     using the Delta method and the maximum likelihood estimates of
-##'     the GPD parameters. Note: For positive shape parameters bigger
+##'     the GEV parameters. Note: For positive shape parameters bigger
 ##'     than 0.3 this approach tends to highly overestimates the
 ##'     errors of the return levels. 
 ##' 
@@ -288,7 +288,7 @@ fit.gev <- function(  x, initial = NULL,
 ##'     calculated return levels. Note: In its essence this approach
 ##'     is not an estimation of the error involved in fitting the time
 ##'     series to a GEV distribution. It is rather the mean error of
-##'     fitting a GPD-distribution with the same length and parameters
+##'     fitting a GEV distribution with the same length and parameters
 ##'     as estimated ones.
 ##'
 ##'   \emph{bootstrap}: Using this option the provided time series
@@ -313,7 +313,7 @@ fit.gev <- function(  x, initial = NULL,
 ##'   Default = 100.
 ##' @param bootstrap.sample.size Number of samples with replacements
 ##'   to drawn from the original series \strong{x} in order to
-##'   determine the standard errors for the GPD parameters and return
+##'   determine the standard errors for the GEV parameters and return
 ##'   levels. Default = 100.
 ##' @param return.period Quantiles at which the return level is going
 ##'   to be evaluated. Class "numeric". Default = 100.
@@ -492,7 +492,7 @@ fit.gev.list <- function(  x, initial = NULL,
 ##' @param initial Initial values for the GEV parameters. Has to be
 ##'   provided as 3x1 vector. If NULL the parameters are estimated
 ##'   using \code{\link{likelihood.initials}}. If the shape parameter
-##'   is set to 0 the exponential distribution instead of the GP one
+##'   is set to 0 the exponential distribution instead of the GEV one
 ##'   is fitted. But this its strongly discouraged to do so! Default =
 ##'   NULL.
 ##' @param likelihood.function Function, which is going to be
@@ -507,7 +507,7 @@ fit.gev.list <- function(  x, initial = NULL,
 ##'
 ##'   \emph{MLE}: The standard error of the return level is calculated
 ##'     using the Delta method and the maximum likelihood estimates of
-##'     the GPD parameters. Note: For positive shape parameters bigger
+##'     the GEV parameters. Note: For positive shape parameters bigger
 ##'     than 0.3 this approach tends to highly overestimates the
 ##'     errors of the return levels. 
 ##' 
@@ -520,7 +520,7 @@ fit.gev.list <- function(  x, initial = NULL,
 ##'     calculated return levels. Note: In its essence this approach
 ##'     is not an estimation of the error involved in fitting the time
 ##'     series to a GEV distribution. It is rather the mean error of
-##'     fitting a GPD-distribution with the same length and parameters
+##'     fitting a GEV distribution with the same length and parameters
 ##'     as estimated ones.
 ##'
 ##'   \emph{bootstrap}: Using this option the provided time series
@@ -545,7 +545,7 @@ fit.gev.list <- function(  x, initial = NULL,
 ##'   Default = 100.
 ##' @param bootstrap.sample.size Number of samples with replacements
 ##'   to drawn from the original series \strong{x} in order to
-##'   determine the standard errors for the GPD parameters and return
+##'   determine the standard errors for the GEV parameters and return
 ##'   levels. Default = 100.
 ##' @param return.period Quantiles at which the return level is going
 ##'   to be evaluated. Class "numeric". Default = 100.
@@ -698,7 +698,7 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
     ## happening. Adding various additional options and tolerances to
     ## both auglag and optim doesn't change the matter. Since these
     ## deviations are minor ones and the actual MLE estimates of the
-    ## GEV and GP parameters are way bigger, I will just leave it this
+    ## GEV and GEV parameters are way bigger, I will just leave it this
     ## way.
     suppressWarnings(
         res.alabama <- auglag(
@@ -950,14 +950,14 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
   ## conversion with as.fevd)
   names( res.optim$par ) <- c( "location", "scale", "shape" )
   ## introducing a new data type for handling fits done with climex
-  class( res.optim ) <- c( "list", "climex.fit.gev" )
+  class( res.optim ) <- c( "climex.fit.gev", "list" )
   ## adding the return levels
   res.optim$return.level <- Reduce(
       c, lapply( return.period,
                 function( yy )
-                  climex::return.level( res.optim, yy,
-                                       extreme.type = "max"
-                                       )$return.level ) )
+                  climex::return.level( res.optim, yy )$return.level )
+  )
+  
   names( res.optim$return.level ) <-
     paste0( return.period, ".rlevel" )
   res.optim$x <- x
@@ -971,20 +971,21 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
   return( res.optim )
 }
 
-##' @title Improved maximum-likelihood fit of the GPD distribution
+##' @title Improved maximum-likelihood fit of the generalized Pareto
+##'   (GP) distribution
 ##'
 ##' @description This function fits the Generalized Pareto
-##'   distribution (GPD) to the supplied data, which have to be
+##'   distribution (GP) to the supplied data, which have to be
 ##'   threshold exceedances with the corresponding threshold already
 ##'   subtracted. The determination of the starting point for the
 ##'   optimization and the calculation of the return level and the all
 ##'   the corresponding estimates of the fitting errors will be done
-##'   internally. 
+##'   internally.
 ##'
 ##' @details The optimization is performed by the augmented Lagrangian
 ##'   method using the \code{\link{auglag}} function of the
 ##'   \pkg{alabama} package. Within this framework the log-likelihood
-##'   function of the GPD gets augmented with N+2 constraints, where N
+##'   function of the GP gets augmented with N+2 constraints, where N
 ##'   is the number of points in the time series. N+1 of those
 ##'   constraints ensure the log-likelihood (containing two
 ##'   logarithms) to be always defined. The remaining constraints
@@ -1033,7 +1034,7 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
 ##'   \strong{thresholding} argument set to FALSE or as the raw time
 ##'   series with \strong{thresholding} set to TRUE. In the later case
 ##'   the exceedances will be extracted inside the fit.gpd function.
-##' @param initial Initial values for the GPD parameters. Has to be
+##' @param initial Initial values for the GP parameters. Has to be
 ##'   provided as 2x1 vector. If NULL the parameters are estimated
 ##'   with the function \code{\link{likelihood.initials}}. If the
 ##'   shape parameter is set to 0 the exponential distribution instead
@@ -1048,40 +1049,40 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
 ##' @param likelihood.function Function which is going to be
 ##'   optimized. Default: \code{\link{likelihood}}
 ##' @param gradient.function If NULL a finite difference method is
-##'   invoked. To use the derived formula from the GPD likelihood
-##'   gradient provide \code{\link{likelihood.gradient}}.
-##'   Default = \code{\link{likelihood.gradient}}.
+##'   invoked. To use the derived formula from the GP likelihood
+##'   gradient provide \code{\link{likelihood.gradient}}.  Default =
+##'   \code{\link{likelihood.gradient}}.
 ##' @param error.estimation Method for calculating the standard errors
-##'   of the fitted results. The errors of the GPD parameters will be
+##'   of the fitted results. The errors of the GP parameters will be
 ##'   calculated as the square roots of the diagonal elements of the
 ##'   inverse of the hessian matrix. The latter will be evaluated at
-##'   the maximum likelihood estimates (MLE) of the GPD parameters.
+##'   the maximum likelihood estimates (MLE) of the GP parameters.
 ##'
 ##'   \emph{MLE}: The standard error of the return level is
 ##'     calculated using the Delta method and the maximum likelihood
-##'     estimates of the GPD parameters. Note: For positive shape
+##'     estimates of the GP parameters. Note: For positive shape
 ##'     parameters bigger than 0.3 this approach tends to highly
 ##'     overestimates the errors of the return levels.
 ##' 
 ##'   \emph{MC}: Alternative one can use a Monte Carlo method for
 ##'     which \strong{monte.carlo.sample.size} samples of the same
-##'     size as \emph{x} will be drawn from a GPD distribution
-##'     constituted by the obtained MLE of the GPD parameters of
+##'     size as \emph{x} will be drawn from a GP distribution
+##'     constituted by the obtained MLE of the GP parameters of
 ##'     \strong{x}. The standard error is then calculated via the
-##'     square of the variance of all fitted GPD parameters and
+##'     square of the variance of all fitted GP parameters and
 ##'     calculated return levels. Note: In its essence this approach
 ##'     is not an estimation of the error involved in fitting the time
-##'     series to a GPD distribution. It is rather the mean error of
-##'     fitting a GPD-distribution with the same length and parameters
+##'     series to a GP distribution. It is rather the mean error of
+##'     fitting a GP distribution with the same length and parameters
 ##'     as estimated ones.
 ##'
 ##'   \emph{bootstrap}: Using this option the provided time series
 ##'     \strong{x} will be sampled with replacement
 ##'     \strong{bootstrap.sample.size} times and with the same length
-##'     as the original time series. The standard errors of the GPD
+##'     as the original time series. The standard errors of the GP
 ##'     parameters and return levels of all those sampled series is
 ##'     calculated and returned as an estimate of the fitting error.
-##'     Note: Since the data is (hopefully) GPD-distributed, such a
+##'     Note: Since the data is (hopefully) GP-distributed, such a
 ##'     sampling has to be treated with a lot of care.
 ##'
 ##'     Sometimes the inversion of the hessian fails (since the are
@@ -1097,7 +1098,7 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
 ##'   Default = 100.
 ##' @param bootstrap.sample.size Number of samples with replacements
 ##'   to drawn from the original series \emph{x} in order to determine
-##'   the standard errors for the GPD parameters and return
+##'   the standard errors for the GP parameters and return
 ##'   levels. Default = 100.
 ##' @param return.period Quantiles at which the return level is going
 ##'   to be evaluated. Class \emph{numeric}. Default = 100.
@@ -1150,7 +1151,7 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
 ##' @return Output of the optim function with class \code{c( "list",
 ##'   "climex.fit.gpd" )}
 ##'   \itemize{
-##'     \item{ par = MLE of the GPD parameters }
+##'     \item{ par = MLE of the GP parameters }
 ##'     \item{ value = Value of the negative log-likelihood
 ##'              evaluated at the MLE }
 ##'     \item{ counts = Number of evaluations of the likelihood
@@ -1161,7 +1162,7 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
 ##'              the constraints on the optimization (outer routine) }
 ##'      \item{ return.level = Estimate of the return levels at the
 ##'              provided return periods }
-##'      \item{ se = Standard error of the GPD parameters and the
+##'      \item{ se = Standard error of the GP parameters and the
 ##'              return levels }
 ##'      \item{ x = Threshold exceedances }
 ##'      \item{ threshold = Value which had to be exceeded }
@@ -1197,10 +1198,11 @@ fit.gpd <- function(  x, initial = NULL, threshold = NULL,
                     silent = TRUE, mc.cores = NULL, ... ){
   UseMethod( "fit.gpd" )
 }
-##' @title Improved maximum-likelihood fit of the GPD distribution
+##' @title Improved maximum-likelihood fit of the generalize Pareto
+##'   (GP) distribution
 ##'
 ##' @description This function fits the Generalized Pareto
-##'   distribution (GPD) to the supplied data, which have to be
+##'   distribution (GP) to the supplied data, which have to be
 ##'   threshold exceedances with the corresponding threshold already
 ##'   subtracted. The determination of the starting point for the
 ##'   optimization and the calculation of the return level and the all
@@ -1210,7 +1212,7 @@ fit.gpd <- function(  x, initial = NULL, threshold = NULL,
 ##' @details The optimization is performed by the augmented Lagrangian
 ##'   method using the \code{\link{auglag}} function of the
 ##'   \pkg{alabama} package. Within this framework the log-likelihood
-##'   function of the GPD gets augmented with N+2 constraints, where N
+##'   function of the GP gets augmented with N+2 constraints, where N
 ##'   is the number of points in the time series. N+1 of those
 ##'   constraints ensure the log-likelihood (containing two
 ##'   logarithms) to be always defined. The remaining constraints
@@ -1259,7 +1261,7 @@ fit.gpd <- function(  x, initial = NULL, threshold = NULL,
 ##'   \strong{thresholding} argument set to FALSE or as the raw time
 ##'   series with \strong{thresholding} set to TRUE. In the later case
 ##'   the exceedances will be extracted inside the fit.gpd function.
-##' @param initial Initial values for the GPD parameters. Has to be
+##' @param initial Initial values for the GP parameters. Has to be
 ##'   provided as 2x1 vector. If NULL the parameters are estimated
 ##'   with the function \code{\link{likelihood.initials}}. If the
 ##'   shape parameter is set to 0 the exponential distribution instead
@@ -1274,40 +1276,40 @@ fit.gpd <- function(  x, initial = NULL, threshold = NULL,
 ##' @param likelihood.function Function which is going to be
 ##'   optimized. Default: \code{\link{likelihood}}
 ##' @param gradient.function If NULL a finite difference method is
-##'   invoked. To use the derived formula from the GPD likelihood
+##'   invoked. To use the derived formula from the GP likelihood
 ##'   gradient provide \code{\link{likelihood.gradient}}.
 ##'   Default = \code{\link{likelihood.gradient}}.
 ##' @param error.estimation Method for calculating the standard errors
-##'   of the fitted results. The errors of the GPD parameters will be
+##'   of the fitted results. The errors of the GP parameters will be
 ##'   calculated as the square roots of the diagonal elements of the
 ##'   inverse of the hessian matrix. The latter will be evaluated at
-##'   the maximum likelihood estimates (MLE) of the GPD parameters.
+##'   the maximum likelihood estimates (MLE) of the GP parameters.
 ##'
 ##'   \emph{MLE}: The standard error of the return level is
 ##'     calculated using the Delta method and the maximum likelihood
-##'     estimates of the GPD parameters. Note: For positive shape
+##'     estimates of the GP parameters. Note: For positive shape
 ##'     parameters bigger than 0.3 this approach tends to highly
 ##'     overestimates the errors of the return levels.
 ##' 
 ##'   \emph{MC}: Alternative one can use a Monte Carlo method for
 ##'     which \strong{monte.carlo.sample.size} samples of the same
-##'     size as \emph{x} will be drawn from a GPD distribution
-##'     constituted by the obtained MLE of the GPD parameters of
+##'     size as \emph{x} will be drawn from a GP distribution
+##'     constituted by the obtained MLE of the GP parameters of
 ##'     \strong{x}. The standard error is then calculated via the
-##'     square of the variance of all fitted GPD parameters and
+##'     square of the variance of all fitted GP parameters and
 ##'     calculated return levels. Note: In its essence this approach
 ##'     is not an estimation of the error involved in fitting the time
-##'     series to a GPD distribution. It is rather the mean error of
-##'     fitting a GPD-distribution with the same length and parameters
+##'     series to a GP distribution. It is rather the mean error of
+##'     fitting a GP distribution with the same length and parameters
 ##'     as estimated ones.
 ##'
 ##'   \emph{bootstrap}: Using this option the provided time series
 ##'     \strong{x} will be sampled with replacement
 ##'     \strong{bootstrap.sample.size} times and with the same length
-##'     as the original time series. The standard errors of the GPD
+##'     as the original time series. The standard errors of the GP
 ##'     parameters and return levels of all those sampled series is
 ##'     calculated and returned as an estimate of the fitting error.
-##'     Note: Since the data is (hopefully) GPD-distributed, such a
+##'     Note: Since the data is (hopefully) GP-distributed, such a
 ##'     sampling has to be treated with a lot of care.
 ##'
 ##'     Sometimes the inversion of the hessian fails (since the are
@@ -1323,7 +1325,7 @@ fit.gpd <- function(  x, initial = NULL, threshold = NULL,
 ##'   Default = 100.
 ##' @param bootstrap.sample.size Number of samples with replacements
 ##'   to drawn from the original series \emph{x} in order to determine
-##'   the standard errors for the GPD parameters and return
+##'   the standard errors for the GP parameters and return
 ##'   levels. Default = 100.
 ##' @param return.period Quantiles at which the return level is going
 ##'   to be evaluated. Class \emph{numeric}. Default = 100.
@@ -1376,7 +1378,7 @@ fit.gpd <- function(  x, initial = NULL, threshold = NULL,
 ##' @return Output of the optim function with class \code{c( "list",
 ##'   "climex.fit.gpd" )}
 ##'   \itemize{
-##'     \item{ par = MLE of the GPD parameters }
+##'     \item{ par = MLE of the GP parameters }
 ##'     \item{ value = Value of the negative log-likelihood
 ##'              evaluated at the MLE }
 ##'     \item{ counts = Number of evaluations of the likelihood
@@ -1387,7 +1389,7 @@ fit.gpd <- function(  x, initial = NULL, threshold = NULL,
 ##'              the constraints on the optimization (outer routine) }
 ##'      \item{ return.level = Estimate of the return levels at the
 ##'              provided return periods }
-##'      \item{ se = Standard error of the GPD parameters and the
+##'      \item{ se = Standard error of the GP parameters and the
 ##'              return levels }
 ##'      \item{ x = Threshold exceedances }
 ##'      \item{ threshold = Value which had to be exceeded }
@@ -1452,10 +1454,11 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
                    mc.cores = mc.cores, ... ) )
   }
 }
-##' @title Improved maximum-likelihood fit of the GPD distribution
+##' @title Improved maximum-likelihood fit of the generalized Pareto
+##'   (GP) distribution
 ##'
 ##' @description This function fits the Generalized Pareto
-##'   distribution (GPD) to the supplied data, which have to be
+##'   distribution (GP) to the supplied data, which have to be
 ##'   threshold exceedances with the corresponding threshold already
 ##'   subtracted. The determination of the starting point for the
 ##'   optimization and the calculation of the return level and the all
@@ -1465,7 +1468,7 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
 ##' @details The optimization is performed by the augmented Lagrangian
 ##'   method using the \code{\link{auglag}} function of the
 ##'   \pkg{alabama} package. Within this framework the log-likelihood
-##'   function of the GPD gets augmented with N+2 constraints, where N
+##'   function of the GP gets augmented with N+2 constraints, where N
 ##'   is the number of points in the time series. N+1 of those
 ##'   constraints ensure the log-likelihood (containing two
 ##'   logarithms) to be always defined. The remaining constraints
@@ -1511,7 +1514,7 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
 ##'   \strong{thresholding} argument set to FALSE or as the raw time
 ##'   series with \strong{thresholding} set to TRUE. In the later case
 ##'   the exceedances will be extracted inside the fit.gpd function.
-##' @param initial Initial values for the GPD parameters. Has to be
+##' @param initial Initial values for the GP parameters. Has to be
 ##'   provided as 2x1 vector. If NULL the parameters are estimated
 ##'   with the function \code{\link{likelihood.initials}}. If the
 ##'   shape parameter is set to 0 the exponential distribution instead
@@ -1522,44 +1525,44 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
 ##'   will be added to the return level to produce a value which fits
 ##'   to underlying time series. If the user wants the exceedances to
 ##'   be calculated within this function, this argument is a mandatory
-##'   one.  Default = NULL.
+##'   one. Default = NULL.
 ##' @param likelihood.function Function which is going to be
 ##'   optimized. Default: \code{\link{likelihood}}
 ##' @param gradient.function If NULL a finite difference method is
-##'   invoked. To use the derived formula from the GPD likelihood
+##'   invoked. To use the derived formula from the GP likelihood
 ##'   gradient provide \code{\link{likelihood.gradient}}.
 ##'   Default = \code{\link{likelihood.gradient}}.
 ##' @param error.estimation Method for calculating the standard errors
-##'   of the fitted results. The errors of the GPD parameters will be
+##'   of the fitted results. The errors of the GP parameters will be
 ##'   calculated as the square roots of the diagonal elements of the
 ##'   inverse of the hessian matrix. The latter will be evaluated at
-##'   the maximum likelihood estimates (MLE) of the GPD parameters.
+##'   the maximum likelihood estimates (MLE) of the GP parameters.
 ##'
 ##'   \emph{MLE}: The standard error of the return level is
 ##'     calculated using the Delta method and the maximum likelihood
-##'     estimates of the GPD parameters. Note: For positive shape
+##'     estimates of the GP parameters. Note: For positive shape
 ##'     parameters bigger than 0.3 this approach tends to highly
 ##'     overestimates the errors of the return levels.
 ##' 
 ##'   \emph{MC}: Alternative one can use a Monte Carlo method for
 ##'     which \strong{monte.carlo.sample.size} samples of the same
-##'     size as \emph{x} will be drawn from a GPD distribution
-##'     constituted by the obtained MLE of the GPD parameters of
+##'     size as \emph{x} will be drawn from a GP distribution
+##'     constituted by the obtained MLE of the GP parameters of
 ##'     \strong{x}. The standard error is then calculated via the
-##'     square of the variance of all fitted GPD parameters and
+##'     square of the variance of all fitted GP parameters and
 ##'     calculated return levels. Note: In its essence this approach
 ##'     is not an estimation of the error involved in fitting the time
-##'     series to a GPD distribution. It is rather the mean error of
-##'     fitting a GPD-distribution with the same length and parameters
+##'     series to a GP distribution. It is rather the mean error of
+##'     fitting a GP distribution with the same length and parameters
 ##'     as estimated ones.
 ##'
 ##'   \emph{bootstrap}: Using this option the provided time series
 ##'     \strong{x} will be sampled with replacement
 ##'     \strong{bootstrap.sample.size} times and with the same length
-##'     as the original time series. The standard errors of the GPD
+##'     as the original time series. The standard errors of the GP
 ##'     parameters and return levels of all those sampled series is
 ##'     calculated and returned as an estimate of the fitting error.
-##'     Note: Since the data is (hopefully) GPD-distributed, such a
+##'     Note: Since the data is (hopefully) GP-distributed, such a
 ##'     sampling has to be treated with a lot of care.
 ##'
 ##'     Sometimes the inversion of the hessian fails (since the are
@@ -1575,7 +1578,7 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
 ##'   Default = 100.
 ##' @param bootstrap.sample.size Number of samples with replacements
 ##'   to drawn from the original series \emph{x} in order to determine
-##'   the standard errors for the GPD parameters and return
+##'   the standard errors for the GP parameters and return
 ##'   levels. Default = 100.
 ##' @param return.period Quantiles at which the return level is going
 ##'   to be evaluated. Class \emph{numeric}. Default = 100.
@@ -1628,7 +1631,7 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
 ##' @return Output of the optim function with class \code{c( "list",
 ##'   "climex.fit.gpd" )}
 ##'   \itemize{
-##'     \item{ par = MLE of the GPD parameters }
+##'     \item{ par = MLE of the GP parameters }
 ##'     \item{ value = Value of the negative log-likelihood
 ##'              evaluated at the MLE }
 ##'     \item{ counts = Number of evaluations of the likelihood
@@ -1639,7 +1642,7 @@ fit.gpd.list <- function(  x, initial = NULL, threshold = NULL,
 ##'              the constraints on the optimization (outer routine) }
 ##'      \item{ return.level = Estimate of the return levels at the
 ##'              provided return periods }
-##'      \item{ se = Standard error of the GPD parameters and the
+##'      \item{ se = Standard error of the GP parameters and the
 ##'              return levels }
 ##'      \item{ x = Threshold exceedances }
 ##'      \item{ threshold = Value which had to be exceeded }
@@ -1705,7 +1708,7 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
                    mc.cores = NULL )
   }
   ## Flipping the series in order to fit all values below a very low
-  ## threshold. Flipped they are handled like an ordinary GPD fit.
+  ## threshold. Flipped they are handled like an ordinary GP fit.
   if ( extreme.type == "min" ){
     x <- x* -1
     threshold <- threshold* -1
@@ -1817,7 +1820,7 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
     ## sampled with replacement and the parameters and return levels
     ## are calculated for all of the resampled series. The bootstrap
     ## error is than calculated as the standard error of all the
-    ## GPD parameters and return levels.
+    ## GP parameters and return levels.
     bootstrap.sample.list <-
       lapply( c( 1 : bootstrap.sample.size ), function( xx )
         sample( x, size = length( x ), replace = TRUE ) )
@@ -1869,7 +1872,7 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
          error.estimation == "MC" ||
          any( is.nan( res.optim$control$hessian ) ) ){
       parameter.estimate <- res.optim$par
-      ## Draw a number of samples and fit the GPD parameters for all
+      ## Draw a number of samples and fit the GP parameters for all
       ## of them.
       samples.list <-
         lapply( 1 : monte.carlo.sample.size, function( yy )
@@ -1942,7 +1945,7 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
           mean( apply.yearly( x, function( yy ) length( yy ) ) )
         zeta <- NULL
       }
-      errors.aux <- sqrt( diag( error.covariance ) ) # GPD parameters
+      errors.aux <- sqrt( diag( error.covariance ) ) # GP parameters
       errors <- data.frame( errors.aux[ 1 ], errors.aux[ 2 ] )
       ## Delta method for the return level
       parameter.estimate <- res.optim$par
@@ -2000,7 +2003,7 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
   } 
   names( res.optim$par ) <- c( "scale", "shape" )
   ## introducing a new data type for handling fits done with climex
-  class( res.optim ) <- c( "list", "climex.fit.gpd" )
+  class( res.optim ) <- c( "climex.fit.gpd", "list" )
 
   ## adding the return levels
   if ( is.null( threshold ) || extreme.type == "max" ){
@@ -2012,7 +2015,6 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
                       model = "gpd",
                       threshold = threshold,
                       total.length = total.length,
-                      extreme.type = extreme.type,
                       silent = silent )$return.level ) )
   } else {
     res.optim$return.level <- Reduce(
@@ -2023,7 +2025,6 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
                       model = "gpd",
                       threshold = threshold * -1,
                       total.length = total.length,
-                      extreme.type = extreme.type,
                       silent = silent )$return.level ) )
   }
   ## Converting the results to represent the extremes below a very
@@ -2038,7 +2039,7 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
 
 ##' @title Likelihood of the GEV and GP distribution
 ##' @description Calculated the negative log likelihood of the GEV or
-##'   GPD function.
+##'   GP function.
 ##'
 ##' @details This function is only meant to work with constant
 ##'   parameters and no covariates. \strong{x.in} is not called "x"
@@ -2047,12 +2048,12 @@ fit.gpd.xts <- fit.gpd.default <- function( x, initial = NULL,
 ##'
 ##' @param parameters Numerical vector containing the location, scale,
 ##'   and shape parameters for the GEV or the scale and shape
-##'   parameters for the GPD. If NULL,
+##'   parameters for the GP. If NULL,
 ##'   \code{\link{likelihood.initials}} is used to determine
 ##'   them. Default = NULL
 ##' @param x.in Time series of class \pkg{xts}.
 ##' @param model String determining whether to calculate the initial
-##'   parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+##'   parameters of the GEV ("gev") or GP ("gpd") function. Default =
 ##'   "gev"
 ##' 
 ##' @family optimization
@@ -2132,7 +2133,7 @@ likelihood <- function( parameters = NULL, x.in,
 }
 
 ##' @title Calculated the augmented negative log likelihood of the
-##'   GEV or GPD function.
+##'   GEV or GP function.
 ##'
 ##' @description This function uses the \code{\link{likelihood}}
 ##'   function and adds the linear constraints used in
@@ -2150,12 +2151,12 @@ likelihood <- function( parameters = NULL, x.in,
 ##'
 ##' @param parameters Numerical vector containing the location, scale,
 ##'   and shape parameters for the GEV or the scale and shape
-##'   parameters for the GPD. If NULL,
+##'   parameters for the GP. If NULL,
 ##'   \code{\link{likelihood.initials}} is used to determine
 ##'   them. Default = NULL
 ##' @param x.in Time series of class \pkg{xts}.
 ##' @param model String determining whether to calculate the initial
-##'   parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+##'   parameters of the GEV ("gev") or GP ("gpd") function. Default =
 ##'   "gev"
 ##' @param lagrangian.multiplier Lagrangian multipliers used to weight
 ##'   the linear contribution of the constraints. In most cases all of
@@ -2225,22 +2226,22 @@ likelihood.augmented <- function( parameters, x.in,
 
 ##' @title Gradient of the likelihood of the GEV and GP distribution
 ##' @description Calculates the gradient of the negative log
-##'   likelihood of the GEV or GPD function.
+##'   likelihood of the GEV or GP function.
 ##'
 ##' @param parameters Numerical vector containing the location, scale,
 ##'   and shape parameters for the GEV model or the scale and shape
-##'   parameters for the GPD one.
+##'   parameters for the GP one.
 ##' @param x.in Time series of class \pkg{xts} or numerical vector
 ##'   containing the extreme events.
 ##' @param model String determining whether to calculate the initial
-##'   parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+##'   parameters of the GEV ("gev") or GP ("gpd") function. Default =
 ##'   "gev".
 ##' 
 ##' @family optimization
 ##'
 ##' @return Numerical vector containing the derivative of the negative
 ##'   log-likelihood in (location, scale, shape for GEV) or (scale,
-##'   shape for GPD) direction.
+##'   shape for GP) direction.
 ##' @author Philipp Mueller
 likelihood.gradient <- function( parameters, x.in,
                                 model = c( "gev", "gpd" ) ){
@@ -2316,7 +2317,7 @@ likelihood.gradient <- function( parameters, x.in,
 }
 
 ##' @title Calculated the gradient of the augmented negative log
-##'   likelihood of the GEV or GPD function.
+##'   likelihood of the GEV or GP function.
 ##'
 ##' @description This function uses the
 ##'   \code{\link{likelihood.gradient}} function and adds the linear
@@ -2331,12 +2332,12 @@ likelihood.gradient <- function( parameters, x.in,
 ##'
 ##' @param parameters Numerical vector containing the location, scale,
 ##'   and shape parameters for the GEV or the scale and shape
-##'   parameters for the GPD. If NULL,
+##'   parameters for the GP. If NULL,
 ##'   \code{\link{likelihood.initials}} is used to determine
 ##'   them. Default = NULL
 ##' @param x.in Time series of class \pkg{xts}.
 ##' @param model String determining whether to calculate the initial
-##'   parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+##'   parameters of the GEV ("gev") or GP ("gpd") function. Default =
 ##'   "gev".
 ##' @param lagrangian.multiplier Lagrangian multipliers used to weight
 ##'   the linear contribution of the constraints. In most cases all of
@@ -2446,7 +2447,7 @@ likelihood.gradient.augmented <- function( parameters, x.in,
 }
 
 ##' @title Initial GEV or GP parameters
-##' @description Estimates the initial GEV or GPD parameters of a time
+##' @description Estimates the initial GEV or GP parameters of a time
 ##'   series required to start the fitting routine.
 ##'
 ##' @details Two main methods are used for the estimation: the
@@ -2467,7 +2468,7 @@ likelihood.gradient.augmented <- function( parameters, x.in,
 ##'
 ##' @param x Time series of class \pkg{xts} or \emph{numeric}.
 ##' @param model String determining whether to calculate the initial
-##'   parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+##'   parameters of the GEV ("gev") or GP ("gpd") function. Default =
 ##'   "gev"
 ##' @param use.skewness Determines if the skewness is getting used to
 ##'   determine the initial shape parameter. Default = TRUE.
