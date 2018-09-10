@@ -56,7 +56,6 @@ test_that( "block's block mode argument works", {
                            extreme.type = "min" ) ), 0 )
   expect_equal( min( block( temp.potsdam,
                            extreme.type = "min" ) ), -16 )
-  
 })
 test_that( "block's block number argument works", {
   expect_equal( length( block( temp.potsdam,
@@ -156,14 +155,39 @@ test_that( "decluster works with both lists and single objects", {
 })
 
 test_that( "extremal.index calculates correct results and throws warnings", {
-  expect_equal( extremal.index( temp.potsdam, 29 ),
+  expect_equal( climex:::extremal.index( temp.potsdam, 29 ),
                c( 0.240429635, 350.000000000, 12.000000000 ) )
-  expect_warning( extremal.index( temp.potsdam, 100 ) )
+  expect_warning( climex:::extremal.index( temp.potsdam, 100 ) )
 })
-
-test_that( "return.level of fit results and GEV/GP parameters as input", {
+test_that( "the errors and warnings of return.level do work", {
   expect_error( return.level( temp.potsdam ) )
   expect_error( return.level( as.numeric( temp.potsdam ) ) )
+  expect_warning( return.level( x.block.fit, model = "gpd" ) )
+  expect_warning( return.level( x.thresh.fit, model = "gev" ) )
+  expect_warning( return.level( x.block.fit, extreme.type = "min" ) )
+  expect_warning( return.level( x.thresh.fit, extreme.type = "min" ) )
+  expect_warning( return.level( x.thresh.fit, silent = FALSE,
+                               total.length = 100 ) )
+  expect_warning( return.level( x.thresh.fit,
+                               return.period = .0001 ) )
+  expect_error( return.level( as.numeric( x.block.fit$par ),
+                             model = "gpd" ) )
+  expect_error( return.level( as.numeric( x.thresh.fit$par ),
+                             model = "gev" ) )
+  expect_warning( return.level( as.numeric( x.thresh.fit$par ),
+                               model = "gpd",
+                               threshold = x.thresh.fit$threshold ) )
+  expect_warning( return.level( as.numeric( x.thresh.fit$par ),
+                               model = "gpd",
+                               thresholded.time.series = temp.potsdam ) )
+  expect_warning( return.level( as.numeric( x.thresh.fit$par ),
+                               model = "gpd",
+                               threshold = x.thresh.fit$threshold,
+                               thresholded.time.series = temp.potsdam,
+                               error.estimation = "MC") )
+})
+  
+test_that( "return.level of fit results and GEV/GP parameters as input", {
   expect_equal( as.numeric(
       return.level( fit.gpd( temp.potsdam, thresholding = TRUE,
                             threshold = 24 ),
@@ -315,7 +339,8 @@ test_that( "return.level get the error estimation right for MC", {
                             monte.carlo.sample.size = 10 )$error ),
       0.7133332268 )
   expect_warning(
-      return.level( x.thresh.fit$par, return.period = 42,
+      return.level( x.thresh.fit$par, model = "gpd",
+                   return.period = 42,
                    error.estimation = "MC", threshold = 29,
                    monte.carlo.sample.size = 10 ) )
 })

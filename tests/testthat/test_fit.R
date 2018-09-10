@@ -25,13 +25,13 @@ x.exp.fit <- climex::fit.gpd( x.thresh, initial = initial.exp,
 
 test_that( "fit.gev has the correct output format", {
   expect_equal( class( x.block.fit ),
-               c( "list", "climex.fit.gev" ) )
+               c( "climex.fit.gev", "list" ) )
   expect_equal(
       unique( Reduce( c, lapply( fit.gev(
                              list( x.block, x.block ),
                              error.estimation = "none" ),
                              class ) ) ),
-               c( "list", "climex.fit.gev" ) )
+               c( "climex.fit.gev", "list" ) )
   expect_equal( names( x.block.fit ),
                c( "par", "value", "gradient", "counts",
                  "outer.iterations", "control", "se", "return.level",
@@ -152,13 +152,13 @@ test_that( "fit.gev's error estimation works", {
 })
 
 test_that( "fit.gpd has the correct output format", {
-  expect_equal( class( x.thresh.fit ), c( "list", "climex.fit.gpd" ) )
+  expect_equal( class( x.thresh.fit ), c( "climex.fit.gpd", "list" ) )
   expect_equal(
       unique( Reduce( c, lapply( fit.gpd(
                              list( x.thresh, x.thresh ),
                              error.estimation = "none" ),
                              class ) ) ),
-      c( "list", "climex.fit.gpd" ) )
+      c( "climex.fit.gpd", "list" ) )
   expect_equal( names( x.thresh.fit ),
                c( "par", "value", "gradient", "counts",
                  "outer.iterations", "x", "threshold", "control", "se",
