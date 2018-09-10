@@ -8,7 +8,7 @@
   error.estimation = c("none", "MC", "MLE", "bootstrap"), model = c("gev",
   "gpd"), monte.carlo.sample.size = 100, bootstrap.sample.size = 100,
   threshold = NULL, total.length = NULL, thresholded.time.series = NULL,
-  extreme.type = c("max", "min"), silent = FALSE, mc.cores = NULL)
+  extreme.type = c("max", "min"), silent = FALSE, mc.cores = NULL, ...)
 }
 \arguments{
 \item{x}{A list of class \emph{numeric}, \emph{climex.fit.gev},
@@ -18,36 +18,36 @@ or \emph{climex.fit.gpd} objects.}
 Default = 100.}
 
 \item{error.estimation}{Method for calculating the standard errors
-  of the fitted results. The errors of the GEV/GPD parameters will
+  of the fitted results. The errors of the GEV/GP parameters will
   be calculated as the square roots of the diagonal elements of
   the inverse of the hessian matrix. The latter will be evaluated
-  at the maximum likelihood estimates (MLE) of the GEV/GPD
+  at the maximum likelihood estimates (MLE) of the GEV/GP
   parameters.
 
   For all three methods of estimating the fitting
   errors of the return levels underlying series of threshold
   exceedances or block maxima is required. In case the user
-  supplies numerical values to specify GEV/GPD parameters and not
+  supplies numerical values to specify GEV/GP parameters and not
   the output of either the \code{\link{fit.gev}} or
   \code{\link{fit.gpd}} function no error estimation for the
   return level can be performed. 
 
   \emph{MLE}: The standard error of the return level is
     calculated using the Delta method and the maximum likelihood
-    estimates of the GPD parameters. Note: For positive shape
+    estimates of the GP parameters. Note: For positive shape
     parameters bigger than 0.3 this approach tends to highly
     overestimates the errors of the return levels.
 
   \emph{MC}: Alternative one can use a Monte Carlo method for
     which \strong{monte.carlo.sample.size} samples of the same
-    size as \strong{x} will be drawn from a GEV/GPD distribution
-    constituted by the obtained MLE of the GEV/GPD parameters of
+    size as \strong{x} will be drawn from a GEV/GP distribution
+    constituted by the obtained MLE of the GEV/GP parameters of
     \strong{x}. The standard error is then calculated via the
-    square of the variance of all fitted GEV/GPD parameters and
+    square of the variance of all fitted GEV/GP parameters and
     calculated return levels. Note: In its essence this approach
     is not an estimation of the error involved in fitting the time
-    series to a GEV/GPD distribution. It is rather the mean error
-    of fitting a GPD-distribution with the same length and
+    series to a GEV/GP distribution. It is rather the mean error
+    of fitting a GEV/GP-distribution with the same length and
     parameters as estimated ones.
 
   \emph{bootstrap}: Using this option the provided time series
@@ -57,7 +57,7 @@ Default = 100.}
     GEV/GPD parameters and return levels of all those sampled
     series is calculated and returned as an estimate of the
     fitting error. 
-    Note: Since the data is (hopefully) GEV/GPD-distributed, such
+    Note: Since the data is (hopefully) GEV/GP-distributed, such
     a sampling has to be treated with a lot of care.
 
     Sometimes the inversion of the hessian fails (since the are
@@ -70,7 +70,7 @@ Default = 100.}
   \emph{none} skips the calculation of the error. Default = "MLE".}
 
 \item{model}{String determining whether to calculate the initial
-parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+parameters of the GEV ("gev") or GP ("gpd") function. Default =
 "gev"}
 
 \item{monte.carlo.sample.size}{Number of samples used to obtain
@@ -79,10 +79,10 @@ Default = 100.}
 
 \item{bootstrap.sample.size}{Number of samples with replacements
 to drawn from the original series \strong{x} in order to
-determine the standard errors for the GPD parameters and return
+determine the standard errors for the GEV/GP parameters and return
 levels. Default = 100.}
 
-\item{threshold}{Optional threshold for the GPD model. If present
+\item{threshold}{Optional threshold for the GP model. If present
 it will be added to the return level to produce a value which
 fits to underlying time series. Default = NULL.}
 
@@ -90,12 +90,12 @@ fits to underlying time series. Default = NULL.}
 series the exceedance were obtained from (before! applying the
 threshold). This argument is needed to calculate the standard
 error of the return level via the delta method of the MLE in the
-GPD model. Default = NULL.}
+GP model. Default = NULL.}
 
 \item{thresholded.time.series}{Time series used with
 \code{\link{fit.gpd}} on which already a threshold (the one
 supplied here as well) was applied. Necessary to transform the
-return level for numerical input and the GPD model from m-th
+return level for numerical input and the GP model from m-th
 observation return level to annual return level. If omitted the
 return level will be per observation. Default = NULL.}
 
@@ -122,7 +122,8 @@ A list containing the estimates "return.level" and their
 }
 \description{
 Calculate arbitrary return levels and their error
-  estimates for GEV and GP distributions.
+  estimates for generalized extreme value (GEV) and generalized
+  Pareto (GP) distributions.
 }
 \details{
 Uses the \code{\link{rlevd}} function at its core (a port
@@ -150,6 +151,8 @@ Other extremes: \code{\link{block.list}},
   \code{\link{extremal.index}}, \code{\link{gev.density}},
   \code{\link{gpd.density}}, \code{\link{qevd}},
   \code{\link{return.level.climex.fit.gev}},
+  \code{\link{return.level.climex.fit.gpd}},
+  \code{\link{return.level.numeric}},
   \code{\link{return.level}}, \code{\link{revd}},
   \code{\link{rlevd}}, \code{\link{threshold.list}},
   \code{\link{threshold.xts}}, \code{\link{threshold}}
