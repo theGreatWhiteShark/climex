@@ -18,7 +18,7 @@ function.}
 \code{invisible()}
 }
 \description{
-Summary of the GPD fit results
+Summary of the GP fit results
 }
 \author{
 Philipp Mueller

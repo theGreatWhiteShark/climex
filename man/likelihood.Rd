@@ -9,14 +9,14 @@ likelihood(parameters = NULL, x.in, model = c("gev", "gpd"))
 \arguments{
 \item{parameters}{Numerical vector containing the location, scale,
 and shape parameters for the GEV or the scale and shape
-parameters for the GPD. If NULL,
+parameters for the GP. If NULL,
 \code{\link{likelihood.initials}} is used to determine
 them. Default = NULL}
 
 \item{x.in}{Time series of class \pkg{xts}.}
 
 \item{model}{String determining whether to calculate the initial
-parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+parameters of the GEV ("gev") or GP ("gpd") function. Default =
 "gev"}
 }
 \value{
@@ -24,7 +24,7 @@ Numerical value of the negative log likelihood.
 }
 \description{
 Calculated the negative log likelihood of the GEV or
-  GPD function.
+  GP function.
 }
 \details{
 This function is only meant to work with constant

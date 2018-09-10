@@ -2,7 +2,8 @@
 % Please edit documentation in R/opti.R
 \name{fit.gpd.list}
 \alias{fit.gpd.list}
-\title{Improved maximum-likelihood fit of the GPD distribution}
+\title{Improved maximum-likelihood fit of the generalize Pareto
+  (GP) distribution}
 \usage{
 \method{fit.gpd}{list}(x, initial = NULL, threshold = NULL,
   likelihood.function = likelihood, gradient.function = likelihood.gradient,
@@ -21,7 +22,7 @@ the \code{\link{threshold}} function) and the
 series with \strong{thresholding} set to TRUE. In the later case
 the exceedances will be extracted inside the fit.gpd function.}
 
-\item{initial}{Initial values for the GPD parameters. Has to be
+\item{initial}{Initial values for the GP parameters. Has to be
 provided as 2x1 vector. If NULL the parameters are estimated
 with the function \code{\link{likelihood.initials}}. If the
 shape parameter is set to 0 the exponential distribution instead
@@ -39,41 +40,41 @@ one. Default = NULL.}
 optimized. Default: \code{\link{likelihood}}}
 
 \item{gradient.function}{If NULL a finite difference method is
-invoked. To use the derived formula from the GPD likelihood
+invoked. To use the derived formula from the GP likelihood
 gradient provide \code{\link{likelihood.gradient}}.
 Default = \code{\link{likelihood.gradient}}.}
 
 \item{error.estimation}{Method for calculating the standard errors
-  of the fitted results. The errors of the GPD parameters will be
+  of the fitted results. The errors of the GP parameters will be
   calculated as the square roots of the diagonal elements of the
   inverse of the hessian matrix. The latter will be evaluated at
-  the maximum likelihood estimates (MLE) of the GPD parameters.
+  the maximum likelihood estimates (MLE) of the GP parameters.
 
   \emph{MLE}: The standard error of the return level is
     calculated using the Delta method and the maximum likelihood
-    estimates of the GPD parameters. Note: For positive shape
+    estimates of the GP parameters. Note: For positive shape
     parameters bigger than 0.3 this approach tends to highly
     overestimates the errors of the return levels.
 
   \emph{MC}: Alternative one can use a Monte Carlo method for
     which \strong{monte.carlo.sample.size} samples of the same
-    size as \emph{x} will be drawn from a GPD distribution
-    constituted by the obtained MLE of the GPD parameters of
+    size as \emph{x} will be drawn from a GP distribution
+    constituted by the obtained MLE of the GP parameters of
     \strong{x}. The standard error is then calculated via the
-    square of the variance of all fitted GPD parameters and
+    square of the variance of all fitted GP parameters and
     calculated return levels. Note: In its essence this approach
     is not an estimation of the error involved in fitting the time
-    series to a GPD distribution. It is rather the mean error of
-    fitting a GPD-distribution with the same length and parameters
+    series to a GP distribution. It is rather the mean error of
+    fitting a GP distribution with the same length and parameters
     as estimated ones.
 
   \emph{bootstrap}: Using this option the provided time series
     \strong{x} will be sampled with replacement
     \strong{bootstrap.sample.size} times and with the same length
-    as the original time series. The standard errors of the GPD
+    as the original time series. The standard errors of the GP
     parameters and return levels of all those sampled series is
     calculated and returned as an estimate of the fitting error.
-    Note: Since the data is (hopefully) GPD-distributed, such a
+    Note: Since the data is (hopefully) GP-distributed, such a
     sampling has to be treated with a lot of care.
 
     Sometimes the inversion of the hessian fails (since the are
@@ -91,7 +92,7 @@ Default = 100.}
 
 \item{bootstrap.sample.size}{Number of samples with replacements
 to drawn from the original series \emph{x} in order to determine
-the standard errors for the GPD parameters and return
+the standard errors for the GP parameters and return
 levels. Default = 100.}
 
 \item{return.period}{Quantiles at which the return level is going
@@ -152,7 +153,7 @@ function.}
 Output of the optim function with class \code{c( "list",
   "climex.fit.gpd" )}
   \itemize{
-    \item{ par = MLE of the GPD parameters }
+    \item{ par = MLE of the GP parameters }
     \item{ value = Value of the negative log-likelihood
              evaluated at the MLE }
     \item{ counts = Number of evaluations of the likelihood
@@ -163,7 +164,7 @@ Output of the optim function with class \code{c( "list",
              the constraints on the optimization (outer routine) }
      \item{ return.level = Estimate of the return levels at the
              provided return periods }
-     \item{ se = Standard error of the GPD parameters and the
+     \item{ se = Standard error of the GP parameters and the
              return levels }
      \item{ x = Threshold exceedances }
      \item{ threshold = Value which had to be exceeded }
@@ -176,7 +177,7 @@ Output of the optim function with class \code{c( "list",
 }
 \description{
 This function fits the Generalized Pareto
-  distribution (GPD) to the supplied data, which have to be
+  distribution (GP) to the supplied data, which have to be
   threshold exceedances with the corresponding threshold already
   subtracted. The determination of the starting point for the
   optimization and the calculation of the return level and the all
@@ -187,7 +188,7 @@ This function fits the Generalized Pareto
 The optimization is performed by the augmented Lagrangian
   method using the \code{\link{auglag}} function of the
   \pkg{alabama} package. Within this framework the log-likelihood
-  function of the GPD gets augmented with N+2 constraints, where N
+  function of the GP gets augmented with N+2 constraints, where N
   is the number of points in the time series. N+1 of those
   constraints ensure the log-likelihood (containing two
   logarithms) to be always defined. The remaining constraints

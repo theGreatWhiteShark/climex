@@ -21,7 +21,7 @@ optional but should be provided in order to create a
 representation of the fitted data exceedance. Default = NULL.}
 
 \item{model}{String determining whether to calculate the initial
-parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+parameters of the GEV ("gev") or GP ("gpd") function. Default =
 "gev"}
 
 \item{lower.tail}{Whether to sample the probabilities P[X <= x] or
@@ -33,7 +33,7 @@ P[X > x]. Default = TRUE (first case).}
 Numerical vector of the same length as input argument p.
 }
 \description{
-Calculates the quantile of either the GEV or the GPD
+Calculates the quantile of either the GEV or the GP
   distribution
 }
 \details{
@@ -50,7 +50,9 @@ Other extremes: \code{\link{block.list}},
   \code{\link{extremal.index}}, \code{\link{gev.density}},
   \code{\link{gpd.density}},
   \code{\link{return.level.climex.fit.gev}},
+  \code{\link{return.level.climex.fit.gpd}},
   \code{\link{return.level.list}},
+  \code{\link{return.level.numeric}},
   \code{\link{return.level}}, \code{\link{revd}},
   \code{\link{rlevd}}, \code{\link{threshold.list}},
   \code{\link{threshold.xts}}, \code{\link{threshold}}

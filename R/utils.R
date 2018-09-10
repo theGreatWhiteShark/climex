@@ -113,7 +113,7 @@ summary.climex.fit.gev <- function( object, ... ){
   invisible()
 }
 ##' @title Print results
-##' @description Summary of the GPD fit results
+##' @description Summary of the GP fit results
 ##' @param x Object of class \emph{climex.fit.gpd}.
 ##' @param ... Additional parameters. They won't be handled in the
 ##'   function. This argument is only present to ensure S3 generic
@@ -128,7 +128,7 @@ print.climex.fit.gpd <- function( x, ... ){
   invisible()
 }
 ##' @title Summarize results
-##' @description Summary of the GPD fit results
+##' @description Summary of the GP fit results
 ##' @param object Object of class \emph{climex.fit.gpd}.
 ##' @param ... Additional parameters. They won't be handled in the
 ##'   function. This argument is only present to ensure S3 generic

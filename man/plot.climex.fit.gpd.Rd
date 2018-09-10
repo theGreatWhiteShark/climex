@@ -2,12 +2,12 @@
 % Please edit documentation in R/plot.R
 \name{plot.climex.fit.gpd}
 \alias{plot.climex.fit.gpd}
-\title{Plot a GPD fit}
+\title{Plot a GP fit}
 \usage{
 \method{plot}{climex.fit.gpd}(x, bin.factor = NULL, ...)
 }
 \arguments{
-\item{x}{Fitted GPD object of class \emph{climex.fit.gpd}.}
+\item{x}{Fitted GP object of class \emph{climex.fit.gpd}.}
 
 \item{bin.factor}{Multiplying the length of \strong{x} by this
 factor, results in the number of bins used in this plot. Default
@@ -22,7 +22,7 @@ function.}
 ggplot2 object.
 }
 \description{
-Plots the GPD function fitted using
+Plots the GP function fitted using
   \code{\link{fit.gpd}}
 }
 \details{

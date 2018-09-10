@@ -389,8 +389,8 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL, ... ){
   return( last_plot() )
 }
 
-##' @title Plot a GPD fit
-##' @description Plots the GPD function fitted using
+##' @title Plot a GP fit
+##' @description Plots the GP function fitted using
 ##'   \code{\link{fit.gpd}} 
 ##'
 ##' @details Uses \pkg{ggplot2}.
@@ -399,7 +399,7 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL, ... ){
 ##'   \emph{climexUI}, the number of displayed bins has to be
 ##'   adjusted.
 ##'
-##' @param x Fitted GPD object of class \emph{climex.fit.gpd}.
+##' @param x Fitted GP object of class \emph{climex.fit.gpd}.
 ##' @param bin.factor Multiplying the length of \strong{x} by this
 ##'   factor, results in the number of bins used in this plot. Default
 ##'   = NULL

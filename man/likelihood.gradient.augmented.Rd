@@ -3,7 +3,7 @@
 \name{likelihood.gradient.augmented}
 \alias{likelihood.gradient.augmented}
 \title{Calculated the gradient of the augmented negative log
-  likelihood of the GEV or GPD function.}
+  likelihood of the GEV or GP function.}
 \usage{
 likelihood.gradient.augmented(parameters, x.in, model = c("gev", "gpd"),
   lagrangian.multiplier = rep(0, length(x.in) + 2),
@@ -12,14 +12,14 @@ likelihood.gradient.augmented(parameters, x.in, model = c("gev", "gpd"),
 \arguments{
 \item{parameters}{Numerical vector containing the location, scale,
 and shape parameters for the GEV or the scale and shape
-parameters for the GPD. If NULL,
+parameters for the GP. If NULL,
 \code{\link{likelihood.initials}} is used to determine
 them. Default = NULL}
 
 \item{x.in}{Time series of class \pkg{xts}.}
 
 \item{model}{String determining whether to calculate the initial
-parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+parameters of the GEV ("gev") or GP ("gpd") function. Default =
 "gev".}
 
 \item{lagrangian.multiplier}{Lagrangian multipliers used to weight

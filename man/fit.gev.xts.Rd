@@ -23,7 +23,7 @@ inside the fit.gev function.}
 \item{initial}{Initial values for the GEV parameters. Has to be
 provided as 3x1 vector. If NULL the parameters are estimated
 using \code{\link{likelihood.initials}}. If the shape parameter
-is set to 0 the exponential distribution instead of the GP one
+is set to 0 the exponential distribution instead of the GEV one
 is fitted. But this its strongly discouraged to do so! Default =
 NULL.}
 
@@ -41,7 +41,7 @@ invoked. Default: \code{\link{likelihood.gradient}}}
 
   \emph{MLE}: The standard error of the return level is calculated
     using the Delta method and the maximum likelihood estimates of
-    the GPD parameters. Note: For positive shape parameters bigger
+    the GEV parameters. Note: For positive shape parameters bigger
     than 0.3 this approach tends to highly overestimates the
     errors of the return levels. 
 
@@ -54,7 +54,7 @@ invoked. Default: \code{\link{likelihood.gradient}}}
     calculated return levels. Note: In its essence this approach
     is not an estimation of the error involved in fitting the time
     series to a GEV distribution. It is rather the mean error of
-    fitting a GPD-distribution with the same length and parameters
+    fitting a GEV distribution with the same length and parameters
     as estimated ones.
 
   \emph{bootstrap}: Using this option the provided time series
@@ -81,7 +81,7 @@ Default = 100.}
 
 \item{bootstrap.sample.size}{Number of samples with replacements
 to drawn from the original series \strong{x} in order to
-determine the standard errors for the GPD parameters and return
+determine the standard errors for the GEV parameters and return
 levels. Default = 100.}
 
 \item{return.period}{Quantiles at which the return level is going

@@ -9,8 +9,7 @@
 \arguments{
 \item{x}{A list of \pkg{xts} class objects.}
 
-\item{time.unit}{Minimal differences found when applying the
-\code{\link[base]{diff}} function to \strong{x}. Default = 1.}
+\item{time.unit}{Basic time unit in days. Default = 1.}
 
 \item{mc.cores}{A numerical input specifying the number of cores
 to use for the multi core application of the function (see

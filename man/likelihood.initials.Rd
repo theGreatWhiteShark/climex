@@ -10,7 +10,7 @@ likelihood.initials(x, model = c("gev", "gpd"), use.skewness = TRUE)
 \item{x}{Time series of class \pkg{xts} or \emph{numeric}.}
 
 \item{model}{String determining whether to calculate the initial
-parameters of the GEV ("gev") or GPD ("gpd") function. Default =
+parameters of the GEV ("gev") or GP ("gpd") function. Default =
 "gev"}
 
 \item{use.skewness}{Determines if the skewness is getting used to
@@ -22,7 +22,7 @@ Numerical vector containing the c( location, scale, shape )
   for method = "gpd".
 }
 \description{
-Estimates the initial GEV or GPD parameters of a time
+Estimates the initial GEV or GP parameters of a time
   series required to start the fitting routine.
 }
 \details{
