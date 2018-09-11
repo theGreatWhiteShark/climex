@@ -1293,7 +1293,7 @@ return.level.climex.fit.gev <-
     if ( extreme.type == "min" ){
       return.levels <-
         Reduce( c, lapply( return.period, function( yy )
-          as.numeric( rlevd( yy, x$par[ 1 ], x$par[ 2 ],
+          as.numeric( rlevd( yy, x$par[ 1 ]* -1, x$par[ 2 ],
                             x$par[ 3 ], model = "gev",
                             silent = silent ) ) ) )* -1
     } else {
@@ -1320,17 +1320,32 @@ return.level.climex.fit.gev <-
         lapply( c( 1 : bootstrap.sample.size ), function( xx )
           sample( x$x, size = length( x$x ), replace = TRUE ) )
       ## Fitting the GEV parameters (recursively)
-      fitted.list <-
-        lapply( bootstrap.sample.list, function( xx ){
-          fit.gev( x = xx, initial = x$control$initial,
-                  likelihood.function =
-                    x$control$likelihood.function,
-                  gradient.function = x$control$gradient.function,
-                  error.estimation = "none",
-                  return.period = return.period,
-                  total.length = x$control$total.length,
-                  extreme.type = extreme.type,
-                  silent = TRUE ) } )
+      if ( extreme.type == "max" ){
+        fitted.list <-
+          lapply( bootstrap.sample.list, function( xx ){
+            fit.gev( x = xx, initial = x$control$initial,
+                    likelihood.function =
+                      x$control$likelihood.function,
+                    gradient.function = x$control$gradient.function,
+                    error.estimation = "none",
+                    return.period = return.period,
+                    total.length = x$control$total.length,
+                    extreme.type = extreme.type,
+                    silent = TRUE ) } )
+      } else {
+        fitted.list <-
+          lapply( bootstrap.sample.list, function( xx ){
+            fit.gev( x = xx,
+                    initial = x$control$initial,
+                    likelihood.function =
+                      x$control$likelihood.function,
+                    gradient.function = x$control$gradient.function,
+                    error.estimation = "none",
+                    return.period = return.period,
+                    total.length = x$control$total.length,
+                    extreme.type = extreme.type,
+                    silent = TRUE ) } )
+      }
       ## Calculate the standard errors of all the fitted return
       ## levels.
       fitted.parameters <-
@@ -1451,10 +1466,10 @@ return.level.climex.fit.gev <-
                  parameter.estimate[ 2 ],
                  parameter.estimate[ 3 ], model = "gev" ) )
       }
-        samples.fit <- lapply( samples.list, function( yy )
-          fit.gev( yy, error.estimation = "none",
-                  blocking = FALSE, extreme.type = extreme.type
-                  )$par )
+      samples.fit <- lapply( samples.list, function( yy )
+        fit.gev( yy, error.estimation = "none",
+                blocking = FALSE, extreme.type = extreme.type
+                )$par )
       errors <- data.frame( a = 0 )
       r.period <- return.period
       for ( rr in 1 : length( return.period ) )
