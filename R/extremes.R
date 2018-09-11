@@ -2133,17 +2133,22 @@ rlevd <- function ( period, location = NULL, scale = NULL,
   model <- match.arg( model )
   if ( model == "gev" ){
     if ( is.null( location ) ||
-         is.null( scale ) || is.null( shape ) )
+         is.null( scale ) || is.null( shape ) ){
       stop( "Please supply 'location', 'scale' and 'shape'!" )
+    }
   } else {
-    if ( is.null( scale ) || is.null( shape ) )
+    if ( is.null( scale ) || is.null( shape ) ){
       stop( "Please supply 'scale' and 'shape'!" )
-    if ( is.null( threshold ) ){
-      if ( !silent )
-        warning( "No 'threshold' supplied! This needs to be added to the generated time series in order to resemble the original data points!" )
-      location <- 0
-    } else
+    }
+    if ( is.null( threshold ) || length( threshold ) == 0 ){
+      if ( !silent ){
+        warning(
+            "No 'threshold' supplied! This needs to be added to the generated time series in order to resemble the original data points!" )
+      }
+      location <- threshold <- 0
+    } else {
       location <- threshold
+    }
   }
   if ( any( period <= 1 ) ) 
     stop( "rlevd: invalid period argument.  Must be greater than 1." )
