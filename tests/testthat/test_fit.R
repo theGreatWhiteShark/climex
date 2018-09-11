@@ -31,7 +31,7 @@ test_that( "fit.gev has the correct output format", {
                              list( x.block, x.block ),
                              error.estimation = "none" ),
                              class ) ) ),
-               c( "climex.fit.gev", "list" ) )
+      c( "climex.fit.gev", "list" ) )
   expect_equal( names( x.block.fit ),
                c( "par", "value", "gradient", "counts",
                  "outer.iterations", "control", "se", "return.level",
@@ -41,9 +41,9 @@ test_that( "fit.gev has the correct output format", {
                              list( x.block, x.block ),
                              error.estimation = "none" ),
                              names ) ) ),
-               c( "par", "value", "gradient", "counts",
-                 "outer.iterations", "control", "se", "return.level",
-                 "x" ) )
+      c( "par", "value", "gradient", "counts",
+        "outer.iterations", "control", "se", "return.level",
+        "x" ) )
   expect_equal( class( x.block.fit$par ), "numeric" )
   expect_equal( length( x.block.fit$par ), 3 )
   expect_equal( names( x.block.fit$par ),
@@ -52,18 +52,21 @@ test_that( "fit.gev has the correct output format", {
   expect_equal( class( x.block.fit$return.level ), "numeric" )
   expect_equal( length( x.block.fit$return.level ), 1 )
 })
+
 test_that( "fit.gev's actual fitting works", {
   expect_equal( as.numeric( x.block.fit$par ),
                c( 11.727058700107, 1.429260028751, -0.260793037231 ) )
   expect_equal( as.numeric(  x.gumbel.fit$par ),
                c( 11.53103449, 1.40410971, 0.00000000 ) )
 })
+
 test_that( "fit.gev can handle the blocking", {
   expect_equal( as.numeric(
       fit.gev( climex::anomalies( temp.potsdam ),
               blocking = TRUE )$par ),
       c( 11.727058700107, 1.429260028751, -0.260793037231 ) )
 })
+
 test_that( "fit.gev works for the block minima as well", {
   expect_equal( as.numeric(
       fit.gev( climex::anomalies( temp.potsdam ),
@@ -77,6 +80,7 @@ test_that( "fit.gev works for the block minima as well", {
               extreme.type = "min" )$return.level ),
       c( -16.24695564, -17.98166362, -19.27685233, -20.97602207 ) )
 })
+
 test_that( "the handing over of initial parameters works", {
   expect_equal( as.numeric(
       climex::fit.gev( x.block,
@@ -92,6 +96,7 @@ test_that( "the handing over of initial parameters works", {
                                             )$par ),
                c( 11.53116092, 1.40413665, 0.00000000 ) )
 })
+
 test_that( "fit.gev's error estimation works", {
   expect_equal( names( x.block.fit$se ),
                c( "location", "scale", "shape", "100.rlevel" ) )
@@ -151,6 +156,67 @@ test_that( "fit.gev's error estimation works", {
         0.84240265697 ) )
 })
 
+test_that( "fit.gev yield equivalent results for minima and maxima", {
+  expect_equal(
+      climex::fit.gev( x.block, error.estimation = "none",
+                      return.period = c( 20, 50, 200 ),
+                      extreme.type = "max" )$par,
+      climex::fit.gev( -1* x.block, error.estimation = "none",
+                      return.period = c( 20, 50, 200 ),
+                      extreme.type = "min" )$par *
+                                            c( -1, 1, 1 ) )
+  expect_equal(
+      climex::fit.gev( x.block, error.estimation = "none",
+                      return.period = c( 20, 50, 200 ),
+                      extreme.type = "max" )$return.level,
+      climex::fit.gev( -1* x.block, error.estimation = "none",
+                      return.period = c( 20, 50, 200 ),
+                      extreme.type = "min" )$return.level *
+                                            c( -1, -1, -1 ) )
+  expect_equal(
+      climex::fit.gev( x.block, error.estimation = "MLE",
+                      return.period = c( 50, 200 ),
+                      extreme.type = "max" )$se,
+      climex::fit.gev( -1* x.block, error.estimation = "MLE",
+                      return.period = c( 50, 200 ),
+                      extreme.type = "min" )$se )
+  ## In case of the minima the Monte Carlo method draws sample points
+  ## for a different set of parameters: -1* location, scale, and
+  ## shape. Therefore, the results do not perfectly agree regardless
+  ## of the seeding.
+  expect_equal(
+  { set.seed( 123 )
+    as.numeric(
+        climex::fit.gev( x.block, error.estimation = "MC",
+                        return.period = c( 50, 200 ),
+                        monte.carlo.sample.size = 10,
+                        extreme.type = "max" )$se ) },
+  c( 0.1297279979, 0.0704093296, 0.0698187790, 0.3162118860,
+  0.4443972252 ) )
+  expect_equal(
+  { set.seed( 123 )
+    as.numeric(
+        climex::fit.gev( -1* x.block, error.estimation = "MC",
+                        return.period = c( 50, 200 ),
+                        monte.carlo.sample.size = 10,
+                        extreme.type = "min" )$se ) },
+  c( 0.1297457686, 0.0703685774, 0.0697991890, 0.3347215138,
+  0.4786851832 ))
+  expect_equal(
+  { set.seed( 123 )
+    as.numeric(
+        climex::fit.gev( x.block, error.estimation = "bootstrap",
+                        return.period = c( 50, 200 ),
+                        bootstrap.sample.size = 10,
+                        extreme.type = "max" )$se ) },
+  { set.seed( 123 )
+    as.numeric(
+        climex::fit.gev( -1* x.block, error.estimation = "bootstrap",
+                        return.period = c( 50, 200 ),
+                        bootstrap.sample.size = 10,
+                        extreme.type = "min" )$se ) })
+})
+
 test_that( "fit.gpd has the correct output format", {
   expect_equal( class( x.thresh.fit ), c( "climex.fit.gpd", "list" ) )
   expect_equal(
@@ -168,9 +234,9 @@ test_that( "fit.gpd has the correct output format", {
                              list( x.thresh, x.thresh ),
                              error.estimation = "none" ),
                              names ) ) ),
-               c( "par", "value", "gradient", "counts",
-                 "outer.iterations", "x", "threshold", "control", "se",
-                 "return.level" ) )
+      c( "par", "value", "gradient", "counts",
+        "outer.iterations", "x", "threshold", "control", "se",
+        "return.level" ) )
   expect_equal( class( x.thresh.fit$par ), "numeric" )
   expect_equal( length( x.thresh.fit$par ), 2 )
   expect_equal( names( x.thresh.fit$par ),
@@ -179,12 +245,14 @@ test_that( "fit.gpd has the correct output format", {
   expect_equal( class( x.thresh.fit$return.level ), "numeric" )
   expect_equal( length( x.thresh.fit$return.level ), 1 )
 })
+
 test_that( "fit.gpd's actual fitting works", {
   expect_equal( as.numeric( x.thresh.fit$par ),
                c( 4.2828385375, -0.4237078379 ) )
   expect_equal( as.numeric( x.exp.fit$par ),
                c( 3.040842809, 0.00000000 ) )
 })
+
 test_that( "fit.gpd can handle values below a threshold", {
   expect_equal(
       as.numeric( fit.gpd( threshold( temp.potsdam,
@@ -210,14 +278,16 @@ test_that( "fit.gpd can handle values below a threshold", {
               extreme.type = "min" )$return.level ),
       c( -14.77273801, -15.83819111, -16.46598398, -17.11424740 ) )
 })
+
 set.seed( 123 )
 test_that( "fit.gpd can apply the threshold", {
   expect_equal(
       as.numeric( fit.gpd( temp.potsdam,
                           threshold = 29, decluster = TRUE,
                           thresholding = TRUE )$par ),
-               c( 4.2828385375, -0.4237078379 ) )
+      c( 4.2828385375, -0.4237078379 ) )
 })
+
 set.seed( 123 )
 test_that( "the handing over of initial parameters works", {
   expect_equal( as.numeric(
@@ -225,6 +295,7 @@ test_that( "the handing over of initial parameters works", {
                       total.length = length( temp.potsdam ) )$par ),
       c( 4.282381644735, -0.423654396346 ) )
 })
+
 test_that( "fit.gpd's error estimation works", {
   expect_equal( names(
       climex::fit.gpd( x.thresh, error.estimation = "MLE",
@@ -284,11 +355,63 @@ test_that( "fit.gpd's error estimation works", {
                       total.length = length( temp.potsdam ) )$se ),
       c( 0.5936214310, 0.1150000019, 0.4998612247, 0.7263367971 ) )
 })
+
 test_that( "fit.gpd's threshold argument affect the result the way it is supposed to", {
   set.seed( 123 )
   expect_equal( as.numeric(
       climex::fit.gpd( x.thresh, threshold = 29,
                       total.length = length( temp.potsdam )
                       )$return.level ), 38.19163319 )
+})
+
+test_that( "fit.gpd yield equivalent results for minima and maxima", {
+  expect_equal(
+      climex::fit.gpd( x.thresh, error.estimation = "none",
+                      return.period = c( 20, 50, 200 ),
+                      extreme.type = "max" )$par,
+      climex::fit.gpd( -1* x.thresh, error.estimation = "none",
+                      return.period = c( 20, 50, 200 ),
+                      extreme.type = "min" )$par )
+  expect_equal(
+      climex::fit.gpd( x.thresh, error.estimation = "none",
+                      return.period = c( 20, 50, 200 ),
+                      extreme.type = "max" )$return.level,
+      climex::fit.gpd( -1* x.thresh, error.estimation = "none",
+                      return.period = c( 20, 50, 200 ),
+                      extreme.type = "min" )$return.level *
+                                            c( -1, -1, -1 ) )
+  expect_equal(
+      climex::fit.gpd( x.thresh, error.estimation = "MLE",
+                      return.period = c( 50, 200 ),
+                      extreme.type = "max" )$se,
+      climex::fit.gpd( -1* x.thresh, error.estimation = "MLE",
+                      return.period = c( 50, 200 ),
+                      extreme.type = "min" )$se )
+  expect_equal(
+  { set.seed( 123 )
+    as.numeric(
+        climex::fit.gpd( x.thresh, error.estimation = "MC",
+                        return.period = c( 50, 200 ),
+                        monte.carlo.sample.size = 10,
+                        extreme.type = "max" )$se ) },
+  { set.seed( 123 )
+    as.numeric(
+        climex::fit.gpd( -1* x.thresh, error.estimation = "MC",
+                        return.period = c( 50, 200 ),
+                        monte.carlo.sample.size = 10,
+                        extreme.type = "min" )$se ) } )
+  expect_equal(
+  { set.seed( 123 )
+    as.numeric(
+        climex::fit.gpd( x.thresh, error.estimation = "bootstrap",
+                        return.period = c( 50, 200 ),
+                        bootstrap.sample.size = 10,
+                        extreme.type = "max" )$se ) },
+  { set.seed( 123 )
+    as.numeric(
+        climex::fit.gpd( -1* x.thresh, error.estimation = "bootstrap",
+                        return.period = c( 50, 200 ),
+                        bootstrap.sample.size = 10,
+                        extreme.type = "min" )$se ) })
 })
 ## End of test_fit.R
