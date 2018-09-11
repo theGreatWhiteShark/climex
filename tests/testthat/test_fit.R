@@ -34,16 +34,16 @@ test_that( "fit.gev has the correct output format", {
       c( "climex.fit.gev", "list" ) )
   expect_equal( names( x.block.fit ),
                c( "par", "value", "gradient", "counts",
-                 "outer.iterations", "control", "se", "return.level",
-                 "x" ) )
+                 "outer.iterations", "control", "se", "x",
+                 "return.level" ) )
   expect_equal(
       unique( Reduce( c, lapply( fit.gev(
                              list( x.block, x.block ),
                              error.estimation = "none" ),
                              names ) ) ),
       c( "par", "value", "gradient", "counts",
-        "outer.iterations", "control", "se", "return.level",
-        "x" ) )
+        "outer.iterations", "control", "se", "x",
+        "return.level" ) )
   expect_equal( class( x.block.fit$par ), "numeric" )
   expect_equal( length( x.block.fit$par ), 3 )
   expect_equal( names( x.block.fit$par ),

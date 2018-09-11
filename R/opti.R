@@ -949,6 +949,12 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
   ## Naming of the resulting fit parameter (necessary for a correct
   ## conversion with as.fevd)
   names( res.optim$par ) <- c( "location", "scale", "shape" )
+  res.optim$x <- x
+  ## Converting the results to represent those of the block minima
+  if ( extreme.type == "min" ){
+    res.optim$x <- -1* res.optim$x
+    res.optim$par[ 1 ] <- res.optim$par[ 1 ]* -1
+  }
   ## introducing a new data type for handling fits done with climex
   class( res.optim ) <- c( "climex.fit.gev", "list" )
   ## adding the return levels
@@ -960,12 +966,6 @@ fit.gev.xts <- fit.gev.default <- function( x, initial = NULL,
   
   names( res.optim$return.level ) <-
     paste0( return.period, ".rlevel" )
-  res.optim$x <- x
-  ## Converting the results to represent those of the block minima
-  if ( extreme.type == "min" ){
-    res.optim$x <- -1* res.optim$x
-    res.optim$par[ 1 ] <- res.optim$par[ 1 ]* -1
-  }
   if ( !silent )
     summary( res.optim )
   return( res.optim )

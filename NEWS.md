@@ -62,6 +62,8 @@ from one of the CRAN fellows by just submitting the core package.
 - Using seeds instead of tolerances in the test functions.
 - Bug in **ttplot** prevented correct x axis for all base time units
   instead of days.
+- The positions of the returned list elements *x* and *return.level*
+  of the **fit.gev** function was switched.
   
 # v1.2.1
 - Only perform the test of the API of the DWD on Unix-based
