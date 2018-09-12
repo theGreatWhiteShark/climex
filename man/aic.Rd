@@ -28,9 +28,11 @@ The \emph{climex.fit.gev} object is of identical
   \code{\link{fit.gpd}}
 
 Other ts: \code{\link{aic.climex.fit.gev}},
-  \code{\link{aic.list}}, \code{\link{anomalies.list}},
+  \code{\link{aic.climex.fit.gpd}}, \code{\link{aic.list}},
+  \code{\link{anomalies.list}},
   \code{\link{anomalies.xts}}, \code{\link{anomalies}},
-  \code{\link{bic.climex.fit.gev}}, \code{\link{bic.list}},
+  \code{\link{bic.climex.fit.gev}},
+  \code{\link{bic.climex.fit.gpd}}, \code{\link{bic.list}},
   \code{\link{bic}}, \code{\link{check.completeness}},
   \code{\link{remove.incomplete.years.list}},
   \code{\link{remove.incomplete.years.xts}},

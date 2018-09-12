@@ -43,40 +43,47 @@ aic <- function( x ){
 ##' @return Numerical vector
 ##' @author Philipp Mueller
 aic.list <- function( x ){
-  ## Since the objects returned by the fitting functions are of class
-  ## c( "list", "climex.fit.gXX" ), an exception is needed to hand
-  ## them to the correct function call
-  if ( any( class( x ) == "climex.fit.gev" ) ){
-    x.result <- aic.climex.fit.gev( x )
-  } else if ( any( class( x ) == "climex.fit.gpd" ) ){
-    x.result <- aic.climex.fit.gpd( x )
-  } else {
-    x.result <- Reduce( c, lapply( x, aic ) )
-  }
+  x.result <- Reduce( c, lapply( x, aic ) )
   return( x.result )
 }
+
 ##' @title Akaike information criterion
 ##' @description Calculates the Akaike information criterion of a
-##'   \emph{climex.fit.gev} or \emph{climex.fit.gpd} class object.
+##'   \emph{climex.fit.gev} class object.
 ##' @details The \emph{climex.fit.gev} object is of identical
 ##'   structure as the output of the \code{\link[stats]{optim}}
 ##'   function.
 ##'  
-##' @param x An object returned by the \code{\link{fit.gev}} or
-##'   \code{\link{fit.gpd}} function.
+##' @param x An object returned by the \code{\link{fit.gev}} function.
 ##'
-##' @seealso \code{\link{bic}}, \code{\link{fit.gev}},
-##'   \code{\link{fit.gpd}}
+##' @seealso \code{\link{bic}}, \code{\link{fit.gev}}
 ##' @family ts
 ##'
 ##' @export
 ##' 
 ##' @return Numeric value
 ##' @author Philipp Mueller
-aic.climex.fit.gev <- aic.climex.fit.gpd <- aic.default <- function( x ){
-  if ( !any( class( x ) == "climex.fit.gev" ) &&
-       !any( class( x ) == "climex.fit.gpd" ) )
-    stop( "Wrong format provided in aic. Please supply an object returned by either fit.gev or fit.gpd!" )
+aic.climex.fit.gev <- function( x ){
+  return( 2* x$value + 2* length( x$par ) )
+}
+
+##' @title Akaike information criterion
+##' @description Calculates the Akaike information criterion of a
+##'   \emph{climex.fit.gpd} class object.
+##' @details The \emph{climex.fit.gpd} object is of identical
+##'   structure as the output of the \code{\link[stats]{optim}}
+##'   function.
+##'  
+##' @param x An object returned by the \code{\link{fit.gpd}} function.
+##'
+##' @seealso \code{\link{bic}}, \code{\link{fit.gpd}}
+##' @family ts
+##'
+##' @export
+##' 
+##' @return Numeric value
+##' @author Philipp Mueller
+aic.climex.fit.gpd <- function( x ){
   return( 2* x$value + 2* length( x$par ) )
 }
 
@@ -123,30 +130,20 @@ bic <- function( x ){
 ##' @return Numerical vector
 ##' @author Philipp Mueller
 bic.list <- function( x ){
-  ## Since the objects returned by the fitting functions are of class
-  ## c( "list", "climex.fit.gXX" ), an exception is needed to hand
-  ## them to the correct function call
-  if ( any( class( x ) == "climex.fit.gev" ) ){
-    x.result <- bic.climex.fit.gev( x )
-  } else if ( any( class( x ) == "climex.fit.gpd" ) ){
-    x.result <- bic.climex.fit.gpd( x )
-  } else {
     x.result <- Reduce( c, lapply( x, bic ) )
-  }
   return( x.result )
 }
+
 ##' @title Bayesian information criterion
 ##' @description Calculates the Bayesian information criterion of a
-##'   \emph{climex.fit.gev} or \emph{climex.fit.gpd} class object.
+##'   \emph{climex.fit.gev} class object.
 ##' @details The \emph{climex.fit.gev} object is of identical
 ##'   structure as the output of the \code{\link[stats]{optim}}
 ##'   function.
 ##'  
-##' @param x An object returned by the \code{\link{fit.gev}} or
-##'   \code{\link{fit.gpd}} function.
+##' @param x An object returned by the \code{\link{fit.gev}} function.
 ##'
-##' @seealso \code{\link{aic}}, \code{\link{fit.gev}},
-##'   \code{\link{fit.gpd}}
+##' @seealso \code{\link{aic}}, \code{\link{fit.gev}}
 ##' 
 ##' @family ts
 ##'
@@ -154,10 +151,28 @@ bic.list <- function( x ){
 ##' 
 ##' @return Numeric value
 ##' @author Philipp Mueller
-bic.climex.fit.gev <- bic.climex.fit.gpd <- bic.default <- function( x ){
-  if ( !any( class( x ) == "climex.fit.gev" ) &&
-       !any( class( x ) == "climex.fit.gpd" ) )
-    stop( "Wrong format provided in bic. Please supply an object returned by either fit.gev or fit.gpd!" )
+bic.climex.fit.gev <- function( x ){
+  return( 2* x$value + length( x$par )* log( length( x$x ) ) )
+}
+
+##' @title Bayesian information criterion
+##' @description Calculates the Bayesian information criterion of a
+##'   \emph{climex.fit.gpd} class object.
+##' @details The \emph{climex.fit.gpd} object is of identical
+##'   structure as the output of the \code{\link[stats]{optim}}
+##'   function.
+##'  
+##' @param x An object returned by the \code{\link{fit.gpd}} function.
+##'
+##' @seealso \code{\link{aic}}, \code{\link{fit.gpd}}
+##' 
+##' @family ts
+##'
+##' @export
+##' 
+##' @return Numeric value
+##' @author Philipp Mueller
+bic.climex.fit.gpd <- function( x ){
   return( 2* x$value + length( x$par )* log( length( x$x ) ) )
 }
 

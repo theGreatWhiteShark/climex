@@ -7,15 +7,14 @@
 \method{bic}{climex.fit.gev}(x)
 }
 \arguments{
-\item{x}{An object returned by the \code{\link{fit.gev}} or
-\code{\link{fit.gpd}} function.}
+\item{x}{An object returned by the \code{\link{fit.gev}} function.}
 }
 \value{
 Numeric value
 }
 \description{
 Calculates the Bayesian information criterion of a
-  \emph{climex.fit.gev} or \emph{climex.fit.gpd} class object.
+  \emph{climex.fit.gev} class object.
 }
 \details{
 The \emph{climex.fit.gev} object is of identical
@@ -23,15 +22,14 @@ The \emph{climex.fit.gev} object is of identical
   function.
 }
 \seealso{
-\code{\link{aic}}, \code{\link{fit.gev}},
-  \code{\link{fit.gpd}}
+\code{\link{aic}}, \code{\link{fit.gev}}
 
 Other ts: \code{\link{aic.climex.fit.gev}},
-  \code{\link{aic.list}}, \code{\link{aic}},
-  \code{\link{anomalies.list}},
+  \code{\link{aic.climex.fit.gpd}}, \code{\link{aic.list}},
+  \code{\link{aic}}, \code{\link{anomalies.list}},
   \code{\link{anomalies.xts}}, \code{\link{anomalies}},
-  \code{\link{bic.list}}, \code{\link{bic}},
-  \code{\link{check.completeness}},
+  \code{\link{bic.climex.fit.gpd}}, \code{\link{bic.list}},
+  \code{\link{bic}}, \code{\link{check.completeness}},
   \code{\link{remove.incomplete.years.list}},
   \code{\link{remove.incomplete.years.xts}},
   \code{\link{remove.incomplete.years}},

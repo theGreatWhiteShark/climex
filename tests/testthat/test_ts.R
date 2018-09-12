@@ -12,19 +12,19 @@ x.thresh.fit <- fit.gpd( x.thresh,
                                 total.length = length( temp.potsdam ) )
 
 test_that( "aic accepts the right input and produces the right output", {
-  expect_equal( aic( x.block.fit ), 447.2131 - 3.67e-05 )
-  expect_equal( aic( x.thresh.fit ), 1454.037 - 0.000463 )
+  expect_equal( aic( x.block.fit ), 447.213063 )
+  expect_equal( aic( x.thresh.fit ), 1454.036538 )
   expect_equal( aic( list( x.block.fit, x.thresh.fit ) ),
-               c( 447.2131 - 3.67e-05, 1454.037 - 0.000463 ) )
+               c( 447.213063, 1454.036538 ) )
   expect_error( aic( x.block ) )
   expect_error( aic( as.numeric( x.block ) ) )
   expect_error( aic( list( x.block, as.numeric( x.block ) ) ) )
 })
 test_that( "bic accepts the right input and produces the right output", {
-  expect_equal( bic( x.block.fit ), 455.6739 + 7.95e-06 )
-  expect_equal( bic( x.thresh.fit ), 1461.792 )
+  expect_equal( bic( x.block.fit ), 455.673908 )
+  expect_equal( bic( x.thresh.fit ), 1461.79201 )
   expect_equal( bic( list( x.block.fit, x.thresh.fit ) ),
-               c( 455.6739 + 7.95e-06, 1461.792 ) )
+               c( 455.673908, 1461.792010 ) )
   expect_error( bic( x.block ) )
   expect_error( bic( as.numeric( x.block ) ) )
   expect_error( bic( list( x.block, as.numeric( x.block ) ) ) )
