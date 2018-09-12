@@ -1085,30 +1085,7 @@ return.level.list <- function( x, return.period = 100,
                               thresholded.time.series = NULL,
                               extreme.type = c( "max", "min" ),
                               silent = FALSE, mc.cores = NULL, ... ){
-  ## Since the objects returned by the fitting functions are of class
-  ## c( "climex.fit.gXX", "list" ), an exception is needed to hand
-  ## them to the correct function call
-  if ( any( class( x ) == "climex.fit.gev" ) ){
-    x.result <- return.level.climex.fit.gev(
-        x, return.period = return.period,
-        error.estimation = error.estimation, model = model,
-        monte.carlo.sample.size = monte.carlo.sample.size,
-        bootstrap.sample.size = bootstrap.sample.size,
-        threshold = threshold, total.length = total.length,
-        thresholded.time.series = thresholded.time.series,
-        extreme.type = extreme.type,
-        silent = silent, mc.cores = mc.cores, ... )
-  } else if ( any( class( x ) == "climex.fit.gpd" ) ){
-    x.result <- return.level.climex.fit.gpd( 
-        x, return.period = return.period,
-        error.estimation = error.estimation, model = model,
-        monte.carlo.sample.size = monte.carlo.sample.size,
-        bootstrap.sample.size = bootstrap.sample.size,
-        threshold = threshold, total.length = total.length,
-        thresholded.time.series = thresholded.time.series,
-        extreme.type = extreme.type,
-        silent = silent, mc.cores = mc.cores, ... )
-  } else if ( !is.null( mc.cores ) ){
+  if ( !is.null( mc.cores ) ){
     x.result <- mclapply(
         x, return.level, return.period = return.period,
         error.estimation = error.estimation, model = model,
