@@ -312,30 +312,45 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL, ... ){
   ## The the calculated density falls below this threshold it won't
   ## get plotted anymore.
   threshold.pdf.plot <- 1E-4
-  ## In the beginning I used the coefficients of the GEV distribution
-  ## to determine the range of evaluation of the density function. But
-  ## this will fail for distributions with bigger absolute shape
-  ## value. Instead I will use the range of the supplied data
-  plot.gev.range <- seq( x.lim[ 1 ] - x$par[ 2 ]* 10,
-                        x.lim[ 2 ] + x$par[ 2 ]* 10, 0.01 )
-  plot.gev.data <- data.frame(
-      x.plot = plot.gev.range,
-      y.plot = gev.density( x$par,
-                                    plot.gev.range ) )
+  if ( x$control$extreme.type == "min" ){
+    x.lim.rev <- -1 * rev( x.lim )
+    ## In the beginning I used the coefficients of the GEV distribution
+    ## to determine the range of evaluation of the density function. But
+    ## this will fail for distributions with bigger absolute shape
+    ## value. Instead I will use the range of the supplied data
+    plot.gev.range <- seq( x.lim.rev[ 1 ] - x$par[ 2 ]* 10,
+                          x.lim.rev[ 2 ] + x$par[ 2 ]* 10, 0.01 )
+    plot.gev.data <- data.frame(
+        x.plot = -1* plot.gev.range,
+        y.plot = gev.density( x$par * c( -1, 1, 1 ),
+                             plot.gev.range ) )
+  } else if ( x$control$extreme.type == "max" ){
+    ## In the beginning I used the coefficients of the GEV distribution
+    ## to determine the range of evaluation of the density function. But
+    ## this will fail for distributions with bigger absolute shape
+    ## value. Instead I will use the range of the supplied data
+    plot.gev.range <- seq( x.lim[ 1 ] - x$par[ 2 ]* 10,
+                          x.lim[ 2 ] + x$par[ 2 ]* 10, 0.01 )
+    plot.gev.data <- data.frame(
+        x.plot = plot.gev.range,
+        y.plot = gev.density( x$par, plot.gev.range ) )
+  } else {
+    stop( "Unexpected extreme.type in the provided fitting object" )
+  }
   ## Removing all NaN to have less points and warnings
   plot.gev.data <- plot.gev.data[
       !is.nan( plot.gev.data$y.plot ), ]
   ## Cutting of the density at values below the threshold in the tails
   ## Lower tail
   plot.gev.data <- plot.gev.data[
-      ( plot.gev.data$x.plot >
-        plot.gev.data$x.plot[ which.max( plot.gev.data$y.plot ) ]
-      ) | ( plot.gev.data$y.plot > threshold.pdf.plot ),  ]
+  ( plot.gev.data$x.plot >
+    plot.gev.data$x.plot[ which.max( plot.gev.data$y.plot ) ]
+  ) | ( plot.gev.data$y.plot > threshold.pdf.plot ),  ]
   ## Upper tail
   plot.gev.data <- plot.gev.data[
-      ( plot.gev.data$x.plot <
-        plot.gev.data$x.plot[ which.max( plot.gev.data$y.plot ) ]
-      ) | ( plot.gev.data$y.plot > threshold.pdf.plot ),  ]
+  ( plot.gev.data$x.plot <
+    plot.gev.data$x.plot[ which.max( plot.gev.data$y.plot ) ]
+  ) | ( plot.gev.data$y.plot > threshold.pdf.plot ),  ]
   ## If the first and last entry is not a zero, add one!
   ## Else the density won't look like a density at all.
   if ( plot.gev.data$y.plot[ 1 ] > 0 ){
@@ -368,7 +383,6 @@ plot.climex.fit.gev <- function( x, bin.factor = NULL, ... ){
   } else {
     y.lim <- NULL
   }
-  
   ggplot() + geom_histogram(
                  data = data.frame( x = x.data ),
                  colour = grDevices::rgb( .098, .098, .44 ),
@@ -428,30 +442,46 @@ plot.climex.fit.gpd <- function( x, bin.factor = NULL, ... ){
   ## The the calculated density falls below this threshold it won't
   ## get plotted anymore.
   threshold.pdf.plot <- 1E-4
-  ## In the beginning I used the coefficients of the GEV distribution
-  ## to determine the range of evaluation of the density function. But
-  ## this will fail for distributions with bigger absolute shape
-  ## value. Instead I will use the range of the supplied data
-  plot.range <- seq( x.lim[ 1 ] - bin.width,
-                        x.lim[ 2 ] + x$par[ 1 ]* 10, 0.01 )
-  plot.data <- data.frame(
-      x.plot = plot.range,
-      y.plot = gpd.density( x$par, x$threshold,
-                               plot.range ) )
+  if ( x$control$extreme.type == "min" ){
+    x.lim.rev <- -1 * rev( x.lim )
+    ## In the beginning I used the coefficients of the GP distribution
+    ## to determine the range of evaluation of the density function. But
+    ## this will fail for distributions with bigger absolute shape
+    ## value. Instead I will use the range of the supplied data
+    plot.range <- seq( x.lim.rev[ 1 ] - bin.width,
+                          x.lim.rev[ 2 ] + x$par[ 1 ]* 10, 0.01 )
+    plot.data <- data.frame(
+        x.plot = -1* plot.range,
+        y.plot = gpd.density( x$par, x$threshold * -1,
+                             plot.range ) )
+  } else if ( x$control$extreme.type == "max" ){
+    ## In the beginning I used the coefficients of the GP distribution
+    ## to determine the range of evaluation of the density function. But
+    ## this will fail for distributions with bigger absolute shape
+    ## value. Instead I will use the range of the supplied data
+    plot.range <- seq( x.lim[ 1 ] - bin.width,
+                      x.lim[ 2 ] + x$par[ 1 ]* 10, 0.01 )
+    plot.data <- data.frame(
+        x.plot = plot.range,
+        y.plot = gpd.density( x$par, x$threshold,
+                             plot.range ) )
+  } else {
+    stop( "Unexpected extreme.type in provided object" )
+  }
   ## Removing all NaN to have less points and warnings
   plot.data <- plot.data[
       !is.nan( plot.data$y.plot ), ]
   ## Cutting of the density at values below the threshold in the tails
   ## Lower tail
   plot.data <- plot.data[
-      ( plot.data$x.plot >
-        plot.data$x.plot[ which.max( plot.data$y.plot ) ]
-      ) | ( plot.data$y.plot > threshold.pdf.plot ),  ]
+  ( plot.data$x.plot >
+    plot.data$x.plot[ which.max( plot.data$y.plot ) ]
+  ) | ( plot.data$y.plot > threshold.pdf.plot ),  ]
   ## Upper tail
   plot.data <- plot.data[
-      ( plot.data$x.plot <
-        plot.data$x.plot[ which.max( plot.data$y.plot ) ]
-      ) | ( plot.data$y.plot > threshold.pdf.plot ),  ]
+  ( plot.data$x.plot <
+    plot.data$x.plot[ which.max( plot.data$y.plot ) ]
+  ) | ( plot.data$y.plot > threshold.pdf.plot ),  ]
   ## If the first and last entry is not a zero, add one!
   ## Else the density won't look like a density at all.
   if ( plot.data$y.plot[ 1 ] > 0 ){
@@ -468,7 +498,7 @@ plot.climex.fit.gpd <- function( x, bin.factor = NULL, ... ){
         0 )
   }
   plot.lim <- c( min( plot.data$x.plot ),
-                    max( plot.data$x.plot ) )
+                max( plot.data$x.plot ) )
   ## Using the threshold value defined above the range of
   ## the density plot will be determined
   plot.lim <- c( plot.data[[ 1 ]][
@@ -477,7 +507,7 @@ plot.climex.fit.gpd <- function( x, bin.factor = NULL, ... ){
           threshold.pdf.plot ) ) ],
       plot.data[[ 1 ]][ which.min( (
         plot.data[[ 2 ]][ which.max( plot.data[[ 2 ]] )
-                             : length( plot.data[[ 2 ]] ) ] -
+                         : length( plot.data[[ 2 ]] ) ] -
         threshold.pdf.plot ) ) +
         which.max( plot.data[[ 2 ]] ) - 1 ] )
   ## Determining the limits of the actual plot
