@@ -4,7 +4,8 @@
 \alias{check.completeness.list}
 \title{Checking for N complete years of data}
 \usage{
-\method{check.completeness}{list}(x, number.of.years = 30, mc.cores = NULL)
+\method{check.completeness}{list}(x, number.of.years = 30,
+  mc.cores = NULL)
 }
 \arguments{
 \item{x}{A list of \pkg{xts} class objects.}

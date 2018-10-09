@@ -47,3 +47,4 @@ Other extremes: \code{\link{block.list}},
 \author{
 Philipp Mueller
 }
+\concept{extremes}

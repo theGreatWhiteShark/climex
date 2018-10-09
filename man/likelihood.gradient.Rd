@@ -40,3 +40,4 @@ Other optimization: \code{\link{fit.gev.list}},
 \author{
 Philipp Mueller
 }
+\concept{optimization}

@@ -6,11 +6,12 @@
   (GP) distribution}
 \usage{
 fit.gpd(x, initial = NULL, threshold = NULL,
-  likelihood.function = likelihood, gradient.function = likelihood.gradient,
-  error.estimation = c("MLE", "MC", "bootstrap", "none"),
-  monte.carlo.sample.size = 100, bootstrap.sample.size = 100,
-  return.period = 100, total.length = NULL, extreme.type = c("min",
-  "max"), thresholding = FALSE, decluster = NULL, cluster.distance = NULL,
+  likelihood.function = likelihood,
+  gradient.function = likelihood.gradient, error.estimation = c("MLE",
+  "MC", "bootstrap", "none"), monte.carlo.sample.size = 100,
+  bootstrap.sample.size = 100, return.period = 100,
+  total.length = NULL, extreme.type = c("min", "max"),
+  thresholding = FALSE, decluster = NULL, cluster.distance = NULL,
   silent = TRUE, mc.cores = NULL, ...)
 }
 \arguments{
@@ -250,3 +251,4 @@ Other optimization: \code{\link{fit.gev.list}},
 \author{
 Philipp Mueller
 }
+\concept{optimization}

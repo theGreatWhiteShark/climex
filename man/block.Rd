@@ -4,8 +4,8 @@
 \alias{block}
 \title{Blocking data}
 \usage{
-block(x, block.number = NULL, block.length = NULL, extreme.type = c("max",
-  "min"), mc.cores = NULL)
+block(x, block.number = NULL, block.length = NULL,
+  extreme.type = c("max", "min"), mc.cores = NULL)
 }
 \arguments{
 \item{x}{Either an object of class \pkg{xts} or a list of those.}
@@ -81,3 +81,4 @@ Other extremes: \code{\link{block.list}},
 \author{
 Philipp Mueller
 }
+\concept{extremes}

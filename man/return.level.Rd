@@ -7,8 +7,9 @@
 return.level(x, return.period = 100, error.estimation = c("none", "MC",
   "MLE", "bootstrap"), model = c("gev", "gpd"),
   monte.carlo.sample.size = 100, bootstrap.sample.size = 100,
-  threshold = NULL, total.length = NULL, thresholded.time.series = NULL,
-  extreme.type = c("max", "min"), silent = FALSE, mc.cores = NULL, ...)
+  threshold = NULL, total.length = NULL,
+  thresholded.time.series = NULL, extreme.type = c("max", "min"),
+  silent = FALSE, mc.cores = NULL, ...)
 }
 \arguments{
 \item{x}{Either of class \emph{numeric}, \emph{climex.fit.gev},
@@ -156,3 +157,4 @@ Other extremes: \code{\link{block.list}},
   \code{\link{rlevd}}, \code{\link{threshold.list}},
   \code{\link{threshold.xts}}, \code{\link{threshold}}
 }
+\concept{extremes}

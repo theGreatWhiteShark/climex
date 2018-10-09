@@ -4,8 +4,8 @@
 \alias{multiplot}
 \title{Plot multiple time series.}
 \usage{
-multiplot(plotlist = NULL, tt.title = main, main = NULL, ..., cols = 1,
-  layout = NULL)
+multiplot(plotlist = NULL, tt.title = main, main = NULL, ...,
+  cols = 1, layout = NULL)
 }
 \arguments{
 \item{plotlist}{Alternative way to pass \emph{ggplot} objects.}
@@ -50,3 +50,4 @@ Other plot: \code{\link{ttplot}}
 \author{
 Paul Teetor (original), Philpp Mueller (minor changes)
 }
+\concept{plot}

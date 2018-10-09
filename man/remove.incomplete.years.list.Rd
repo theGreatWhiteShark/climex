@@ -4,7 +4,8 @@
 \alias{remove.incomplete.years.list}
 \title{Remove incomplete years}
 \usage{
-\method{remove.incomplete.years}{list}(x, time.unit = 1, mc.cores = NULL)
+\method{remove.incomplete.years}{list}(x, time.unit = 1,
+  mc.cores = NULL)
 }
 \arguments{
 \item{x}{A list of \pkg{xts} class objects.}
@@ -52,3 +53,4 @@ Other ts: \code{\link{aic.climex.fit.gev}},
 \author{
 Philipp Mueller
 }
+\concept{ts}

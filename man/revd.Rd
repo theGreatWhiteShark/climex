@@ -4,8 +4,8 @@
 \alias{revd}
 \title{Random numbers for GEV and GP}
 \usage{
-revd(n, location = NULL, scale = NULL, shape = NULL, threshold = NULL,
-  model = c("gev", "gpd"), silent = FALSE)
+revd(n, location = NULL, scale = NULL, shape = NULL,
+  threshold = NULL, model = c("gev", "gpd"), silent = FALSE)
 }
 \arguments{
 \item{n}{Number of samples to draw}
@@ -61,3 +61,4 @@ Other extremes: \code{\link{block.list}},
 \author{
 Philipp Mueller
 }
+\concept{extremes}

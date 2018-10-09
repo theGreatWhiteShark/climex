@@ -41,3 +41,4 @@ Other ts: \code{\link{aic.climex.fit.gev}},
 \author{
 Philipp Mueller
 }
+\concept{ts}

@@ -34,3 +34,4 @@ Other plot: \code{\link{multiplot}}
 \author{
 Philipp Mueller
 }
+\concept{plot}

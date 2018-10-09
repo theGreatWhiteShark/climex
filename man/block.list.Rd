@@ -81,3 +81,4 @@ Other extremes: \code{\link{block.xts}},
 \author{
 Philipp Mueller
 }
+\concept{extremes}

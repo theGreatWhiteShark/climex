@@ -4,8 +4,9 @@
 \alias{qevd}
 \title{Quantile calculation}
 \usage{
-qevd(p, location = NULL, scale = NULL, shape = NULL, threshold = NULL,
-  model = c("gev", "gpd"), lower.tail = TRUE, silent = FALSE)
+qevd(p, location = NULL, scale = NULL, shape = NULL,
+  threshold = NULL, model = c("gev", "gpd"), lower.tail = TRUE,
+  silent = FALSE)
 }
 \arguments{
 \item{p}{(Numeric) probability vector.}
@@ -60,3 +61,4 @@ Other extremes: \code{\link{block.list}},
 \author{
 Philipp Mueller
 }
+\concept{extremes}

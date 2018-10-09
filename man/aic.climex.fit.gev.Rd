@@ -41,3 +41,4 @@ Other ts: \code{\link{aic.climex.fit.gpd}},
 \author{
 Philipp Mueller
 }
+\concept{ts}

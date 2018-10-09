@@ -28,7 +28,7 @@ Imports:
 License: GPL (>= 3) | file LICENSE
 LinkingTo: Rcpp, RcppArmadillo
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 Suggests:
     knitr,
     rmarkdown,

@@ -4,7 +4,8 @@
 \alias{check.completeness.xts}
 \title{Checking for N complete years of data}
 \usage{
-\method{check.completeness}{xts}(x, number.of.years = 30, mc.cores = NULL)
+\method{check.completeness}{xts}(x, number.of.years = 30,
+  mc.cores = NULL)
 }
 \arguments{
 \item{x}{A time series of class \pkg{xts}.}
@@ -33,3 +34,4 @@ It uses the \code{\link{remove.incomplete.years}}
 \author{
 Philipp Mueller
 }
+\concept{data.cleaning}

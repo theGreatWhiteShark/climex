@@ -5,8 +5,8 @@
 \title{Apply a threshold to a time series}
 \usage{
 \method{threshold}{list}(x, threshold, decluster = TRUE,
-  cluster.distance = NULL, extreme.type = c("max", "min"), na.rm = TRUE,
-  mc.cores = NULL)
+  cluster.distance = NULL, extreme.type = c("max", "min"),
+  na.rm = TRUE, mc.cores = NULL)
 }
 \arguments{
 \item{x}{A list of objects of class \pkg{xts}.}
@@ -76,3 +76,4 @@ Other extremes: \code{\link{block.list}},
 \author{
 Philipp Mueller
 }
+\concept{extremes}

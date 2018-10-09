@@ -4,12 +4,14 @@
 \alias{fit.gev.xts}
 \title{Improved maximum-likelihood fit of the GEV distribution}
 \usage{
-\method{fit.gev}{xts}(x, initial = NULL, likelihood.function = likelihood,
-  gradient.function = likelihood.gradient, error.estimation = c("MLE", "MC",
-  "bootstrap", "none"), monte.carlo.sample.size = 100,
+\method{fit.gev}{xts}(x, initial = NULL,
+  likelihood.function = likelihood,
+  gradient.function = likelihood.gradient, error.estimation = c("MLE",
+  "MC", "bootstrap", "none"), monte.carlo.sample.size = 100,
   bootstrap.sample.size = 100, return.period = 100,
-  extreme.type = c("max", "min"), blocking = FALSE, block.number = NULL,
-  block.length = NULL, silent = TRUE, mc.cores = NULL, ...)
+  extreme.type = c("max", "min"), blocking = FALSE,
+  block.number = NULL, block.length = NULL, silent = TRUE,
+  mc.cores = NULL, ...)
 }
 \arguments{
 \item{x}{Either an object of class \pkg{xts}.
@@ -220,3 +222,4 @@ Other optimization: \code{\link{fit.gev.list}},
 \author{
 Philipp Mueller
 }
+\concept{optimization}
