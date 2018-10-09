@@ -10,7 +10,7 @@ fit.gev(x, initial = NULL, likelihood.function = likelihood,
   bootstrap.sample.size = 100, return.period = 100,
   extreme.type = c("max", "min"), blocking = FALSE,
   block.number = NULL, block.length = NULL, silent = TRUE,
-  mc.cores = NULL, ...)
+  debug = FALSE, mc.cores = NULL, ...)
 }
 \arguments{
 \item{x}{Either an object of class \pkg{xts} or a list of
@@ -120,7 +120,11 @@ simplicity the last block is not forced to match the length of
 the other plots. Default = NULL.}
 
 \item{silent}{Determines whether or not warning messages shall be
-displayed and results shall be reported. Default = TRUE.}
+displayed and results shall be reported. Default = FALSE.}
+
+\item{debug}{If TRUE the routine will display debugging
+information featuring intermediate steps of the constrained
+optimization. Default = FALSE.}
 
 \item{mc.cores}{A numerical input specifying the number of cores
 to use for the multi core application of the function (see
@@ -212,9 +216,11 @@ The optimization is performed by the augmented Lagrangian
   fit.gev( potsdam.blocked )
 }
 \seealso{
-Other optimization: \code{\link{fit.gev.list}},
-  \code{\link{fit.gev.xts}}, \code{\link{fit.gpd.list}},
-  \code{\link{fit.gpd.xts}}, \code{\link{fit.gpd}},
+Other optimization: \code{\link{fit.gev.default}},
+  \code{\link{fit.gev.list}}, \code{\link{fit.gev.xts}},
+  \code{\link{fit.gpd.default}},
+  \code{\link{fit.gpd.list}}, \code{\link{fit.gpd.xts}},
+  \code{\link{fit.gpd}},
   \code{\link{likelihood.augmented}},
   \code{\link{likelihood.gradient.augmented}},
   \code{\link{likelihood.gradient}},

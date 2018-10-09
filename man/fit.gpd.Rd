@@ -12,7 +12,7 @@ fit.gpd(x, initial = NULL, threshold = NULL,
   bootstrap.sample.size = 100, return.period = 100,
   total.length = NULL, extreme.type = c("min", "max"),
   thresholding = FALSE, decluster = NULL, cluster.distance = NULL,
-  silent = TRUE, mc.cores = NULL, ...)
+  silent = FALSE, debug = FALSE, mc.cores = NULL, ...)
 }
 \arguments{
 \item{x}{Either an object of class \pkg{xts} or a list of
@@ -138,7 +138,11 @@ considered the starting point of a new cluster. Only supply a
 value when you really know what you are doing! Default = NULL.}
 
 \item{silent}{Determines whether or not warning messages shall be
-displayed and results shall be reported. Default = TRUE.}
+displayed and results shall be reported. Default = FALSE.}
+
+\item{debug}{If TRUE the routine will display debugging
+information featuring intermediate steps of the constrained
+optimization. Default = FALSE.}
 
 \item{mc.cores}{A numerical input specifying the number of cores
 to use for the multi core application of the function (see
@@ -239,8 +243,9 @@ The optimization is performed by the augmented Lagrangian
   fit.gpd( potsdam.extremes )
 }
 \seealso{
-Other optimization: \code{\link{fit.gev.list}},
-  \code{\link{fit.gev.xts}}, \code{\link{fit.gev}},
+Other optimization: \code{\link{fit.gev.default}},
+  \code{\link{fit.gev.list}}, \code{\link{fit.gev.xts}},
+  \code{\link{fit.gev}}, \code{\link{fit.gpd.default}},
   \code{\link{fit.gpd.list}}, \code{\link{fit.gpd.xts}},
   \code{\link{likelihood.augmented}},
   \code{\link{likelihood.gradient.augmented}},

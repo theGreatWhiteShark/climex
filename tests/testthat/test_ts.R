@@ -7,9 +7,11 @@ context( "Check function is R/ts.R" )
 x.block <- block( anomalies( temp.potsdam ) )
 x.thresh <- threshold( temp.potsdam, threshold = 29,
                               decluster = TRUE )
-x.block.fit <- fit.gev( x.block )
-x.thresh.fit <- fit.gpd( x.thresh,
-                                total.length = length( temp.potsdam ) )
+x.block.fit <- fit.gev( x.block, error.estimation = "none",
+                       silent = TRUE )
+x.thresh.fit <- fit.gpd( x.thresh, error.estimation = "none",
+                        total.length = length( temp.potsdam ),
+                        silent = TRUE )
 
 test_that( "aic accepts the right input and produces the right output", {
   expect_equal( aic( x.block.fit ), 447.213063 )

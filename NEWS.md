@@ -64,6 +64,17 @@ from one of the CRAN fellows by just submitting the core package.
   instead of days.
 - The positions of the returned list elements *x* and *return.level*
   of the **fit.gev** function was switched.
+- Both the **fit.gev** and **fit.gpd** function do now have a fallback
+  method, which is able to handle numerical data. It contains a
+  warning message suggesting the usage of **xts**-class objects
+  instead. The resulting object will most probably be incompatible
+  with a lot of functionalities.
+- The **fit.gev** and **fit.gpd** functions do now feature a new
+  input argument called *debug*. If set to TRUE, it displays both
+  warning messages and intermediate results from the outer loop of the
+  constrained optimization routine. In addition, the *silent* argument
+  now properly mutes all output of the fitting functions
+
   
 # v1.2.1
 - Only perform the test of the API of the DWD on Unix-based

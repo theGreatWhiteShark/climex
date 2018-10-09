@@ -1346,13 +1346,13 @@ return.level.climex.fit.gev <-
                                       x$par[ 2 ],
                                       x$par[ 3 ] ),
                     extreme.type = extreme.type,
-                    error.estimation = "MLE"
+                    error.estimation = "MLE", silent = TRUE,
                     )$control$hessian
         } else {
           x$control$hessian <-
             fit.gev( x$x, initial = x$par,
                     extreme.type = extreme.type,
-                    error.estimation = "MLE"
+                    error.estimation = "MLE", silent = TRUE,
                     )$control$hessian
         }
       }
@@ -1444,7 +1444,7 @@ return.level.climex.fit.gev <-
                  parameter.estimate[ 3 ], model = "gev" ) )
       }
       samples.fit <- lapply( samples.list, function( yy )
-        fit.gev( yy, error.estimation = "none",
+        fit.gev( yy, error.estimation = "none", silent = TRUE,
                 blocking = FALSE, extreme.type = extreme.type
                 )$par )
       errors <- data.frame( a = 0 )
@@ -1735,7 +1735,7 @@ return.level.climex.fit.gpd <-
         }
         x$control$hessian <-
           fit.gpd( x$x, initial = x$par, threshold = threshold,
-                  error.estimation = "MLE",
+                  error.estimation = "MLE", silent = TRUE,
                   extreme.type = extreme.type,
                   total.length = total.length )$control$hessian
       }
@@ -1878,7 +1878,7 @@ return.level.climex.fit.gpd <-
       ## `extreme.type` will be fixed.
       samples.fit <- lapply( samples.list, function( yy )
         fit.gpd( yy, error.estimation = "none", threshold = threshold,
-                total.length = total.length,
+                total.length = total.length, silent = TRUE,
                 extreme.type = "max" )$par )
       errors <- data.frame( a = 0 )
       r.period <- m

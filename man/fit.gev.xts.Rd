@@ -10,17 +10,16 @@
   "MC", "bootstrap", "none"), monte.carlo.sample.size = 100,
   bootstrap.sample.size = 100, return.period = 100,
   extreme.type = c("max", "min"), blocking = FALSE,
-  block.number = NULL, block.length = NULL, silent = TRUE,
-  mc.cores = NULL, ...)
+  block.number = NULL, block.length = NULL, silent = FALSE,
+  debug = FALSE, mc.cores = NULL, ...)
 }
 \arguments{
-\item{x}{Either an object of class \pkg{xts}.
-The time series can be provided in two different formats:
-as a series of block maxima (possibly calculated using the
-\code{\link{block}} function) and the \strong{blocking} argument
-set to FALSE or as the raw time series with \strong{blocking}
-set to TRUE. In the later case the blocking will be performed
-inside the fit.gev function.}
+\item{x}{An object of class \pkg{xts}.  The time series can be
+provided in two different formats: as a series of block maxima
+(possibly calculated using the \code{\link{block}} function) and
+the \strong{blocking} argument set to FALSE or as the raw time
+series with \strong{blocking} set to TRUE. In the later case the
+blocking will be performed inside the fit.gev function.}
 
 \item{initial}{Initial values for the GEV parameters. Has to be
 provided as 3x1 vector. If NULL the parameters are estimated
@@ -121,7 +120,11 @@ simplicity the last block is not forced to match the length of
 the other plots. Default = NULL.}
 
 \item{silent}{Determines whether or not warning messages shall be
-displayed and results shall be reported. Default = TRUE.}
+displayed and results shall be reported. Default = FALSE.}
+
+\item{debug}{If TRUE the routine will display debugging
+information featuring intermediate steps of the constrained
+optimization. Default = FALSE.}
 
 \item{mc.cores}{A numerical input specifying the number of cores
 to use for the multi core application of the function (see
@@ -198,7 +201,7 @@ The optimization is performed by the augmented Lagrangian
   strongly discouraged since it will yield inferior results.
 
   I found the Nelder-Mead method to be more robust to starting
-  points more far away from the global optimum. This also holds 
+  points more far away from the global optimum. This also holds
   for the inner routine of the augmented Lagrangian method. Since
   other routines, like CG and BFGS only cause problems in the
   extreme value analysis, there won't be an option to choose them
@@ -210,9 +213,11 @@ The optimization is performed by the augmented Lagrangian
   fit.gev( potsdam.blocked )
 }
 \seealso{
-Other optimization: \code{\link{fit.gev.list}},
-  \code{\link{fit.gev}}, \code{\link{fit.gpd.list}},
-  \code{\link{fit.gpd.xts}}, \code{\link{fit.gpd}},
+Other optimization: \code{\link{fit.gev.default}},
+  \code{\link{fit.gev.list}}, \code{\link{fit.gev}},
+  \code{\link{fit.gpd.default}},
+  \code{\link{fit.gpd.list}}, \code{\link{fit.gpd.xts}},
+  \code{\link{fit.gpd}},
   \code{\link{likelihood.augmented}},
   \code{\link{likelihood.gradient.augmented}},
   \code{\link{likelihood.gradient}},
