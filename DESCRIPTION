@@ -1,14 +1,14 @@
 Package: climex
 Type: Package
 Title: Estimating Extreme Events in Climatic Time Series (using Data of the DWD)
-Version: 2.0.0.8000
+Version: 2.0.0.9000
 Date: 2018-03-30
 LazyData: true
 Authors@R: person("Philipp Mueller", role = c("aut","cre"),
     email = "thetruephil@googlemail.com")
 Maintainer: Philipp Mueller <thetruephil@googlemail.com>
 Description: The fitting of the generalized extreme value (GEV) and generalized Pareto (GP) distribution using maximum likelihood (ML) has an inherent tendency to produce numerical artifacts. By using the well-oiled framework of constrained optimization, in this we utilize the augmented Lagrangian method, the optimization find the global optimum significantly more often then the unconstrained one. In addition the package is focused on handling climatic time series of class 'xts' and provides a couple of convenience functions to handle these objects.
-URL: https://github.com/theGreatWhiteShark/climex
+URL: https://gitlab.com/theGreatWhiteShark/climex
 Depends:
     R(>= 3.1.0),
     xts
@@ -30,6 +30,8 @@ LinkingTo: Rcpp, RcppArmadillo
 VignetteBuilder: knitr
 RoxygenNote: 6.1.0
 Suggests:
+    climexUI,
+    dwd2r,
     knitr,
     rmarkdown,
     testthat
