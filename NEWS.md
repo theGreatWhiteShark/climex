@@ -77,6 +77,19 @@ from one of the CRAN fellows by just submitting the core package.
 - Fixing the correct linking and exporting of the C++-based function
   **likelihood_GEV** (only used within the **likelihood.plot**
   function since it yields a significant speedup in there.
+- The **convert.date** function was some heritage from times the
+  **climex** package was still performing the download and formatting
+  of the data of the German weather service (DWD). Since this is no
+  longer the case, the function was removed.
+- The **source.data** function is now removed as well. It way more
+  plausible to have it in the **dwd2r** package and a very bad idea to
+  have two copies.
+- The *climex.path* global variable is no longer part of the
+  **climex** package. Since **dwd2r** uses its own directory for
+  storing the downloads, *~/R/dwd_data* in the global option
+  *dwd2r.download.path*, the **climex** package does not directly use
+  or access the climex.path folder anymore. The variable will be
+  instead defined by the **climexUI** package.
   
 # v1.2.1
 - Only perform the test of the API of the DWD on Unix-based
