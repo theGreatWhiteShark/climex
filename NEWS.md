@@ -73,8 +73,10 @@ from one of the CRAN fellows by just submitting the core package.
   input argument called *debug*. If set to TRUE, it displays both
   warning messages and intermediate results from the outer loop of the
   constrained optimization routine. In addition, the *silent* argument
-  now properly mutes all output of the fitting functions
-
+  now properly mutes all output of the fitting functions.
+- Fixing the correct linking and exporting of the C++-based function
+  **likelihood_GEV** (only used within the **likelihood.plot**
+  function since it yields a significant speedup in there.
   
 # v1.2.1
 - Only perform the test of the API of the DWD on Unix-based

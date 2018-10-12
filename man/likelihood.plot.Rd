@@ -48,6 +48,9 @@ The likelihood will be plotted around its optimal
   \code{\link{fit.gev}}. Its also possible to provide another
   point the likelihood will be centered around using
   \strong{center}.
+
+  The likelihood will be calculated using the C++-based function
+  \strong{likelihood_GEV}.
 }
 \author{
 Philipp Mueller

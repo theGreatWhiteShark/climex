@@ -146,6 +146,9 @@ ttplot <- function( data.input, main = "Time series", ylab = NULL ){
 ##'   point the likelihood will be centered around using
 ##'   \strong{center}.
 ##'
+##'   The likelihood will be calculated using the C++-based function
+##'   \strong{likelihood_GEV}.
+##'
 ##' @param time.series Data, for which the likelihood function is
 ##'   going to be calculated. 
 ##' @param location.lim Boundaries of the plotted likelihood
@@ -175,7 +178,8 @@ likelihood.plot <- function( time.series, location.lim = NULL,
   ## determining the center and the limits
   if ( is.null( true.minima ) ){
     time.series.mle <- fit.gev( x = time.series,
-                               initial = initial )$par
+                               initial = initial,
+                               silent = TRUE )$par
   } else
     time.series.mle <- true.minima
   if ( is.null( center ) )
