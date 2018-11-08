@@ -7,7 +7,8 @@
 ttplot(data.input, main = "Time series", ylab = NULL)
 }
 \arguments{
-\item{data.input}{Time series which should be visualized.}
+\item{data.input}{Class \pkg{xts} time series, which should be
+visualized.}
 
 \item{main}{Title of the plot to generate. Default: "Time series"}
 
@@ -20,12 +21,12 @@ NULL}
 Nothing. The multiplot function is run in the last step.
 }
 \description{
-Plotting a xts time series with ggplot2 in a
-  convenient format.
+Plotting a \pkg{xts} time series with \pkg{ggplot2}
+  in a convenient format.
 }
 \details{
-Plots all objects of class xts. With the main argument a
-  title can be provided.
+Plots all objects of class \pkg{xts}. With the main
+  argument a title can be provided.
 }
 \seealso{
 Other plot: \code{\link{multiplot}}
@@ -33,3 +34,4 @@ Other plot: \code{\link{multiplot}}
 \author{
 Philipp Mueller
 }
+\concept{plot}

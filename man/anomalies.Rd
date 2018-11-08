@@ -4,28 +4,48 @@
 \alias{anomalies}
 \title{Anomalies of a time series}
 \usage{
-anomalies(x)
+anomalies(x, mc.cores = NULL)
 }
 \arguments{
-\item{x}{Time series of the class 'xts'.}
+\item{x}{Either a time series of class \pkg{xts} or a list of
+them.}
+
+\item{mc.cores}{A numerical input specifying the number of cores
+to use for the multi core application of the function (see
+\code{\link[parallel]{detectCores}}). This functionality is only
+available if the input is a list of different objects. If NULL,
+the function will be calculated classically with only one core.
+Default = NULL.}
 }
 \value{
-Time series of the class 'xts' of the same length as x containing the anomalies of the series.
+Same class as the input
 }
 \description{
-Calculates the anomalies of a time series.
+Calculates the anomalies of an object of class
+  \pkg{xts} or a list of such objects.
 }
 \details{
 Construction via the subtraction of the mean
-  (temperature) value of the specific date. I don't really like
-  this one. Maybe try to add a weighting function with sharp
-  bandwidth instead. Uses the \code{\link[lubridate]{yday}}.
+  value of the specific date.
+
+  Uses the \code{\link[lubridate]{yday}}.
 }
 \seealso{
-Other ts: \code{\link{aic}}, \code{\link{bic}},
+Other ts: \code{\link{aic.climex.fit.gev}},
+  \code{\link{aic.climex.fit.gpd}}, \code{\link{aic.list}},
+  \code{\link{aic}}, \code{\link{anomalies.list}},
+  \code{\link{anomalies.xts}},
+  \code{\link{bic.climex.fit.gev}},
+  \code{\link{bic.climex.fit.gpd}}, \code{\link{bic.list}},
+  \code{\link{bic}}, \code{\link{check.completeness}},
+  \code{\link{remove.incomplete.years.list}},
+  \code{\link{remove.incomplete.years.xts}},
   \code{\link{remove.incomplete.years}},
+  \code{\link{remove.seasonality.list}},
+  \code{\link{remove.seasonality.xts}},
   \code{\link{remove.seasonality}}
 }
 \author{
 Philipp Mueller
 }
+\concept{ts}

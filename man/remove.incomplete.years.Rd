@@ -4,35 +4,52 @@
 \alias{remove.incomplete.years}
 \title{Remove incomplete years}
 \usage{
-remove.incomplete.years(x, time.unit = 1)
+remove.incomplete.years(x, time.unit = 1, mc.cores = NULL)
 }
 \arguments{
-\item{x}{Time series. Currently only works with the class xts
-since reference date in other objects is rather hard to get.}
+\item{x}{Either a \pkg{xts} class object or a list of those.}
 
-\item{time.unit}{Minimal differences found when applying the
-`diff' function to `x'. Default = 1.}
+\item{time.unit}{Basic time unit in days. Default = 1.}
+
+\item{mc.cores}{A numerical input specifying the number of cores
+to use for the multi core application of the function (see
+\code{\link[parallel]{detectCores}}). This functionality is only
+available if the input is a list of different objects. If NULL,
+the function will be calculated classically with only one core.
+Default = NULL.}
 }
 \value{
-Time series of class xts
+Object of the same class as the input \strong{x}.
 }
 \description{
 Removes all years, which contain either a NA or are
-  incomplete.
+  incomplete (derived from the amount of time stamps within a
+  year).
 }
 \details{
 Since incomplete years are detected via the
   difference in the time stamps of neighbouring points, the user
   has to provide the basic time unit. (Numerical value of the
-  result of the `diff' function applied to two consecutive
-  points.) For daily data the value is 1.
+  result of the \code{\link[base]{diff}} function applied to two
+  consecutive points.) For daily data the value is 1.
 }
 \seealso{
 \code{\link{remove.seasonality}}
 
-Other ts: \code{\link{aic}}, \code{\link{anomalies}},
-  \code{\link{bic}}, \code{\link{remove.seasonality}}
+Other ts: \code{\link{aic.climex.fit.gev}},
+  \code{\link{aic.climex.fit.gpd}}, \code{\link{aic.list}},
+  \code{\link{aic}}, \code{\link{anomalies.list}},
+  \code{\link{anomalies.xts}}, \code{\link{anomalies}},
+  \code{\link{bic.climex.fit.gev}},
+  \code{\link{bic.climex.fit.gpd}}, \code{\link{bic.list}},
+  \code{\link{bic}}, \code{\link{check.completeness}},
+  \code{\link{remove.incomplete.years.list}},
+  \code{\link{remove.incomplete.years.xts}},
+  \code{\link{remove.seasonality.list}},
+  \code{\link{remove.seasonality.xts}},
+  \code{\link{remove.seasonality}}
 }
 \author{
 Philipp Mueller
 }
+\concept{ts}

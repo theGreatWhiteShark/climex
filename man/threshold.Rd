@@ -2,46 +2,77 @@
 % Please edit documentation in R/extremes.R
 \name{threshold}
 \alias{threshold}
-\title{Apply a threshold to data}
+\title{Apply a threshold to a time series}
 \usage{
-threshold(x, threshold, decluster = TRUE, na.rm = TRUE)
+threshold(x, threshold, decluster = TRUE, cluster.distance = NULL,
+  extreme.type = c("max", "min"), na.rm = TRUE, mc.cores = TRUE)
 }
 \arguments{
-\item{x}{Time series or numerical vector.}
+\item{x}{Either an object of class \pkg{xts} or a list of those.}
 
-\item{threshold}{Value which has to be exceeded.}
+\item{threshold}{Numerical value, which has to be exceeded by the
+data.}
 
-\item{decluster}{Flag indicating whether of not to decluster the
-obtained exceedance. Default = TRUE.}
+\item{decluster}{Logical flag indicating whether or not to
+decluster the obtained exceedances over the
+\strong{threshold}. Default = TRUE.}
 
-\item{na.rm}{Flag indicating whether to remove all NA values from the
-time series (removed points in clusters). For important steps like
-calculating the Lmoments of the time series there must not be any NA
-left. Default = TRUE.}
+\item{cluster.distance}{Numerical value specifying how many points
+have to be below the \strong{threshold} for the next point to be
+considered the starting point of a new cluster. Only supply a
+value when you really know what you are doing! Default = NULL.}
+
+\item{extreme.type}{String specifying whether the events below a
+very low ("min") or above a very high ("max") \strong{threshold}
+should be extracted. The \strong{threshold} will be subtracted
+from the data in both cases. Default: "max".}
+
+\item{na.rm}{Logical flag indicating whether to remove all NA
+values from the time series (removed points in clusters). For
+important steps, like calculating the \emph{Lmoments} of a time
+series, there must not be any NA left. Default = TRUE.}
+
+\item{mc.cores}{A numerical input specifying the number of cores
+to use for the multi core application of the function (see
+\code{\link[parallel]{detectCores}}). This functionality is only
+available if the input is a list of different objects. If NULL,
+the function will be calculated classically with only one core.
+Default = NULL.}
 }
 \value{
-Declustered time series of the same format as the input.
+Same class as the input
 }
 \description{
-Extracts all data above a certain threshold
+Extracts all data above a certain threshold of a
+  \pkg{xts} class object or a list of those.
 }
 \details{
-Due to the UNIX principle (make each program do one thing
-well) I decided to provide this extra function instead of
-incorporating it into the fitting function. After extracting all data
-above the threshold it is going to be subtracted from the data. In
-addition all exceedance can be declustered. This step is highly
-recommended since the extreme value theory is only valid for data
-without correlations and short-range correlations (which are present
-in most measured data) can be filtered out using this procedure.
+After extracting all data above the \strong{threshold},
+  the \strong{threshold} argument itself is going to be subtracted
+  from the data.
+
+  In addition, all exceedance can be declustered. This step is
+  highly recommendes, since the extreme value theory is only valid
+  for data without correlations (which are present in most
+  measured data). Using this method, at least the short-range
+  correlations in the data can be taken care of.
 }
 \seealso{
-Other extremes: \code{\link{block}},
-  \code{\link{decluster}}, \code{\link{extremal.index}},
-  \code{\link{gev.density}}, \code{\link{gpd.density}},
-  \code{\link{qevd}}, \code{\link{return.level}},
-  \code{\link{revd}}, \code{\link{rlevd}}
+Other extremes: \code{\link{block.list}},
+  \code{\link{block.xts}}, \code{\link{block}},
+  \code{\link{decluster.list}},
+  \code{\link{decluster.xts}}, \code{\link{decluster}},
+  \code{\link{extremal.index}}, \code{\link{gev.density}},
+  \code{\link{gpd.density}}, \code{\link{qevd}},
+  \code{\link{return.level.climex.fit.gev}},
+  \code{\link{return.level.climex.fit.gpd}},
+  \code{\link{return.level.list}},
+  \code{\link{return.level.numeric}},
+  \code{\link{return.level}}, \code{\link{revd}},
+  \code{\link{rlevd}}, \code{\link{threshold.list}},
+  \code{\link{threshold.xts}}
 }
 \author{
 Philipp Mueller
 }
+\concept{extremes}

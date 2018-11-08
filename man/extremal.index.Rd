@@ -7,41 +7,52 @@
 extremal.index(x, threshold, silent = FALSE)
 }
 \arguments{
-\item{x}{Time series of class 'xts' or numerical vector.}
+\item{x}{Time series of class \pkg{xts} or \emph{numerical}.}
 
-\item{threshold}{Only events exceeding a specific threshold will be
-considered extreme events and thus will be subject of the
+\item{threshold}{Only events exceeding a specific threshold will
+be considered extreme events and thus will be subject of the
 declustering.}
 
 \item{silent}{Whether or not to display warnings.}
 }
 \value{
 Numerical vector containing c( extremal index, number of
-clusters, minimal distance between clusters (minimal.distance) ).
+  clusters, minimal distance between clusters (minimal.distance))
 }
 \description{
 Estimates the extremal index of a time series.
 }
 \details{
-The extremal index can be thought of as the inverse of the
-mean cluster size. It can be calculated by the "blocks" method
-of Ferro and Segers, 2003. I will use the bias-free estimator
-provided in equation (4) in their paper. This one is supposed to be
-the most robust one and is relying on a moment estimation.
-Another way to estimate it, would be using the "runs" method as in
-Stuart Coles (2001). But therefore one had to know the minimal
-distance between the clusters first. Since the whole point of this
-function to estimate exactly this quantity for its use in the
-\code{\link{decluster}} function, I don't see the point of
-implementing this method too.
+The extremal index can be thought of as the inverse of
+  the mean cluster size. It can be calculated by the \emph{blocks}
+  method of Ferro and Segers, 2003. I will use the bias-free
+  estimator provided in equation (4) in their paper. This one is
+  supposed to be the most robust one and is relying on a moment
+  estimation.
+
+  Another way to estimate it, would be using the \emph{runs}
+  method as in Stuart Coles (2001). But therefore one had to know
+  the minimal distance between the clusters first. Since the whole
+  point of this function to estimate exactly this quantity for its
+  use in the \code{\link{decluster}} function, I don't see the
+  point of implementing this method too.
 }
 \seealso{
-Other extremes: \code{\link{block}},
-  \code{\link{decluster}}, \code{\link{gev.density}},
-  \code{\link{gpd.density}}, \code{\link{qevd}},
+Other extremes: \code{\link{block.list}},
+  \code{\link{block.xts}}, \code{\link{block}},
+  \code{\link{decluster.list}},
+  \code{\link{decluster.xts}}, \code{\link{decluster}},
+  \code{\link{gev.density}}, \code{\link{gpd.density}},
+  \code{\link{qevd}},
+  \code{\link{return.level.climex.fit.gev}},
+  \code{\link{return.level.climex.fit.gpd}},
+  \code{\link{return.level.list}},
+  \code{\link{return.level.numeric}},
   \code{\link{return.level}}, \code{\link{revd}},
-  \code{\link{rlevd}}, \code{\link{threshold}}
+  \code{\link{rlevd}}, \code{\link{threshold.list}},
+  \code{\link{threshold.xts}}, \code{\link{threshold}}
 }
 \author{
 Philipp Mueller
 }
+\concept{extremes}

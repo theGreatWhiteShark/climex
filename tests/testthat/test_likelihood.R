@@ -1,3 +1,5 @@
+### test_likelihood.R - Tests checking the various likelihood
+###   functions 
 library( climex )
 context( "Testing the likelihood and in particular the likelihood.initial function" )
 
@@ -107,3 +109,4 @@ test_that( "the augmented version works properly", {
                              c( 20, -2 ), x.thresh, model = "gpd" ),
                 c( -21.2818860315, -2352.7811944738 ) )
 })
+## End of test_likelihood.R

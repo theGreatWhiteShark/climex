@@ -30,12 +30,21 @@ If you want to calculate the density of the Gumbel
 Port of the \code{\link[ismev]{gev.dens}} function.
 }
 \seealso{
-Other extremes: \code{\link{block}},
-  \code{\link{decluster}}, \code{\link{extremal.index}},
-  \code{\link{gpd.density}}, \code{\link{qevd}},
+Other extremes: \code{\link{block.list}},
+  \code{\link{block.xts}}, \code{\link{block}},
+  \code{\link{decluster.list}},
+  \code{\link{decluster.xts}}, \code{\link{decluster}},
+  \code{\link{extremal.index}}, \code{\link{gpd.density}},
+  \code{\link{qevd}},
+  \code{\link{return.level.climex.fit.gev}},
+  \code{\link{return.level.climex.fit.gpd}},
+  \code{\link{return.level.list}},
+  \code{\link{return.level.numeric}},
   \code{\link{return.level}}, \code{\link{revd}},
-  \code{\link{rlevd}}, \code{\link{threshold}}
+  \code{\link{rlevd}}, \code{\link{threshold.list}},
+  \code{\link{threshold.xts}}, \code{\link{threshold}}
 }
 \author{
 Philipp Mueller
 }
+\concept{extremes}

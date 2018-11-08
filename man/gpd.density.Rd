@@ -25,18 +25,27 @@ Calculate the probability density function for the
 \details{
 If you want to calculate the density of the exponential
   distribution, please stick to the c( scale, shape ) scheme of
-  the `parameters' argument while setting the shape parameter to
-  zero. 
+  the \strong{parameters} argument while setting the shape
+  parameter to zero. 
 
-Port of the \code{\link[ismev]{gpd.dens}} function.
+  Port of the \code{\link[ismev]{gpd.dens}} function.
 }
 \seealso{
-Other extremes: \code{\link{block}},
-  \code{\link{decluster}}, \code{\link{extremal.index}},
-  \code{\link{gev.density}}, \code{\link{qevd}},
+Other extremes: \code{\link{block.list}},
+  \code{\link{block.xts}}, \code{\link{block}},
+  \code{\link{decluster.list}},
+  \code{\link{decluster.xts}}, \code{\link{decluster}},
+  \code{\link{extremal.index}}, \code{\link{gev.density}},
+  \code{\link{qevd}},
+  \code{\link{return.level.climex.fit.gev}},
+  \code{\link{return.level.climex.fit.gpd}},
+  \code{\link{return.level.list}},
+  \code{\link{return.level.numeric}},
   \code{\link{return.level}}, \code{\link{revd}},
-  \code{\link{rlevd}}, \code{\link{threshold}}
+  \code{\link{rlevd}}, \code{\link{threshold.list}},
+  \code{\link{threshold.xts}}, \code{\link{threshold}}
 }
 \author{
 Philipp Mueller
 }
+\concept{extremes}

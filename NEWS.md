@@ -1,3 +1,96 @@
+# v2.0.0
+The functionality of the 1. climex core package, 2. the shiny-based
+GUI, and 3. import of the data of the German weather service (DWD)
+will be split in three different entities. This way, it is more simple
+regarding housekeeping. And I might finally succeed in getting a reply
+from one of the CRAN fellows by just submitting the core package.
+- Rewriting the **source.data()** function to search for .RData in a
+  specified folder recursively, print all results well-formatted in
+  the command line and prompt the user for a selection. The option for
+  a default data set is now deprecated.
+- Adding S3 function **checking.completeness**. For input of class
+  *xts* it returns TRUE or FALSE whether or not the time series has at
+  least the supplied number of complete years. If the input is of
+  class *list*, the function trims the list to only those objects
+  fulfilling the requirement.
+- Rewriting the functions **fit.gev**, **fit.gpd**, **return.level**,
+  **aic**, **bic**, **remove.seasonality**, **anomalies**, **block**,
+  **remove.incomplete.years**, **decluster**, and **threshold** as S3
+  objects. They now accept both the basic elements they already were
+  able to accept beforehand and a list of those objects. In the latter
+  case the output will be a list of the output of the individual
+  calls.
+- Streamlining the documentation and formatting
+  Updating the formatting of the code and the documentation. All
+  lambda functions now have running variables composed of two times
+  the same character. Function arguments are marked with the \strong{}
+  highlighting in the documentation and packages are referenced using
+  \pkg{}.
+- Allowing for parallel execution of S3 functions
+  The functions **anomalies**, **block**, **decluster**,
+  **threshold**, **check.completeness**, **fit.gev**, **fit.gpd**,
+  **remove.incomplete.years**, **remove.seasonality**, and
+  **return.level** can now harness the support of the *parallel*
+  package using the *mclapply* function. Per default their additional
+  input argument *mc.cores* is set to NULL. If set to a numerical
+  value instead, this value is used as the number of cores and the
+  parallel execution is triggered.
+  The functions **aic** and **bic**, while being S3 generic, have been
+  excluded since they are calculated in no time.
+- The *separation.mode* argument of the **block** function was
+  removed, since it was overwritten internally anyway.
+- The default *block.number* argument of the **block** function was
+  set to NULL. This way its internal handling using the **missing**
+  function was changed to a check using **is.null** to ensure it will
+  work when called by another function (the **fit.gev** one).
+- The **threshold** function now hands the *cluster.distance* argument
+  to the **decluster** function.
+- **fit.gev** and **fit.gpd** are now capable for preprocessing the
+  time series on their own. Using the arguments *blocking* and
+  *thresholding* the functions can call **block** or **threshold**
+  internally and hand over all the required arguments. This makes the
+  use of those functions more convenient to the user.
+- The *extreme.type* argument was introduced to the **fit.gev**,
+  **fit.gpd**, **block**, **threshold**, and **return.level** function
+  to be also able to fit the block minima or all extreme points below
+  a certain low threshold. This argument replaced the *block.mode* one
+  of the block function.
+- Reducing the default value of the *monte.carlo.sample.size* argument
+  of the **return.level** function form 1000 to 100.
+- Bug fixes and additional test functions for the error estimation in
+  the **return.level**, **fit.gev**, and **fit.gpd** function.
+- Using seeds instead of tolerances in the test functions.
+- Bug in **ttplot** prevented correct x axis for all base time units
+  instead of days.
+- The positions of the returned list elements *x* and *return.level*
+  of the **fit.gev** function was switched.
+- Both the **fit.gev** and **fit.gpd** function do now have a fallback
+  method, which is able to handle numerical data. It contains a
+  warning message suggesting the usage of **xts**-class objects
+  instead. The resulting object will most probably be incompatible
+  with a lot of functionalities.
+- The **fit.gev** and **fit.gpd** functions do now feature a new
+  input argument called *debug*. If set to TRUE, it displays both
+  warning messages and intermediate results from the outer loop of the
+  constrained optimization routine. In addition, the *silent* argument
+  now properly mutes all output of the fitting functions.
+- Fixing the correct linking and exporting of the C++-based function
+  **likelihood_GEV** (only used within the **likelihood.plot**
+  function since it yields a significant speedup in there.
+- The **convert.date** function was some heritage from times the
+  **climex** package was still performing the download and formatting
+  of the data of the German weather service (DWD). Since this is no
+  longer the case, the function was removed.
+- The **source.data** function is now removed as well. It way more
+  plausible to have it in the **dwd2r** package and a very bad idea to
+  have two copies.
+- The *climex.path* global variable is no longer part of the
+  **climex** package. Since **dwd2r** uses its own directory for
+  storing the downloads, *~/R/dwd_data* in the global option
+  *dwd2r.download.path*, the **climex** package does not directly use
+  or access the climex.path folder anymore. The variable will be
+  instead defined by the **climexUI** package.
+  
 # v1.2.1
 - Only perform the test of the API of the DWD on Unix-based
   systems. The *winbuilder* of CRAN just throws non-reproducible error

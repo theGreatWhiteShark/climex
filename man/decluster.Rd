@@ -2,58 +2,86 @@
 % Please edit documentation in R/extremes.R
 \name{decluster}
 \alias{decluster}
-\title{Decluster data}
+\title{Decluster a time series.}
 \usage{
-decluster(x, threshold, cluster.distance = NULL, silent = FALSE)
+decluster(x, threshold, cluster.distance = NULL, silent = FALSE,
+  mc.cores = NULL)
 }
 \arguments{
-\item{x}{Time series. The full one, not just the
-exceedances.position! Can be of class 'xts' or 'numeric'}
+\item{x}{Either an object of class \pkg{xts} or \emph{numeric} or
+a list of those. The full time series has to be provided. Not
+just the exceedances over the \strong{threshold}!}
 
-\item{threshold}{Has to be set sufficient high to fulfill the
-asymptotic condition for the GP distribution.}
+\item{threshold}{Numerical value. Has to be set sufficient high to
+fulfill the asymptotic condition for the GP distribution.}
 
-\item{cluster.distance}{Specifies how many points have to be below
-the threshold for the next point to be considered the starting point
-of a new cluster. Only supply a value when you really know what you
-are doing! Default = NULL}
+\item{cluster.distance}{Numerical value specifying how many points
+have to be below the \strong{threshold} for the next point to be
+considered the starting point of a new cluster. Only supply a
+value when you really know what you are doing! Default = NULL}
 
 \item{silent}{Whether or not to display warnings.}
+
+\item{mc.cores}{A numerical input specifying the number of cores
+to use for the multi core application of the function (see
+\code{\link[parallel]{detectCores}}). This functionality is only
+available if the input is a list of different objects. If NULL,
+the function will be calculated classically with only one core.
+Default = NULL.}
 }
 \value{
-Returns the original time series x with all the elements
-within one cluster having smaller values than the clusters maximum
-being replaced by NA.
+Same class as the input. The time series will be similar
+  to their original versions with all the elements within a
+  cluster having smaller values than the clusters maximum being
+  replaced by NA.
 }
 \description{
-Decluster point over threshold data used for GP
-  fitting.
+Decluster point over threshold data as a
+  preprocessing step for the fitting of the generalized Pareto
+  (GP) distribution.
 }
 \details{
-This function determines clusters in a time series and
-extract just their maximal value in order to remove short-range
-correlations. All exceedances.position will be considered belonging
-to a cluster until at least cluster.distance consecutive points fall
-below the threshold. The parameter cluster.distance will be
-determined using the extremal index as suggested in Ferro & Segers
-(2003) when set to NULL. It thus provides a non-parametric way of
-declustering.
-It also features a special treatment of missing values. All of them
-will be kept and the returned time series will have the same length
-as the input. Separate missing values and small sequences will be
-omitted in the cluster determination. But if more than 15 missing
-values appear in a row, they will be replaced with the minimal value
-of the time series for the cluster detection. This way exceedances
-separated over a big temporal distance will not be considered to
-belong to the same cluster.
+This function determines clusters in an object of class
+  \pkg{xts} and extracts just their maximal values in order to
+  remove short-range correlations. All position of exceedances
+  will be considered belonging to a cluster until at least
+  \strong{cluster.distance} consecutive points fall below the
+  \strong{threshold}.
+
+  The argument \strong{cluster.distance} will be determined using
+  the extremal index as suggested in \emph{Ferro & Segers (2003)}
+  when set to NULL. It, thus, provides a non-parametric way of
+  declustering.
+
+  It also features a special treatment of missing values. All of
+  them will be kept and the returned time series will have the
+  same length as the input. Separate missing values and small
+  sequences will be omitted in the cluster determination. But if
+  more than 15 missing values appear in a row, they will be
+  replaced with the minimal value of the time series for the
+  cluster detection. This way exceedances separated over a big
+  temporal distance will not be considered to belong to the same
+  cluster.
+
+  This function can be applied to lists of \pkg{xts} or
+  \emph{numeric} class elements too.
 }
 \seealso{
-Other extremes: \code{\link{block}},
+Other extremes: \code{\link{block.list}},
+  \code{\link{block.xts}}, \code{\link{block}},
+  \code{\link{decluster.list}},
+  \code{\link{decluster.xts}},
   \code{\link{extremal.index}}, \code{\link{gev.density}},
   \code{\link{gpd.density}}, \code{\link{qevd}},
+  \code{\link{return.level.climex.fit.gev}},
+  \code{\link{return.level.climex.fit.gpd}},
+  \code{\link{return.level.list}},
+  \code{\link{return.level.numeric}},
   \code{\link{return.level}}, \code{\link{revd}},
-  \code{\link{rlevd}}, \code{\link{threshold}}
+  \code{\link{rlevd}}, \code{\link{threshold.list}},
+  \code{\link{threshold.xts}}, \code{\link{threshold}}
 }
 \author{
 Philipp Mueller
 }
+\concept{extremes}

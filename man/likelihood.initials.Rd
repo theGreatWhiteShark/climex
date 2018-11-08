@@ -7,42 +7,46 @@
 likelihood.initials(x, model = c("gev", "gpd"), use.skewness = TRUE)
 }
 \arguments{
-\item{x}{Time series/numeric.}
+\item{x}{Time series of class \pkg{xts} or \emph{numeric}.}
 
-\item{model}{Determining whether to calculate the initial parameters
-of the GEV or GPD function. Default = "gev"}
+\item{model}{String determining whether to calculate the initial
+parameters of the GEV ("gev") or GP ("gpd") function. Default =
+"gev"}
 
 \item{use.skewness}{Determines if the skewness is getting used to
 determine the initial shape parameter. Default = TRUE.}
 }
 \value{
 Numerical vector containing the c( location, scale, shape )
-estimates for method = "gev" or the c( scale, shape ) estimates for
-method = "gpd".
+  estimates for method = "gev" or the c( scale, shape ) estimates
+  for method = "gpd".
 }
 \description{
-Estimates the initial GEV or GPD parameters of a time
+Estimates the initial GEV or GP parameters of a time
   series required to start the fitting routine.
 }
 \details{
-Two main methods are used for the estimation: the L-moments
-method of Hosking & Wallis  and an estimation using
-the first two moments of the Gumbel distribution. For the later one
-a modification was added: By looking at skewness of the time series x
-and with respect to some heuristic thresholds a shape parameter
-between -.4 and .2 is assigned for the GEV distribution. In case of
-the GP one, the sign of the skewness matches the sign of the series'
-shape parameter.
+Two main methods are used for the estimation: the
+  L-moments method of Hosking & Wallis  and an estimation using
+  the first two moments of the Gumbel distribution. For the later
+  one a modification was added: By looking at skewness of the time
+  series \strong{x} and with respect to some heuristic thresholds
+  a shape parameter between -.4 and .2 is assigned for the GEV
+  distribution. In case of the GP one, the sign of the skewness
+  matches the sign of the series' shape parameter.
 
-Warning: both methods do not work for samples with diverging (or
-pretty big) mean or variance.
+  Warning: both methods do not work for samples with diverging (or
+  pretty big) mean or variance.
 
-If no working initial parameter combination could be found using
-those methods, the function will perform a constrained random
-walk on the parameters until a working pair is found.
+  If no working initial parameter combination could be found using
+  those methods, the function will perform a constrained random
+  walk on the parameters until a working pair is found.
 }
 \seealso{
-Other optimization: \code{\link{fit.gev}},
+Other optimization: \code{\link{fit.gev.default}},
+  \code{\link{fit.gev.list}}, \code{\link{fit.gev.xts}},
+  \code{\link{fit.gev}}, \code{\link{fit.gpd.default}},
+  \code{\link{fit.gpd.list}}, \code{\link{fit.gpd.xts}},
   \code{\link{fit.gpd}},
   \code{\link{likelihood.augmented}},
   \code{\link{likelihood.gradient.augmented}},
@@ -52,3 +56,4 @@ Other optimization: \code{\link{fit.gev}},
 \author{
 Philipp Mueller
 }
+\concept{optimization}

@@ -4,37 +4,56 @@
 \alias{remove.seasonality}
 \title{Remove seasonality}
 \usage{
-remove.seasonality(x)
+remove.seasonality(x, mc.cores = NULL)
 }
 \arguments{
-\item{x}{Time series of class "xts"}
+\item{x}{Either an object of class \pkg{xts} or a list of those.}
+
+\item{mc.cores}{A numerical input specifying the number of cores
+to use for the multi core application of the function (see
+\code{\link[parallel]{detectCores}}). This functionality is only
+available if the input is a list of different objects. If NULL,
+the function will be calculated classically with only one core.
+Default = NULL.}
 }
 \value{
-Deseasonalized time series of class "xts".
+Some class as input.
 }
 \description{
 Calculates the seasonal component of a time series
   and subtracts it from the original.
 }
 \details{
-Only time series of class "xts" are accepted (on purpose
-  because I want to get rid of handling both objects of class "ts"
-  and "xts"). For now \code{\link[stats]{stl}} with s.window = 12
-  and a 
-  conversion of the input into a ts object of daily data is used
-  to calculate the seasonal component. This should be replaced by
-  a more sophisticated solution as soon I digged deeper into the
-  field of
-  deseasonalization. \code{\link{remove.incomplete.years}} is used
+The function \code{\link[stats]{stl}} with the argument
+  \code{s.window = 12} and a 
+  conversion of the input into a \emph{ts} class object of daily
+  data is used to calculate the seasonal component. This should be
+  replaced by a more sophisticated solution as soon I digged
+  deeper into the field of deseasonalization.
+  \code{\link{remove.incomplete.years}} is used
   to remove incomplete years from the data set. This ensures a
   better calculation of the seasonal component but also requires
   to forecast it to the length of the original data set and align
   it at the right place for subtraction.
+
+  This function can also be applied to a list of \pkg{xts} class
+  objects.
 }
 \seealso{
-Other ts: \code{\link{aic}}, \code{\link{anomalies}},
-  \code{\link{bic}}, \code{\link{remove.incomplete.years}}
+Other ts: \code{\link{aic.climex.fit.gev}},
+  \code{\link{aic.climex.fit.gpd}}, \code{\link{aic.list}},
+  \code{\link{aic}}, \code{\link{anomalies.list}},
+  \code{\link{anomalies.xts}}, \code{\link{anomalies}},
+  \code{\link{bic.climex.fit.gev}},
+  \code{\link{bic.climex.fit.gpd}}, \code{\link{bic.list}},
+  \code{\link{bic}}, \code{\link{check.completeness}},
+  \code{\link{remove.incomplete.years.list}},
+  \code{\link{remove.incomplete.years.xts}},
+  \code{\link{remove.incomplete.years}},
+  \code{\link{remove.seasonality.list}},
+  \code{\link{remove.seasonality.xts}}
 }
 \author{
 Philipp Mueller
 }
+\concept{ts}

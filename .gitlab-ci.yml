@@ -1,0 +1,10 @@
+image: thegreatwhiteshark/climex-r-ubuntu:1.1.2
+
+test:
+  script:
+    ## Get the newest version of all dependencies
+    - R -q -e 'devtools::install()'
+    - R -q -e 'devtools::test()'
+    - R CMD build . --no-build-vignettes --no-manual
+    - PKG_FILE_NAME=$(ls -1t *.tar.gz | head -n 1)
+    - R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual

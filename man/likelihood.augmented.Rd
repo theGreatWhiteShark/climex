@@ -3,56 +3,62 @@
 \name{likelihood.augmented}
 \alias{likelihood.augmented}
 \title{Calculated the augmented negative log likelihood of the
-GEV or GPD function.}
+  GEV or GP function.}
 \usage{
 likelihood.augmented(parameters, x.in, model = c("gev", "gpd"),
   lagrangian.multiplier = rep(0, length(x.in) + 2),
   penalty.parameter = 1000)
 }
 \arguments{
-\item{parameters}{Vector containing the location, scale and shape
-parameter for the GEV or the scale and shape parameter for the GPD.
-If NULL the \code{\link{likelihood.initials}} is used. Default = NULL}
+\item{parameters}{Numerical vector containing the location, scale,
+and shape parameters for the GEV or the scale and shape
+parameters for the GP. If NULL,
+\code{\link{likelihood.initials}} is used to determine
+them. Default = NULL}
 
-\item{x.in}{Time series.}
+\item{x.in}{Time series of class \pkg{xts}.}
 
-\item{model}{Determining whether to calculate the initial parameters
-of the GEV or GPD function. Default = "gev"}
+\item{model}{String determining whether to calculate the initial
+parameters of the GEV ("gev") or GP ("gpd") function. Default =
+"gev"}
 
 \item{lagrangian.multiplier}{Lagrangian multipliers used to weight
-the linear contribution of the constraints. In most cases all of them
-are zero, since optimization of the GEV/GP likelihood usually doesn't
-take place inside a region of constraint violations. When supplying
-this parameter it has to have the same length as present number of
-constraints: number of points in x.in + 2.
-Default = 0 for all constraints.}
+the linear contribution of the constraints. In most cases all of
+them are zero, since optimization of the GEV/GP likelihood
+usually doesn't take place inside a region of constraint
+violations. When supplying this parameter it has to have the
+same length as present number of constraints: number of points
+in x.in + 2. Default = 0 for all constraints.}
 
 \item{penalty.parameter}{Penalty parameter used to weight the
-quadratic contribution of the constraints. In the end of a typical
-constrained GEV or GP optimization this parameter is 1000.
-Default = 1000.}
+quadratic contribution of the constraints. In the end of a
+typical constrained GEV or GP optimization this parameter is
+1000. Default = 1000.}
 }
 \value{
 Numerical value of the augmented negative log likelihood.
 }
 \description{
 This function uses the \code{\link{likelihood}}
-function and adds the linear constraints used in
-\code{\link{fit.gev}} and \code{\link{fit.gpd}} to produce the
-augmented Lagrangian version of the GEV or GP negative
-log-likelihood function.
+  function and adds the linear constraints used in
+  \code{\link{fit.gev}} and \code{\link{fit.gpd}} to produce the
+  augmented Lagrangian version of the GEV or GP negative
+  log-likelihood function.
 }
 \details{
 A convenience function not used by the fitting routines.
 
-It is only meant to work with constant parameters
-and no covariates.
+  It is only meant to work with constant parameters and no
+  covariates.
 
-'x.in' is not called "x" anymore since the call
-grad( func = likelihood, x = parameters, ... ) wouldn't be possible.
+  \strong{x.in} is not called "x", since the call \code{grad( func
+  = likelihood, x = parameters, ... )} wouldn't be possible.
 }
 \seealso{
-Other optimization: \code{\link{fit.gev}},
+Other optimization: \code{\link{fit.gev.default}},
+  \code{\link{fit.gev.list}}, \code{\link{fit.gev.xts}},
+  \code{\link{fit.gev}}, \code{\link{fit.gpd.default}},
+  \code{\link{fit.gpd.list}}, \code{\link{fit.gpd.xts}},
   \code{\link{fit.gpd}},
   \code{\link{likelihood.gradient.augmented}},
   \code{\link{likelihood.gradient}},
@@ -62,3 +68,4 @@ Other optimization: \code{\link{fit.gev}},
 \author{
 Philipp Mueller
 }
+\concept{optimization}

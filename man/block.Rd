@@ -4,57 +4,81 @@
 \alias{block}
 \title{Blocking data}
 \usage{
-block(input.bulk, block.number = round(length(input.bulk)/50),
-  block.length = NULL, block.mode = c("max", "min"),
-  separation.mode = c("years", "none"))
+block(x, block.number = NULL, block.length = NULL,
+  extreme.type = c("max", "min"), mc.cores = NULL)
 }
 \arguments{
-\item{input.bulk}{Provided data of class 'xts'.}
+\item{x}{Either an object of class \pkg{xts} or a list of those.}
 
-\item{block.number}{Specifies the number of blocks the input data is
-going to be separated in.}
+\item{block.number}{Specifies the number of blocks the input data
+is going to be separated in. Default = NULL.}
 
-\item{block.length}{Length of the blocks. For the sake of simplicity
-the last block is not forced to match the length of the other plots.}
+\item{block.length}{Length of the blocks. For the sake of
+simplicity the last block is not forced to match the length of
+the other plots. Default = NULL.}
 
-\item{block.mode}{This parameter determines if the maximum "max" or
-the minimum "min" of a block shall be returned. Default: "max".}
+\item{extreme.type}{String specifying whether the maxima ("max")
+or minima ("min") of each block should be extracted. Default:
+"max".}
 
-\item{separation.mode}{"years" is used to split the data according to
-its date values instead. If 'block.length' or 'block.number' is
-specified this argument will not be considered and set to "none".
-Default = "years".}
+\item{mc.cores}{A numerical input specifying the number of cores
+to use for the multi core application of the function (see
+\code{\link[parallel]{detectCores}}). This functionality is only
+available if the input is a list of different objects. If NULL,
+the function will be calculated classically with only one core.
+Default = NULL.}
 }
 \value{
-Of class 'xts'.
+Same class as the input.
 }
 \description{
 Separates the input into blocks of equal size and
   returns the maximum or minimum of the block as result.
 }
 \details{
-If 'separation.mode' is set to "years" the data is separated
-according to it's time stamps. If not the size of a block is
-determined by the 'block.length' parameter or calculated via the
-'block.number' parameter. For calculating the mean of the blocks have
-a look at the \code{\link[stats]{ave}} function.
+If both the \strong{block.number} and
+  \strong{block.length} arguments are NULL, the data will be
+  split into annual blocks. If not, the
+  size of a block is determined by the \strong{block.length}
+  argument or calculated via the \strong{block.number} argument if
+  the previous one is set to NULL. For calculating the mean of
+  the blocks, please have a look at the \code{\link[stats]{ave}}
+  function.
+
+  This function can be applied to lists of \pkg{xts} class elements
+  too.
 }
 \examples{
-block( temp.potsdam )
+  block( temp.potsdam )
 }
 \seealso{
-Other extremes: \code{\link{decluster}},
+Other extremes: \code{\link{block.list}},
+  \code{\link{block.xts}}, \code{\link{decluster.list}},
+  \code{\link{decluster.xts}}, \code{\link{decluster}},
   \code{\link{extremal.index}}, \code{\link{gev.density}},
   \code{\link{gpd.density}}, \code{\link{qevd}},
+  \code{\link{return.level.climex.fit.gev}},
+  \code{\link{return.level.climex.fit.gpd}},
+  \code{\link{return.level.list}},
+  \code{\link{return.level.numeric}},
   \code{\link{return.level}}, \code{\link{revd}},
-  \code{\link{rlevd}}, \code{\link{threshold}}
+  \code{\link{rlevd}}, \code{\link{threshold.list}},
+  \code{\link{threshold.xts}}, \code{\link{threshold}}
 
-Other extremes: \code{\link{decluster}},
+Other extremes: \code{\link{block.list}},
+  \code{\link{block.xts}}, \code{\link{decluster.list}},
+  \code{\link{decluster.xts}}, \code{\link{decluster}},
   \code{\link{extremal.index}}, \code{\link{gev.density}},
   \code{\link{gpd.density}}, \code{\link{qevd}},
+  \code{\link{return.level.climex.fit.gev}},
+  \code{\link{return.level.climex.fit.gpd}},
+  \code{\link{return.level.list}},
+  \code{\link{return.level.numeric}},
   \code{\link{return.level}}, \code{\link{revd}},
-  \code{\link{rlevd}}, \code{\link{threshold}}
+  \code{\link{rlevd}}, \code{\link{threshold.list}},
+  \code{\link{threshold.xts}}, \code{\link{threshold}}
 }
 \author{
 Philipp Mueller
 }
+\concept{extremes}

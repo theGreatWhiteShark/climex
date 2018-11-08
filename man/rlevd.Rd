@@ -17,11 +17,12 @@ rlevd(period, location = NULL, scale = NULL, shape = NULL,
 \item{shape}{Of the GEV/GP distribution. Default = NULL.}
 
 \item{threshold}{Used in the GP distribution. This parameter is
-optional but should be provided in order to create a representation
-of the fitted data exceedance. Default = NULL.}
+optional but should be provided in order to create a
+representation of the fitted data exceedance. Default = NULL.}
 
-\item{model}{Determines if to use the GEV or GP distribution.
-Default = "gev".}
+\item{model}{String determining whether to calculate the initial
+parameters of the GEV ("gev") or GP ("gpd") function. Default =
+"gev"}
 
 \item{silent}{Whether to display warnings or not. Default = FALSE.}
 }
@@ -33,17 +34,27 @@ Internal function to calculate the return level of
   GEV or GP distribution.
 }
 \details{
-Port from the extRemes package to ensure compatibility and
-to make the threshold argument obligatory. This is just for internal
-usage. Please use the \code{\link{return.level}} function instead!
+Port from the \pkg{extRemes} package to ensure
+  compatibility and to make the threshold argument
+  obligatory. This is just for internal usage. Please use the
+  \code{\link{return.level}} function instead!
 }
 \seealso{
-Other extremes: \code{\link{block}},
-  \code{\link{decluster}}, \code{\link{extremal.index}},
-  \code{\link{gev.density}}, \code{\link{gpd.density}},
-  \code{\link{qevd}}, \code{\link{return.level}},
-  \code{\link{revd}}, \code{\link{threshold}}
+Other extremes: \code{\link{block.list}},
+  \code{\link{block.xts}}, \code{\link{block}},
+  \code{\link{decluster.list}},
+  \code{\link{decluster.xts}}, \code{\link{decluster}},
+  \code{\link{extremal.index}}, \code{\link{gev.density}},
+  \code{\link{gpd.density}}, \code{\link{qevd}},
+  \code{\link{return.level.climex.fit.gev}},
+  \code{\link{return.level.climex.fit.gpd}},
+  \code{\link{return.level.list}},
+  \code{\link{return.level.numeric}},
+  \code{\link{return.level}}, \code{\link{revd}},
+  \code{\link{threshold.list}},
+  \code{\link{threshold.xts}}, \code{\link{threshold}}
 }
 \author{
 Philipp Mueller
 }
+\concept{extremes}

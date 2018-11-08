@@ -7,24 +7,42 @@
 bic(x)
 }
 \arguments{
-\item{x}{Object of class climex.fit.gev or climex.fit.gpd. When ensuring the presence of all additional list elements an output of optim() can also be used.}
+\item{x}{Either an object returned by the \code{\link{fit.gev}} or
+\code{\link{fit.gpd}} function or a list of such elements.}
 }
 \value{
-Numeric value
+Numeric value, if the input is a single fitting object, or
+  a numerical vector, if \strong{x} is a list of such objects.
 }
 \description{
-Calculates the Bayesian information criterion of a climex.fit.gev or climex.fit.gpd object.
+Calculates the Bayesian information criterion of a
+  \emph{climex.fit.gev} or \emph{climex.fit.gpd} class object or a
+  list of those.
 }
 \details{
-The climex.fit.gev object is of identical structure as the output of the optim() function.
+The \emph{climex.fit.gev} object is of identical
+  structure as the output of the \code{\link[stats]{optim}}
+  function.
 }
 \seealso{
-\code{\link{aic}}
+\code{\link{aic}}, \code{\link{fit.gev}},
+  \code{\link{fit.gpd}}
 
-Other ts: \code{\link{aic}}, \code{\link{anomalies}},
+Other ts: \code{\link{aic.climex.fit.gev}},
+  \code{\link{aic.climex.fit.gpd}}, \code{\link{aic.list}},
+  \code{\link{aic}}, \code{\link{anomalies.list}},
+  \code{\link{anomalies.xts}}, \code{\link{anomalies}},
+  \code{\link{bic.climex.fit.gev}},
+  \code{\link{bic.climex.fit.gpd}}, \code{\link{bic.list}},
+  \code{\link{check.completeness}},
+  \code{\link{remove.incomplete.years.list}},
+  \code{\link{remove.incomplete.years.xts}},
   \code{\link{remove.incomplete.years}},
+  \code{\link{remove.seasonality.list}},
+  \code{\link{remove.seasonality.xts}},
   \code{\link{remove.seasonality}}
 }
 \author{
 Philipp Mueller
 }
+\concept{ts}

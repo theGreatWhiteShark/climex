@@ -2,30 +2,33 @@
 % Please edit documentation in R/plot.R
 \name{plot.climex.fit.gpd}
 \alias{plot.climex.fit.gpd}
-\title{Plot a GPD fit}
+\title{Plot a GP fit}
 \usage{
 \method{plot}{climex.fit.gpd}(x, bin.factor = NULL, ...)
 }
 \arguments{
-\item{x}{Fitted GPD object.}
+\item{x}{Fitted GP object of class \emph{climex.fit.gpd}.}
 
-\item{bin.factor}{Multiplying the length of x
-by this factor, results in the number of bins
-used in this plot. Default = NULL}
+\item{bin.factor}{Multiplying the length of \strong{x} by this
+factor, results in the number of bins used in this plot. Default
+= NULL}
 
 \item{...}{Additional parameters. They won't be handled in the
 function. This argument is only present to ensure S3 generic
-consistency with respect to the `plot()` function.}
+consistency with respect to the \code{\link[graphics]{plot}}
+function.}
 }
 \value{
 ggplot2 object.
 }
 \description{
-Plots the GPD function fitted using
+Plots the GP function fitted using
   \code{\link{fit.gpd}}
 }
 \details{
-Uses ggplot2. Since I will also use it
-in the shiny app, where I want to adjust the number
-of displayed bins, there is a second argument present.
+Uses \pkg{ggplot2}.
+
+  Since this function is also uses in the shiny app
+  \emph{climexUI}, the number of displayed bins has to be
+  adjusted.
 }
