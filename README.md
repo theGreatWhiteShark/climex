@@ -1,5 +1,3 @@
-[![Travis Build](https://travis-ci.org/theGreatWhiteShark/climex.svg?branch=master)](https://travis-ci.org/theGreatWhiteShark/climex.svg?branch=master)
-
 # Features
 
 - Improved fitting routine (no numerical artifacts like in other
@@ -91,15 +89,37 @@ declustering, deseasonalization etc.
 
 # Installation
 
-In order to install this package, you have to use the *install_github*
-function from the **devtools** package.
+In order to install this package, have two options.
+
+### Installation via GitLab
+
+You clone the repository using your command line,
+
+``` bash
+git clone https://gitlab.com/theGreatWhiteShark/climex
+```
+
+open a `R` shell in the newly created folder,
+
+``` bash
+cd climex
+R
+```
+
+and install the package using the `devtools` package.
+
+``` R
+devtools::install()
+```
+
+### Installation via Github
+
+The `devtools` package also provides a function, which will take care
+of the download of the source code.
 
 Just open a R shell on your computer and type in the following commands
 
 ``` r
-## Installing the devtools package (in case your haven't done it yet).
-install.packages( "devtools" )
-
 ## Installing the climex package from Github.
 devtools::install_github( "theGreatWhiteShark/climex", ref = "climatic-new-features" )
 ```
@@ -113,11 +133,13 @@ you instead want to download and install a different branch, use the
 devtools::install_github( "theGreatWhiteShark/climex", ref = "v1.2.0" )
 ```
 
+Note that version v2.0.0 isn't released on Github yet. Therefore, you
+have to using the **climatic-new-features** branch instead.
 
-## An interactive web application
+# An interactive web application
 
 A convenient interface to this core package can be found in the
-[climexUI](https://github.com/theGreatWhiteShark/climexUI) package. It
+[climexUI](https://gitlab.com/theGreatWhiteShark/climexUI) package. It
 comes with a full-fledged shiny application, which enables the user to
 access and investigate a lot of different station data and, at the
 same time, to tweak the most important parameters involved in the
@@ -152,7 +174,7 @@ distribution.
 
 If you are at the very beginning of your analysis or still in search
 of a vast data base to perform your analysis on, I recommend you
-to check out the [dwd2r](https://github.com/theGreatWhiteShark/dwd2r)
+to check out the [dwd2r](https://gitlab.com/theGreatWhiteShark/dwd2r)
 package. It is capable of formatting and saving the station data
 provided by the German weather service (DWD) in lists of *xts*
 class objects and thus in the format most natural to work with in the
