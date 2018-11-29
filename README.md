@@ -122,19 +122,19 @@ same time, to tweak the most important parameters involved in the
 preprocessing and the fitting procedure of the GEV or GP
 distribution. 
 
-![leaflet map to handle a lot of station data](res/climex_map.jpeg)
-![control all the different steps involved in the extreme value analysis](res/climex_time-series.png)
-![explore the station data with your mobile device](res/climex_mobile.jpeg)
+![leaflet map to handle a lot of station data](inst/res/climex_map.jpeg)
+![control all the different steps involved in the extreme value analysis](inst/res/climex_time-series.png)
+![explore the station data with your mobile device](inst/res/climex_mobile.jpeg)
 
 ### Features
 
-![map-icon](res/glyphicons-2-leaf.png)
+![map-icon](inst/res/glyphicons-2-leaf.png)
 - You can perform extreme value analysis on a large number of
   climatic time series from different stations
 - You can calculate arbitrary return levels for all 
   stations and display the results comprehensively on a map
   
-![general-icon](res/glyphicons-42-charts.png)
+![general-icon](inst/res/glyphicons-42-charts.png)
 - You have full control over all steps involved in the extreme value
   analysis of the station data via an intuitive GUI in a persistent
   way (changes will be applied to the analysis of all following time
