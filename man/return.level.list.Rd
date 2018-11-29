@@ -9,7 +9,7 @@
   model = c("gev", "gpd"), monte.carlo.sample.size = 100,
   bootstrap.sample.size = 100, threshold = NULL, total.length = NULL,
   thresholded.time.series = NULL, extreme.type = c("max", "min"),
-  silent = FALSE, mc.cores = NULL, ...)
+  silent = FALSE, mc.cores = NULL)
 }
 \arguments{
 \item{x}{A list of class \emph{numeric}, \emph{climex.fit.gev},

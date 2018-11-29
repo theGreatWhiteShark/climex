@@ -9,6 +9,7 @@
 - Updating all tests to cope with the new `temp.potsdam` data.
 - Moving **res/** folder to **inst/res/** to match the **R**
   conventions and removing the obsolete glyphicons-199-ok-circle.png file
+- Removing the deprecated `...` input argument of the `return.level` function.
 
 # v2.0.0
 The functionality of the 1. climex core package, 2. the shiny-based

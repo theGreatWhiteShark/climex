@@ -946,7 +946,7 @@ return.level <- function( x, return.period = 100,
                          threshold = NULL, total.length = NULL,
                          thresholded.time.series = NULL,
                          extreme.type = c( "max", "min" ),
-                         silent = FALSE, mc.cores = NULL, ... ){
+                         silent = FALSE, mc.cores = NULL ){
   UseMethod( "return.level", x )
 }
 ##' @title Calculation of the return levels.
@@ -1084,7 +1084,7 @@ return.level.list <- function( x, return.period = 100,
                               threshold = NULL, total.length = NULL,
                               thresholded.time.series = NULL,
                               extreme.type = c( "max", "min" ),
-                              silent = FALSE, mc.cores = NULL, ... ){
+                              silent = FALSE, mc.cores = NULL ){
   if ( !is.null( mc.cores ) ){
     x.result <- mclapply(
         x, return.level, return.period = return.period,
@@ -1094,7 +1094,7 @@ return.level.list <- function( x, return.period = 100,
         threshold = threshold, total.length = total.length,
         thresholded.time.series = thresholded.time.series,
         extreme.type = extreme.type,
-        silent = silent, mc.cores = mc.cores, ... )
+        silent = silent, mc.cores = mc.cores )
     } else {
     x.result <- lapply(
         x, return.level, return.period = return.period,
@@ -1104,7 +1104,7 @@ return.level.list <- function( x, return.period = 100,
         threshold = threshold, total.length = total.length,
         thresholded.time.series = thresholded.time.series,
         extreme.type = extreme.type,
-        silent = silent, mc.cores = mc.cores, ... )
+        silent = silent, mc.cores = mc.cores )
   }
   return( x.result )
 }
@@ -1244,7 +1244,7 @@ return.level.climex.fit.gev <-
            threshold = NULL, total.length = NULL,
            thresholded.time.series = NULL,
            extreme.type = c( "max", "min" ),
-           silent = FALSE, mc.cores = NULL, ... ){
+           silent = FALSE, mc.cores = NULL ){
     ## Whether to handle the extreme events at the right or left
     ## side of the PDF of the GEV distribution.
     ## If no particular input argument was provided for
@@ -1607,7 +1607,7 @@ return.level.climex.fit.gpd <-
            threshold = NULL, total.length = NULL,
            thresholded.time.series = NULL,
            extreme.type = c( "max", "min" ),
-           silent = FALSE, mc.cores = NULL, ... ){
+           silent = FALSE, mc.cores = NULL ){
     ## Whether to handle the extreme events at the right or left
     ## side of the PDF of the GEV or GP distribution.
     if ( !missing( model ) && length( model ) == 1 &&
@@ -1992,7 +1992,7 @@ return.level.numeric <-
            threshold = NULL, total.length = NULL,
            thresholded.time.series = NULL,
            extreme.type = c( "max", "min" ),
-           silent = FALSE, mc.cores = NULL, ... ){
+           silent = FALSE, mc.cores = NULL ){
     ## Whether to handle the extreme events at the right or left
     ## side of the PDF of the GEV or GP distribution.
     if ( missing( extreme.type ) || length( extreme.type ) != 1 ){
