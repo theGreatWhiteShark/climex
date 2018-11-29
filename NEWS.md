@@ -1,3 +1,5 @@
+# v2.0.1*6000
+- Updating the vignette.
 # v2.0.0
 The functionality of the 1. climex core package, 2. the shiny-based
 GUI, and 3. import of the data of the German weather service (DWD)

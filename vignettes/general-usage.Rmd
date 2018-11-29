@@ -1,7 +1,7 @@
 ---
 title: "Basic usage of the climex package"
 author: "Philipp Müller"
-date: "`r Sys.Date()`"
+date: "2018-11-29"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Basic usage of the climex package}
@@ -15,41 +15,9 @@ This vignette provides an introduction into the basic usage of the
 to fit the generalized extreme value (GEV) and generalized Pareto
 (GP) distribution to it afterwards.
 
-## Loading of station data
-
-The **climex** package is intended to be used for the analysis of
-various station data. In order to ease the handling and management of
-different data sources, it has an auxiliary function to import R data
-files found in the folder stored in the `climex.path` global option.
-By default this path points to the folder *~/R/climex/* in your home
-directory. If you, instead, have your data stored somewhere else,
-you can change the default setting by adding the following lines to
-your R configuration file *~/.Rprofile* in your home.
-
-```{r configuration, eval=FALSE}
-## Replace PATH by the directory you want to store all files related to the climex app into
-options( climex.path = "PATH" )
-```
-
-The data files, stored in the *.RData* file format, do not have to
-reside at the top level of the folder. It will be search recursively.
-
-You can load the data using the following command
-
-```{r dwd-loading, eval = FALSE, cache = TRUE, dependson = "downloading"}
-source.data()
-```
-This function will list all *.RData* files found in directory and loads
-the selected one into the environment the function was called
-in. Using the *download.path* argument, you can alter the path
-searched recursively by the function. This will override the default
-setting stored in the *climex.path* option.
-
 # Preprocessing and fitting
 
-Now that we have enough data, let's do some extreme value analysis. 
-
-The climex package at its current stage is intended to provide tools
+The climex package is intended to provide tools
 for fitting both the GEV and GP distribution in a stationary
 setting. Since the workflow differs depending on which limiting
 distribution is considered, I will cover both use cases in consecutive
@@ -63,8 +31,7 @@ Springer.
 For the sake of convenience all the analysis will be performed on the
 daily maximum temperature time series of the Potsdam station in
 Germany provided by the climex package via the variable
-**temp.potsdam**. This way you can follow this tutorial regardless of
-your choice whether or not to download the DWD data collection.
+**temp.potsdam**.
 
 ```{r loading, cache = TRUE, dependson = "prerequisites"}
 require( climex )
@@ -108,13 +75,13 @@ ttplot( temp.potsdam.complete )
 
 #### Discard short time series
 
-Just a remark: If we would deal with all the different station data of
-the DWD
-downloaded in the first section, an additional second step discarding
-all time series containing less than 30 years would be required. Since
-we want to extract the annual maxima we would end up with less than 30
-points to fit the three GEV parameters in a later step otherwise. And
-with this small number we would not be able to do decent statistics. 
+Just a remark: Make sure the data you analyze has a sufficient amount
+of data! Since we want to extract the annual maxima, a minimal length
+of 30 years for our climatological series would be adequate. You can
+use it as a rule of thumb to choose your data/block size in such a way
+to always end up with at least 30 point. This is important since we
+will fit the three parameter GEV distribution in a later step and with
+a smaller number we would not be able to do decent statistics.
 
 #### Removing seasonality
 
