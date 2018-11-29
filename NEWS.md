@@ -5,6 +5,7 @@
 - Removing the `cran-comments.md` file.
 - Removing GitHub part of the installation instruction in the
   README.md
+- Updating the `temp.potsdam` data set. It now covers two more years.
 
 # v2.0.0
 The functionality of the 1. climex core package, 2. the shiny-based
