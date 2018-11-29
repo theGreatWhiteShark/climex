@@ -31,22 +31,22 @@ x.exp.fit <- fit.gpd( x.thresh, initial = initial.exp,
 
 test_that( "block works with lists as with single objects", {
   expect_equal( unique( Reduce( c, lapply( x.block.list, length ) ) ),
-               124 )
+               126 )
   expect_equal( unique(
       Reduce( c, lapply( block( list( temp.potsdam, temp.potsdam ),
-                               block.length = 700 ), length ) ) ), 65 )
+                               block.length = 700 ), length ) ) ), 66 )
   expect_equal( min(
       Reduce( c, block( list( temp.potsdam, temp.potsdam ),
                        extreme.type = "min" ) ) ), -16 )
 })
 test_that( "block's block length argument works", {
-  expect_equal( length( block( temp.potsdam ) ), 124 )
+  expect_equal( length( block( temp.potsdam ) ), 126 )
   expect_equal( length( block( temp.potsdam,
-                              block.length = 365 ) ), 124 )
+                              block.length = 365 ) ), 126 )
   expect_equal( length( block( temp.potsdam,
-                              block.length = 128 ) ), 353 )
+                              block.length = 128 ) ), 360 )
   expect_equal( length( block( temp.potsdam,
-                              block.length = 700 ) ), 65 )
+                              block.length = 700 ) ), 66 )
   expect_true( all(
       Reduce( c, lapply( list( temp.potsdam, temp.potsdam ),
                         function( tt ) length( block( tt ) ) ) ) ),
@@ -84,7 +84,7 @@ test_that( "threshold works with lists as with single objects", {
       Reduce( c, lapply(
                      threshold( list( temp.potsdam, temp.potsdam ),
                                threshold = 26, extreme.type = "max"
-                               ), length ) ) ), 426 )
+                               ), length ) ) ), 429 )
   expect_equal( unique(
       Reduce( c, lapply(
                      threshold( list( temp.potsdam, temp.potsdam ),
@@ -93,24 +93,24 @@ test_that( "threshold works with lists as with single objects", {
 })
 test_that( "threshold's results regarding their length", {
   expect_equal( length( threshold( temp.potsdam,
-                                  threshold = 26 ) ), 426 )
+                                  threshold = 26 ) ), 429 )
   expect_equal( length(
       threshold( temp.potsdam, threshold = 26,
-                extreme.type = "max" ) ), 426 )
+                extreme.type = "max" ) ), 429 )
   expect_equal( length(
       threshold( temp.potsdam, threshold = -5.5,
                 extreme.type = "min" ) ), 144 )
   expect_equal( length( threshold( temp.potsdam,
-                                  threshold = 28 ) ), 389 )
+                                  threshold = 28 ) ), 395 )
   expect_equal( length( threshold( temp.potsdam,
-                                  threshold = 32 ) ), 187 )
+                                  threshold = 32 ) ), 186 )
   expect_equal( length( threshold( temp.potsdam,
                                   threshold = 26,
-                                  decluster = FALSE ) ), 3719 )
+                                  decluster = FALSE ) ), 3851 )
   expect_equal( length( threshold( temp.potsdam, threshold = 28,
-                                  decluster = FALSE ) ), 2099 )
+                                  decluster = FALSE ) ), 2180 )
   expect_equal( length( threshold( temp.potsdam, threshold = 32,
-                                  decluster = FALSE ) ), 417 )
+                                  decluster = FALSE ) ), 441 )
 })
 test_that( "threshold does the thresholding right", {
   expect_equal( min( threshold( temp.potsdam,
@@ -159,7 +159,7 @@ test_that( "decluster works with both lists and single objects", {
 
 test_that( "extremal.index calculates correct results and throws warnings", {
   expect_equal( climex:::extremal.index( temp.potsdam, 29 ),
-               c( 0.240429635, 350.000000000, 12.000000000 ) )
+               c( 0.235840685, 357.000000000, 12.000000000 ) )
   expect_warning( climex:::extremal.index( temp.potsdam, 100 ) )
 })
 test_that( "the errors and warnings of return.level do work", {
@@ -197,47 +197,46 @@ test_that( "return.level of fit results and GEV/GP parameters as input", {
                    error.estimation = "none",
                    return.period = c( 10, 20, 30, 40, 50 ),
                    )$return.level ),
-      c( 37.07028710, 37.78214081, 38.09138386, 38.27349623,
-        38.39666952 ) )
+      c( 37.0827710, 37.7935560, 38.1018892, 38.2833029, 38.4059229 ) )
   expect_equal( return.level( x.block.fit$par )$return.level,
-               15.556303455 )
+               15.540398 )
   expect_equal( return.level( x.gumbel.fit )$return.level,
-               17.9901487 )
+               18.0413413 )
   expect_equal( return.level( x.gumbel.fit$par )$return.level,
-               17.9901487 )
+               18.0413413 )
   expect_equal( return.level( x.thresh.fit )$return.level,
-               38.19163319 )
+               38.2157282 )
   expect_equal( return.level( x.thresh.fit$par, model = "gpd",
                              threshold = 29,
                              thresholded.time.series =
                                x.thresh )$return.level,
-               38.19037868 )
+               38.2153566 )
   expect_equal( return.level( x.exp.fit )$return.level,
-               46.22896898 )
+               46.3207659 )
   expect_equal( return.level( x.exp.fit$par, model = "gpd",
                              threshold = 29,
                              thresholded.time.series =
                                x.thresh )$return.level,
-               46.21915069 )
+               46.3178091 )
   ## The next one uses a more accurate estimate for the probability of
   ## a threshold exceedance.
   expect_equal( return.level( x.thresh.fit$par, model = "gpd",
                              threshold = 29,
                              thresholded.time.series = x.thresh,
                              total.length = length( temp.potsdam)
-                             )$return.level, 38.19163319 )
+                             )$return.level, 38.2157282 )
   expect_equal( return.level( x.thresh.fit, model = "gpd"
-                             )$return.level, 38.19163319 )
+                             )$return.level, 38.2157282 )
 })
 test_that( "return.level can take return periods of different length and value", {
   expect_equal( return.level(
       x.block.fit,
       return.period = 100 )$return.level,
-      15.556303455 )
+      15.540398 )
   expect_equal( return.level( x.block.fit,
                              return.period = c( 10, 20, 500 )
                              )$return.level,
-               c( 14.1600474831, 14.6816437202, 16.1234297804 ) )
+               c( 14.1492757, 14.6703242, 16.1011481 ) )
 })
 test_that( "return.level has the right output", {
   expect_match( class( return.level( x.block.fit ) ), "list" )
@@ -253,7 +252,7 @@ test_that( "return.level works with both lists and single objects", {
       Reduce( c, lapply( return.level( x.block.fit.list,
                                       return.period = 100 ),
                         function( rr ) rr$return.level ) ) ),
-      15.556303455 )
+      15.540398 )
   expect_true( is.list(
       return.level( list( x.block.fit, x.block.fit ) ) ) )
   expect_true( is.list(
@@ -273,19 +272,19 @@ test_that( "return.level get GEV error estimation right for MLE", {
       return.level( x.block.fit,
                    return.period = c( 10, 100, 332 ),
                    error.estimation = "MLE" )$error ),
-      c( 0.0281913645577, 0.0643674174564, 0.1014328231061 ) )
+      c( 0.0276696300, 0.0610141771, 0.0950770096 ) )
   expect_equal( as.numeric(
       return.level( x.gumbel.fit,
                    return.period = c( 10, 100, 332 ),
                    error.estimation = "MLE" )$error ),
-      c( 0.0786997134, 0.2326657115, 0.3473161352 ) )
+      c( 0.0789504091, 0.2330315156, 0.3477442593 ) )
   expect_equal( as.numeric(
       return.level( fit.gev( temp.potsdam, blocking = TRUE,
                             extreme.type = "min", silent = TRUE ),
                    return.period = c( 10, 20, 30, 40, 50 ),
                    error.estimation = "MLE" )$error ),
-      c( 0.1821540699, 0.2597489756, 0.3365221564, 0.4062240396,
-        0.4690689464 ) )
+      c( 0.185857567, 0.270873933, 0.354397394, 0.430232165,
+        0.498688690 ) )
 })
 ## A dummy object without the total.length argument
 x.thresh.fit.no.total.length <- x.thresh.fit
@@ -297,19 +296,19 @@ test_that( "return.level get GP error estimation right for MLE", {
                    return.period = c( 42, 637 ),
                    error.estimation = "MLE", threshold = 29,
                    )$error ),
-      c( 0.09898939265, 0.09264044639 ) )
+      c( 0.0985615149, 0.0939199375 ) )
   ## With total.length supplied
   expect_equal( as.numeric(
       return.level( x.thresh.fit, return.period = c( 42, 637 ),
                    error.estimation = "MLE", threshold = 29,
                    )$error ),
-      c( 0.09873307104, 0.09266329316 ) )
+      c( 0.0984851419, 0.0939272406 ) )
   ## Exponential
   expect_equal( as.numeric(
       return.level( x.exp.fit, return.period = c( 42, 637 ),
                    error.estimation = "MLE", threshold = 29,
                    )$error ),
-      c( 3.731791490, 9.122182124 ) )
+      c( 3.71517331, 9.08015755 ) )
 })
 test_that( "return.level get the error estimation right for MC", {
   set.seed( 123 )
@@ -318,7 +317,7 @@ test_that( "return.level get the error estimation right for MC", {
                    return.period = c( 10, 100, 332 ),
                    error.estimation = "MC",
                    monte.carlo.sample.size = 10 )$error ),
-      c( 0.1947308747, 0.3800561908, 0.4902978754 ) )
+      c( 0.196011633, 0.391741815, 0.494852114 ) )
   set.seed( 123 )
   expect_equal( as.numeric(
       return.level( fit.gev( temp.potsdam, blocking = TRUE,
@@ -326,13 +325,13 @@ test_that( "return.level get the error estimation right for MC", {
                    return.period = c( 10, 50 ),
                    monte.carlo.sample.size = 10,
                    error.estimation = "MC" )$error ),
-      c( 0.4788046268, 0.7639197874 ) )
+      c( 0.489863687, 0.824245690 ) )
   set.seed( 123 )
   expect_equal( as.numeric(
       return.level( x.thresh.fit, return.period = 42,
                    error.estimation = "MC", threshold = 29,
                    monte.carlo.sample.size = 10 )$error ),
-      0.2192616612 )
+      0.168506055 )
   set.seed( 123 )
   expect_equal( as.numeric(
       return.level( fit.gpd( temp.potsdam, threshold = -7,
@@ -340,7 +339,7 @@ test_that( "return.level get the error estimation right for MC", {
                             extreme.type = "min" ),
                    error.estimation = "MC",
                    monte.carlo.sample.size = 10 )$error ),
-      0.7133332268 )
+      0.713333227 )
   expect_warning(
       return.level( x.thresh.fit$par, model = "gpd",
                    return.period = 42,
@@ -354,7 +353,7 @@ test_that( "return.level get the error estimation right for bootstrap", {
                    return.period = c( 10, 100, 332 ),
                    error.estimation = "bootstrap",
                    bootstrap.sample.size = 10 )$error ),
-      c( 0.1845829480, 0.4417705322, 0.5665245378 ) )
+      c( 0.104627306, 0.273167480, 0.358395056 ) )
   set.seed( 123 )
   expect_equal( as.numeric(
       return.level( fit.gev( temp.potsdam, blocking = TRUE,
@@ -362,13 +361,13 @@ test_that( "return.level get the error estimation right for bootstrap", {
                    return.period = c( 10, 50 ),
                    bootstrap.sample.size = 10,
                    error.estimation = "bootstrap" )$error ),
-      c( 0.3673362950, 0.5214746534 ) )
+      c( 0.304337871, 0.390096183 ) )
   set.seed( 123 )
   expect_equal( as.numeric(
       return.level( x.thresh.fit, return.period = 42,
                    error.estimation = "bootstrap", threshold = 29,
                    bootstrap.sample.size = 10 )$error ),
-      0.4109950145 )
+      0.185924244 )
   set.seed( 123 )
   expect_equal( as.numeric(
       return.level( fit.gpd( temp.potsdam, thresholding = TRUE,
@@ -377,7 +376,7 @@ test_that( "return.level get the error estimation right for bootstrap", {
                    return.period = c( 10, 50 ),
                    bootstrap.sample.size = 10,
                    error.estimation = "bootstrap" )$error ),
-      c( 0.3452772890, 0.5737912895 ) )
+      c( 0.345277289, 0.573791290 ) )
 })
 test_that( "return.level.climex.fit.gev yield equivalent results for minima and maxima", {
   expect_equal(

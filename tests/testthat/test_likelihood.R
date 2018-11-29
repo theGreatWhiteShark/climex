@@ -22,9 +22,9 @@ test_that( "Input and output of likelihood are alright", {
 })
 test_that( "Likelihood spits the right vales", {
   expect_equal( climex::likelihood( c( 12, 1.4, -.3 ), x.block ),
-               222.9288 - 5.47e-06 )
+               227.618602 )
   expect_equal( climex::likelihood( c( 1.4, -.1 ), x.thresh,
-                                   model = "gpd" ), 976.5173 )
+                                   model = "gpd" ), 1001.81668 )
 })
 
 test_that( "Input and output of likelihood.gradient are alright", {
@@ -49,17 +49,16 @@ test_that( "Input and output of likelihood.gradient are alright", {
 test_that( "Likelihood.gradient spits the right vales", {
   expect_equal( climex:::likelihood.gradient( c( 12, 1.4, -.3 ),
                                              x.block ),
-               c( 11.44009 - 3.34e-06, -14.32531 - 8.14e-07,
-                 -35.40255 + 4.50e-06 ) )
+               c( 13.3923718, -14.9734295, -29.9261296 ) )
   expect_equal( climex:::likelihood.gradient( c( 12, 1.4, 0 ),
                                              x.block ),
-               c( 35.41967 - 2.68e-06, -29.82722 + 3.99e-06, 0 ) )
+               c( 39.2335927, -36.6318949, 0.0000000 ) )
   expect_equal( climex:::likelihood.gradient( c( 1.4, -.1 ), x.thresh,
                                              model = "gpd" ),
-               c( -525.510 - 4.68e-05, -1411.622 + 2.08e-04 ) )
+               c( -543.401688, -1477.170428 ) )
   expect_equal( climex:::likelihood.gradient( c( 1.4, 0 ), x.thresh,
                                              model = "gpd" ),
-               c( -298.7755 - 1.02e-05, 0 ) )
+               c( -307.704082, 0.000000 ) )
 })
 
 test_that( "likelihood.initials' inputs and outputs are alright", {
@@ -75,38 +74,34 @@ test_that( "likelihood.initials' inputs and outputs are alright", {
 })
 test_that( "likelihood.initials' results are okay", {
   expect_equal( climex::likelihood.initials( x.block, model = "gev" ),
-               c( 11.7474404, 1.4419331, -0.2903362 ) )
+               c( 11.723567489, 1.450082577, -0.291204219 ) )
   expect_equal( climex::likelihood.initials( x.block, model = "gpd" ),
-               c( 1.437634 + 2.9e-07, -.05 ) )
+               c( 1.44600767, -0.05000000 ) )
 })
 test_that( "the augmented version works properly", {
   expect_equal( climex::likelihood( c( 20, 1, -2 ), x.block,
                                    model = "gev" ),
-                674.608411755 )
-  expect_equal( climex::likelihood.augmented( c( 20, 1, -2 ),
-                                             x.block,
-                                             model = "gev" ),
-                1225.85841175 )
+                686.315286 )
+  expect_equal( climex::likelihood.augmented(
+                            c( 20, 1, -2 ), x.block, model = "gev" ),
+                1237.56529 )
   expect_equal( climex::likelihood( c( 20, -2 ), x.thresh,
                                    model = "gpd" ),
-                992.40108997 )
-  expect_equal( climex::likelihood.augmented( c( 20, -2 ),
-                                             x.thresh,
-                                             model = "gpd" ),
-               1543.70108998 )
+                1011.11953 )
+  expect_equal( climex::likelihood.augmented(
+                            c( 20, -2 ), x.thresh, model = "gpd" ),
+               1562.41953 )
   expect_equal( climex:::likelihood.gradient(
-                             c( 20, 1, -2 ), x.block,
-                             model = "gev" ),
-                c( 38.6558114721, -169.5567167671, 118.4902267151 ) )
+                             c( 20, 1, -2 ), x.block, model = "gev" ),
+                c( 39.2195645, -172.6534768, 120.9420817 ) )
   expect_equal( climex:::likelihood.gradient.augmented(
-                             c( 20, 1, -2 ), x.block,
-                             model = "gev" ),
-                c( 38.6558114721, -169.5567167671, -1881.5097732849 ) )
+                             c( 20, 1, -2 ), x.block, model = "gev" ),
+                c( 39.2195645, -172.6534768, -1879.0579183 ) )
   expect_equal( climex:::likelihood.gradient(
                              c( 20, -2 ), x.thresh, model = "gpd" ),
-                c( 24.7981139685, 108.0188055262 ) )
+                c( 25.4114594, 111.7781041 ) )
   expect_equal( climex:::likelihood.gradient.augmented(
                              c( 20, -2 ), x.thresh, model = "gpd" ),
-                c( -21.2818860315, -2352.7811944738 ) )
+                c( -20.6685406, -2349.0218959 ) )
 })
 ## End of test_likelihood.R
