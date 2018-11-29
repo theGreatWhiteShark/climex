@@ -1,5 +1,9 @@
 # v2.0.1*6000
-- Updating the vignette.
+- Updating the vignette. Removing the part describing the removed
+  input function `source.data()` and the customization of the no
+  longer available `climex.path` global option.
+- Removing the `cran-comments.md` file.
+
 # v2.0.0
 The functionality of the 1. climex core package, 2. the shiny-based
 GUI, and 3. import of the data of the German weather service (DWD)
