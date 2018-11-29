@@ -3,6 +3,8 @@
   input function `source.data()` and the customization of the no
   longer available `climex.path` global option.
 - Removing the `cran-comments.md` file.
+- Removing GitHub part of the installation instruction in the
+  README.md
 
 # v2.0.0
 The functionality of the 1. climex core package, 2. the shiny-based

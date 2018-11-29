@@ -112,30 +112,6 @@ and install the package using the `devtools` package.
 devtools::install()
 ```
 
-### Installation via Github
-
-The `devtools` package also provides a function, which will take care
-of the download of the source code.
-
-Just open a R shell on your computer and type in the following commands
-
-``` r
-## Installing the climex package from Github.
-devtools::install_github( "theGreatWhiteShark/climex", ref = "climatic-new-features" )
-```
-
-This will install the climex package residing on the
-**climatic-new-feature** branch of the corresponding Github mirror. If
-you instead want to download and install a different branch, use the
-*ref* argument to specify it. E.g.
-
-``` r
-devtools::install_github( "theGreatWhiteShark/climex", ref = "v1.2.0" )
-```
-
-Note that version v2.0.0 isn't released on Github yet. Therefore, you
-have to using the **climatic-new-features** branch instead.
-
 # An interactive web application
 
 A convenient interface to this core package can be found in the
