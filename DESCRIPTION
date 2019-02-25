@@ -1,8 +1,8 @@
 Package: climex
 Type: Package
 Title: Estimating Extreme Events in Climatic Time Series (using Data of the DWD)
-Version: 2.0.0
-Date: 2018-11-29
+Version: 2.0.1
+Date: 2019-02-25
 LazyData: true
 Authors@R: person("Philipp Mueller", role = c("aut","cre"),
     email = "thetruephil@googlemail.com")

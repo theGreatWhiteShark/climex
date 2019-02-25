@@ -1,4 +1,4 @@
-# v2.0.1*6000
+# v2.0.1
 - Updating the vignette. Removing the part describing the removed
   input function `source.data()` and the customization of the no
   longer available `climex.path` global option.
@@ -12,6 +12,11 @@
 - Removing the deprecated `...` input argument of the `return.level` function.
 - Using the `devtools::check()` function in the GitLab CI and Travis checks
   instead of the `R CMD check`
+- Incorporating the `upper.limit` function to calculate the upper
+  limit for the GEV and GP distribution for shape parameters smaller
+  than zero and the corresponding fitting errors. For the latter the
+  Maximum Likelihood, Monte Carlo, as well as bootstrap method are
+  available
 
 # v2.0.0
 The functionality of the 1. climex core package, 2. the shiny-based
