@@ -15,9 +15,6 @@ return.level(x, return.period = 100, error.estimation = c("none", "MC",
 \item{x}{Either of class \emph{numeric}, \emph{climex.fit.gev},
 \emph{climex.fit.gpd} or a list of those objects.}
 
-\item{return.period}{Numeric vector of the return periods in years.
-Default = 100.}
-
 \item{error.estimation}{Method for calculating the standard errors
   of the fitted results. The errors of the GEV/GP parameters will
   be calculated as the square roots of the diagonal elements of
@@ -115,7 +112,7 @@ the function will be calculated classically with only one core.
 Default = NULL.}
 }
 \value{
-A list containing the estimates "return.level" and their
+A list containing the estimates "upper.limit" and their
   standard errors "error" if the input was a fitting object or a
   numerical input. If, on the other hand, the input was a list of
   such objects, the output is a list of the aforementioned list.
@@ -155,6 +152,11 @@ Other extremes: \code{\link{block.list}},
   \code{\link{return.level.list}},
   \code{\link{return.level.numeric}}, \code{\link{revd}},
   \code{\link{rlevd}}, \code{\link{threshold.list}},
-  \code{\link{threshold.xts}}, \code{\link{threshold}}
+  \code{\link{threshold.xts}}, \code{\link{threshold}},
+  \code{\link{upper.limit.climex.fit.gev}},
+  \code{\link{upper.limit.climex.fit.gpd}},
+  \code{\link{upper.limit.list}},
+  \code{\link{upper.limit.numeric}},
+  \code{\link{upper.limit}}
 }
 \concept{extremes}

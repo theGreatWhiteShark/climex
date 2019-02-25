@@ -71,7 +71,12 @@ Other extremes: \code{\link{block.list}},
   \code{\link{return.level.numeric}},
   \code{\link{return.level}}, \code{\link{revd}},
   \code{\link{rlevd}}, \code{\link{threshold.xts}},
-  \code{\link{threshold}}
+  \code{\link{threshold}},
+  \code{\link{upper.limit.climex.fit.gev}},
+  \code{\link{upper.limit.climex.fit.gpd}},
+  \code{\link{upper.limit.list}},
+  \code{\link{upper.limit.numeric}},
+  \code{\link{upper.limit}}
 }
 \author{
 Philipp Mueller
