@@ -5,6 +5,7 @@ context( "Tools used in the extreme value analysis" )
 x.block <- block( anomalies( temp.potsdam ) )
 x.block.list <- block( list( anomalies( temp.potsdam ),
                             anomalies( temp.potsdam ) ) )
+x.threshold <- 29
 x.thresh <- threshold( temp.potsdam, threshold = 29 )
 x.thresh.list <- threshold( list( temp.potsdam, temp.potsdam ),
                            threshold = 29 )
@@ -535,4 +536,82 @@ test_that( "return.level.numeric yield equivalent results for minima and maxima"
                            thresholded.time.series = temp.potsdam
                            )$return.level * c( -1, -1, -1 ) )
 })
+
+## Testing the calculation of the upper limit of the Weibull
+## distribution including its error estimates.
+test_that( "upper.limit's API hasn't change", {
+  expect_warning( is.list(
+    upper.limit( x.block.fit, error.estimation = "none",
+                model = "gev", monte.carlo.sample.size = 100,
+                bootstrap.sample.size = 100, threshold = NULL,
+                extreme.type = "max", mc.cores = NULL) ) )
+  expect_true( is.list(
+    upper.limit( as.numeric( x.block.fit$par ),
+                error.estimation = "none",
+                model = "gev", monte.carlo.sample.size = 100,
+                bootstrap.sample.size = 100, threshold = NULL,
+                extreme.type = "max", mc.cores = NULL) ) )
+  expect_equal( length( upper.limit( x.block.fit ) ), 2 )
+  expect_equal( names( upper.limit( x.block.fit ) ),
+               c( "upper.limit", "error" ) )
+  expect_true( is.numeric( upper.limit( x.block.fit )$upper.limit ) )
+  expect_true( is.numeric(
+    upper.limit( x.block.fit, error.estimation = "MLE" )$upper.limit ) )
+  expect_true( is.list( upper.limit( x.thresh.fit ) ) )
+  expect_equal( length( upper.limit( x.thresh.fit ) ), 2 )
+  expect_equal( names( upper.limit( x.thresh.fit ) ),
+               c( "upper.limit", "error" ) )
+  expect_true( is.numeric( upper.limit( x.thresh.fit )$upper.limit ) )
+  expect_true( is.numeric(
+    upper.limit( x.thresh.fit, error.estimation = "MLE" )$upper.limit
+  ) ) } )
+
+test_that( "the calculation of the upper limit does work", {
+  expect_equal( upper.limit( x.block.fit )$upper.limit, 17.1545238 )
+  expect_equal(
+    upper.limit( as.numeric( x.block.fit$par, model = "gev" )
+                )$upper.limit, 17.1545238 )
+  expect_equal( upper.limit( x.thresh.fit )$upper.limit, 39.1148811 )
+  expect_equal(
+    upper.limit( as.numeric( x.thresh.fit$par ), model = "gpd",
+                threshold = x.threshold )$upper.limit, 39.1148811 )
+  expect_equal(
+    upper.limit( x.block.fit, error.estimation = "MLE" )$error,
+    0.486071256 )
+  set.seed( 2314 )
+  expect_equal(
+    upper.limit( x.block.fit, error.estimation = "MC" )$error,
+    0.932375693 )
+  set.seed( 2314 )
+  expect_equal(
+    upper.limit( x.block.fit, error.estimation = "bootstrap" )$error,
+    1.09028119 )
+  expect_equal(
+    upper.limit( x.thresh.fit, error.estimation = "MLE" )$error,
+    0.358538454 )
+  set.seed( 2314 )
+  expect_equal(
+    upper.limit( x.thresh.fit, error.estimation = "MC" )$error,
+    0.322130426 )
+  set.seed( 2314 )
+  expect_equal(
+    upper.limit( x.thresh.fit, error.estimation = "bootstrap" )$error,
+    0.388303764 ) } )
+               
+test_that( "upper.limit does only work for Weibull-typed data", {
+  set.seed( 2231 )
+  expect_true( !is.finite( upper.limit( fit.gev(
+    revd( 1000, 0, 1, .5, model = "gev" ), error.estimation = "none",
+    silent = TRUE ), error.estimation = "none" )$upper.limit ) )
+  expect_true( !is.finite( upper.limit( x.exp.fit )$upper.limit ) )
+  set.seed( 22231 )
+  expect_equal( upper.limit( x.exp.fit, error.estimation = "MC"
+                            )$error, 4.10991436 )
+  set.seed( 22231 )
+  expect_true( is.na(
+    upper.limit( x.exp.fit, error.estimation = "bootstrap" )$error ) )
+  expect_true( is.na( upper.limit( x.exp.fit,
+                                  error.estimation = "MLE" )$error ) )
+} )
+    
 ## End of test_eva.R

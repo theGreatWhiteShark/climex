@@ -832,8 +832,6 @@ threshold.xts <- threshold.default <- function( x, threshold,
 ##'
 ##' @param x Either of class \emph{numeric}, \emph{climex.fit.gev},
 ##'   \emph{climex.fit.gpd} or a list of those objects.
-##' @param return.period Numeric vector of the return periods in years.
-##'   Default = 100.
 ##' @param error.estimation Method for calculating the standard errors
 ##'   of the fitted results. The errors of the GEV/GP parameters will
 ##'   be calculated as the square roots of the diagonal elements of
@@ -921,7 +919,7 @@ threshold.xts <- threshold.default <- function( x, threshold,
 ##'   the function will be calculated classically with only one core.
 ##'   Default = NULL.
 ##'
-##' @return A list containing the estimates "return.level" and their
+##' @return A list containing the estimates "upper.limit" and their
 ##'   standard errors "error" if the input was a fitting object or a
 ##'   numerical input. If, on the other hand, the input was a list of
 ##'   such objects, the output is a list of the aforementioned list.
@@ -2409,4 +2407,1124 @@ gpd.density <- function( parameters, threshold, z ) {
   }
   return( density )
 }
+
+##' @title Calculation of the upper limit.
+##' @description Calculates the upper limit and its error estimate for
+##'   Weibull-typed Generalized  Extreme Value distribution  (GEV) and
+##'   Generalized Pareto (GP) distributions (both only in case of
+##'   shape parameters smaller than 0).
+##'
+##' @details Three different ways of calculating the fitting errors
+##'   are supported: The \emph{MLE} option using the error propagation
+##'   of the covariance matrix obtained via the Maximum Likelihood
+##'   estimators, the two statistical methods \emph{MC} and
+##'   \emph{bootstrap} with the former calculating the standard
+##'   deviation of the upper limits fitted to a set Monte Carlo
+##'   samples distributed according to the maximum likelihood
+##'   estimates of the GEV or GP distribution and the latter by using
+##'   samples generated via bootstrap instead.
+##'
+##'   Since the upper limit is only defined for shape parameters
+##'   smaller than zero, all upper limits calculated for the bootstrap
+##'   or Monte Carlo samples showing positive shapes have to be
+##'   discarded. This results in a negative bias of estimator. On the
+##'   other hand, this can also lead to an estimate for the fitting
+##'   error if the actual Maximum Likelihood estimate of the shape
+##'   parameter is slightly bigger than zero. Please keep this in mind
+##'   when interpreting the results.
+##'
+##'   This function is also capable of working with lists of fit
+##'   or numerical objects.
+##'
+##' @param x A list of class \emph{numeric}, \emph{climex.fit.gev},
+##'   or \emph{climex.fit.gpd} objects.
+##' @param error.estimation Method for calculating the standard error
+##'   of the upper limit. 
+##'
+##'   For all  three methods  of estimating the  fitting error  of the
+##'   upper  limit an  underlying series  of threshold  exceedances or
+##'   block maxima  is required. In  case the user  supplies numerical
+##'   values to  specify the GEV/GP  parameters and not the  output of
+##'   either   the   \code{\link{fit.gev}}  or   \code{\link{fit.gpd}}
+##'   function, no error estimation can be performed.
+##'
+##'   \emph{MLE}: The variances of the GEV/GP parameters will
+##'     be calculated as the square roots of the diagonal elements of
+##'     the inverse of the hessian matrix evaluated
+##'     at the Maximum Likelihood estimates (MLE) of the GEV/GP
+##'     parameters, the so-called observed information matrix.
+##'     The standard error of the upper limit is
+##'     calculated using error propagation and multiplying the
+##'     gradient of the equation for the upper limit to both sides of
+##'     its inverse.
+##'
+##'     Sometimes the  inversion of  the hessian fails  (because there
+##'     are  some  NaN in  the  hessian)  when calculating  the  error
+##'     estimates using  the Maximum  Likelihood approach  (MLE). This
+##'     might   happen  especially   with   older   versions  of   the
+##'     \strong{optim}  package. In  such cases  the Monte  Carlo (MC)
+##'     method is used as a fallback.
+##' 
+##'   \emph{MC}:  Alternatively one can  use a Monte Carlo  method for
+##'     which  \strong{monte.carlo.sample.size}  samples of  the  same
+##'     length as \strong{x} will be  drawn from a GEV/GP distribution
+##'     constituted by  the obtained MLE  of the GEV/GP  parameters of
+##'     \strong{x}.  The standard  error  is then  calculated for  the
+##'     upper limits of all sampled  series. Note: In its essence this
+##'     approach is not an estimation of the error involved in fitting
+##'     the time  series to  a GEV/GP distribution.  It is  rather the
+##'     mean  error of  fitting  a GEV/GP-distribution  with the  same
+##'     length and parameters as estimated ones.
+##'
+##'   \emph{bootstrap}:  Using this  option the provided  time series
+##'     \strong{x}     will     be    sampled     with     replacement
+##'     \strong{bootstrap.sample.size} times and  with the same length
+##'     as the original time series.  The standard errors of the upper
+##'     limits of all those sampled series are calculated and returned
+##'     as an estimate of the fitting  error.  Note: Since the data is
+##'     (hopefully)  GEV/GP-distributed, such  a  sampling  has to  be
+##'     treated with a lot of care.
+##' 
+##'   \emph{none} skips the calculation of the error. Default = "MLE".
+##'
+##' @param model String determining whether to calculate the initial
+##'   parameters of the GEV ("gev") or GP ("gpd") function. Default =
+##'   "gev"
+##' @param monte.carlo.sample.size Number of samples used to obtain
+##'   the Monte Carlo estimate of the standard error of the fitting.
+##'   Default = 100.
+##' @param bootstrap.sample.size Number of samples with replacements
+##'   to drawn from the original series \strong{x} in order to
+##'   determine the standard errors for the upper limit. Default = 100.
+##' @param threshold Optional threshold for the GP model. If present
+##'   it will be added to the upper limit to produce a value which
+##'   fits to underlying time series. Default = NULL.
+##' @param extreme.type String indicating whether to calculate the
+##'   quantiles at the right ("max") or left ("min") side of the PDF
+##'   of the series. Default = "max".
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
+##'
+##' @return A list containing the estimates "upper.limit" and their
+##'   standard errors "error" if the input was a fitting object or a
+##'   numerical input. If, on the other hand, the input was a list of
+##'   such objects, the output is a list of the aforementioned list.
+##' @export
+##'
+##' @importFrom xts apply.yearly
+##' @importFrom numDeriv hessian
+##' @importFrom parallel mclapply
+##' 
+##' @family extremes
+##'
+##' @examples
+##' fit.results <- fit.gev( block( anomalies( temp.potsdam ) ) )
+##' upper.limit( fit.results, error.estimation = "MLE" )
+upper.limit <- function( x, error.estimation = c( "none", "MC", "MLE",
+                                                 "bootstrap" ),
+                        model = c( "gev", "gpd" ),
+                        monte.carlo.sample.size = 100,
+                        bootstrap.sample.size = 100,
+                        threshold = NULL,
+                        extreme.type = c( "max", "min" ),
+                        mc.cores = NULL ){
+  UseMethod( "upper.limit", x )
+}
+
+##' @title Calculation of the upper limit.
+##' @description Calculates the upper limit and its error estimate for
+##'   Weibull-typed Generalized  Extreme Value distribution  (GEV) and
+##'   Generalized Pareto (GP) distributions (both only in case of
+##'   shape parameters smaller than 0).
+##'
+##' @details Three different ways of calculating the fitting errors
+##'   are supported: The \emph{MLE} option using the error propagation
+##'   of the covariance matrix obtained via the Maximum Likelihood
+##'   estimators, the two statistical methods \emph{MC} and
+##'   \emph{bootstrap} with the former calculating the standard
+##'   deviation of the upper limits fitted to a set Monte Carlo
+##'   samples distributed according to the maximum likelihood
+##'   estimates of the GEV or GP distribution and the latter by using
+##'   samples generated via bootstrap instead.
+##'
+##'   Since the upper limit is only defined for shape parameters
+##'   smaller than zero, all upper limits calculated for the bootstrap
+##'   or Monte Carlo samples showing positive shapes have to be
+##'   discarded. This results in a negative bias of estimator. On the
+##'   other hand, this can also lead to an estimate for the fitting
+##'   error if the actual Maximum Likelihood estimate of the shape
+##'   parameter is slightly bigger than zero. Please keep this in mind
+##'   when interpreting the results.
+##'
+##'   This function is also capable of working with lists of fit
+##'   or numerical objects.
+##'
+##' @param x A list of class \emph{numeric}, \emph{climex.fit.gev},
+##'   or \emph{climex.fit.gpd} objects.
+##' @param error.estimation Method for calculating the standard error
+##'   of the upper limit. 
+##'
+##'   For all  three methods  of estimating the  fitting error  of the
+##'   upper  limit an  underlying series  of threshold  exceedances or
+##'   block maxima  is required. In  case the user  supplies numerical
+##'   values to  specify the GEV/GP  parameters and not the  output of
+##'   either   the   \code{\link{fit.gev}}  or   \code{\link{fit.gpd}}
+##'   function, no error estimation can be performed.
+##'
+##'   \emph{MLE}: The variances of the GEV/GP parameters will
+##'     be calculated as the square roots of the diagonal elements of
+##'     the inverse of the hessian matrix evaluated
+##'     at the Maximum Likelihood estimates (MLE) of the GEV/GP
+##'     parameters, the so-called observed information matrix.
+##'     The standard error of the upper limit is
+##'     calculated using error propagation and multiplying the
+##'     gradient of the equation for the upper limit to both sides of
+##'     its inverse.
+##'
+##'     Sometimes the  inversion of  the hessian fails  (because there
+##'     are  some  NaN in  the  hessian)  when calculating  the  error
+##'     estimates using  the Maximum  Likelihood approach  (MLE). This
+##'     might   happen  especially   with   older   versions  of   the
+##'     \strong{optim}  package. In  such cases  the Monte  Carlo (MC)
+##'     method is used as a fallback.
+##' 
+##'   \emph{MC}:  Alternatively one can  use a Monte Carlo  method for
+##'     which  \strong{monte.carlo.sample.size}  samples of  the  same
+##'     length as \strong{x} will be  drawn from a GEV/GP distribution
+##'     constituted by  the obtained MLE  of the GEV/GP  parameters of
+##'     \strong{x}.  The standard  error  is then  calculated for  the
+##'     upper limits of all sampled  series. Note: In its essence this
+##'     approach is not an estimation of the error involved in fitting
+##'     the time  series to  a GEV/GP distribution.  It is  rather the
+##'     mean  error of  fitting  a GEV/GP-distribution  with the  same
+##'     length and parameters as estimated ones.
+##'
+##'   \emph{bootstrap}:  Using this  option the provided  time series
+##'     \strong{x}     will     be    sampled     with     replacement
+##'     \strong{bootstrap.sample.size} times and  with the same length
+##'     as the original time series.  The standard errors of the upper
+##'     limits of all those sampled series are calculated and returned
+##'     as an estimate of the fitting  error.  Note: Since the data is
+##'     (hopefully)  GEV/GP-distributed, such  a  sampling  has to  be
+##'     treated with a lot of care.
+##' 
+##'   \emph{none} skips the calculation of the error. Default = "MLE".
+##'
+##' @param model String determining whether to calculate the initial
+##'   parameters of the GEV ("gev") or GP ("gpd") function. Default =
+##'   "gev"
+##' @param monte.carlo.sample.size Number of samples used to obtain
+##'   the Monte Carlo estimate of the standard error of the fitting.
+##'   Default = 100.
+##' @param bootstrap.sample.size Number of samples with replacements
+##'   to drawn from the original series \strong{x} in order to
+##'   determine the standard errors for the upper limit. Default = 100.
+##' @param threshold Optional threshold for the GP model. If present
+##'   it will be added to the upper limit to produce a value which
+##'   fits to underlying time series. Default = NULL.
+##' @param extreme.type String indicating whether to calculate the
+##'   quantiles at the right ("max") or left ("min") side of the PDF
+##'   of the series. Default = "max".
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
+##'
+##' @return A list containing the estimates "upper.limit" and their
+##'   standard errors "error" if the input was a fitting object or a
+##'   numerical input. If, on the other hand, the input was a list of
+##'   such objects, the output is a list of the aforementioned list.
+##' @export
+##'
+##' @importFrom xts apply.yearly
+##' @importFrom numDeriv hessian
+##' @importFrom parallel mclapply
+##' 
+##' @family extremes
+##'
+##' @examples
+##' fit.results <- fit.gev( block( anomalies( temp.potsdam ) ) )
+##' upper.limit( fit.results, error.estimation = "MLE" )
+upper.limit.list <- function( x, error.estimation =
+                                   c( "none", "MC", "MLE", "bootstrap" ),
+                             model = c( "gev", "gpd" ),
+                             monte.carlo.sample.size = 100,
+                             bootstrap.sample.size = 100,
+                             threshold = NULL,
+                             extreme.type = c( "max", "min" ),
+                             mc.cores = NULL ){
+  if ( !is.null( mc.cores ) ){
+    x.result <- mclapply(
+        x, upper.limit, 
+        error.estimation = error.estimation, model = model,
+        monte.carlo.sample.size = monte.carlo.sample.size,
+        bootstrap.sample.size = bootstrap.sample.size,
+        threshold = threshold, extreme.type = extreme.type,
+        mc.cores = mc.cores )
+    } else {
+    x.result <- lapply(
+        x, upper.limit,
+        error.estimation = error.estimation, model = model,
+        monte.carlo.sample.size = monte.carlo.sample.size,
+        bootstrap.sample.size = bootstrap.sample.size,
+        threshold = threshold, extreme.type = extreme.type,
+        mc.cores = mc.cores )
+  }
+  return( x.result )
+}
+
+##' @title Calculation of the upper limit.
+##' @description Calculates the upper limit and its error estimate for
+##'   Weibull-typed Generalized  Extreme Value distribution  (GEV) and
+##'   Generalized Pareto (GP) distributions (both only in case of
+##'   shape parameters smaller than 0).
+##'
+##' @details Three different ways of calculating the fitting errors
+##'   are supported: The \emph{MLE} option using the error propagation
+##'   of the covariance matrix obtained via the Maximum Likelihood
+##'   estimators, the two statistical methods \emph{MC} and
+##'   \emph{bootstrap} with the former calculating the standard
+##'   deviation of the upper limits fitted to a set Monte Carlo
+##'   samples distributed according to the maximum likelihood
+##'   estimates of the GEV or GP distribution and the latter by using
+##'   samples generated via bootstrap instead.
+##'
+##'   Since the upper limit is only defined for shape parameters
+##'   smaller than zero, all upper limits calculated for the bootstrap
+##'   or Monte Carlo samples showing positive shapes have to be
+##'   discarded. This results in a negative bias of estimator. On the
+##'   other hand, this can also lead to an estimate for the fitting
+##'   error if the actual Maximum Likelihood estimate of the shape
+##'   parameter is slightly bigger than zero. Please keep this in mind
+##'   when interpreting the results.
+##'
+##'   This function is also capable of working with lists of fit
+##'   or numerical objects.
+##'
+##' @param x An class \emph{climex.fit.gev} object.
+##' @param error.estimation Method for calculating the standard error
+##'   of the upper limit. 
+##'
+##'   For all  three methods  of estimating the  fitting error  of the
+##'   upper  limit an  underlying series  of threshold  exceedances or
+##'   block maxima  is required. In  case the user  supplies numerical
+##'   values to  specify the GEV/GP  parameters and not the  output of
+##'   either   the   \code{\link{fit.gev}}  or   \code{\link{fit.gpd}}
+##'   function, no error estimation can be performed.
+##'
+##'   \emph{MLE}: The variances of the GEV/GP parameters will
+##'     be calculated as the square roots of the diagonal elements of
+##'     the inverse of the hessian matrix evaluated
+##'     at the Maximum Likelihood estimates (MLE) of the GEV/GP
+##'     parameters, the so-called observed information matrix.
+##'     The standard error of the upper limit is
+##'     calculated using error propagation and multiplying the
+##'     gradient of the equation for the upper limit to both sides of
+##'     its inverse.
+##'
+##'     Sometimes the  inversion of  the hessian fails  (because there
+##'     are  some  NaN in  the  hessian)  when calculating  the  error
+##'     estimates using  the Maximum  Likelihood approach  (MLE). This
+##'     might   happen  especially   with   older   versions  of   the
+##'     \strong{optim}  package. In  such cases  the Monte  Carlo (MC)
+##'     method is used as a fallback.
+##' 
+##'   \emph{MC}:  Alternatively one can  use a Monte Carlo  method for
+##'     which  \strong{monte.carlo.sample.size}  samples of  the  same
+##'     length as \strong{x} will be  drawn from a GEV/GP distribution
+##'     constituted by  the obtained MLE  of the GEV/GP  parameters of
+##'     \strong{x}.  The standard  error  is then  calculated for  the
+##'     upper limits of all sampled  series. Note: In its essence this
+##'     approach is not an estimation of the error involved in fitting
+##'     the time  series to  a GEV/GP distribution.  It is  rather the
+##'     mean  error of  fitting  a GEV/GP-distribution  with the  same
+##'     length and parameters as estimated ones.
+##'
+##'   \emph{bootstrap}:  Using this  option the provided  time series
+##'     \strong{x}     will     be    sampled     with     replacement
+##'     \strong{bootstrap.sample.size} times and  with the same length
+##'     as the original time series.  The standard errors of the upper
+##'     limits of all those sampled series are calculated and returned
+##'     as an estimate of the fitting  error.  Note: Since the data is
+##'     (hopefully)  GEV/GP-distributed, such  a  sampling  has to  be
+##'     treated with a lot of care.
+##' 
+##'   \emph{none} skips the calculation of the error. Default = "MLE".
+##'
+##' @param model String determining whether to calculate the initial
+##'   parameters of the GEV ("gev") or GP ("gpd") function. Default =
+##'   "gev"
+##' @param monte.carlo.sample.size Number of samples used to obtain
+##'   the Monte Carlo estimate of the standard error of the fitting.
+##'   Default = 100.
+##' @param bootstrap.sample.size Number of samples with replacements
+##'   to drawn from the original series \strong{x} in order to
+##'   determine the standard errors for the upper limit. Default = 100.
+##' @param threshold Optional threshold for the GP model. If present
+##'   it will be added to the upper limit to produce a value which
+##'   fits to underlying time series. Default = NULL.
+##' @param extreme.type String indicating whether to calculate the
+##'   quantiles at the right ("max") or left ("min") side of the PDF
+##'   of the series. Default = "max".
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
+##'
+##' @return A list containing the estimates "upper.limit" and their
+##'   standard errors "error" if the input was a fitting object or a
+##'   numerical input. If, on the other hand, the input was a list of
+##'   such objects, the output is a list of the aforementioned list.
+##' @export
+##'
+##' @importFrom xts apply.yearly
+##' @importFrom numDeriv hessian
+##' @importFrom parallel mclapply
+##' 
+##' @family extremes
+##'
+##' @examples
+##' fit.results <- fit.gev( block( anomalies( temp.potsdam ) ) )
+##' upper.limit( fit.results, error.estimation = "MLE" )
+upper.limit.climex.fit.gev <- 
+  function( x, 
+           error.estimation = c( "none", "MC", "MLE",
+                                "bootstrap" ),
+           model = c( "gev", "gpd" ),
+           monte.carlo.sample.size = 100,
+           bootstrap.sample.size = 100,
+           threshold = NULL,
+           extreme.type = c( "max", "min" ),
+           mc.cores = NULL ){
+    ## If no particular input argument was provided for
+    ## e.g. `error-estimation`, R dispatches the whole vector of
+    ## different choices. By testing the length of the corresponding
+    ## variable one can detect this case and use a default value
+    ## instead.
+    if ( !missing( model ) && length( model ) == 1 &&
+         model != "gev" ){
+      warning( "Mismatching object class and model argument!" )
+    }
+    if ( !missing( extreme.type ) && length( extreme.type ) == 1 ){
+      warning(
+          "Whether to extract the block maxima or minima will is specified by the fit function the input argument was generated by. The 'extreme.type' argument does not have any effect with this kind of input!" )
+    }
+    extreme.type <- x$control$extreme.type
+    if ( missing( error.estimation ) || length( error.estimation ) != 1 ){
+      error.estimation <- "none"
+    }
+    error.estimation <- match.arg( error.estimation )
+    ## The location parameter and the time series itself have to
+    ## be inverted when dealing with the block minima
+    if ( x$par[ 3 ] < 0 ){
+      if ( extreme.type == "min" ){
+        upper.limit <-
+          as.numeric( x$par[ 1 ]* -1 - x$par[ 2 ]/ x$par[ 3 ] )
+      } else {
+        upper.limit <-
+          as.numeric( x$par[ 1 ] - x$par[ 2 ]/ x$par[ 3 ] )
+      }
+    } else {
+      upper.limit <- Inf
+    }
+    ##
+    ## Error estimation of the upper limit
+    ##
+    if ( error.estimation == "none" ){
+      ## Dummy holding NA instead of the error of the upper limit.
+      error <- NA
+      return( list( upper.limit = upper.limit, error = error ) )
+    } else if ( error.estimation == "bootstrap" ){
+      ## As a simple alternative the block maxima will be sampled with
+      ## replacement and the parameters and upper limits are
+      ## calculated for all of the resampled series. The bootstrap
+      ## error is than calculated as the standard error of all the
+      ## obtained upper limits.
+      bootstrap.sample.list <-
+        lapply( c( 1 : bootstrap.sample.size ), function( xx )
+          sample( x$x, size = length( x$x ), replace = TRUE ) )
+      ## Fitting the GEV parameters (recursively)
+      if ( extreme.type == "max" ){
+        fitted.list <-
+          lapply( bootstrap.sample.list, function( xx ){
+            fit.gev( x = xx, initial = x$control$initial,
+                    likelihood.function =
+                      x$control$likelihood.function,
+                    gradient.function = x$control$gradient.function,
+                    error.estimation = "none",
+                    total.length = x$control$total.length,
+                    extreme.type = extreme.type,
+                    silent = TRUE ) } )
+      } else {
+        fitted.list <-
+          lapply( bootstrap.sample.list, function( xx ){
+            fit.gev( x = xx,
+                    initial = x$control$initial,
+                    likelihood.function =
+                      x$control$likelihood.function,
+                    gradient.function = x$control$gradient.function,
+                    error.estimation = "none",
+                    total.length = x$control$total.length,
+                    extreme.type = extreme.type,
+                    silent = TRUE ) } )
+      }
+      ## Calculate the standard errors of all the fitted upper limit.
+      fitted.parameters <-
+        Reduce( rbind, lapply( fitted.list, function( xx )
+          xx$par ) )
+      if ( extreme.type == "max" ){
+        fitted.upper.limits <-
+          Reduce( rbind, lapply( fitted.list, function( ll ){
+            if ( ll$par[ 3 ] < 0 ){
+              return( as.numeric( ll$par[ 1 ] - ll$par[ 2 ]/
+                                  ll$par[ 3 ] ) )
+            } else {
+              return( NA ) } } ) )
+            
+      } else {
+        fitted.upper.limits <-
+          Reduce( rbind, lapply( fitted.list, function( ll ){
+            if ( ll$par[ 3 ] < 0 ){
+              return( as.numeric( -1* ll$par[ 1 ] - ll$par[ 2 ]/
+                                  ll$par[ 3 ] ) )
+            } else {
+              return( NA ) } } ) )
+      }
+      ## Calculate the standard errors
+      error <- stats::sd( fitted.upper.limits[
+                      !is.na( fitted.upper.limits ) ] )
+    } else if ( error.estimation == "MLE" ){
+      if ( !any( names( x$control ) == "hessian" ) ){
+        ## fit again and let stats::optim calculate the
+        ## hessian. It's way more save this way.
+        if ( extreme.type == "min" ){
+          x$control$hessian <-
+            fit.gev( x$x, initial = c( x$par[ 1 ]* -1,
+                                      x$par[ 2 ],
+                                      x$par[ 3 ] ),
+                    extreme.type = extreme.type,
+                    error.estimation = "MLE", silent = TRUE,
+                    )$control$hessian
+        } else {
+          x$control$hessian <-
+            fit.gev( x$x, initial = x$par,
+                    extreme.type = extreme.type,
+                    error.estimation = "MLE", silent = TRUE,
+                    )$control$hessian
+        }
+      }
+      ## Sometimes the obtained hessian is not invertible. If this
+      ## is the case, recalculate it in order to access the fitting
+      ## error estimates. Caution: this one will be without the
+      ## constraints! Calculating the errors using the MLE
+      ##
+      ## If the shape parameter is exactly zero and the Gumbel
+      ## distribution was fitted, the third row and column were just
+      ## augmented by 0.
+      if ( x$par[ 3 ] != 0 ){
+        error.covariance <- try( solve( x$control$hessian ),
+                                silent = TRUE )
+      } else {
+        ## Omit the augmentation
+        error.covariance <- try( solve(
+            x$control$hessian[ 1 : 2, 1 : 2 ] ),
+            silent = TRUE )
+        ## Augment the result again to ensure compatibility
+        if ( class( error.covariance ) != "try-error" ){
+          dummy.matrix <- matrix( rep( 0, 9 ), nrow = 3,
+                                 ncol = 3 )
+          dummy.matrix[ 1 : 2, 1 : 2 ] <- error.covariance
+          error.covariance <- dummy.matrix
+        }
+      }
+      if ( class( error.covariance ) == "try-error" ){
+        x.hessian <-
+          numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
+                            model = "gev" )
+        error.covariance <- solve( x.hessian )
+        if ( any( is.nan( x.hessian ) ) ){
+          ## If there are still NaN, let it be.
+          warning( "upper limit: NaN in the hessian. Error estimates can not be calculated via the maximum likelihood estimates" )
+          return( upper.limit = upper.limit, error = NA )
+        }
+      }
+      ## Using error propagation in combination with the maximum
+      ## likelihood estimates of the fitting errors of the GEV
+      ## parameters.
+      if ( x$par[ 3 ] < 0 ){
+        ## Gradient of the upper limit with respect to the three GEV
+        ## parameters. This applies only for the Weibull distribution.
+        gradient.upper.limit <- c( 1, -x$par[ 3 ]^{ -1 },
+                                  x$par[ 2 ]/ x$par[ 3 ]^2 )
+        error <- as.numeric( gradient.upper.limit %*%
+                             error.covariance %*%
+                             gradient.upper.limit )
+      } else {
+        error <- NA
+      }
+    } else {
+      ## Use the Monte Carlo method to determine the standard errors.
+      parameter.estimate <- x$par
+      ## Draw a number of samples and fit the GEV parameters for
+      ## all of them
+      if ( extreme.type == "min" ){
+        ## To fit a series of block minima we have to multiply the
+        ## series by -1, perform an ordinary GEV fit, and multiply
+        ## the location parameter and the return levels by minus
+        ## run transform the intermediate results back to fit the
+        ## original time series.
+        ## Now, to generate data, we have to multiply the
+        ## resulting location parameter and transform the sampled
+        ## series back by multiplying it by -1. This way it
+        ## represents the original data set.
+        samples.list <-
+          lapply( 1 : monte.carlo.sample.size, function( yy )
+            revd( length( x$x ), parameter.estimate[ 1 ]* -1,
+                 parameter.estimate[ 2 ],
+                 parameter.estimate[ 3 ], model = "gev" )* -1 )
+      } else { 
+        samples.list <-
+          lapply( 1 : monte.carlo.sample.size, function( yy )
+            revd( length( x$x ), parameter.estimate[ 1 ],
+                 parameter.estimate[ 2 ],
+                 parameter.estimate[ 3 ], model = "gev" ) )
+      }
+      samples.fit <- lapply( samples.list, function( yy )
+        fit.gev( yy, error.estimation = "none", silent = TRUE,
+                blocking = FALSE, extreme.type = extreme.type
+                )$par )
+      if ( extreme.type == "max" ){
+        sample.upper.limits <-
+          Reduce( c, lapply( samples.fit, function( ss ){
+            if ( ss[ 3 ] < 0 ){
+              return( as.numeric( ss[ 1 ] - ss[ 2 ] /
+                                  ss[ 3 ] ) )
+            } else {
+              return( NA ) } } ) )
+      } else {
+        sample.upper.limits <-
+          Reduce( c, lapply( samples.fit, function( ss ){
+            if ( ss[ 3 ] < 0 ){
+              return( as.numeric( -1* ss[ 1 ] - ss[ 2 ] /
+                                  ss[ 3 ] ) )
+            } else {
+              return( NA ) } } ) )
+        }
+      error <- stats::sd( sample.upper.limits[
+                        !is.na( sample.upper.limits ) ] )
+    }
+    return( list( upper.limit = upper.limit, error = error ) )
+  }
+
+##' @title Calculation of the upper limit.
+##' @description Calculates the upper limit and its error estimate for
+##'   Weibull-typed Generalized  Extreme Value distribution  (GEV) and
+##'   Generalized Pareto (GP) distributions (both only in case of
+##'   shape parameters smaller than 0).
+##'
+##' @details Three different ways of calculating the fitting errors
+##'   are supported: The \emph{MLE} option using the error propagation
+##'   of the covariance matrix obtained via the Maximum Likelihood
+##'   estimators, the two statistical methods \emph{MC} and
+##'   \emph{bootstrap} with the former calculating the standard
+##'   deviation of the upper limits fitted to a set Monte Carlo
+##'   samples distributed according to the maximum likelihood
+##'   estimates of the GEV or GP distribution and the latter by using
+##'   samples generated via bootstrap instead.
+##'
+##'   Since the upper limit is only defined for shape parameters
+##'   smaller than zero, all upper limits calculated for the bootstrap
+##'   or Monte Carlo samples showing positive shapes have to be
+##'   discarded. This results in a negative bias of estimator. On the
+##'   other hand, this can also lead to an estimate for the fitting
+##'   error if the actual Maximum Likelihood estimate of the shape
+##'   parameter is slightly bigger than zero. Please keep this in mind
+##'   when interpreting the results.
+##'
+##'   This function is also capable of working with lists of fit
+##'   or numerical objects.
+##'
+##' @param x An class \emph{climex.fit.gpd} objects.
+##' @param error.estimation Method for calculating the standard error
+##'   of the upper limit. 
+##'
+##'   For all  three methods  of estimating the  fitting error  of the
+##'   upper  limit an  underlying series  of threshold  exceedances or
+##'   block maxima  is required. In  case the user  supplies numerical
+##'   values to  specify the GEV/GP  parameters and not the  output of
+##'   either   the   \code{\link{fit.gev}}  or   \code{\link{fit.gpd}}
+##'   function, no error estimation can be performed.
+##'
+##'   \emph{MLE}: The variances of the GEV/GP parameters will
+##'     be calculated as the square roots of the diagonal elements of
+##'     the inverse of the hessian matrix evaluated
+##'     at the Maximum Likelihood estimates (MLE) of the GEV/GP
+##'     parameters, the so-called observed information matrix.
+##'     The standard error of the upper limit is
+##'     calculated using error propagation and multiplying the
+##'     gradient of the equation for the upper limit to both sides of
+##'     its inverse.
+##'
+##'     Sometimes the  inversion of  the hessian fails  (because there
+##'     are  some  NaN in  the  hessian)  when calculating  the  error
+##'     estimates using  the Maximum  Likelihood approach  (MLE). This
+##'     might   happen  especially   with   older   versions  of   the
+##'     \strong{optim}  package. In  such cases  the Monte  Carlo (MC)
+##'     method is used as a fallback.
+##' 
+##'   \emph{MC}:  Alternatively one can  use a Monte Carlo  method for
+##'     which  \strong{monte.carlo.sample.size}  samples of  the  same
+##'     length as \strong{x} will be  drawn from a GEV/GP distribution
+##'     constituted by  the obtained MLE  of the GEV/GP  parameters of
+##'     \strong{x}.  The standard  error  is then  calculated for  the
+##'     upper limits of all sampled  series. Note: In its essence this
+##'     approach is not an estimation of the error involved in fitting
+##'     the time  series to  a GEV/GP distribution.  It is  rather the
+##'     mean  error of  fitting  a GEV/GP-distribution  with the  same
+##'     length and parameters as estimated ones.
+##'
+##'   \emph{bootstrap}:  Using this  option the provided  time series
+##'     \strong{x}     will     be    sampled     with     replacement
+##'     \strong{bootstrap.sample.size} times and  with the same length
+##'     as the original time series.  The standard errors of the upper
+##'     limits of all those sampled series are calculated and returned
+##'     as an estimate of the fitting  error.  Note: Since the data is
+##'     (hopefully)  GEV/GP-distributed, such  a  sampling  has to  be
+##'     treated with a lot of care.
+##' 
+##'   \emph{none} skips the calculation of the error. Default = "MLE".
+##'
+##' @param model String determining whether to calculate the initial
+##'   parameters of the GEV ("gev") or GP ("gpd") function. Default =
+##'   "gev"
+##' @param monte.carlo.sample.size Number of samples used to obtain
+##'   the Monte Carlo estimate of the standard error of the fitting.
+##'   Default = 100.
+##' @param bootstrap.sample.size Number of samples with replacements
+##'   to drawn from the original series \strong{x} in order to
+##'   determine the standard errors for the upper limit. Default = 100.
+##' @param threshold Optional threshold for the GP model. If present
+##'   it will be added to the upper limit to produce a value which
+##'   fits to underlying time series. Default = NULL.
+##' @param extreme.type String indicating whether to calculate the
+##'   quantiles at the right ("max") or left ("min") side of the PDF
+##'   of the series. Default = "max".
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
+##'
+##' @return A list containing the estimates "upper.limit" and their
+##'   standard errors "error" if the input was a fitting object or a
+##'   numerical input. If, on the other hand, the input was a list of
+##'   such objects, the output is a list of the aforementioned list.
+##' @export
+##'
+##' @importFrom xts apply.yearly
+##' @importFrom numDeriv hessian
+##' @importFrom parallel mclapply
+##' 
+##' @family extremes
+##'
+##' @examples
+##' fit.results <- fit.gev( block( anomalies( temp.potsdam ) ) )
+##' upper.limit( fit.results, error.estimation = "MLE" )
+upper.limit.climex.fit.gpd <- 
+  function( x, 
+           error.estimation = c( "none", "MC", "MLE",
+                                "bootstrap" ),
+           model = c( "gev", "gpd" ),
+           monte.carlo.sample.size = 100,
+           bootstrap.sample.size = 100,
+           threshold = NULL,
+           extreme.type = c( "max", "min" ),
+           mc.cores = NULL ){
+    ## If no particular input argument was provided for
+    ## e.g. `error-estimation`, R dispatches the whole vector of
+    ## different choices. By testing the length of the corresponding
+    ## variable one can detect this case and use a default value
+    ## instead.
+    if ( !missing( model ) && length( model ) == 1 &&
+         model != "gpd" ){
+      warning( "Mismatching object class and model argument!" )
+    }
+    if ( !missing( extreme.type ) && length( extreme.type ) == 1 ){
+      warning(
+          "Whether to extract the block maxima or minima will is specified by the fit function the input argument was generated by. The 'extreme.type' argument does not have any effect with this kind of input!" )
+    }
+    extreme.type <- x$control$extreme.type
+    if ( missing( error.estimation ) || length( error.estimation ) != 1 ){
+      error.estimation <- "none"
+    }
+    ## Check for the presence and consistency of the threshold
+    if ( missing( threshold ) ){
+      threshold <- x$threshold
+    } else {
+      if ( threshold != x$threshold ){
+        warning(
+  "The supplied threshold does not match the one used to calculate the parameters of the Generalized Pareto distribution! The one stored in the fitting object will be thus used instead." )
+        threshold <- x$threshold
+      } }
+    error.estimation <- match.arg( error.estimation )
+    ## The location parameter and the time series itself have to
+    ## be inverted when dealing with the block minima
+    if ( x$par[ 2 ] < 0 ){
+      if ( extreme.type == "min" ){
+        upper.limit <-
+          as.numeric( threshold* -1 - x$par[ 1 ]/ x$par[ 2 ] )
+      } else {
+        upper.limit <-
+          as.numeric( threshold - x$par[ 1 ]/ x$par[ 2 ] )
+      }
+    } else {
+      upper.limit <- Inf
+    }
+    ##
+    ## Error estimation of the upper limit
+    ##
+    if ( error.estimation == "none" ){
+      ## Dummy holding NA instead of the error of the upper limit.
+      error <- NA
+      return( list( upper.limit = upper.limit, error = error ) )
+    } else if ( error.estimation == "bootstrap" ){
+      ## As a simple alternative the block maxima will be sampled with
+      ## replacement and the parameters and upper limits are
+      ## calculated for all of the resampled series. The bootstrap
+      ## error is than calculated as the standard error of all the
+      ## obtained upper limits.
+      bootstrap.sample.list <-
+        lapply( c( 1 : bootstrap.sample.size ), function( xx )
+          sample( x$x, size = length( x$x ), replace = TRUE ) )
+      ## Fitting the GP parameters
+      fitted.list <-
+        lapply( bootstrap.sample.list, function( xx ){
+          fit.gpd( x = xx, initial = x$control$initial,
+                  threshold = threshold,
+                  likelihood.function =
+                    x$control$likelihood.function,
+                  gradient.function = x$control$gradient.function,
+                  error.estimation = "none",
+                  total.length = x$control$total.length,
+                  extreme.type = extreme.type,
+                  silent = TRUE ) } )
+      ## Calculate the standard errors of all the fitted upper limits.
+      fitted.parameters <-
+        Reduce( rbind, lapply( fitted.list, function( xx )
+          xx$par ) )
+      if ( extreme.type == "max" ){
+        fitted.upper.limits <-
+          Reduce( rbind, lapply( fitted.list, function( ll ){
+            if ( ll$par[ 2 ] < 0 ){
+              return( as.numeric( threshold - ll$par[ 1 ]/
+                                  ll$par[ 2 ] ) )
+            } else {
+              return( NA ) } } ) )
+            
+      } else {
+        fitted.upper.limits <-
+          Reduce( rbind, lapply( fitted.list, function( ll ){
+            if ( ll$par[ 2 ] < 0 ){
+              return( as.numeric( threshold - ll$par[ 1 ]/
+                                  ll$par[ 2 ] ) )
+            } else {
+              return( NA ) } } ) )
+      }
+      ## Calculate the standard errors
+      error <- stats::sd( fitted.upper.limits[
+                        !is.na( fitted.upper.limits ) ] )
+    } else if ( error.estimation == "MLE" ){
+      if ( !any( names( x$control ) == "hessian" ) ){
+        ## fit again and let stats::optim calculate the
+        ## hessian. It's way more save this way.
+        x$control$hessian <-
+          fit.gpd( x$x, initial = x$par, threshold = threshold,
+                  extreme.type = extreme.type,
+                  error.estimation = "MLE", silent = TRUE,
+                  )$control$hessian
+      }
+      ## Sometimes the obtained hessian is not invertible. If this
+      ## is the case, recalculate it in order to access the fitting
+      ## error estimates. Caution: this one will be without the
+      ## constraints! Calculating the errors using the MLE
+      ##
+      ## If the shape parameter is exactly zero and the exponential 
+      ## distribution was fitted, the third row and column were just
+      ## augmented by 0.
+      if ( x$par[ 2 ] != 0 ){
+        error.covariance <- try( solve( x$control$hessian ),
+                                silent = TRUE )
+      } else {
+        ## Omit the augmentation
+        error.covariance <- try( solve(
+          x$control$hessian[ 1 ] ),
+          silent = TRUE )
+        ## Augment the result again to ensure compatibility
+        if ( class( error.covariance ) != "try-error" ){
+          dummy.matrix <- matrix( rep( 0, 4 ), nrow = 2,
+                                 ncol = 2 )
+          dummy.matrix[ 1 ] <- error.covariance
+          error.covariance <- dummy.matrix
+        }
+      }
+      if ( class( error.covariance ) == "try-error" ){
+        x.hessian <-
+          numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
+                            model = "gpd" )
+        error.covariance <- solve( x.hessian )
+        if ( any( is.nan( x.hessian ) ) ){
+          ## If there are still NaN, let it be.
+          warning( "upper limit: NaN in the hessian. Error estimates can not be calculated via the maximum likelihood estimates" )
+          return( upper.limit = upper.limit, error = NA )
+        }
+      }
+      ## Using error propagation in combination with the maximum
+      ## likelihood estimates of the fitting errors of the GP
+      ## parameters.
+      if ( x$par[ 2 ] < 0 ){
+        ## Gradient of the upper limit with respect to the two GP
+        ## parameters. This applies only for the Weibull distribution.
+        gradient.upper.limit <- c( -x$par[ 2 ]^{ -1 },
+                                  x$par[ 1 ]/ x$par[ 1 ]^2 )
+        error <- as.numeric( gradient.upper.limit %*%
+                             error.covariance %*%
+                             gradient.upper.limit )
+      } else {
+        error <- NA
+      }
+    } else {
+      ## Use the Monte Carlo method to determine the standard errors.
+      parameter.estimate <- x$par
+      ## Draw a number of samples and fit the GP parameters for
+      ## all of them
+      samples.list <-
+        lapply( 1 : monte.carlo.sample.size, function( yy )
+          revd( length( x$x ), scale = parameter.estimate[ 1 ],
+               shape = parameter.estimate[ 2 ], model = "gpd",
+               threshold = threshold ) )
+      samples.fit <- lapply( samples.list, function( yy )
+        fit.gpd( yy, error.estimation = "none", silent = TRUE,
+                blocking = FALSE, extreme.type = extreme.type,
+                threshold = threshold )$par )
+      if ( extreme.type == "max" ){
+        sample.upper.limits <-
+          Reduce( c, lapply( samples.fit, function( ss ){
+            if ( ss[ 2 ] < 0 ){
+              return( as.numeric( threshold - ss[ 1 ] /
+                                  ss[ 2 ] ) )
+            } else {
+              return( NA ) } } ) )
+      } else {
+        sample.upper.limits <-
+          Reduce( c, lapply( samples.fit, function( ss ){
+            if ( ss[ 2 ] < 0 ){
+              return( as.numeric( -1* threshold - ss[ 1 ] /
+                                  ss[ 2 ] ) )
+            } else {
+              return( NA ) } } ) )
+      }
+      error <- stats::sd( sample.upper.limits[
+                        !is.na( sample.upper.limits ) ] )
+    }
+    return( list( upper.limit = upper.limit, error = error ) )
+  }
+
+##' @title Calculation of the upper limit.
+##' @description Calculates the upper limit and its error estimate for
+##'   Weibull-typed Generalized  Extreme Value distribution  (GEV) and
+##'   Generalized Pareto (GP) distributions (both only in case of
+##'   shape parameters smaller than 0).
+##'
+##' @details Three different ways of calculating the fitting errors
+##'   are supported: The \emph{MLE} option using the error propagation
+##'   of the covariance matrix obtained via the Maximum Likelihood
+##'   estimators, the two statistical methods \emph{MC} and
+##'   \emph{bootstrap} with the former calculating the standard
+##'   deviation of the upper limits fitted to a set Monte Carlo
+##'   samples distributed according to the maximum likelihood
+##'   estimates of the GEV or GP distribution and the latter by using
+##'   samples generated via bootstrap instead.
+##'
+##'   Since the upper limit is only defined for shape parameters
+##'   smaller than zero, all upper limits calculated for the bootstrap
+##'   or Monte Carlo samples showing positive shapes have to be
+##'   discarded. This results in a negative bias of estimator. On the
+##'   other hand, this can also lead to an estimate for the fitting
+##'   error if the actual Maximum Likelihood estimate of the shape
+##'   parameter is slightly bigger than zero. Please keep this in mind
+##'   when interpreting the results.
+##'
+##'   This function is also capable of working with lists of fit
+##'   or numerical objects.
+##'
+##' @param x A numerical vector containing the parameters of the
+##'   GEV/GP distribution. If \emph{model} is set to \emph{"gev"},
+##'   three parameters have to be provided in the following order: c(
+##'   location, scale, shape ). If \emph{model} is \emph{"gpd"}
+##'   instead, c( scale, shape ) and the \emph{threshold} variable
+##'   have to be supplied.
+##' @param error.estimation Method for calculating the standard error
+##'   of the upper limit. 
+##'
+##'   For all  three methods  of estimating the  fitting error  of the
+##'   upper  limit an  underlying series  of threshold  exceedances or
+##'   block maxima  is required. In  case the user  supplies numerical
+##'   values to  specify the GEV/GP  parameters and not the  output of
+##'   either   the   \code{\link{fit.gev}}  or   \code{\link{fit.gpd}}
+##'   function, no error estimation can be performed.
+##'
+##'   \emph{MLE}: The variances of the GEV/GP parameters will
+##'     be calculated as the square roots of the diagonal elements of
+##'     the inverse of the hessian matrix evaluated
+##'     at the Maximum Likelihood estimates (MLE) of the GEV/GP
+##'     parameters, the so-called observed information matrix.
+##'     The standard error of the upper limit is
+##'     calculated using error propagation and multiplying the
+##'     gradient of the equation for the upper limit to both sides of
+##'     its inverse.
+##'
+##'     Sometimes the  inversion of  the hessian fails  (because there
+##'     are  some  NaN in  the  hessian)  when calculating  the  error
+##'     estimates using  the Maximum  Likelihood approach  (MLE). This
+##'     might   happen  especially   with   older   versions  of   the
+##'     \strong{optim}  package. In  such cases  the Monte  Carlo (MC)
+##'     method is used as a fallback.
+##' 
+##'   \emph{MC}:  Alternatively one can  use a Monte Carlo  method for
+##'     which  \strong{monte.carlo.sample.size}  samples of  the  same
+##'     length as \strong{x} will be  drawn from a GEV/GP distribution
+##'     constituted by  the obtained MLE  of the GEV/GP  parameters of
+##'     \strong{x}.  The standard  error  is then  calculated for  the
+##'     upper limits of all sampled  series. Note: In its essence this
+##'     approach is not an estimation of the error involved in fitting
+##'     the time  series to  a GEV/GP distribution.  It is  rather the
+##'     mean  error of  fitting  a GEV/GP-distribution  with the  same
+##'     length and parameters as estimated ones.
+##'
+##'   \emph{bootstrap}:  Using this  option the provided  time series
+##'     \strong{x}     will     be    sampled     with     replacement
+##'     \strong{bootstrap.sample.size} times and  with the same length
+##'     as the original time series.  The standard errors of the upper
+##'     limits of all those sampled series are calculated and returned
+##'     as an estimate of the fitting  error.  Note: Since the data is
+##'     (hopefully)  GEV/GP-distributed, such  a  sampling  has to  be
+##'     treated with a lot of care.
+##' 
+##'   \emph{none} skips the calculation of the error. Default = "MLE".
+##'
+##' @param model String determining whether to calculate the initial
+##'   parameters of the GEV ("gev") or GP ("gpd") function. Default =
+##'   "gev"
+##' @param monte.carlo.sample.size Number of samples used to obtain
+##'   the Monte Carlo estimate of the standard error of the fitting.
+##'   Default = 100.
+##' @param bootstrap.sample.size Number of samples with replacements
+##'   to drawn from the original series \strong{x} in order to
+##'   determine the standard errors for the upper limit. Default = 100.
+##' @param threshold Optional threshold for the GP model. If present
+##'   it will be added to the upper limit to produce a value which
+##'   fits to underlying time series. Default = NULL.
+##' @param extreme.type String indicating whether to calculate the
+##'   quantiles at the right ("max") or left ("min") side of the PDF
+##'   of the series. Default = "max".
+##' @param mc.cores A numerical input specifying the number of cores
+##'   to use for the multi core application of the function (see
+##'   \code{\link[parallel]{detectCores}}). This functionality is only
+##'   available if the input is a list of different objects. If NULL,
+##'   the function will be calculated classically with only one core.
+##'   Default = NULL.
+##'
+##' @return A list containing the estimates "upper.limit" and their
+##'   standard errors "error" if the input was a fitting object or a
+##'   numerical input. If, on the other hand, the input was a list of
+##'   such objects, the output is a list of the aforementioned list.
+##' @export
+##'
+##' @importFrom xts apply.yearly
+##' @importFrom numDeriv hessian
+##' @importFrom parallel mclapply
+##' 
+##' @family extremes
+##'
+##' @examples
+##' fit.results <- fit.gev( block( anomalies( temp.potsdam ) ) )
+##' upper.limit( fit.results, error.estimation = "MLE" )
+upper.limit.numeric <-
+  function( x, 
+           error.estimation = c( "none", "MC", "MLE",
+                                "bootstrap" ),
+           model = c( "gev", "gpd" ),
+           monte.carlo.sample.size = 100,
+           bootstrap.sample.size = 100,
+           threshold = NULL, 
+           extreme.type = c( "max", "min" ),
+           mc.cores = NULL ){
+    if ( missing( extreme.type ) || length( extreme.type ) != 1 ){
+      extreme.type <- "max"
+    }
+    if ( missing( error.estimation ) || length( error.estimation ) != 1 ){
+      error.estimation <- "none"
+    }
+    error.estimation <- match.arg( error.estimation )
+    extreme.type <- match.arg( extreme.type )
+    ## Neither a object from fit.gev nor from fit.gpd but a
+    ## numerical vector containing the GEV/GP parameters was
+    ## supplied. Which of those two distribution should it be?
+    if ( missing( model ) || length( model ) != 1 ){
+      model <- "gev"
+    }
+    model <- match.arg( model )
+    if ( length( x ) != 3 && model == "gev" ){
+      stop(
+        "If the GEV distribution is specified, all its three parameters have to be provided via the first argument of the upper.limit function!" )
+    }
+    if ( length( x ) != 2 && model == "gpd" ){
+      stop(
+        "If the GP distribution is specified, all its two parameters have to be provided via the first argument of the upper.limit function!" )
+    }
+    if ( missing( threshold ) ){
+      threshold <- 0
+    }
+    if ( model == "gev" ){
+      ## The location parameter and the time series itself have to
+      ## be inverted when dealing with the block minima
+      if ( extreme.type == "min" ){
+        upper.limit <-
+          as.numeric( x[ 1 ]* -1 - x[ 2 ] / x[ 3 ] )
+      } else {
+        upper.limit <- 
+          as.numeric( x[ 1 ] - x[ 2 ] / x[ 3 ] )
+      }
+    } else {
+      if ( extreme.type == "min" ){
+        upper.limit <- 
+          as.numeric( ( threshold* -1 ) - x[ 1 ] / x[ 2 ] )
+      } else {
+        upper.limit <- 
+          as.numeric( threshold - x[ 1 ] / x[ 2 ] )
+      }
+    }
+    ##
+    ## Error estimation of the upper limit
+    ##
+    if ( error.estimation != "none" ){
+      warning(
+        "The error estimation can only be provided for input objects returned by the fit.gev or fit.gpd function" )
+    }
+    ## Dummy holding NA instead of the upper limit.
+    ## (Since there was not enough information supplied to
+    ## calculate them).
+    error <- NA
+    return( list( upper.limit = upper.limit, error = error ) )
+  }
+
 ## End of extremes.R

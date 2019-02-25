@@ -3,7 +3,8 @@
 - Improved fitting routine (no numerical artifacts like in other
   extreme value packages)
 - Different methods, including statistical ones, to access the error
-  estimates of the return levels
+  estimates of arbitrary return levels and the upper limit extreme
+  value distribution
 - Better error handling allowing a massive parallel application
 - Focuses on the handling of time series (**xts** instead of
   *data.frame* as its basic input class)
@@ -93,24 +94,12 @@ In order to install this package, have two options.
 
 ### Installation via GitLab
 
-You clone the repository using your command line,
-
-``` bash
-git clone https://gitlab.com/theGreatWhiteShark/climex
-```
-
-open a `R` shell in the newly created folder,
-
-``` bash
-cd climex
-R
-```
-
-and install the package using the `devtools` package.
+Via the `devtools` package
 
 ``` R
-devtools::install()
+devtools::install_gitlab( "theGreatWhiteShark/climex" )
 ```
+
 
 # An interactive web application
 
