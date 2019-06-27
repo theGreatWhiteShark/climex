@@ -39,7 +39,7 @@
 ##'   strongly discouraged since it will yield inferior results.
 ##'
 ##'   I found the Nelder-Mead method to be more robust to starting
-##'   points more far away from the global optimum. This also holds 
+##'   points more far away from the global optimum. This also holds
 ##'   for the inner routine of the augmented Lagrangian method. Since
 ##'   other routines, like CG and BFGS only cause problems in the
 ##'   extreme value analysis, there won't be an option to choose them
@@ -58,8 +58,8 @@
 ##' @param initial Initial values for the GEV parameters. Has to be
 ##'   provided as 3x1 vector. If NULL the parameters are estimated
 ##'   using \code{\link{likelihood.initials}}. If the shape parameter
-##'   is set to 0 the exponential distribution instead of the GEV one
-##'   is fitted. But this its strongly discouraged to do so! Default =
+##'   is set to 0 the Gumbel distribution instead of the GEV one is
+##'   fitted. But this its strongly discouraged to do so! Default =
 ##'   NULL.
 ##' @param likelihood.function Function, which is going to be
 ##'   optimized. Default: \code{\link{likelihood}}
@@ -263,7 +263,7 @@ fit.gev <- function(  x, initial = NULL,
 ##' @param initial Initial values for the GEV parameters. Has to be
 ##'   provided as 3x1 vector. If NULL the parameters are estimated
 ##'   using \code{\link{likelihood.initials}}. If the shape parameter
-##'   is set to 0 the exponential distribution instead of the GEV one
+##'   is set to 0 the Gumbel distribution instead of the GEV one
 ##'   is fitted. But this its strongly discouraged to do so! Default =
 ##'   NULL.
 ##' @param likelihood.function Function, which is going to be
@@ -497,8 +497,8 @@ fit.gev.list <- function(  x, initial = NULL,
 ##' @param initial Initial values for the GEV parameters. Has to be
 ##'   provided as 3x1 vector. If NULL the parameters are estimated
 ##'   using \code{\link{likelihood.initials}}. If the shape parameter
-##'   is set to 0 the exponential distribution instead of the GEV one
-##'   is fitted. But this its strongly discouraged to do so! Default =
+##'   is set to 0 the Gumbel distribution instead of the GEV one is
+##'   fitted. But this its strongly discouraged to do so! Default =
 ##'   NULL.
 ##' @param likelihood.function Function, which is going to be
 ##'   optimized. Default: \code{\link{likelihood}}
@@ -1029,8 +1029,8 @@ fit.gev.xts <- function( x, initial = NULL,
 ##' @param initial Initial values for the GEV parameters. Has to be
 ##'   provided as 3x1 vector. If NULL the parameters are estimated
 ##'   using \code{\link{likelihood.initials}}. If the shape parameter
-##'   is set to 0 the exponential distribution instead of the GEV one
-##'   is fitted. But this its strongly discouraged to do so! Default =
+##'   is set to 0 the Gumbel distribution instead of the GEV one is
+##'   fitted. But this its strongly discouraged to do so! Default =
 ##'   NULL.
 ##' @param likelihood.function Function, which is going to be
 ##'   optimized. Default: \code{\link{likelihood}}
