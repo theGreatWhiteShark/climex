@@ -822,13 +822,13 @@ fit.gev.xts <- function( x, initial = NULL,
           res.optim$control$hessian[ 1 : 2, 1 : 2 ] ),
           silent = silent )
       ## Augment the result again to ensure compatibility
-      if ( class( error.covariance ) != "try-error" ){
+      if ( any( class( error.covariance ) != "try-error" ) ) {
         dummy.matrix <- matrix( rep( 0, 9 ), nrow = 3, ncol = 3 )
         dummy.matrix[ 1 : 2, 1 : 2 ] <- error.covariance
         error.covariance <- dummy.matrix
       }
     }
-    if ( class( error.covariance ) == "try-error" ||
+    if ( any( class( error.covariance ) == "try-error" ) ||
          error.estimation == "MC" ||
          any( is.nan( res.optim$control$hessian ) ) ){
       parameter.estimate <- res.optim$par
@@ -895,7 +895,7 @@ fit.gev.xts <- function( x, initial = NULL,
                                           method = "Nelder-Mead" ),
                      x.in = yy, model = "gev" )$par ) ) )
       }
-      if ( class( samples.fit ) == "try-error" ){
+      if ( any( class( samples.fit ) == "try-error" ) ){
         errors <- c( NaN, NaN, NaN,
                     rep( NaN, length( return.period ) ) )
       } else {
@@ -1344,13 +1344,13 @@ fit.gev.default <- function( x, initial = NULL,
           res.optim$control$hessian[ 1 : 2, 1 : 2 ] ),
           silent = silent )
       ## Augment the result again to ensure compatibility
-      if ( class( error.covariance ) != "try-error" ){
+      if ( any( class( error.covariance ) != "try-error" ) ){
         dummy.matrix <- matrix( rep( 0, 9 ), nrow = 3, ncol = 3 )
         dummy.matrix[ 1 : 2, 1 : 2 ] <- error.covariance
         error.covariance <- dummy.matrix
       }
     }
-    if ( class( error.covariance ) == "try-error" ||
+    if ( any( class( error.covariance ) == "try-error" ) ||
          error.estimation == "MC" ||
          any( is.nan( res.optim$control$hessian ) ) ){
       parameter.estimate <- res.optim$par
@@ -1417,7 +1417,7 @@ fit.gev.default <- function( x, initial = NULL,
                                           method = "Nelder-Mead" ),
                      x.in = yy, model = "gev" )$par ) ) )
       }
-      if ( class( samples.fit ) == "try-error" ){
+      if ( any( class( samples.fit ) == "try-error" ) ){
         errors <- c( NaN, NaN, NaN,
                     rep( NaN, length( return.period ) ) )
       } else {
@@ -2390,13 +2390,13 @@ fit.gpd.xts <- function( x, initial = NULL, threshold = NULL,
           res.optim$control$hessian[ 1 ] ),
           silent = silent )
       ## Augment the result again to ensure compatibility
-      if ( class( error.covariance ) != "try-error" ){
+      if ( any( class( error.covariance ) != "try-error" ) ){
         dummy.matrix <- matrix( rep( 0, 4 ), nrow = 2, ncol = 2 )
         dummy.matrix[ 1 ] <- error.covariance
         error.covariance <- dummy.matrix
       }
     }
-    if ( class( error.covariance ) == "try-error" ||
+    if ( any( class( error.covariance ) == "try-error" ) ||
          error.estimation == "MC" ||
          any( is.nan( res.optim$control$hessian ) ) ){
       parameter.estimate <- res.optim$par
@@ -2422,7 +2422,7 @@ fit.gpd.xts <- function( x, initial = NULL, threshold = NULL,
                    control.outer = list( trace = FALSE,
                                         method = "Nelder-Mead" ),
                    x.in = yy, model = "gpd" )$par ) ) )
-      if ( class( samples.fit ) == "try-error" ){
+      if ( any( class( samples.fit ) == "try-error" ) ){
         errors <- c( NaN, NaN, NaN )
       } else {
         errors <- data.frame(
@@ -2953,13 +2953,13 @@ fit.gpd.default <- function( x, initial = NULL, threshold = NULL,
           res.optim$control$hessian[ 1 ] ),
           silent = silent )
       ## Augment the result again to ensure compatibility
-      if ( class( error.covariance ) != "try-error" ){
+      if ( any( class( error.covariance ) != "try-error" ) ){
         dummy.matrix <- matrix( rep( 0, 4 ), nrow = 2, ncol = 2 )
         dummy.matrix[ 1 ] <- error.covariance
         error.covariance <- dummy.matrix
       }
     }
-    if ( class( error.covariance ) == "try-error" ||
+    if ( any( class( error.covariance ) == "try-error" ) ||
          error.estimation == "MC" ||
          any( is.nan( res.optim$control$hessian ) ) ){
       parameter.estimate <- res.optim$par
@@ -2984,7 +2984,7 @@ fit.gpd.default <- function( x, initial = NULL, threshold = NULL,
                    control.outer = list( trace = FALSE,
                                         method = "Nelder-Mead" ),
                    x.in = yy, model = "gpd" )$par ) ) )
-      if ( class( samples.fit ) == "try-error" ){
+      if ( any( class( samples.fit ) == "try-error" ) ){
         errors <- c( NaN, NaN, NaN )
       } else {
         errors <- data.frame(
@@ -3615,7 +3615,7 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
     ## extRemes:::initializer.lmoments function
     lambda <- try( Lmoments::Lmoments( x ),
                   silent = TRUE )
-    if ( class( lambda ) == "try-error" ){
+    if ( any( class( lambda ) == "try-error" ) ){
       initial.lmom <- c( Inf, Inf, Inf )
     } else {
       tau3 <- lambda[ 3 ]/ lambda[ 2 ]
@@ -3635,7 +3635,7 @@ likelihood.initials <- function( x, model = c( "gev", "gpd" ),
     ## Linux principle), I will use the interior of the
     ## extRemes:::initializer.lmoments function
     lambda <- try( Lmoments::Lmoments( x ), silent = TRUE )
-    if ( class( lambda ) == "try-error" ){
+    if ( any( class( lambda ) == "try-error" ) ){
       initial.lmom <- c( Inf, Inf, Inf )
     } else {
       tau2 <- lambda[ 2 ]/ lambda[ 1 ]

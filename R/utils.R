@@ -29,11 +29,11 @@ print.climex.fit.gev <- function( x, ... ){
 ##' @author Philipp Mueller
 summary.climex.fit.gev <- function( object, ... ){
   cat( "\n" )
-  cat( paste( length( object$x ), "block maxima fitted using then " ) )
   if ( object$control$error.estimation != "none" ){
-    cat( paste( " Errors using",
-               object$control$error.estimation, "approach." ) )
+    cat( paste( "Errors using",
+               object$control$error.estimation, "approach.\n\n" ) )
   }
+  cat( paste( length( object$x ), "block maxima fitted." ) )
   cat( "\n\n" )
   cat( "\t\tFunction evaluations:\n" )
   print( data.frame( function.eval = as.numeric( object$counts[ 1 ] ),

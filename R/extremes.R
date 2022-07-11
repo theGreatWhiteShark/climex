@@ -1371,14 +1371,14 @@ return.level.climex.fit.gev <-
             x$control$hessian[ 1 : 2, 1 : 2 ] ),
             silent = silent )
         ## Augment the result again to ensure compatibility
-        if ( class( error.covariance ) != "try-error" ){
+        if ( any( class( error.covariance ) != "try-error" ) ){
           dummy.matrix <- matrix( rep( 0, 9 ), nrow = 3,
                                  ncol = 3 )
           dummy.matrix[ 1 : 2, 1 : 2 ] <- error.covariance
           error.covariance <- dummy.matrix
         }
       }
-      if ( class( error.covariance ) == "try-error" ){
+      if ( any( class( error.covariance ) == "try-error" ) ){
         x.hessian <-
           numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
                             model = "gev" )
@@ -1754,14 +1754,14 @@ return.level.climex.fit.gpd <-
             x$control$hessian[ 1 ] ),
             silent = silent )
         ## Augment the result again to ensure compatibility
-        if ( class( error.covariance ) != "try-error" ){
+        if ( any( class( error.covariance ) != "try-error" ) ){
           dummy.matrix <- matrix( rep( 0, 4 ), nrow = 2,
                                  ncol = 2 )
           dummy.matrix[ 1 ] <- error.covariance
           error.covariance <- dummy.matrix
         }
       }
-      if ( class( error.covariance ) == "try-error" ){
+      if ( any( class( error.covariance ) == "try-error" ) ){
         x.hessian <-
           numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
                             model = "gpd" )
@@ -2938,14 +2938,14 @@ upper.limit.climex.fit.gev <-
             x$control$hessian[ 1 : 2, 1 : 2 ] ),
             silent = TRUE )
         ## Augment the result again to ensure compatibility
-        if ( class( error.covariance ) != "try-error" ){
+        if ( any( class( error.covariance ) != "try-error" ) ){
           dummy.matrix <- matrix( rep( 0, 9 ), nrow = 3,
                                  ncol = 3 )
           dummy.matrix[ 1 : 2, 1 : 2 ] <- error.covariance
           error.covariance <- dummy.matrix
         }
       }
-      if ( class( error.covariance ) == "try-error" ){
+      if ( any( class( error.covariance ) == "try-error" ) ){
         x.hessian <-
           numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
                             model = "gev" )
@@ -3269,14 +3269,14 @@ upper.limit.climex.fit.gpd <-
           x$control$hessian[ 1 ] ),
           silent = TRUE )
         ## Augment the result again to ensure compatibility
-        if ( class( error.covariance ) != "try-error" ){
+        if ( any( class( error.covariance ) != "try-error" ) ){
           dummy.matrix <- matrix( rep( 0, 4 ), nrow = 2,
                                  ncol = 2 )
           dummy.matrix[ 1 ] <- error.covariance
           error.covariance <- dummy.matrix
         }
       }
-      if ( class( error.covariance ) == "try-error" ){
+      if ( any( class( error.covariance ) == "try-error" ) ){
         x.hessian <-
           numDeriv::hessian( likelihood, x = x$par, x.in = x$x,
                             model = "gpd" )
