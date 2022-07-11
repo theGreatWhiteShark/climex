@@ -311,6 +311,7 @@ test_that( "return.level get GP error estimation right for MLE", {
                    )$error ),
       c( 3.71517331, 9.08015755 ) )
 })
+
 test_that( "return.level get the error estimation right for MC", {
   set.seed( 123 )
   expect_equal( as.numeric(
@@ -347,6 +348,7 @@ test_that( "return.level get the error estimation right for MC", {
                    error.estimation = "MC", threshold = 29,
                    monte.carlo.sample.size = 10 ) )
 })
+
 test_that( "return.level get the error estimation right for bootstrap", { 
   set.seed( 123 )
   expect_equal( as.numeric(
@@ -354,7 +356,8 @@ test_that( "return.level get the error estimation right for bootstrap", {
                    return.period = c( 10, 100, 332 ),
                    error.estimation = "bootstrap",
                    bootstrap.sample.size = 10 )$error ),
-      c( 0.104627306, 0.273167480, 0.358395056 ) )
+      c( 0.1785051, 0.4003212, 0.5322032 ),
+      tolerance = 1e-6 )
   set.seed( 123 )
   expect_equal( as.numeric(
       return.level( fit.gev( temp.potsdam, blocking = TRUE,
@@ -362,13 +365,15 @@ test_that( "return.level get the error estimation right for bootstrap", {
                    return.period = c( 10, 50 ),
                    bootstrap.sample.size = 10,
                    error.estimation = "bootstrap" )$error ),
-      c( 0.304337871, 0.390096183 ) )
+      c( 0.2640825, 0.3143437 ),
+      tolerance = 1e-6 )
   set.seed( 123 )
   expect_equal( as.numeric(
       return.level( x.thresh.fit, return.period = 42,
                    error.estimation = "bootstrap", threshold = 29,
                    bootstrap.sample.size = 10 )$error ),
-      0.185924244 )
+      0.1108912,
+      tolerance = 1e-6 )
   set.seed( 123 )
   expect_equal( as.numeric(
       return.level( fit.gpd( temp.potsdam, thresholding = TRUE,
@@ -377,8 +382,10 @@ test_that( "return.level get the error estimation right for bootstrap", {
                    return.period = c( 10, 50 ),
                    bootstrap.sample.size = 10,
                    error.estimation = "bootstrap" )$error ),
-      c( 0.345277289, 0.573791290 ) )
+      c( 0.4137593, 0.4658717 ),
+      tolerance = 1e-6 )
 })
+
 test_that( "return.level.climex.fit.gev yield equivalent results for minima and maxima", {
   expect_equal(
       climex::return.level(
@@ -585,7 +592,8 @@ test_that( "the calculation of the upper limit does work", {
   set.seed( 2314 )
   expect_equal(
     upper.limit( x.block.fit, error.estimation = "bootstrap" )$error,
-    1.09028119 )
+    1.184065,
+    tolerance = 1e-6 )
   expect_equal(
     upper.limit( x.thresh.fit, error.estimation = "MLE" )$error,
     0.358538454 )
@@ -596,7 +604,8 @@ test_that( "the calculation of the upper limit does work", {
   set.seed( 2314 )
   expect_equal(
     upper.limit( x.thresh.fit, error.estimation = "bootstrap" )$error,
-    0.388303764 ) } )
+    0.3307957,
+    tolerance = 1e-6 ) } )
                
 test_that( "upper.limit does only work for Weibull-typed data", {
   set.seed( 2231 )
