@@ -142,8 +142,8 @@ test_that( "fit.gev's error estimation works", {
                                   error.estimation = "bootstrap",
                                   return.period = c( 100, 200 ),
                                   bootstrap.sample.size = 10 )$se ),
-      c( 0.1586051250, 0.0740720149, 0.0523628935, 0.2731674804,
-        0.3238840494 ) )
+      c( 0.13234313, 0.09495922, 0.09392357, 0.40032124, 0.47744557 ),
+      tolerance = 1e-6 )
   expect_equal(
       as.numeric( climex::fit.gev( temp.potsdam, blocking = TRUE,
                                   error.estimation = "MLE",
@@ -168,8 +168,8 @@ test_that( "fit.gev's error estimation works", {
                                   extreme.type = "min", silent = TRUE,
                                   return.period = c( 100, 200 ),
                                   bootstrap.sample.size = 10 )$se ),
-      c( 0.3263569489, 0.2585539867, 0.0450737494, 0.4656176707,
-        0.5520527130 ) )
+      c( 0.40302692, 0.15256461, 0.04739434, 0.41928855, 0.53768576 ),
+      tolerance = 1e-6 )
 })
 
 test_that( "fit.gev yield equivalent results for minima and maxima", {
@@ -389,7 +389,8 @@ test_that( "fit.gpd's error estimation works", {
                       return.period = c( 100, 200 ), silent = TRUE,
                       total.length = length( temp.potsdam ),
                       bootstrap.sample.size = 10 )$se ),
-      c( 5.88442402e-01, 6.58027664e-07, 6.11622465e-01, 6.15380493e-01 ) )
+      c( 6.091499e-01, 2.295979e-06, 6.331553e-01, 6.370458e-01 ),
+      tolerance = 1e-6 )
   set.seed( 123 )
   expect_equal( as.numeric(
       climex::fit.gpd( temp.potsdam, thresholding = TRUE,
@@ -398,7 +399,8 @@ test_that( "fit.gpd's error estimation works", {
                       return.period = c( 100, 200 ),
                       bootstrap.sample.size = 10,
                       total.length = length( temp.potsdam ) )$se ),
-      c( 0.593621431, 0.115000002, 0.494453578, 0.719987549 ) )
+      c( 0.43555351, 0.06157277, 0.45968648, 0.50308282 ),
+      tolerance = 1e-6 )
 })
 
 test_that( "fit.gpd's threshold argument affect the result the way it is supposed to", {

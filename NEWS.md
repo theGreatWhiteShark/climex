@@ -1,3 +1,19 @@
+# v2.0.2
+- `deseasonalize` dependency (not available anymore) to allow
+  installing the package again
+- Fix warnings in try-error checks. Some objects have more than a
+  single class/return a string list when provided to the `class()`
+  function. All checks whether the class of an error is "try-error" is
+  now wrapped in `any()` to ensure it both works and does not produce
+  any warnings
+- Fix bootstrap unit tests. There seems to have been some changes in
+  the sampling algorithms or random number generation of R
+  invalidating the previous bootstrap error estimates. Well, since
+  there was an update to a new major release, this is not too
+  unexpected. Also, the errors of the same order and still
+  reproducible. I updated the values.
+
+
 # v2.0.1
 - Updating the vignette. Removing the part describing the removed
   input function `source.data()` and the customization of the no
